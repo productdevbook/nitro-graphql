@@ -148,7 +148,7 @@ export default defineEventHandler(async (event) => {
   const url = new URL(req.url || '/', protocol + '://' + host)
   
   // Attach event to request for context
-  ;(req as any).$$event = event
+  req.$$event = event
   
   const response = await yoga.fetch(url.toString(), {
     method: req.method || 'GET',

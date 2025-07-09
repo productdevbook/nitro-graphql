@@ -4,7 +4,7 @@
 /* eslint-disable */
 /* prettier-ignore */
 import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
-import type { GraphQLContext } from 'nitro-graphql-yoga/context';
+import type { GraphQLContext } from './context';
 type Primitive =
     | null
     | undefined
