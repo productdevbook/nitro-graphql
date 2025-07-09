@@ -7,7 +7,7 @@
     "preview": "node .output/server/index.mjs"
   },
   "dependencies": {
-    "nitro-graphql-yoga": "file:../"
+    "nitro-graphql-yoga": "link:../"
   },
   "devDependencies": {
     "nitropack": "^2.11.13"

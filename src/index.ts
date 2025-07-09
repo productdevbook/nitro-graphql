@@ -34,8 +34,8 @@ export type { GraphQLContext } from 'nitro-graphql-yoga/context'
       const generatedTypes = await generateTypes(schema)
 
       // Write to file
-      const outputPath = join(nitro.options.srcDir, 'graphql/types.generated.ts')
-      await mkdir(join(nitro.options.srcDir, 'graphql'), { recursive: true })
+      const outputPath = join(nitro.options.buildDir, 'graphql-types.generated.ts')
+      await mkdir(nitro.options.buildDir, { recursive: true })
       await writeFile(outputPath, generatedTypes)
 
       consola.success('[nitro-graphql-yoga] Generated types at:', outputPath)
@@ -85,15 +85,24 @@ import { makeExecutableSchema } from '@graphql-tools/schema'
 import { mergeTypeDefs, mergeResolvers } from '@graphql-tools/merge'
 import { loadFilesSync } from '@graphql-tools/load-files'
 import { join } from 'pathe'
+import type { Resolvers } from '#build/graphql-types.generated'
+
 // GraphQL Context type is injected via context module
 
+// Create resolver helper
+globalThis.createResolver = function(resolvers) {
+  return resolvers
+}
+
 // Load schema files
-const typeDefs = loadFilesSync(join(process.cwd(), '${nitro.options.srcDir}/graphql/**/*.graphql'), {
+const schemaPath = join('${nitro.options.srcDir}', 'graphql', '**', '*.graphql')
+const typeDefs = loadFilesSync(schemaPath, {
   recursive: true,
 })
 
 // Load resolver files
-const resolverFiles = loadFilesSync(join(process.cwd(), '${nitro.options.srcDir}/graphql/resolvers/**/*.{ts,js}'), {
+const resolverPath = join('${nitro.options.srcDir}', 'graphql', 'resolvers', '**', '*.{ts,js}')
+const resolverFiles = loadFilesSync(resolverPath, {
   recursive: true,
   ignoreIndex: true,
 })
@@ -223,6 +232,7 @@ export default defineEventHandler(async (event) => {
     nitro.options.imports.presets.push({
       from: 'nitro-graphql-yoga',
       imports: [
+        'createResolver',
         'defineGraphQLResolver',
         'defineGraphQLSchema',
         'defineGraphQLResolvers',
@@ -235,4 +245,4 @@ export default defineEventHandler(async (event) => {
 export * from './codegen'
 export * from './context'
 export * from './types'
-export * from './utils'
+export { createResolver, defineGraphQLResolver } from './utils/resolver'

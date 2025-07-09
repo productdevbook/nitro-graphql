@@ -46,8 +46,8 @@ export async function setupGraphQLWatcher(nitro: Nitro) {
       const generatedTypes = await generateTypes(schema)
 
       // Write to file
-      const outputPath = join(nitro.options.srcDir, 'graphql/types.generated.ts')
-      await mkdir(join(nitro.options.srcDir, 'graphql'), { recursive: true })
+      const outputPath = join(nitro.options.buildDir, 'graphql-types.generated.ts')
+      await mkdir(nitro.options.buildDir, { recursive: true })
       await writeFile(outputPath, generatedTypes)
 
       consola.success('[nitro-graphql-yoga] Types regenerated at:', outputPath)
