@@ -1,4 +1,3 @@
-import type { Types } from '@graphql-codegen/plugin-helpers'
 import type { GraphQLSchema } from 'graphql'
 import { codegen } from '@graphql-codegen/core'
 import * as typescriptPlugin from '@graphql-codegen/typescript'
@@ -22,9 +21,7 @@ export interface CodegenServerConfig {
   [key: string]: any
 }
 
-export type GraphQLCodegenPlugin = Types.CodegenPlugin
-
-const pluginContent: GraphQLCodegenPlugin = (_schema, _documents, _config, _info) => {
+function pluginContent(_schema: any, _documents: any, _config: any, _info: any) {
   return {
     prepend: [
       '// THIS FILE IS GENERATED, DO NOT EDIT!',

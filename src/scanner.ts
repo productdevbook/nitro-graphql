@@ -29,8 +29,6 @@ export interface ScanResult {
 }
 
 export async function scanGraphQLFiles(nitro: Nitro): Promise<ScanResult> {
-  const graphqlDir = join(nitro.options.srcDir, 'graphql')
-
   try {
     // Scan GraphQL files with enhanced parsing
     const graphqlFiles = await scanGraphQLFilesWithResolvers(nitro)

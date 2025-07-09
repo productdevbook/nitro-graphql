@@ -51,7 +51,8 @@ declare module 'nitro-graphql-yoga' {
     consola.success('[graphql] ✨ Types updated')
   }
   catch (error) {
-    consola.error('[graphql] ❌ Type generation failed:', error.message)
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    consola.error('[graphql] ❌ Type generation failed:', errorMessage)
   }
 }
 
@@ -126,7 +127,8 @@ export async function setupGraphQLWatcher(nitro: Nitro) {
   })
 
   watcher.on('error', (error) => {
-    consola.error('[graphql] ❌ Watcher error:', error.message)
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    consola.error('[graphql] ❌ Watcher error:', errorMessage)
   })
 
   // Hook into Nitro's lifecycle to clean up watcher

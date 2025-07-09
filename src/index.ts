@@ -336,21 +336,21 @@ export default defineEventHandler(async (event) => {
 `
 
     // Auto-import utilities
-    nitro.options.imports = nitro.options.imports || {}
-    nitro.options.imports.presets = nitro.options.imports.presets || []
-    nitro.options.imports.presets.push({
-      from: 'nitro-graphql-yoga',
-      imports: [
-        'createResolver',
-        'defineGraphQLResolver',
-        'defineGraphQLSchema',
-        'defineGraphQLResolvers',
-        'gql',
-      ],
-    })
+    if (nitro.options.imports) {
+      nitro.options.imports.presets.push({
+        from: 'nitro-graphql-yoga',
+        imports: [
+          'createResolver',
+          'defineGraphQLResolver',
+          'defineGraphQLSchema',
+          'defineGraphQLResolvers',
+          'gql',
+        ],
+      })
+    }
 
     // Add TypeScript path alias for IDE support
-    nitro.options.typescript ??= {}
+    nitro.options.typescript ??= {} as any
     nitro.options.typescript.tsConfig ??= {}
     nitro.options.typescript.tsConfig.compilerOptions ??= {}
     nitro.options.typescript.tsConfig.compilerOptions.paths ??= {}
