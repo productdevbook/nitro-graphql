@@ -1,20 +1,17 @@
 import type { Nitro } from 'nitropack/types'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { loadFilesSync } from '@graphql-tools/load-files'
 import { mergeTypeDefs } from '@graphql-tools/merge'
 import { makeExecutableSchema } from '@graphql-tools/schema'
 import { watch } from 'chokidar'
 import { consola } from 'consola'
 import { generateTypes } from './codegen'
-import { debounce } from './utils/debounce'
 import { scanGraphQLFiles } from './scanner'
-import { generateResolverModule, generateResolverRegistryModule } from './virtual-modules'
-import { createResolverMapping, generateResolverMappingModule } from './resolver-mapping'
+import { debounce } from './utils'
 
 export async function setupGraphQLWatcher(nitro: Nitro) {
   // Use Nitro's scan pattern (like API route watching)
-  const watchPatterns = nitro.options.scanDirs.flatMap((dir) => [
+  const watchPatterns = nitro.options.scanDirs.flatMap(dir => [
     join(dir, 'graphql', '**/*.graphql'),
     join(dir, 'graphql', '**/*.gql'),
     join(dir, 'graphql', '**/*.{js,mjs,cjs,ts,mts,cts,tsx,jsx}'),

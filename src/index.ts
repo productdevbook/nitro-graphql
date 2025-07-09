@@ -6,9 +6,7 @@ import { consola } from 'consola'
 import { defineNitroModule } from 'nitropack/kit'
 import { join } from 'pathe'
 import { generateTypes } from './codegen'
-import { createResolverMapping, generateResolverMappingModule } from './resolver-mapping'
 import { scanGraphQLFiles } from './scanner'
-import { generateResolverModule, generateResolverRegistryModule } from './virtual-modules'
 import { setupGraphQLWatcher } from './watcher'
 
 export default defineNitroModule({
@@ -16,15 +14,25 @@ export default defineNitroModule({
   async setup(nitro: Nitro) {
     // Add GraphQL path to known chunk prefixes
     const graphqlPath = join(nitro.options.srcDir, 'graphql')
-    
+
     // Access the internal rollup config and add our prefix
     nitro.hooks.hook('rollup:before', (nitro, rollupConfig) => {
       // Add GraphQL path to chunkNamePrefixes
       const originalChunkFileNames = rollupConfig.output.chunkFileNames
       rollupConfig.output.chunkFileNames = (chunk) => {
-        const id = chunk.moduleIds?.at(-1) || ""
-        if (id.includes(graphqlPath) || id.includes('/graphql/')) {
-          return `graphql/[name].mjs`
+        // Only GraphQL resolvers (actual resolver files) should go to graphql folder
+        const allIds = chunk.moduleIds || []
+
+        const hasGraphQLResolverFile = allIds.some(id =>
+          // Only server/graphql resolver files (not node_modules, not virtual modules)
+          id.includes(graphqlPath)
+          && !id.includes('node_modules')
+          && !id.includes('#nitro-graphql-yoga')
+          && (id.endsWith('.ts') || id.endsWith('.js') || id.endsWith('.mjs')),
+        )
+
+        if (hasGraphQLResolverFile) {
+          return `chunks/graphql/[name].mjs`
         }
         // Use original logic for other chunks
         if (typeof originalChunkFileNames === 'function') {
@@ -360,4 +368,4 @@ export default defineEventHandler(async (event) => {
 export * from './codegen'
 export * from './context'
 export * from './types'
-export { createResolver, defineGraphQLResolver } from './utils/resolver'
+export { createResolver, defineGraphQLResolver } from './utils'

@@ -52,6 +52,7 @@
     "@types/node": "^20.19.6",
     "changelogen": "^0.6.2",
     "eslint": "^9.30.1",
+    "h3": "^1.15.3",
     "nitropack": "^2.11.13",
     "tsdown": "^0.12.9",
     "typescript": "^5.8.3"

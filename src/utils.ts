@@ -1,13 +1,8 @@
 import type { GraphQLResolveInfo } from 'graphql'
-import type { YogaInitialContext } from 'graphql-yoga'
 import type { GraphQLSchemaConfig } from './types'
+import type { GraphQLContext } from './context'
 
-export interface NitroGraphQLContext extends YogaInitialContext {
-  event: any
-  storage: any
-}
-
-export type ResolverFn<TResult = any, TParent = any, TContext = NitroGraphQLContext, TArgs = any> = (
+export type ResolverFn<TResult = any, TParent = any, TContext = GraphQLContext, TArgs = any> = (
   parent: TParent,
   args: TArgs,
   context: TContext,
@@ -24,8 +19,16 @@ export function defineGraphQLSchema(config: GraphQLSchemaConfig): GraphQLSchemaC
   return config
 }
 
-export function defineGraphQLResolver<T = any>(resolver: T): T {
-  return resolver
+export function defineGraphQLResolver<TResolvers extends ResolverMap = ResolverMap>(
+  resolvers: TResolvers,
+): TResolvers {
+  return resolvers
+}
+
+export function createResolver<TResolvers extends ResolverMap = ResolverMap>(
+  resolvers: TResolvers,
+): TResolvers {
+  return resolvers
 }
 
 /**
@@ -44,4 +47,16 @@ export function gql(strings: TemplateStringsArray, ...values: any[]): string {
     }
   })
   return result
+}
+
+export function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number,
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout | undefined
+
+  return function (...args: Parameters<T>) {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => func(...args), wait)
+  }
 }
