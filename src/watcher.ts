@@ -1,6 +1,6 @@
 import type { Nitro } from 'nitropack/types'
 import { mkdir, writeFile } from 'node:fs/promises'
-import { join, relative } from 'node:path'
+import { join } from 'node:path'
 import { loadFilesSync } from '@graphql-tools/load-files'
 import { mergeTypeDefs } from '@graphql-tools/merge'
 import { makeExecutableSchema } from '@graphql-tools/schema'
@@ -14,7 +14,7 @@ export async function setupGraphQLWatcher(nitro: Nitro) {
   const typeDefsPattern = join(graphqlDir, '**/*.graphql')
   const resolversPattern = join(graphqlDir, 'resolvers/**/*.{ts,js}')
 
-  let currentTypeDefs: string[] = []
+  const currentTypeDefs: string[] = []
   let isGenerating = false
 
   const generateTypesDebounced = debounce(async () => {

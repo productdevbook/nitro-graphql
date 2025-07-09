@@ -33,17 +33,17 @@ import { defineNitroConfig } from 'nitropack/config'
 
 export default defineNitroConfig({
   modules: ['nitro-graphql-yoga'],
-  
+
   // Optional configuration
   runtimeConfig: {
     graphqlYoga: {
-      endpoint: '/api/graphql',        // default
+      endpoint: '/api/graphql', // default
       healthCheckEndpoint: '/api/graphql/health', // default
-      playground: true,                // default (Apollo Sandbox)
-      cors: false,                     // default
+      playground: true, // default (Apollo Sandbox)
+      cors: false, // default
       cacheHeaders: {
-        enabled: true,                 // default
-        maxAge: 2592000,              // default (30 days)
+        enabled: true, // default
+        maxAge: 2592000, // default (30 days)
       }
     }
   }
@@ -69,17 +69,17 @@ const typeDefs = `
     hello(name: String): String
     users: [User!]!
   }
-  
+
   type User {
     id: ID!
     name: String!
     email: String!
   }
-  
+
   type Mutation {
     createUser(input: CreateUserInput!): User!
   }
-  
+
   input CreateUserInput {
     name: String!
     email: String!
@@ -154,24 +154,24 @@ The GraphQL context includes:
 interface NitroGraphQLYogaOptions {
   // GraphQL endpoint path
   endpoint?: string // default: '/api/graphql'
-  
+
   // Health check endpoint path
   healthCheckEndpoint?: string // default: '/api/graphql/health'
-  
+
   // Enable/disable Apollo Sandbox
   playground?: boolean // default: true
-  
+
   // CORS configuration
   cors?: {
     origin?: string | string[] | boolean
     credentials?: boolean
     methods?: string[]
   }
-  
+
   // Cache headers configuration
   cacheHeaders?: {
     enabled?: boolean // default: true
-    maxAge?: number   // default: 2592000 (30 days)
+    maxAge?: number // default: 2592000 (30 days)
   }
 }
 ```
@@ -204,12 +204,12 @@ export default {
       ttl: 60_000, // 1 minute
     }),
   ],
-  
+
   // Override context
   context: async ({ request }) => {
     const event = request.$$event
     const user = await authenticateUser(event)
-    
+
     return {
       event,
       request,
@@ -218,7 +218,7 @@ export default {
       db: await connectDatabase(),
     }
   },
-  
+
   // Custom error handling
   maskedErrors: {
     maskError: (error, message, isDev) => {
@@ -243,7 +243,7 @@ export const schema = makeExecutableSchema({
 })
 
 // Add custom context enhancer
-export const enhanceContext = async (context) => {
+export async function enhanceContext(context) {
   return {
     ...context,
     // Add custom context properties
@@ -260,8 +260,8 @@ You can compose multiple schemas:
 ```ts
 // server/graphql/schema.ts
 import { mergeSchemas } from '@graphql-tools/schema'
-import { userSchema } from './users'
 import { postSchema } from './posts'
+import { userSchema } from './users'
 
 export const schema = mergeSchemas({
   schemas: [userSchema, postSchema],

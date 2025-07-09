@@ -1,28 +1,28 @@
 import type { Nitro } from 'nitropack/types'
+import { mkdir, writeFile } from 'node:fs/promises'
+import { mergeTypeDefs } from '@graphql-tools/merge'
+import { makeExecutableSchema } from '@graphql-tools/schema'
+import { consola } from 'consola'
 import { defineNitroModule } from 'nitropack/kit'
 import { join } from 'pathe'
-import { consola } from 'consola'
-import { setupGraphQLWatcher } from './watcher'
-import { scanGraphQLFiles } from './scanner'
 import { generateTypes } from './codegen'
-import { makeExecutableSchema } from '@graphql-tools/schema'
-import { mergeTypeDefs } from '@graphql-tools/merge'
-import { writeFile, mkdir } from 'node:fs/promises'
+import { scanGraphQLFiles } from './scanner'
+import { setupGraphQLWatcher } from './watcher'
 
 export default defineNitroModule({
   name: 'nitro:graphql-yoga',
   async setup(nitro: Nitro) {
     // Add virtual imports
     nitro.options.virtual = nitro.options.virtual || {}
-    
+
     // Add context type
     nitro.options.virtual['#nitro-graphql-yoga/context'] = () => `
 export type { GraphQLContext } from 'nitro-graphql-yoga/context'
 `
-    
+
     // Initial scan
     const scanResult = scanGraphQLFiles(nitro)
-    
+
     // Generate initial types if we have GraphQL files
     if (scanResult.typeDefs.length > 0) {
       const mergedTypeDefs = mergeTypeDefs(scanResult.typeDefs)
@@ -30,52 +30,52 @@ export type { GraphQLContext } from 'nitro-graphql-yoga/context'
         typeDefs: mergedTypeDefs,
         resolvers: {},
       })
-      
+
       const generatedTypes = await generateTypes(schema)
-      
+
       // Write to file
       const outputPath = join(nitro.options.srcDir, 'graphql/types.generated.ts')
       await mkdir(join(nitro.options.srcDir, 'graphql'), { recursive: true })
       await writeFile(outputPath, generatedTypes)
-      
+
       consola.success('[nitro-graphql-yoga] Generated types at:', outputPath)
     }
-    
+
     // Setup file watcher in dev mode
     if (nitro.options.dev) {
       await setupGraphQLWatcher(nitro)
     }
-    
+
     // Add GraphQL Yoga handlers
     nitro.options.handlers = nitro.options.handlers || []
     const endpoint = nitro.options.runtimeConfig.graphqlYoga?.endpoint || '/api/graphql'
-    
+
     // Main GraphQL endpoint
     nitro.options.handlers.push({
       route: endpoint,
       handler: '#nitro-graphql-yoga/handler',
       method: 'get',
     })
-    
+
     nitro.options.handlers.push({
       route: endpoint,
       handler: '#nitro-graphql-yoga/handler',
       method: 'post',
     })
-    
+
     nitro.options.handlers.push({
       route: endpoint,
       handler: '#nitro-graphql-yoga/handler',
       method: 'options',
     })
-    
+
     // Health check endpoint
     nitro.options.handlers.push({
       route: `${endpoint}/health`,
       handler: '#nitro-graphql-yoga/health',
       method: 'get',
     })
-    
+
     // Create GraphQL handler
     nitro.options.virtual['#nitro-graphql-yoga/handler'] = () => `
 import { createYoga } from 'graphql-yoga'
@@ -178,7 +178,7 @@ export default defineEventHandler(async (event) => {
   return null
 })
 `
-    
+
     // Health check handler
     nitro.options.virtual['#nitro-graphql-yoga/health'] = () => `
 import { defineEventHandler, setResponseStatus } from 'h3'
@@ -216,7 +216,7 @@ export default defineEventHandler(async (event) => {
   }
 })
 `
-    
+
     // Auto-import utilities
     nitro.options.imports = nitro.options.imports || {}
     nitro.options.imports.presets = nitro.options.imports.presets || []
@@ -232,7 +232,7 @@ export default defineEventHandler(async (event) => {
   },
 })
 
+export * from './codegen'
+export * from './context'
 export * from './types'
 export * from './utils'
-export * from './context'
-export * from './codegen'
