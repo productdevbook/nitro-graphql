@@ -1,0 +1,40 @@
+{
+  "name": "nitro-graphql-yoga",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "GraphQL Yoga integration for Nitro",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepack": "pnpm build",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "release": "pnpm run build && changelogen --release && npm publish && git push --follow-tags"
+  },
+  "peerDependencies": {
+    "nitropack": "^2.11.13"
+  },
+  "dependencies": {
+    "@graphql-tools/schema": "^10.0.23",
+    "defu": "^6.1.4",
+    "graphql": "^16.11.0",
+    "graphql-yoga": "^5.14.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "changelogen": "^0.6.2",
+    "nitropack": "^2.11.13",
+    "tsdown": "^0.12.9",
+    "typescript": "^5.8.3"
+  }
+}
