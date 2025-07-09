@@ -1,6 +1,6 @@
 import type { GraphQLResolveInfo } from 'graphql'
-import type { GraphQLSchemaConfig } from './types'
 import type { GraphQLContext } from './context'
+import type { GraphQLSchemaConfig } from './types'
 
 export type ResolverFn<TResult = any, TParent = any, TContext = GraphQLContext, TArgs = any> = (
   parent: TParent,

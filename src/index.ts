@@ -55,10 +55,10 @@ export type { GraphQLContext } from 'nitro-graphql-yoga/context'
 
     // Log resolver discovery for debugging
     if (scanResult.resolvers.length > 0) {
-      consola.success(`[nitro-graphql-yoga] Found ${scanResult.resolvers.length} resolver files`)
+      consola.success(`[graphql] Found ${scanResult.resolvers.length} resolvers`)
 
       if (nitro.options.dev) {
-        consola.info('[nitro-graphql-yoga] Resolver files:')
+        consola.info('[graphql] Resolver files:')
         for (const resolver of scanResult.resolvers) {
           consola.info(`  ${resolver.name} -> ${resolver.relativePath}`)
         }
@@ -92,7 +92,7 @@ declare module 'nitro-graphql-yoga' {
 `
       await writeFile(graphqlDtsPath, graphqlDtsContent)
 
-      consola.success('[nitro-graphql-yoga] Generated types at:', outputPath)
+      consola.success('[graphql] Generated types at:', outputPath)
     }
 
     // Setup file watcher in dev mode

@@ -40,7 +40,7 @@ export async function scanGraphQLFiles(nitro: Nitro): Promise<ScanResult> {
     const resolvers = await scanResolverFiles(nitro)
     const resolverPaths = resolvers.map(r => r.path)
 
-    consola.info(`[nitro-graphql-yoga] Found ${typeDefs.length} GraphQL schema files and ${resolvers.length} resolver files`)
+    consola.info(`[graphql] Found ${typeDefs.length} schema files and ${resolvers.length} resolvers`)
 
     return {
       typeDefs,
@@ -50,7 +50,7 @@ export async function scanGraphQLFiles(nitro: Nitro): Promise<ScanResult> {
     }
   }
   catch (error) {
-    consola.warn('[nitro-graphql-yoga] Error scanning GraphQL files:', error)
+    consola.warn('[graphql] Error scanning files:', error)
     return {
       typeDefs: [],
       resolverPaths: [],
