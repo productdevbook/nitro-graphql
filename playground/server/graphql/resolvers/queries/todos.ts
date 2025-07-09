@@ -2,7 +2,11 @@ export default createResolver({
   Query: {
     todos: async (_parent, _args, { storage }) => {
       const todos = await storage.getItem('todos') || []
-      return todos
+      return [{
+        id: '1',
+        title: 'Sample Todo',
+        completed: false,
+      }]
     },
 
     todo: async (_parent, { id }, { storage }) => {
