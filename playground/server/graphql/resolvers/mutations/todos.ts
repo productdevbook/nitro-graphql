@@ -1,6 +1,6 @@
-import type { MutationResolvers, Todo } from '../../types.generated'
+import type { Todo } from '#build/graphql-types.generated'
 
-export default {
+export default createResolver({
   Mutation: {
     addTodo: async (_parent, { title }, { storage }) => {
       const todos = await storage.getItem('todos') || []
@@ -36,5 +36,5 @@ export default {
       await storage.setItem('todos', todos)
       return true
     },
-  } as MutationResolvers,
-}
+  },
+})

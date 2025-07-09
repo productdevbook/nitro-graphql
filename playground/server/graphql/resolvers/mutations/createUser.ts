@@ -1,6 +1,4 @@
-import type { MutationResolvers } from '../../types.generated'
-
-export default {
+export default createResolver({
   Mutation: {
     createUser: async (_parent, { input }, context) => {
       // In a real app, you would save to database
@@ -15,5 +13,5 @@ export default {
 
       return newUser
     },
-  } as MutationResolvers,
-}
+  },
+})

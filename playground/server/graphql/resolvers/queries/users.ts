@@ -1,4 +1,4 @@
-import type { QueryResolvers, User } from '../../types.generated'
+import type { User } from '#build/graphql-types.generated'
 
 // Mock database
 const users: User[] = [
@@ -6,9 +6,9 @@ const users: User[] = [
   { id: '2', name: 'Jane Smith', email: 'jane@example.com', createdAt: new Date('2024-01-02') },
 ]
 
-export default {
+export default createResolver({
   Query: {
     users: () => users,
     user: (_parent, { id }) => users.find(user => user.id === id) || null,
-  } as QueryResolvers,
-}
+  },
+})

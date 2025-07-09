@@ -22,3 +22,5 @@ declare module 'nitropack' {
     graphqlYoga?: NitroGraphQLYogaOptions
   }
 }
+
+export interface Resolvers {}

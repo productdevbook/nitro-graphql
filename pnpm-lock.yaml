@@ -47,6 +47,9 @@ importers:
       defu:
         specifier: ^6.1.4
         version: 6.1.4
+      globby:
+        specifier: ^14.0.2
+        version: 14.1.0
       graphql:
         specifier: ^16.11.0
         version: 16.11.0

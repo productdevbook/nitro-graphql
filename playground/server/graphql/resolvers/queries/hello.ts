@@ -1,8 +1,6 @@
-import type { QueryResolvers } from '../../types.generated'
-
-export default {
+export default createResolver({
   Query: {
     hello: () => 'Hello from auto-discovered resolver!',
     greeting: (_parent, { name }) => `Hello, ${name}!`,
-  } as QueryResolvers,
-}
+  },
+})

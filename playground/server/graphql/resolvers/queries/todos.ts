@@ -1,6 +1,4 @@
-import type { QueryResolvers } from '../../types.generated'
-
-export default {
+export default createResolver({
   Query: {
     todos: async (_parent, _args, { storage }) => {
       const todos = await storage.getItem('todos') || []
@@ -11,5 +9,5 @@ export default {
       const todos = await storage.getItem('todos') || []
       return todos.find((todo: any) => todo.id === id) || null
     },
-  } as QueryResolvers,
-}
+  },
+})

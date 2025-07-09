@@ -1,31 +1,53 @@
 import type { Nitro } from 'nitropack/types'
 import { loadFilesSync } from '@graphql-tools/load-files'
 import { consola } from 'consola'
-import { join } from 'pathe'
+import { join, relative, basename, dirname } from 'pathe'
+import { existsSync, statSync, readFileSync } from 'node:fs'
+import { globby } from 'globby'
+
+export interface ResolverInfo {
+  path: string
+  relativePath: string
+  name: string
+  importPath: string
+  isGraphQLFile?: boolean
+}
+
+export interface GraphQLFileInfo {
+  path: string
+  relativePath: string
+  content: string
+  hasResolvers: boolean
+  typeDefs?: string
+  resolvers?: any
+}
 
 export interface ScanResult {
   typeDefs: string[]
   resolverPaths: string[]
+  resolvers: ResolverInfo[]
+  graphqlFiles: GraphQLFileInfo[]
 }
 
-export function scanGraphQLFiles(nitro: Nitro): ScanResult {
+export async function scanGraphQLFiles(nitro: Nitro): Promise<ScanResult> {
   const graphqlDir = join(nitro.options.srcDir, 'graphql')
 
   try {
-    // Load all .graphql files
-    const typeDefs = loadFilesSync(join(graphqlDir, '**/*.graphql'), {
-      recursive: true,
-      ignoreIndex: true,
-    })
+    // Scan GraphQL files with enhanced parsing
+    const graphqlFiles = await scanGraphQLFilesWithResolvers(nitro)
+    const typeDefs = graphqlFiles.map(f => f.typeDefs).filter(Boolean) as string[]
+    
+    // Scan separate resolver files
+    const resolvers = await scanResolverFiles(nitro)
+    const resolverPaths = resolvers.map(r => r.path)
 
-    // For now, we don't need to scan resolver files
-    const resolverPaths: string[] = []
-
-    consola.info(`[nitro-graphql-yoga] Found ${typeDefs.length} GraphQL schema files and ${resolverPaths.length} resolver files`)
+    consola.info(`[nitro-graphql-yoga] Found ${typeDefs.length} GraphQL schema files and ${resolvers.length} resolver files`)
 
     return {
-      typeDefs: typeDefs as string[],
+      typeDefs,
       resolverPaths,
+      resolvers,
+      graphqlFiles,
     }
   }
   catch (error) {
@@ -33,6 +55,119 @@ export function scanGraphQLFiles(nitro: Nitro): ScanResult {
     return {
       typeDefs: [],
       resolverPaths: [],
+      resolvers: [],
+      graphqlFiles: [],
     }
   }
+}
+
+export async function scanResolverFiles(nitro: Nitro): Promise<ResolverInfo[]> {
+  // Use Nitro's scan pattern (same as API routes)
+  const NITRO_GLOB_PATTERN = "**/*.{js,mjs,cjs,ts,mts,cts,tsx,jsx}"
+  
+  // Scan all configured scan directories (like Nitro does)
+  const resolverFiles = await Promise.all(
+    nitro.options.scanDirs.map(async (scanDir) => {
+      const graphqlDir = join(scanDir, 'graphql')
+      if (!existsSync(graphqlDir)) return []
+      
+      return globby([
+        join(graphqlDir, NITRO_GLOB_PATTERN),
+        `!${join(graphqlDir, '**/*.d.ts')}`,
+        `!${join(graphqlDir, '**/*.test.*')}`,
+        `!${join(graphqlDir, '**/*.spec.*')}`,
+      ], {
+        cwd: scanDir,
+        dot: true,
+        ignore: nitro.options.ignore || [],
+        absolute: true
+      })
+    })
+  ).then(results => results.flat())
+
+  const resolvers: ResolverInfo[] = []
+
+  for (const filePath of resolverFiles) {
+    // Find which scan directory this file belongs to
+    const scanDir = nitro.options.scanDirs.find(dir => filePath.startsWith(dir))
+    if (!scanDir) continue
+    
+    const graphqlDir = join(scanDir, 'graphql')
+    const relativePath = relative(graphqlDir, filePath)
+    const fileName = basename(relativePath, '.ts') || basename(relativePath, '.js') || basename(relativePath, '.mjs')
+    
+    // Create import path relative to the graphql directory  
+    const importPath = relativePath.replace(/\.(ts|js|mjs|tsx|jsx|cjs|mts|cts)$/, '')
+
+    resolvers.push({
+      path: filePath,
+      relativePath,
+      name: fileName,
+      importPath,
+      isGraphQLFile: false,
+    })
+  }
+
+  return resolvers
+}
+
+export async function scanGraphQLFilesWithResolvers(nitro: Nitro): Promise<GraphQLFileInfo[]> {
+  // Scan all configured scan directories (like Nitro does)
+  const graphqlFiles = await Promise.all(
+    nitro.options.scanDirs.map(async (scanDir) => {
+      const graphqlDir = join(scanDir, 'graphql')
+      if (!existsSync(graphqlDir)) return []
+      
+      return globby([
+        join(graphqlDir, '**/*.graphql'),
+        join(graphqlDir, '**/*.gql'),
+      ], {
+        cwd: scanDir,
+        dot: true,
+        ignore: nitro.options.ignore || [],
+        absolute: true
+      })
+    })
+  ).then(results => results.flat())
+
+  const files: GraphQLFileInfo[] = []
+
+  for (const filePath of graphqlFiles) {
+    // Find which scan directory this file belongs to
+    const scanDir = nitro.options.scanDirs.find(dir => filePath.startsWith(dir))
+    if (!scanDir) continue
+    
+    const graphqlDir = join(scanDir, 'graphql')
+    const relativePath = relative(graphqlDir, filePath)
+    const contentStr = readFileSync(filePath, 'utf-8')
+
+    // Check if file contains resolver definitions
+    const hasResolvers = contentStr.includes('# @resolver') || contentStr.includes('# @resolvers')
+
+    // Extract only the schema part (before resolver definitions)
+    let typeDefs = contentStr
+    if (hasResolvers) {
+      const lines = contentStr.split('\n')
+      const schemaLines = []
+      
+      for (const line of lines) {
+        if (line.match(/^#\s*@resolver/)) {
+          break
+        }
+        schemaLines.push(line)
+      }
+      
+      typeDefs = schemaLines.join('\n').trim()
+    }
+
+    files.push({
+      path: filePath,
+      relativePath,
+      content: contentStr,
+      hasResolvers,
+      typeDefs,
+    })
+  }
+
+  return files
 }
