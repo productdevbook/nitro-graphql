@@ -2,10 +2,10 @@ import { defineNitroConfig } from 'nitropack/config'
 
 export default defineNitroConfig({
   modules: ['nitro-graphql-yoga'],
-  
+  compatibilityDate: '2025-07-01',
   runtimeConfig: {
     graphqlYoga: {
-      endpoint: '/graphql',
+      endpoint: '/api/graphql',
       playground: true,
       cors: {
         origin: '*',

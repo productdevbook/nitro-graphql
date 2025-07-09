@@ -19,7 +19,8 @@
     "prepack": "pnpm build",
     "build": "tsdown",
     "dev": "tsdown --watch",
-    "release": "pnpm run build && changelogen --release && npm publish && git push --follow-tags"
+    "release": "pnpm run build && changelogen --release && npm publish && git push --follow-tags",
+    "playground": "cd playground && pnpm install && pnpm dev"
   },
   "peerDependencies": {
     "nitropack": "^2.11.13"
@@ -31,7 +32,7 @@
     "graphql-yoga": "^5.14.0"
   },
   "devDependencies": {
-    "@types/node": "^20.12.7",
+    "@types/node": "^20.19.6",
     "changelogen": "^0.6.2",
     "nitropack": "^2.11.13",
     "tsdown": "^0.12.9",
