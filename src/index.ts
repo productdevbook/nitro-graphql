@@ -137,7 +137,7 @@ new window.EmbeddedSandbox({
 import { createYoga } from 'graphql-yoga'
 import { defineEventHandler, readRawBody, setHeader, setResponseStatus } from 'h3'
 import { useStorage } from 'nitro/runtime'
-import defu from 'defu'
+${configPath ? `import defu from 'defu'` : ''}
 ${schemaPath ? `import { schema } from '${schemaPath.replace(/\.[tj]s$/, '')}'` : `import { getGraphQLSchema } from '#nitro-graphql-yoga/schema'`}
 ${configPath ? `import yogaConfig from '${configPath.replace(/\.[tj]s$/, '')}'` : ''}
 
