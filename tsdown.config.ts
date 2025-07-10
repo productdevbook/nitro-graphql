@@ -1,4 +1,10 @@
 import { defineConfig } from 'tsdown'
+import { dependencies } from './package.json'
+
+const playground = './playground'
+
+const thisPath = import.meta.url
+const playgroundPath = new URL(playground, thisPath).pathname
 
 export default defineConfig({
   entry: ['src/index.ts'],
@@ -14,5 +20,9 @@ export default defineConfig({
     '@graphql-tools/schema',
     'node:fs',
     'node:path',
+    ...Object.keys(dependencies || {}),
+  ],
+  ignoreWatch: [
+    playgroundPath,
   ],
 })
