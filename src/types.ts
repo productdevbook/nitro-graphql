@@ -18,6 +18,10 @@ export interface NitroGraphQLYogaOptions {
 }
 
 declare module 'nitropack' {
+  interface NitroOptions {
+    graphqlYoga?: NitroGraphQLYogaOptions
+  }
+  
   interface NitroRuntimeConfig {
     graphqlYoga?: NitroGraphQLYogaOptions
   }

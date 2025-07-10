@@ -1,4 +1,5 @@
 import type { Nitro } from 'nitropack/types'
+import type { NitroGraphQLYogaOptions } from './types'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { mergeTypeDefs } from '@graphql-tools/merge'
 import { makeExecutableSchema } from '@graphql-tools/schema'
@@ -12,6 +13,20 @@ import { setupGraphQLWatcher } from './watcher'
 export default defineNitroModule({
   name: 'nitro:graphql-yoga',
   async setup(nitro: Nitro) {
+    // Get module options from nitro config
+    const options: NitroGraphQLYogaOptions = {
+      endpoint: '/api/graphql',
+      playground: true,
+      cors: false,
+      cacheHeaders: {
+        enabled: true,
+        maxAge: 604800, // 1 week
+      },
+      // Merge with user config from nitro.options
+      ...(nitro.options as any).graphqlYoga,
+      // Fallback to runtimeConfig for backward compatibility
+      ...nitro.options.runtimeConfig?.graphqlYoga,
+    }
     // Add GraphQL path to known chunk prefixes
     const graphqlPath = join(nitro.options.srcDir, 'graphql')
 
@@ -102,7 +117,7 @@ declare module 'nitro-graphql-yoga' {
 
     // Add GraphQL Yoga handlers
     nitro.options.handlers = nitro.options.handlers || []
-    const endpoint = nitro.options.runtimeConfig.graphqlYoga?.endpoint || '/api/graphql'
+    const endpoint = options.endpoint || '/api/graphql'
 
     // Main GraphQL endpoint
     nitro.options.handlers.push({
@@ -263,10 +278,10 @@ async function getYoga() {
           }
         },
         graphqlEndpoint: '${endpoint}',
-        graphiql: ${nitro.options.runtimeConfig.graphqlYoga?.playground !== false},
+        graphiql: ${options.playground !== false},
         renderGraphiQL: () => apolloSandboxHtml,
         landingPage: false,
-        cors: ${JSON.stringify(nitro.options.runtimeConfig.graphqlYoga?.cors || false)},
+        cors: ${JSON.stringify(options.cors || false)},
       })
       
       return yoga
