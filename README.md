@@ -1,5 +1,8 @@
 # Nitro GraphQL Yoga Module
 
+> [!NOTE]
+> This project is actively under development. We're always open to new ideas, different perspectives, and feature suggestions! If you have a suggestion, please first [open an issue](https://github.com/productdevbook/nitro-graphql/issues) to discuss it, then you can contribute with a PR.
+
 A standalone Nitro module that integrates GraphQL Yoga server into any Nitro application with automatic type generation and file watching.
 
 ## Features
@@ -431,6 +434,42 @@ The module is optimized for minimal bundle size:
 - Built-in cache headers for Apollo Sandbox (1 week)
 - Configurable cache settings
 - Lazy schema initialization
+
+## Community & Contributing
+
+> [!TIP]
+> **Want to contribute?** We believe you can play a role in the growth of this project!
+
+### 🎯 How You Can Contribute
+
+- **💡 Share your ideas**: Use [GitHub Issues](https://github.com/productdevbook/nitro-graphql/issues) for new feature suggestions
+- **🐛 Report bugs**: Report issues you encounter in detail
+- **📖 Improve documentation**: Enhance README, examples, and guides
+- **🔧 Code contributions**: Develop bug fixes and new features
+- **🌟 Support the project**: Support the project by giving it a star
+
+### 💬 Discussion and Support
+
+- **GitHub Issues**: Feature requests and bug reports
+- **GitHub Discussions**: General discussions and questions
+- **Pull Requests**: Code contributions
+
+### 🚀 Contribution Process
+
+1. **Open an issue**: Let's discuss what you want to do first
+2. **Fork & Branch**: Fork the project and create a feature branch
+3. **Write code**: Develop according to existing code standards
+4. **Test**: Test your changes
+5. **Send PR**: Create a pull request with detailed description
+
+> [!IMPORTANT]
+> Please don't forget to read the [Contribution Guidelines](CONTRIBUTING.md) document before contributing.
+
+---
+
+### 🌟 Thank You
+
+Thank you for using and developing this project. Every contribution makes the GraphQL ecosystem stronger!
 
 ## License
 
