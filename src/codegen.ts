@@ -127,7 +127,7 @@ type ResolverReturnTypeObject<T extends object> = {
       typescriptResolvers: typescriptResolversPlugin,
     },
   }).catch((e: any) => {
-    console.warn('[nitro-graphql-yoga] Code generation error:', e)
+    console.warn('[nitro-graphql] Code generation error:', e)
     return ''
   })
 

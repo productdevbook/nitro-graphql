@@ -13,7 +13,7 @@ export interface CodegenClientConfig extends TypeScriptPluginConfig, TypeScriptD
   documentMode?: 'string' | 'graphQLTag' | 'documentNode' | 'documentNodeImportFragments' | 'external'
 }
 
-export interface NitroGraphQLYogaOptions {
+export interface NitroGraphQLOptions {
   endpoint?: string
   healthCheckEndpoint?: string
   playground?: boolean
@@ -28,15 +28,16 @@ export interface NitroGraphQLYogaOptions {
     watchPatterns?: string[]
     config?: CodegenClientConfig
   }
+  yogaConfig?: Partial<YogaServerOptions<any, any>>
 }
 
 declare module 'nitropack' {
   interface NitroOptions {
-    graphqlYoga?: NitroGraphQLYogaOptions
+    graphqlYoga?: NitroGraphQLOptions
   }
 
   interface NitroRuntimeConfig {
-    graphqlYoga?: NitroGraphQLYogaOptions
+    graphqlYoga?: NitroGraphQLOptions
   }
 }
 

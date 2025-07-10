@@ -1,3 +1,4 @@
+import type { YogaServerOptions } from 'graphql-yoga'
 import type { GraphQLSchemaConfig, Resolvers } from './types'
 
 export function defineGraphQLSchema(config: GraphQLSchemaConfig): GraphQLSchemaConfig {
@@ -44,4 +45,13 @@ export function debounce<T extends (...args: any[]) => any>(
     clearTimeout(timeout)
     timeout = setTimeout(() => func(...args), wait)
   }
+}
+
+/**
+ * Helper function to define GraphQL Yoga configuration with type safety
+ */
+export function defineYogaConfig<TServerContext = any, TUserContext = any>(
+  config: Partial<YogaServerOptions<TServerContext, TUserContext>>,
+): Partial<YogaServerOptions<TServerContext, TUserContext>> {
+  return config
 }

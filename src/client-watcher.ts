@@ -1,5 +1,5 @@
 import type { Nitro } from 'nitropack/types'
-import type { NitroGraphQLYogaOptions } from './types'
+import type { NitroGraphQLOptions } from './types'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { mergeTypeDefs } from '@graphql-tools/merge'
 import { makeExecutableSchema } from '@graphql-tools/schema'
@@ -65,7 +65,7 @@ async function regenerateClientTypes(nitro: Nitro, options: NitroGraphQLYogaOpti
   }
 }
 
-export async function setupClientWatcher(nitro: Nitro, options: NitroGraphQLYogaOptions) {
+export async function setupClientWatcher(nitro: Nitro, options: NitroGraphQLOptions) {
   if (!options.client?.enabled) {
     logger.info('🚫 Client type generation disabled')
     return

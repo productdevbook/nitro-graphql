@@ -1,5 +1,5 @@
 {
-  "name": "nitro-graphql-yoga",
+  "name": "nitro-graphql",
   "type": "module",
   "version": "0.1.0",
   "description": "GraphQL Yoga integration for Nitro",

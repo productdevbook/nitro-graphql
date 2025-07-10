@@ -20,11 +20,11 @@ A standalone Nitro module that integrates GraphQL Yoga server into any Nitro app
 ## Installation
 
 ```bash
-npm install nitro-graphql-yoga
+npm install nitro-graphql
 # or
-pnpm add nitro-graphql-yoga
+pnpm add nitro-graphql
 # or
-yarn add nitro-graphql-yoga
+yarn add nitro-graphql
 ```
 
 ## Usage
@@ -36,7 +36,7 @@ yarn add nitro-graphql-yoga
 import { defineNitroConfig } from 'nitropack/config'
 
 export default defineNitroConfig({
-  modules: ['nitro-graphql-yoga'],
+  modules: ['nitro-graphql'],
 
   // Optional configuration
   graphqlYoga: {
@@ -108,7 +108,7 @@ extend type Mutation {
 #### Domain-based Resolver Files
 ```ts
 // server/graphql/users/user-queries.ts
-import { createResolver } from 'nitro-graphql-yoga'
+import { createResolver } from 'nitro-graphql'
 
 export default createResolver({
   Query: {
@@ -125,7 +125,7 @@ export default createResolver({
 
 ```ts
 // server/graphql/users/create-user.ts
-import { createResolver } from 'nitro-graphql-yoga'
+import { createResolver } from 'nitro-graphql'
 
 export default createResolver({
   Mutation: {
@@ -150,7 +150,7 @@ The module provides utilities for better developer experience:
 
 ```ts
 // server/graphql/hello.ts
-import { createResolver } from 'nitro-graphql-yoga'
+import { createResolver } from 'nitro-graphql'
 
 export default createResolver({
   Query: {
@@ -172,7 +172,7 @@ These types are automatically available in your resolvers:
 ```ts
 import type { QueryResolvers } from '#build/graphql-types.generated'
 // server/graphql/users/user-queries.ts
-import { createResolver } from 'nitro-graphql-yoga'
+import { createResolver } from 'nitro-graphql'
 
 export default createResolver({
   Query: {
@@ -219,7 +219,7 @@ The GraphQL context includes:
 
 ```ts
 // Example resolver with full context usage
-import { createResolver } from 'nitro-graphql-yoga'
+import { createResolver } from 'nitro-graphql'
 
 export default createResolver({
   Query: {
@@ -294,6 +294,63 @@ Access the health check endpoint at `/api/graphql/health` to verify your GraphQL
 
 ## Advanced Usage
 
+### Custom GraphQL Yoga Configuration
+
+You can create a custom GraphQL Yoga configuration file that will be automatically merged with the default configuration. The module will look for this file **only in the `server/graphql/` directory**:
+
+- `server/graphql/yoga.config.ts`
+
+```ts
+import { useCORS } from '@graphql-yoga/plugin-cors'
+import { useResponseCache } from '@graphql-yoga/plugin-response-cache'
+// server/graphql/yoga.config.ts
+import { defineYogaConfig } from 'nitro-graphql'
+
+export default defineYogaConfig({
+  // Add custom plugins
+  plugins: [
+    useCORS({
+      origin: process.env.NODE_ENV === 'production' ? 'https://yourdomain.com' : '*',
+      credentials: true,
+    }),
+    useResponseCache({
+      session: () => null,
+      ttl: 60_000, // 1 minute
+    }),
+  ],
+
+  // Enhanced context with custom properties
+  context: async ({ request }) => {
+    const event = request.$$event
+
+    return {
+      event,
+      request,
+      storage: useStorage(),
+      // Add custom context properties
+      user: await authenticateUser(event),
+      db: await connectDatabase(),
+      startTime: Date.now(),
+    }
+  },
+
+  // Custom error handling
+  maskedErrors: {
+    maskError: (error, message, isDev) => {
+      if (error.message.startsWith('USER_')) {
+        return error // Don't mask user-facing errors
+      }
+      return isDev ? error : new Error('Internal server error')
+    },
+  },
+
+  // Additional yoga options
+  // See: https://the-guild.dev/graphql/yoga-server/docs
+})
+```
+
+**Configuration Merging**: Your custom config is merged with the default config, allowing you to override specific options while keeping defaults for others. The `schema` and `graphqlEndpoint` are always preserved from the module's configuration.
+
 ### Client Type Generation
 
 Enable client type generation for your frontend queries:
@@ -320,7 +377,7 @@ export default defineNitroConfig({
 import { GraphQLScalarType } from 'graphql'
 import { Kind } from 'graphql/language'
 // server/graphql/scalars/DateTime.ts
-import { createResolver } from 'nitro-graphql-yoga'
+import { createResolver } from 'nitro-graphql'
 
 export default createResolver({
   DateTime: new GraphQLScalarType({
@@ -341,7 +398,7 @@ export default createResolver({
 
 ```ts
 // server/graphql/users/user-queries.ts
-import { createResolver } from 'nitro-graphql-yoga'
+import { createResolver } from 'nitro-graphql'
 
 export default createResolver({
   Query: {

@@ -1,5 +1,5 @@
 {
-  "name": "nitro-graphql-yoga-example",
+  "name": "nitro-graphql-example",
   "private": true,
   "scripts": {
     "dev": "nitro dev",
@@ -7,7 +7,7 @@
     "preview": "node .output/server/index.mjs"
   },
   "dependencies": {
-    "nitro-graphql-yoga": "link:../"
+    "nitro-graphql": "link:../"
   },
   "devDependencies": {
     "nitropack": "^2.11.13"

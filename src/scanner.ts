@@ -26,6 +26,7 @@ export interface ScanResult {
   resolverPaths: string[]
   resolvers: ResolverInfo[]
   graphqlFiles: GraphQLFileInfo[]
+  yogaConfigPath?: string
 }
 
 export async function scanGraphQLFiles(nitro: Nitro): Promise<ScanResult> {
@@ -38,6 +39,9 @@ export async function scanGraphQLFiles(nitro: Nitro): Promise<ScanResult> {
     const resolvers = await scanResolverFiles(nitro)
     const resolverPaths = resolvers.map(r => r.path)
 
+    // Scan for GraphQL Yoga config file
+    const yogaConfigPath = await scanForYogaConfig(nitro)
+
     consola.info(`[graphql] Found ${typeDefs.length} schema files and ${resolvers.length} resolvers`)
 
     return {
@@ -45,6 +49,7 @@ export async function scanGraphQLFiles(nitro: Nitro): Promise<ScanResult> {
       resolverPaths,
       resolvers,
       graphqlFiles,
+      yogaConfigPath,
     }
   }
   catch (error) {
@@ -74,6 +79,7 @@ export async function scanResolverFiles(nitro: Nitro): Promise<ResolverInfo[]> {
         `!${join(graphqlDir, '**/*.d.ts')}`,
         `!${join(graphqlDir, '**/*.test.*')}`,
         `!${join(graphqlDir, '**/*.spec.*')}`,
+        `!${join(graphqlDir, '**/yoga.config.ts')}`,
       ], {
         cwd: scanDir,
         dot: true,
@@ -171,4 +177,21 @@ export async function scanGraphQLFilesWithResolvers(nitro: Nitro): Promise<Graph
   }
 
   return files
+}
+
+export async function scanForYogaConfig(nitro: Nitro): Promise<string | undefined> {
+  // Only support yoga.config.ts for simplicity
+  const configFileName = 'yoga.config.ts'
+
+  // Only check in server/graphql directory
+  for (const scanDir of nitro.options.scanDirs) {
+    const graphqlDir = join(scanDir, 'graphql')
+    const configPath = join(graphqlDir, configFileName)
+    
+    if (existsSync(configPath)) {
+      return configPath
+    }
+  }
+
+  return undefined
 }

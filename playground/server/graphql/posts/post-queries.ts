@@ -1,4 +1,4 @@
-import { createResolver } from 'nitro-graphql-yoga'
+import { createResolver } from 'nitro-graphql'
 
 export default createResolver({
   Query: {
