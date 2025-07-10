@@ -198,7 +198,7 @@ async function loadResolvers() {
   return resolvers
 }
 
-// Apollo Sandbox HTML
+// Apollo Sandbox HTML with 1 week cache
 const apolloSandboxHtml = \`<!DOCTYPE html>
 <html lang="en">
 <body style="margin: 0; overflow-x: hidden; overflow-y: hidden">
@@ -216,6 +216,13 @@ new window.EmbeddedSandbox({
 </script>
 </body>
 </html>\`
+
+// Set cache headers for Apollo Sandbox HTML (1 week = 604800 seconds)
+function setApolloSandboxCacheHeaders(event) {
+  setHeader(event, 'Cache-Control', 'public, max-age=604800, s-maxage=604800')
+  setHeader(event, 'Expires', new Date(Date.now() + 604800000).toUTCString())
+  setHeader(event, 'ETag', \`"apollo-sandbox-\${Date.now()}"\`)
+}
 
 // Lazy initialization
 let yoga = null
@@ -287,7 +294,12 @@ export default defineEventHandler(async (event) => {
   // Return response body
   if (response.body) {
     const contentType = response.headers.get('content-type')
-    if (contentType?.includes('text/html') || contentType?.includes('application/json')) {
+    if (contentType?.includes('text/html')) {
+      // Set cache headers for Apollo Sandbox HTML
+      setApolloSandboxCacheHeaders(event)
+      return await response.text()
+    }
+    if (contentType?.includes('application/json')) {
       return await response.text()
     }
     return response.body

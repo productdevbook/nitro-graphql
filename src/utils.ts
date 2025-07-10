@@ -1,40 +1,25 @@
-import type { GraphQLResolveInfo } from 'graphql'
-import type { GraphQLContext } from './context'
-import type { GraphQLSchemaConfig } from './types'
-
-export type ResolverFn<TResult = any, TParent = any, TContext = GraphQLContext, TArgs = any> = (
-  parent: TParent,
-  args: TArgs,
-  context: TContext,
-  info: GraphQLResolveInfo
-) => Promise<TResult> | TResult
-
-export interface ResolverMap {
-  [key: string]: {
-    [key: string]: ResolverFn
-  }
-}
+import type { GraphQLSchemaConfig, Resolvers } from './types'
 
 export function defineGraphQLSchema(config: GraphQLSchemaConfig): GraphQLSchemaConfig {
   return config
 }
 
-export function defineGraphQLResolver<TResolvers extends ResolverMap = ResolverMap>(
-  resolvers: TResolvers,
-): TResolvers {
+export function defineGraphQLResolver(
+  resolvers: Resolvers,
+): Resolvers {
   return resolvers
 }
 
-export function createResolver<TResolvers extends ResolverMap = ResolverMap>(
-  resolvers: TResolvers,
-): TResolvers {
+export function createResolver(
+  resolvers: Resolvers,
+): Resolvers {
   return resolvers
 }
 
 /**
  * Define GraphQL resolvers map
  */
-export function defineGraphQLResolvers(resolvers: ResolverMap): ResolverMap {
+export function defineGraphQLResolvers(resolvers: Resolvers): Resolvers {
   return resolvers
 }
 
