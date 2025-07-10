@@ -80,9 +80,9 @@ export async function setupGraphQLWatcher(nitro: Nitro) {
 
   // Watch specific existing files instead of patterns for better reliability
   const existingFiles = await Promise.all(nitro.options.scanDirs.map(async (scanDir) => {
-    const { globby } = await import('globby')
+    const { glob } = await import('tinyglobby')
     const graphqlDir = join(scanDir, 'graphql')
-    return globby([
+    return glob([
       join(graphqlDir, '**/*.graphql'),
       join(graphqlDir, '**/*.gql'),
       join(graphqlDir, '**/*.{js,mjs,cjs,ts,mts,cts,tsx,jsx}'),

@@ -1,8 +1,8 @@
 import type { Nitro } from 'nitropack/types'
 import { existsSync, readFileSync } from 'node:fs'
 import { consola } from 'consola'
-import { globby } from 'globby'
 import { basename, join, relative } from 'pathe'
+import { glob } from 'tinyglobby'
 
 export interface ResolverInfo {
   path: string
@@ -74,7 +74,7 @@ export async function scanResolverFiles(nitro: Nitro): Promise<ResolverInfo[]> {
       if (!existsSync(graphqlDir))
         return []
 
-      return globby([
+      return glob([
         join(graphqlDir, NITRO_GLOB_PATTERN),
         `!${join(graphqlDir, '**/*.d.ts')}`,
         `!${join(graphqlDir, '**/*.test.*')}`,
@@ -124,7 +124,7 @@ export async function scanGraphQLFilesWithResolvers(nitro: Nitro): Promise<Graph
       if (!existsSync(graphqlDir))
         return []
 
-      return globby([
+      return glob([
         join(graphqlDir, '**/*.graphql'),
         join(graphqlDir, '**/*.gql'),
       ], {

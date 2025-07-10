@@ -30,13 +30,38 @@ async function regenerateClientTypes(nitro: Nitro, options: NitroGraphQLOptions)
       resolvers: {},
     })
 
-    // Client GraphQL file patterns
-    const clientPatterns = options.client.watchPatterns || [
-      join(nitro.options.srcDir, '**/*.graphql'),
-      join(nitro.options.srcDir, '**/*.gql'),
-      // Exclude server GraphQL files
-      `!${join(nitro.options.srcDir, 'graphql/**/*')}`,
-    ]
+    // Framework-specific client GraphQL file patterns
+    const getClientPatterns = () => {
+      if (options.client?.watchPatterns) {
+        return options.client.watchPatterns
+      }
+
+      const basePatterns = [
+        join(nitro.options.srcDir, '**/*.graphql'),
+        join(nitro.options.srcDir, '**/*.gql'),
+        // Exclude server GraphQL files
+        `!${join(nitro.options.srcDir, 'graphql/**/*')}`,
+      ]
+
+      // Add Nuxt-specific patterns
+      if (nitro.options.framework?.name === 'nuxt') {
+        if (options.client?.nuxtPatterns) {
+          // Use user-defined Nuxt patterns
+          basePatterns.unshift(...options.client.nuxtPatterns)
+        }
+        else {
+          // Default patterns for Nuxt.js
+          basePatterns.unshift(
+            join(nitro.options.srcDir, 'app/graphql/**/*.graphql'),
+            join(nitro.options.srcDir, 'app/graphql/**/*.gql'),
+          )
+        }
+      }
+
+      return basePatterns
+    }
+
+    const clientPatterns = getClientPatterns()
 
     // Generate client types using dynamic import
     const { generateClientTypes } = await import('./client-codegen')
@@ -72,21 +97,46 @@ export async function setupClientWatcher(nitro: Nitro, options: NitroGraphQLOpti
 
   // Setting up client file watcher
 
-  // Client GraphQL patterns
-  const clientPatterns = options.client.watchPatterns || [
-    join(nitro.options.srcDir, '**/*.graphql'),
-    join(nitro.options.srcDir, '**/*.gql'),
-  ]
+  // Framework-specific client GraphQL patterns
+  const getClientPatterns = () => {
+    if (options.client?.watchPatterns) {
+      return options.client.watchPatterns
+    }
+
+    const basePatterns = [
+      join(nitro.options.srcDir, '**/*.graphql'),
+      join(nitro.options.srcDir, '**/*.gql'),
+    ]
+
+    // Add Nuxt-specific patterns
+    if (nitro.options.framework?.name === 'nuxt') {
+      if (options.client?.nuxtPatterns) {
+        // Use user-defined Nuxt patterns
+        basePatterns.unshift(...options.client.nuxtPatterns)
+      }
+      else {
+        // Default patterns for Nuxt.js
+        basePatterns.unshift(
+          join(nitro.options.srcDir, 'app/graphql/**/*.graphql'),
+          join(nitro.options.srcDir, 'app/graphql/**/*.gql'),
+        )
+      }
+    }
+
+    return basePatterns
+  }
+
+  const clientPatterns = getClientPatterns()
 
   const generateClientTypesDebounced = debounce(async () => {
     await regenerateClientTypes(nitro, options)
   }, 300)
 
   const { watch } = await import('chokidar')
-  const { globby } = await import('globby')
+  const { glob } = await import('tinyglobby')
 
   // Find existing client GraphQL files
-  const existingClientFiles = await globby(clientPatterns, {
+  const existingClientFiles = await glob(clientPatterns, {
     absolute: true,
     ignore: [join(nitro.options.srcDir, 'graphql/**/*')], // Exclude server files
   })

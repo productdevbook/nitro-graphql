@@ -2,9 +2,11 @@ import { defineConfig } from 'tsdown'
 import { dependencies } from './package.json'
 
 const playground = './playground'
+const playgroundNuxt = './playground/nuxt'
 
 const thisPath = import.meta.url
 const playgroundPath = new URL(playground, thisPath).pathname
+const playgroundNuxtPath = new URL(playgroundNuxt, thisPath).pathname
 
 export default defineConfig({
   entry: [
@@ -31,5 +33,6 @@ export default defineConfig({
   ],
   ignoreWatch: [
     playgroundPath,
+    playgroundNuxtPath,
   ],
 })

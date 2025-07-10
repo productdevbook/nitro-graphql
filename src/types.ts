@@ -26,6 +26,7 @@ export interface NitroGraphQLOptions {
     enabled?: boolean
     outputPath?: string
     watchPatterns?: string[]
+    nuxtPatterns?: string[]
     config?: CodegenClientConfig
   }
   yogaConfig?: Partial<YogaServerOptions<any, any>>

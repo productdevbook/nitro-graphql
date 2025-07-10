@@ -66,15 +66,15 @@
     "chokidar": "^4.0.3",
     "consola": "^3.4.2",
     "defu": "^6.1.4",
-    "globby": "^14.1.0",
     "graphql": "^16.11.0",
     "graphql-scalars": "^1.24.2",
     "graphql-yoga": "^5.14.0",
-    "pathe": "^2.0.3"
+    "pathe": "^2.0.3",
+    "tinyglobby": "^0.2.14"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.16.2",
-    "@types/node": "^20.19.6",
+    "@types/node": "^20.19.7",
     "bumpp": "^10.2.0",
     "changelogen": "^0.6.2",
     "eslint": "^9.30.1",
