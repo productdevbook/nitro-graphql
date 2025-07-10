@@ -148,11 +148,14 @@ globalThis.createResolver = function(resolvers) {
   return resolvers
 }
 
-// Load schema files
-const schemaPath = join('${nitro.options.srcDir}', 'graphql', '**', '*.graphql')
-const typeDefs = loadFilesSync(schemaPath, {
-  recursive: true,
-})
+// Dynamic schema loading function
+async function loadTypeDefs() {
+  const schemaPath = join('${nitro.options.srcDir}', 'graphql', '**', '*.graphql')
+  const { loadFilesSync } = await import('@graphql-tools/load-files')
+  return loadFilesSync(schemaPath, {
+    recursive: true,
+  })
+}
 
 // Load resolvers using dynamic imports (Nitro handles the bundling)
 const resolverImports = [
@@ -229,11 +232,19 @@ let yoga = null
 let initPromise = null
 
 async function getYoga() {
-  if (yoga) return yoga
+  // In development mode, always reload schema for hot updates
+  const isDev = ${nitro.options.dev}
+  if (yoga && !isDev) return yoga
   
-  if (!initPromise) {
+  if (!initPromise || isDev) {
+    // Reset yoga instance in development mode
+    if (isDev) {
+      yoga = null
+    }
+    
     initPromise = (async () => {
       const resolvers = await loadResolvers()
+      const typeDefs = await loadTypeDefs()
       
       // Merge schema and resolvers
       const schema = makeExecutableSchema({
