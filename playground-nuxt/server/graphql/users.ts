@@ -11,7 +11,7 @@ export default createResolver({
     users: () => users,
     user: (_parent, { id }) => users.find(user => user.id === id) || null,
   },
-  
+
   Mutation: {
     createUser: (_parent, { input }) => {
       const newUser = {

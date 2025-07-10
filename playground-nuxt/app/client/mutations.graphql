@@ -1,0 +1,48 @@
+mutation CreateUser($input: CreateUserInput!) {
+  createUser(input: $input) {
+    id
+    name
+    email
+    createdAt
+  }
+}
+
+mutation AddTodo($title: String!) {
+  addTodo(title: $title) {
+    id
+    title
+    completed
+    createdAt
+  }
+}
+
+mutation ToggleTodo($id: ID!) {
+  toggleTodo(id: $id) {
+    id
+    title
+    completed
+    createdAt
+  }
+}
+
+mutation DeleteTodo($id: ID!) {
+  deleteTodo(id: $id)
+}
+
+mutation CreatePost($input: CreatePostInput!) {
+  createPost(input: $input) {
+    id
+    title
+    content
+    authorId
+  }
+}
+
+mutation AddComment($input: AddCommentInput!) {
+  addComment(input: $input) {
+    id
+    content
+    postId
+    authorId
+  }
+}

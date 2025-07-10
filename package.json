@@ -1,7 +1,8 @@
 {
   "name": "nitro-graphql",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.0.1",
+  "packageManager": "pnpm@10.13.1",
   "description": "GraphQL Yoga integration for Nitro",
   "license": "MIT",
   "exports": {
@@ -63,7 +64,7 @@
     "chokidar": "^4.0.3",
     "consola": "^3.4.2",
     "defu": "^6.1.4",
-    "globby": "^14.0.2",
+    "globby": "^14.1.0",
     "graphql": "^16.11.0",
     "graphql-scalars": "^1.24.2",
     "graphql-yoga": "^5.14.0",
@@ -78,6 +79,5 @@
     "nitropack": "^2.11.13",
     "tsdown": "^0.12.9",
     "typescript": "^5.8.3"
-  },
-  "packageManager": "pnpm@10.12.4+sha512.5ea8b0deed94ed68691c9bad4c955492705c5eeb8a87ef86bc62c74a26b037b08ff9570f108b2e4dbd1dd1a9186fea925e527f141c648e85af45631074680184"
+  }
 }

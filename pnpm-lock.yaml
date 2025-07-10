@@ -54,7 +54,7 @@ importers:
         specifier: ^6.1.4
         version: 6.1.4
       globby:
-        specifier: ^14.0.2
+        specifier: ^14.1.0
         version: 14.1.0
       graphql:
         specifier: ^16.11.0

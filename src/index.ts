@@ -14,6 +14,7 @@ const logger = consola.withTag('graphql')
 export default defineNitroModule({
   name: 'nitro:graphql-yoga',
   async setup(nitro: Nitro) {
+    // console.log('Setting up nitro:graphql-yoga module', nitro.options.framework)
     // Get module options from nitro config
     const options: NitroGraphQLOptions = {
       endpoint: '/api/graphql',
