@@ -1,6 +1,6 @@
-import { createResolver } from 'nitro-graphql'
+import { defineResolver } from 'nitro-graphql'
 
-export default createResolver({
+export default defineResolver({
   Mutation: {
     createUser: async (_parent, { input }, context) => {
       // In a real app, you would save to database

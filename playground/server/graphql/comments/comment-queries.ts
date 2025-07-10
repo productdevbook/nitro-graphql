@@ -1,6 +1,6 @@
-import { createResolver } from 'nitro-graphql'
+import { defineResolver } from 'nitro-graphql'
 
-export default createResolver({
+export default defineResolver({
   Query: {
     comments: async (parent, { postId }, context) => {
       return [

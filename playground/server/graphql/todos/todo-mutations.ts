@@ -1,7 +1,7 @@
 import type { Todo } from '#build/graphql-types.generated'
-import { createResolver } from 'nitro-graphql'
+import { defineResolver } from 'nitro-graphql'
 
-export default createResolver({
+export default defineResolver({
   Mutation: {
     addTodo: async (_parent, { title }, { storage }) => {
       const todos = await storage.getItem('todos') || []

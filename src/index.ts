@@ -218,7 +218,7 @@ import { join } from 'pathe'
 // GraphQL Context type is injected via context module
 
 // Create resolver helper
-globalThis.createResolver = function(resolvers) {
+globalThis.defineResolver = function(resolvers) {
   return resolvers
 }
 
@@ -474,12 +474,8 @@ export default defineEventHandler(async (event) => {
       nitro.options.imports.presets.push({
         from: 'nitro-graphql',
         imports: [
-          'createResolver',
-          'defineGraphQLResolver',
-          'defineGraphQLSchema',
-          'defineGraphQLResolvers',
+          'defineResolver',
           'defineYogaConfig',
-          'gql',
         ],
       })
     }
@@ -503,4 +499,4 @@ export default defineEventHandler(async (event) => {
 export * from './codegen'
 export * from './context'
 export * from './types'
-export { createResolver, defineGraphQLResolver, defineYogaConfig } from './utils'
+export { defineResolver, defineGraphQLSchema, defineYogaConfig } from './utils'

@@ -111,9 +111,9 @@ extend type Mutation {
 #### Domain-based Resolver Files
 ```ts
 // server/graphql/users/user-queries.ts
-import { createResolver } from 'nitro-graphql'
+import { defineResolver } from 'nitro-graphql'
 
-export default createResolver({
+export default defineResolver({
   Query: {
     users: async (_, __, { storage }) => {
       return await storage.getItem('users') || []
@@ -128,9 +128,9 @@ export default createResolver({
 
 ```ts
 // server/graphql/users/create-user.ts
-import { createResolver } from 'nitro-graphql'
+import { defineResolver } from 'nitro-graphql'
 
-export default createResolver({
+export default defineResolver({
   Mutation: {
     createUser: async (_, { input }, { storage }) => {
       const users = await storage.getItem('users') || []
@@ -153,9 +153,9 @@ The module provides utilities for better developer experience:
 
 ```ts
 // server/graphql/hello.ts
-import { createResolver } from 'nitro-graphql'
+import { defineResolver } from 'nitro-graphql'
 
-export default createResolver({
+export default defineResolver({
   Query: {
     hello: () => 'Hello World!',
     greeting: (_, { name }) => `Hello ${name}!`
@@ -175,9 +175,9 @@ These types are automatically available in your resolvers:
 ```ts
 import type { QueryResolvers } from '#build/graphql-types.generated'
 // server/graphql/users/user-queries.ts
-import { createResolver } from 'nitro-graphql'
+import { defineResolver } from 'nitro-graphql'
 
-export default createResolver({
+export default defineResolver({
   Query: {
     users: async (_, __, { storage }): Promise<User[]> => {
       return await storage.getItem('users') || []
@@ -222,9 +222,9 @@ The GraphQL context includes:
 
 ```ts
 // Example resolver with full context usage
-import { createResolver } from 'nitro-graphql'
+import { defineResolver } from 'nitro-graphql'
 
-export default createResolver({
+export default defineResolver({
   Query: {
     currentUser: async (_, __, { event, request, storage }) => {
       const token = getCookie(event, 'auth-token')
@@ -380,9 +380,9 @@ export default defineNitroConfig({
 import { GraphQLScalarType } from 'graphql'
 import { Kind } from 'graphql/language'
 // server/graphql/scalars/DateTime.ts
-import { createResolver } from 'nitro-graphql'
+import { defineResolver } from 'nitro-graphql'
 
-export default createResolver({
+export default defineResolver({
   DateTime: new GraphQLScalarType({
     name: 'DateTime',
     serialize: (value: Date) => value.toISOString(),
@@ -401,9 +401,9 @@ export default createResolver({
 
 ```ts
 // server/graphql/users/user-queries.ts
-import { createResolver } from 'nitro-graphql'
+import { defineResolver } from 'nitro-graphql'
 
-export default createResolver({
+export default defineResolver({
   Query: {
     user: async (_, { id }, { storage }) => {
       try {

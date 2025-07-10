@@ -5,13 +5,12 @@ import { mergeTypeDefs } from '@graphql-tools/merge'
 import { makeExecutableSchema } from '@graphql-tools/schema'
 import { consola } from 'consola'
 import { join } from 'pathe'
-// import { generateClientTypes } from './client-codegen' // Conditionally imported to prevent bundling
 import { scanGraphQLFiles } from './scanner'
 import { debounce } from './utils'
 
 const logger = consola.withTag('graphql')
 
-async function regenerateClientTypes(nitro: Nitro, options: NitroGraphQLYogaOptions) {
+async function regenerateClientTypes(nitro: Nitro, options: NitroGraphQLOptions) {
   try {
     if (!options.client?.enabled)
       return

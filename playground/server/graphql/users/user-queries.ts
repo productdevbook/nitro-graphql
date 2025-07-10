@@ -1,5 +1,5 @@
 import type { User } from '#build/graphql-types.generated'
-import { createResolver } from 'nitro-graphql'
+import { defineResolver } from 'nitro-graphql'
 
 // Mock database
 const users: User[] = [
@@ -7,7 +7,7 @@ const users: User[] = [
   { id: '2', name: 'Jane Smith', email: 'jane@example.com', createdAt: new Date('2024-01-02') },
 ]
 
-export default createResolver({
+export default defineResolver({
   Query: {
     users: () => users,
     user: (_parent, { id }) => users.find(user => user.id === id) || null,

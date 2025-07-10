@@ -1,6 +1,6 @@
-import { createResolver } from 'nitro-graphql'
+import { defineResolver } from 'nitro-graphql'
 
-export default createResolver({
+export default defineResolver({
   Query: {
     todos: async (_parent, _args, { storage }) => {
       const todos = await storage.getItem('todos') || []
