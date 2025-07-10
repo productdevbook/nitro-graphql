@@ -1,0 +1,25 @@
+scalar DateTime
+scalar JSON
+
+type Query {
+  hello: String!
+  greeting(name: String!): String!
+  users: [User!]!
+  user(id: ID!): User
+}
+
+type Mutation {
+  createUser(input: CreateUserInput!): User!
+}
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  createdAt: DateTime!
+}
+
+input CreateUserInput {
+  name: String!
+  email: String!
+}

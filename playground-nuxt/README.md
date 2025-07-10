@@ -1,75 +1,92 @@
-# Nuxt Minimal Starter
+# Nuxt + nitro-graphql Example
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+This is a Nuxt.js application demonstrating the integration of the `nitro-graphql` module.
 
-## Setup
+## Features
 
-Make sure to install dependencies:
+- ✅ GraphQL server with automatic type generation
+- ✅ Apollo Sandbox integration
+- ✅ Hot reload in development
+- ✅ Domain-based resolver organization
+- ✅ Health check endpoint
 
+## Getting Started
+
+1. Install dependencies:
 ```bash
-# npm
-npm install
-
-# pnpm
 pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
+2. Start the development server:
 ```bash
-# npm
-npm run dev
-
-# pnpm
 pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
+3. Open your browser and visit:
+   - **Application**: http://localhost:3000
+   - **GraphQL Playground**: http://localhost:3000/api/graphql
+   - **Health Check**: http://localhost:3000/api/graphql/health
 
-Build the application for production:
+## GraphQL Schema
 
-```bash
-# npm
-npm run build
+The GraphQL schema includes:
+- **Queries**: `hello`, `greeting`, `users`, `user`
+- **Mutations**: `createUser`
+- **Types**: `User`, `CreateUserInput`
 
-# pnpm
-pnpm build
+## File Structure
 
-# yarn
-yarn build
-
-# bun
-bun run build
+```
+server/
+├── graphql/
+│   ├── schema.graphql     # Main GraphQL schema
+│   ├── hello.ts          # Hello and greeting resolvers
+│   └── users.ts          # User query and mutation resolvers
 ```
 
-Locally preview production build:
+## Testing
 
-```bash
-# npm
-npm run preview
+You can test the GraphQL API using:
+1. The built-in test interface on the homepage
+2. The Apollo Sandbox at `/api/graphql`
+3. Any GraphQL client like Postman or Insomnia
 
-# pnpm
-pnpm preview
+## Example Queries
 
-# yarn
-yarn preview
-
-# bun
-bun run preview
+### Hello Query
+```graphql
+query {
+  hello
+}
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+### Greeting Query
+```graphql
+query {
+  greeting(name: "World")
+}
+```
+
+### Users Query
+```graphql
+query {
+  users {
+    id
+    name
+    email
+    createdAt
+  }
+}
+```
+
+### Create User Mutation
+```graphql
+mutation {
+  createUser(input: { name: "John Doe", email: "john@example.com" }) {
+    id
+    name
+    email
+    createdAt
+  }
+}
+```
