@@ -5,21 +5,23 @@ import { mergeTypeDefs } from '@graphql-tools/merge'
 import { makeExecutableSchema } from '@graphql-tools/schema'
 import { consola } from 'consola'
 import { join } from 'pathe'
-import { generateClientTypes } from './client-codegen'
+// import { generateClientTypes } from './client-codegen' // Conditionally imported to prevent bundling
 import { scanGraphQLFiles } from './scanner'
 import { debounce } from './utils'
+
+const logger = consola.withTag('graphql')
 
 async function regenerateClientTypes(nitro: Nitro, options: NitroGraphQLYogaOptions) {
   try {
     if (!options.client?.enabled)
       return
 
-    consola.start('[graphql] 🔄 Regenerating client types...')
+    // Regenerating client types silently
 
     // Get the server schema
     const scanResult = await scanGraphQLFiles(nitro)
     if (scanResult.typeDefs.length === 0) {
-      consola.warn('[graphql] ⚠️  No server schema found for client type generation')
+      logger.warn('⚠️  No server schema found for client type generation')
       return
     }
 
@@ -37,7 +39,8 @@ async function regenerateClientTypes(nitro: Nitro, options: NitroGraphQLYogaOpti
       `!${join(nitro.options.srcDir, 'graphql/**/*')}`,
     ]
 
-    // Generate client types
+    // Generate client types using dynamic import
+    const { generateClientTypes } = await import('./client-codegen')
     const generatedTypes = await generateClientTypes(
       schema,
       clientPatterns,
@@ -53,22 +56,22 @@ async function regenerateClientTypes(nitro: Nitro, options: NitroGraphQLYogaOpti
       await mkdir(typesDir, { recursive: true })
       await writeFile(outputPath, generatedTypes)
 
-      consola.success('[graphql] ✨ Client types updated at:', outputPath)
+      logger.success('✨ Client types updated')
     }
   }
   catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
-    consola.error('[graphql] ❌ Client type generation failed:', errorMessage)
+    logger.error('❌ Client type generation failed:', errorMessage)
   }
 }
 
 export async function setupClientWatcher(nitro: Nitro, options: NitroGraphQLYogaOptions) {
   if (!options.client?.enabled) {
-    consola.info('[graphql] 🚫 Client type generation disabled')
+    logger.info('🚫 Client type generation disabled')
     return
   }
 
-  consola.info('[graphql] 🔧 Setting up client file watcher...')
+  // Setting up client file watcher
 
   // Client GraphQL patterns
   const clientPatterns = options.client.watchPatterns || [
@@ -89,12 +92,7 @@ export async function setupClientWatcher(nitro: Nitro, options: NitroGraphQLYoga
     ignore: [join(nitro.options.srcDir, 'graphql/**/*')], // Exclude server files
   })
 
-  if (existingClientFiles.length > 0) {
-    consola.info(`[graphql] 📁 Watching ${existingClientFiles.length} client GraphQL files`)
-  }
-  else {
-    consola.info('[graphql] 📁 No client GraphQL files found to watch')
-  }
+  // Client file watching setup complete
 
   const watchPatterns = existingClientFiles.length > 0 ? existingClientFiles : clientPatterns
 
@@ -109,40 +107,30 @@ export async function setupClientWatcher(nitro: Nitro, options: NitroGraphQLYoga
     binaryInterval: 1000,
   })
 
-  watcher.on('ready', () => {
-    consola.ready('[graphql] 👁️  Client watcher ready')
-  })
-
-  watcher.on('change', (path) => {
-    const fileName = path.split('/').pop()
-    consola.info(`[graphql] 📝 Client file changed: ${fileName}`)
+  watcher.on('change', (_path) => {
     generateClientTypesDebounced()
   })
 
-  watcher.on('add', (path) => {
-    const fileName = path.split('/').pop()
-    consola.info(`[graphql] ➕ Client file added: ${fileName}`)
+  watcher.on('add', (_path) => {
     generateClientTypesDebounced()
   })
 
-  watcher.on('unlink', (path) => {
-    const fileName = path.split('/').pop()
-    consola.info(`[graphql] ➖ Client file removed: ${fileName}`)
+  watcher.on('unlink', (_path) => {
     generateClientTypesDebounced()
   })
 
   watcher.on('error', (error) => {
     const errorMessage = error instanceof Error ? error.message : String(error)
-    consola.error('[graphql] ❌ Client watcher error:', errorMessage)
+    logger.error('❌ Client watcher error:', errorMessage)
   })
 
   nitro.hooks.hook('close', () => {
-    consola.info('[graphql] 🔒 Closing client watcher')
+    logger.info('🔒 Closing client watcher')
     watcher.close()
   })
 
   // Generate initial types
   await generateClientTypesDebounced()
 
-  consola.success('[graphql] ✅ Client watcher ready')
+  logger.success('✅ Client watcher ready')
 }

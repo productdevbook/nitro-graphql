@@ -18,6 +18,7 @@ export default antfu({
 }, {
   rules: {
     'node/prefer-global/process': 'off',
+    'no-new-func': 'off',
   },
 }, {
   files: ['playground/**/*.{ts,js,mjs,cjs}'],

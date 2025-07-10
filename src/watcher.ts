@@ -4,9 +4,11 @@ import { join } from 'node:path'
 import { mergeTypeDefs } from '@graphql-tools/merge'
 import { makeExecutableSchema } from '@graphql-tools/schema'
 import { consola } from 'consola'
-import { generateTypes } from './codegen'
+// import { generateTypes } from './codegen' // Conditionally imported to prevent bundling
 import { scanGraphQLFiles } from './scanner'
 import { debounce } from './utils'
+
+const logger = consola.withTag('graphql')
 
 // Type generation function that can be called from hooks
 async function regenerateGraphQLTypes(nitro: Nitro) {
@@ -15,7 +17,7 @@ async function regenerateGraphQLTypes(nitro: Nitro) {
     const scanResult = await scanGraphQLFiles(nitro)
 
     if (scanResult.typeDefs.length === 0) {
-      consola.warn('[graphql] ⚠️  No schema files found')
+      logger.warn('⚠️  No schema files found')
       return
     }
 
@@ -28,7 +30,8 @@ async function regenerateGraphQLTypes(nitro: Nitro) {
       resolvers: {}, // Empty resolvers for type generation
     })
 
-    // Generate types
+    // Generate types using dynamic import
+    const { generateTypes } = await import('./codegen')
     const generatedTypes = await generateTypes(schema)
 
     // Write to file
@@ -48,11 +51,11 @@ declare module 'nitro-graphql-yoga' {
 `
     await writeFile(graphqlDtsPath, graphqlDtsContent)
 
-    consola.success('[graphql] ✨ Types updated')
+    // Types updated silently
   }
   catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
-    consola.error('[graphql] ❌ Type generation failed:', errorMessage)
+    logger.error('❌ Type generation failed:', errorMessage)
   }
 }
 
@@ -64,11 +67,11 @@ export async function setupGraphQLWatcher(nitro: Nitro) {
     join(dir, 'graphql', '**/*.{js,mjs,cjs,ts,mts,cts,tsx,jsx}'),
   ])
 
-  consola.info('[graphql] 🔧 Setting up file watcher...')
+  // Setup file watcher
 
   // Create debounced function for type generation
   const generateTypesDebounced = debounce(async () => {
-    consola.start('[graphql] 🔄 Regenerating types...')
+    // Regenerate types silently
     await regenerateGraphQLTypes(nitro)
   }, 300)
 
@@ -86,12 +89,7 @@ export async function setupGraphQLWatcher(nitro: Nitro) {
     ], { absolute: true })
   })).then(results => results.flat())
 
-  if (existingFiles.length > 0) {
-    consola.info(`[graphql] 📁 Watching ${existingFiles.length} files`)
-  }
-  else {
-    consola.warn('[graphql] ⚠️  No files found to watch')
-  }
+  // File watching setup complete
 
   const watcher = watch(existingFiles.length > 0 ? existingFiles : watchPatterns, {
     persistent: true,
@@ -104,36 +102,27 @@ export async function setupGraphQLWatcher(nitro: Nitro) {
     binaryInterval: 1000,
   })
 
-  watcher.on('ready', () => {
-    consola.ready('[graphql] 👁️  Watcher ready')
-  })
+  // watcher.on('ready', () => {})
 
-  watcher.on('change', (path) => {
-    const fileName = path.split('/').pop()
-    consola.info(`[graphql] 📝 Changed: ${fileName}`)
+  watcher.on('change', (_path) => {
     generateTypesDebounced()
   })
 
-  watcher.on('add', (path) => {
-    const fileName = path.split('/').pop()
-    consola.info(`[graphql] ➕ Added: ${fileName}`)
+  watcher.on('add', (_path) => {
     generateTypesDebounced()
   })
 
-  watcher.on('unlink', (path) => {
-    const fileName = path.split('/').pop()
-    consola.info(`[graphql] ➖ Removed: ${fileName}`)
+  watcher.on('unlink', (_path) => {
     generateTypesDebounced()
   })
 
   watcher.on('error', (error) => {
     const errorMessage = error instanceof Error ? error.message : String(error)
-    consola.error('[graphql] ❌ Watcher error:', errorMessage)
+    logger.error('❌ Watcher error:', errorMessage)
   })
 
   // Hook into Nitro's lifecycle to clean up watcher
   nitro.hooks.hook('close', () => {
-    consola.info('[graphql] 🔒 Closing watcher')
     watcher.close()
   })
 
@@ -142,5 +131,5 @@ export async function setupGraphQLWatcher(nitro: Nitro) {
     generateTypesDebounced()
   })
 
-  consola.success('[graphql] ✅ Watcher ready')
+  logger.success('✅ Watcher ready')
 }

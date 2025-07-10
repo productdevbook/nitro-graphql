@@ -7,7 +7,14 @@ const thisPath = import.meta.url
 const playgroundPath = new URL(playground, thisPath).pathname
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  entry: [
+    'src/index.ts',
+    'src/codegen.ts',
+    'src/watcher.ts',
+    'src/client-watcher.ts',
+    'src/context.ts',
+    'src/utils.ts',
+  ],
   format: ['esm'],
   dts: true,
   clean: true,
