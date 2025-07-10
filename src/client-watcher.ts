@@ -1,17 +1,18 @@
 import type { Nitro } from 'nitropack/types'
 import type { NitroGraphQLYogaOptions } from './types'
-import { consola } from 'consola'
-import { join } from 'pathe'
 import { mkdir, writeFile } from 'node:fs/promises'
-import { generateClientTypes } from './client-codegen'
-import { scanGraphQLFiles } from './scanner'
 import { mergeTypeDefs } from '@graphql-tools/merge'
 import { makeExecutableSchema } from '@graphql-tools/schema'
+import { consola } from 'consola'
+import { join } from 'pathe'
+import { generateClientTypes } from './client-codegen'
+import { scanGraphQLFiles } from './scanner'
 import { debounce } from './utils'
 
 async function regenerateClientTypes(nitro: Nitro, options: NitroGraphQLYogaOptions) {
   try {
-    if (!options.client?.enabled) return
+    if (!options.client?.enabled)
+      return
 
     consola.start('[graphql] 🔄 Regenerating client types...')
 
@@ -45,16 +46,17 @@ async function regenerateClientTypes(nitro: Nitro, options: NitroGraphQLYogaOpti
     )
 
     if (generatedTypes) {
-      const outputPath = options.client.outputPath || 
-        join(nitro.options.buildDir, 'types', 'graphql-client.generated.ts')
-      
+      const outputPath = options.client.outputPath
+        || join(nitro.options.buildDir, 'types', 'graphql-client.generated.ts')
+
       const typesDir = join(nitro.options.buildDir, 'types')
       await mkdir(typesDir, { recursive: true })
       await writeFile(outputPath, generatedTypes)
 
       consola.success('[graphql] ✨ Client types updated at:', outputPath)
     }
-  } catch (error) {
+  }
+  catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
     consola.error('[graphql] ❌ Client type generation failed:', errorMessage)
   }
@@ -82,14 +84,15 @@ export async function setupClientWatcher(nitro: Nitro, options: NitroGraphQLYoga
   const { globby } = await import('globby')
 
   // Find existing client GraphQL files
-  const existingClientFiles = await globby(clientPatterns, { 
+  const existingClientFiles = await globby(clientPatterns, {
     absolute: true,
-    ignore: [join(nitro.options.srcDir, 'graphql/**/*')] // Exclude server files
+    ignore: [join(nitro.options.srcDir, 'graphql/**/*')], // Exclude server files
   })
 
   if (existingClientFiles.length > 0) {
     consola.info(`[graphql] 📁 Watching ${existingClientFiles.length} client GraphQL files`)
-  } else {
+  }
+  else {
     consola.info('[graphql] 📁 No client GraphQL files found to watch')
   }
 

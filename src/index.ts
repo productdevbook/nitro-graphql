@@ -6,10 +6,10 @@ import { makeExecutableSchema } from '@graphql-tools/schema'
 import { consola } from 'consola'
 import { defineNitroModule } from 'nitropack/kit'
 import { join } from 'pathe'
+import { setupClientWatcher } from './client-watcher'
 import { generateTypes } from './codegen'
 import { scanGraphQLFiles } from './scanner'
 import { setupGraphQLWatcher } from './watcher'
-import { setupClientWatcher } from './client-watcher'
 
 export default defineNitroModule({
   name: 'nitro:graphql-yoga',
@@ -32,7 +32,7 @@ export default defineNitroModule({
           emitLegacyCommonJSImports: false,
           useTypeImports: true,
           enumsAsTypes: true,
-        }
+        },
       },
       // Merge with user config from nitro.options
       ...(nitro.options as any).graphqlYoga,

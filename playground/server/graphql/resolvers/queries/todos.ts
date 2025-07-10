@@ -6,6 +6,7 @@ export default createResolver({
         id: '1',
         title: 'Sample Todo',
         completed: false,
+        createdAt: new Date().toISOString(),
       }]
     },
 

@@ -1,7 +1,7 @@
-import type { YogaServerOptions } from 'graphql-yoga'
-import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { TypeScriptPluginConfig } from '@graphql-codegen/typescript'
 import type { TypeScriptDocumentsPluginConfig } from '@graphql-codegen/typescript-operations'
+import type { YogaServerOptions } from 'graphql-yoga'
+import type { IncomingMessage, ServerResponse } from 'node:http'
 
 export interface GraphQLSchemaConfig {
   typeDefs: string | string[]
@@ -34,7 +34,7 @@ declare module 'nitropack' {
   interface NitroOptions {
     graphqlYoga?: NitroGraphQLYogaOptions
   }
-  
+
   interface NitroRuntimeConfig {
     graphqlYoga?: NitroGraphQLYogaOptions
   }

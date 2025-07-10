@@ -2,8 +2,8 @@ import type { GraphQLSchema } from 'graphql'
 import type { CodegenClientConfig } from './types'
 import { codegen } from '@graphql-codegen/core'
 import { plugin as typescriptPlugin } from '@graphql-codegen/typescript'
-import { plugin as typescriptOperations } from '@graphql-codegen/typescript-operations'
 import { plugin as typescriptGenericSdk } from '@graphql-codegen/typescript-generic-sdk'
+import { plugin as typescriptOperations } from '@graphql-codegen/typescript-operations'
 import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader'
 import { loadDocuments } from '@graphql-tools/load'
 import { printSchemaWithDirectives } from '@graphql-tools/utils'
@@ -30,7 +30,8 @@ async function loadGraphQLDocuments(patterns: string | string[]) {
       loaders: [new GraphQLFileLoader()],
     })
     return result
-  } catch (e: any) {
+  }
+  catch (e: any) {
     if (
       (e.message || '').includes(
         'Unable to find any GraphQL type definitions for the following pointers:',
@@ -38,7 +39,8 @@ async function loadGraphQLDocuments(patterns: string | string[]) {
     ) {
       // No GraphQL files found - this is normal
       return []
-    } else {
+    }
+    else {
       // Re-throw other errors
       throw e
     }
@@ -100,7 +102,8 @@ export async function generateClientTypes(
     })
 
     return output
-  } catch (error) {
+  }
+  catch (error) {
     consola.warn('[graphql] Client type generation failed:', error)
     return ''
   }
