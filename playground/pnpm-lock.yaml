@@ -8,7 +8,7 @@ importers:
 
   .:
     dependencies:
-      nitro-graphql-yoga:
+      nitro-graphql:
         specifier: link:../
         version: link:..
     devDependencies:
