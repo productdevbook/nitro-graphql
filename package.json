@@ -3,8 +3,9 @@
   "type": "module",
   "version": "0.0.1",
   "packageManager": "pnpm@10.13.1",
-  "description": "GraphQL Yoga integration for Nitro",
+  "description": "GraphQL integration for Nitro",
   "license": "MIT",
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -40,7 +41,8 @@
     "prepack": "pnpm build",
     "build": "tsdown",
     "dev": "tsdown --watch",
-    "release": "pnpm run build && changelogen --release && npm publish && git push --follow-tags",
+    "bumpp": "bumpp package.json",
+    "release": "pnpm build && pnpm bumpp && pnpm publish --no-git-checks --access public",
     "playground": "cd playground && pnpm install && pnpm dev",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
@@ -73,11 +75,15 @@
   "devDependencies": {
     "@antfu/eslint-config": "^4.16.2",
     "@types/node": "^20.19.6",
+    "bumpp": "^10.2.0",
     "changelogen": "^0.6.2",
     "eslint": "^9.30.1",
     "h3": "^1.15.3",
     "nitropack": "^2.11.13",
     "tsdown": "^0.12.9",
     "typescript": "^5.8.3"
+  },
+  "resolutions": {
+    "nitro-graphql": "link:."
   }
 }

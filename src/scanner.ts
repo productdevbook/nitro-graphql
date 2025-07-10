@@ -187,7 +187,7 @@ export async function scanForYogaConfig(nitro: Nitro): Promise<string | undefine
   for (const scanDir of nitro.options.scanDirs) {
     const graphqlDir = join(scanDir, 'graphql')
     const configPath = join(graphqlDir, configFileName)
-    
+
     if (existsSync(configPath)) {
       return configPath
     }

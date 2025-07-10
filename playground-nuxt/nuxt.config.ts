@@ -2,12 +2,11 @@
 export default defineNuxtConfig({
   compatibilityDate: '2024-07-01',
   devtools: { enabled: true },
-  
 
   nitro: {
     modules: ['nitro-graphql'],
     experimental: {
-      wasm: true
+      wasm: true,
     },
     // GraphQL Yoga configuration
     graphqlYoga: {
@@ -24,7 +23,7 @@ export default defineNuxtConfig({
           'server/graphql/**/*.gql',
         ],
       },
-    }
+    },
   },
 
 })
