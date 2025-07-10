@@ -1,3 +1,5 @@
+import { createResolver } from 'nitro-graphql-yoga'
+
 export default createResolver({
   Query: {
     hello: () => 'Hello from auto-discovered resolver!',

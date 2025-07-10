@@ -1,3 +1,5 @@
+import { createResolver } from 'nitro-graphql-yoga'
+
 export default createResolver({
   Query: {
     todos: async (_parent, _args, { storage }) => {

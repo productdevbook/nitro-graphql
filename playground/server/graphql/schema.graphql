@@ -4,65 +4,6 @@ scalar JSON
 type Query {
   hello: String!
   greeting(name: String!): String!
-  users: [User!]!
-  user(id: ID!): User
-  todos: [Todo!]!
-  todo(id: ID!): Todo
-  post(id: ID!): Post
-  posts: [Post!]!
-  comments(postId: ID!): [Comment!]!
 }
 
-type Todo {
-  id: ID!
-  title: String!
-  completed: Boolean!
-  createdAt: DateTime!
-}
-
-type User {
-  id: ID!
-  name: String!
-  email: String!
-  createdAt: DateTime!
-}
-
-input CreateUserInput {
-  name: String!
-  email: String!
-}
-
-type Post {
-  id: ID!
-  title: String!
-  content: String!
-  authorId: ID!
-}
-
-type Comment {
-  id: ID!
-  content: String!
-  postId: ID!
-  authorId: ID!
-}
-
-input CreatePostInput {
-  title: String!
-  content: String!
-  authorId: ID!
-}
-
-input AddCommentInput {
-  content: String!
-  postId: ID!
-  authorId: ID!
-}
-
-type Mutation {
-  addTodo(title: String!): Todo!
-  toggleTodo(id: ID!): Todo!
-  deleteTodo(id: ID!): Boolean!
-  createUser(input: CreateUserInput!): User!
-  createPost(input: CreatePostInput!): Post!
-  addComment(input: AddCommentInput!): Comment!
-}
+type Mutation

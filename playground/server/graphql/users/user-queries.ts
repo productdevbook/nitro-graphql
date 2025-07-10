@@ -1,4 +1,5 @@
 import type { User } from '#build/graphql-types.generated'
+import { createResolver } from 'nitro-graphql-yoga'
 
 // Mock database
 const users: User[] = [
@@ -10,5 +11,6 @@ export default createResolver({
   Query: {
     users: () => users,
     user: (_parent, { id }) => users.find(user => user.id === id) || null,
+    allUsers: () => users,
   },
 })

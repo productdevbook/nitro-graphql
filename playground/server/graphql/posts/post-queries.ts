@@ -1,3 +1,5 @@
+import { createResolver } from 'nitro-graphql-yoga'
+
 export default createResolver({
   Query: {
     post: async (parent, { id }, context) => {
@@ -14,17 +16,6 @@ export default createResolver({
         { id: '1', title: 'First Post', content: 'Content 1', authorId: '1' },
         { id: '2', title: 'Second Post', content: 'Content 2', authorId: '2' },
       ]
-    },
-  },
-
-  Mutation: {
-    createPost: async (parent, { input }, context) => {
-      return {
-        id: Date.now().toString(),
-        title: input.title,
-        content: input.content,
-        authorId: input.authorId,
-      }
     },
   },
 })

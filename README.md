@@ -1,17 +1,21 @@
 # Nitro GraphQL Yoga Module
 
-A standalone Nitro module that integrates GraphQL Yoga server into any Nitro application.
+A standalone Nitro module that integrates GraphQL Yoga server into any Nitro application with automatic type generation and file watching.
 
 ## Features
 
 - 🚀 Easy GraphQL server setup with GraphQL Yoga
-- 🔧 Auto-discovery of GraphQL schema files
-- 📝 TypeScript support with type definitions
+- 🔧 Auto-discovery of GraphQL schema and resolver files
+- 📝 Automatic TypeScript type generation from GraphQL schemas
 - 🎮 Apollo Sandbox integration (instead of GraphiQL)
 - 🏥 Built-in health check endpoint
-- 💾 Configurable cache headers for GET requests
+- 💾 Configurable cache headers for better performance
 - 🔌 Works with any Nitro-based application
 - 🎯 Zero-config with sensible defaults
+- 📂 File-based resolver organization
+- 🔄 Hot reload in development mode
+- 📦 Optimized bundle size with dynamic imports
+- 🏷️ Minimal logging with consistent tagging
 
 ## Installation
 
@@ -35,83 +39,108 @@ export default defineNitroConfig({
   modules: ['nitro-graphql-yoga'],
 
   // Optional configuration
-  runtimeConfig: {
-    graphqlYoga: {
-      endpoint: '/api/graphql', // default
-      healthCheckEndpoint: '/api/graphql/health', // default
-      playground: true, // default (Apollo Sandbox)
-      cors: false, // default
-      cacheHeaders: {
-        enabled: true, // default
-        maxAge: 2592000, // default (30 days)
+  graphqlYoga: {
+    endpoint: '/api/graphql', // default
+    playground: true, // default (Apollo Sandbox)
+    cors: false, // default
+    cacheHeaders: {
+      enabled: true, // default
+      maxAge: 604800, // default (1 week)
+    },
+    client: {
+      enabled: false, // default
+      outputPath: undefined, // Will default to .nitro/types/graphql-client.generated.ts
+      watchPatterns: undefined, // Will default to src/**/*.{graphql,gql} excluding server/graphql
+      config: {
+        documentMode: 'string',
+        emitLegacyCommonJSImports: false,
+        useTypeImports: true,
+        enumsAsTypes: true,
       }
     }
   }
 })
 ```
 
-### 2. Create your GraphQL schema
+### 2. Create your GraphQL schema files
 
-The module automatically looks for schema files in these locations:
-- `server/graphql/schema.ts`
-- `server/graphql/index.ts`
-- `graphql/schema.ts`
-- `graphql/index.ts`
+The module automatically scans for GraphQL files in your `graphql/` directory using a domain-driven structure:
 
-Example schema file:
+#### Main Schema File
+```graphql
+# server/graphql/schema.graphql
+scalar DateTime
+scalar JSON
+
+type Query {
+  hello: String!
+  greeting(name: String!): String!
+}
+
+type Mutation
+```
+
+#### Domain-specific Schema Files
+```graphql
+# server/graphql/users/user.graphql
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  createdAt: DateTime!
+}
+
+input CreateUserInput {
+  name: String!
+  email: String!
+}
+
+extend type Query {
+  users: [User!]!
+  user(id: ID!): User
+}
+
+extend type Mutation {
+  createUser(input: CreateUserInput!): User!
+}
+```
+
+#### Domain-based Resolver Files
+```ts
+// server/graphql/users/user-queries.ts
+import { createResolver } from 'nitro-graphql-yoga'
+
+export default createResolver({
+  Query: {
+    users: async (_, __, { storage }) => {
+      return await storage.getItem('users') || []
+    },
+    user: async (_, { id }, { storage }) => {
+      const users = await storage.getItem('users') || []
+      return users.find(user => user.id === id)
+    }
+  }
+})
+```
 
 ```ts
-// server/graphql/schema.ts
-import { makeExecutableSchema } from '@graphql-tools/schema'
+// server/graphql/users/create-user.ts
+import { createResolver } from 'nitro-graphql-yoga'
 
-const typeDefs = `
-  type Query {
-    hello(name: String): String
-    users: [User!]!
-  }
-
-  type User {
-    id: ID!
-    name: String!
-    email: String!
-  }
-
-  type Mutation {
-    createUser(input: CreateUserInput!): User!
-  }
-
-  input CreateUserInput {
-    name: String!
-    email: String!
-  }
-`
-
-const resolvers = {
-  Query: {
-    hello: (_parent, args) => `Hello ${args.name || 'World'}!`,
-    users: async (_, __, { storage }) => {
-      // Access Nitro storage
-      const users = await storage.getItem('users') || []
-      return users
-    },
-  },
+export default createResolver({
   Mutation: {
     createUser: async (_, { input }, { storage }) => {
       const users = await storage.getItem('users') || []
       const user = {
         id: Date.now().toString(),
         ...input,
+        createdAt: new Date()
       }
       users.push(user)
       await storage.setItem('users', users)
       return user
-    },
-  },
-}
-
-export const schema = makeExecutableSchema({
-  typeDefs,
-  resolvers,
+    }
+  }
 })
 ```
 
@@ -120,33 +149,94 @@ export const schema = makeExecutableSchema({
 The module provides utilities for better developer experience:
 
 ```ts
-// server/graphql/users.ts
-import { defineGraphQLResolver, gql } from 'nitro-graphql-yoga'
+// server/graphql/hello.ts
+import { createResolver } from 'nitro-graphql-yoga'
 
-export const userTypeDefs = gql`
-  type User {
-    id: ID!
-    name: String!
-  }
-`
-
-export const userResolvers = defineGraphQLResolver({
+export default createResolver({
   Query: {
-    users: async (_, __, { event, storage }) => {
-      // Access H3 event and Nitro storage
-      const auth = getCookie(event, 'auth-token')
-      return storage.getItem('users')
-    },
-  },
+    hello: () => 'Hello World!',
+    greeting: (_, { name }) => `Hello ${name}!`
+  }
 })
+```
+
+### 4. Type Generation
+
+The module automatically generates TypeScript types from your GraphQL schema:
+
+- **Server types**: `.nitro/types/graphql-types.generated.ts`
+- **Type declarations**: `.nitro/types/graphql.d.ts`
+
+These types are automatically available in your resolvers:
+
+```ts
+import type { QueryResolvers } from '#build/graphql-types.generated'
+// server/graphql/users/user-queries.ts
+import { createResolver } from 'nitro-graphql-yoga'
+
+export default createResolver({
+  Query: {
+    users: async (_, __, { storage }): Promise<User[]> => {
+      return await storage.getItem('users') || []
+    }
+  } satisfies QueryResolvers
+})
+```
+
+## File Structure
+
+The module follows a domain-driven file structure:
+
+```
+server/
+├── graphql/
+│   ├── schema.graphql           # Main schema file with scalars and base types
+│   ├── hello.ts                 # Global resolvers
+│   ├── users/
+│   │   ├── user.graphql         # User schema definitions
+│   │   ├── user-queries.ts      # User query resolvers
+│   │   └── create-user.ts       # User mutation resolvers
+│   ├── todos/
+│   │   ├── todo.graphql         # Todo schema definitions
+│   │   ├── todo-queries.ts      # Todo query resolvers
+│   │   └── todo-mutations.ts    # Todo mutation resolvers
+│   ├── posts/
+│   │   ├── post.graphql         # Post schema definitions
+│   │   ├── post-queries.ts      # Post query resolvers
+│   │   └── create-post.ts       # Post mutation resolvers
+│   └── comments/
+│       ├── comment.graphql      # Comment schema definitions
+│       ├── comment-queries.ts   # Comment query resolvers
+│       └── add-comment.ts       # Comment mutation resolvers
 ```
 
 ## Context
 
 The GraphQL context includes:
 - `event`: The H3 event object
-- `request`: The original request
+- `request`: The original request object
 - `storage`: Nitro storage instance
+
+```ts
+// Example resolver with full context usage
+import { createResolver } from 'nitro-graphql-yoga'
+
+export default createResolver({
+  Query: {
+    currentUser: async (_, __, { event, request, storage }) => {
+      const token = getCookie(event, 'auth-token')
+      const userAgent = getHeader(event, 'user-agent')
+
+      if (!token) {
+        throw new Error('Unauthorized')
+      }
+
+      const userId = await verifyToken(token)
+      return await storage.getItem(`user:${userId}`)
+    }
+  }
+})
+```
 
 ## Configuration Options
 
@@ -155,14 +245,11 @@ interface NitroGraphQLYogaOptions {
   // GraphQL endpoint path
   endpoint?: string // default: '/api/graphql'
 
-  // Health check endpoint path
-  healthCheckEndpoint?: string // default: '/api/graphql/health'
-
   // Enable/disable Apollo Sandbox
   playground?: boolean // default: true
 
   // CORS configuration
-  cors?: {
+  cors?: boolean | {
     origin?: string | string[] | boolean
     credentials?: boolean
     methods?: string[]
@@ -171,102 +258,122 @@ interface NitroGraphQLYogaOptions {
   // Cache headers configuration
   cacheHeaders?: {
     enabled?: boolean // default: true
-    maxAge?: number // default: 2592000 (30 days)
+    maxAge?: number // default: 604800 (1 week)
+  }
+
+  // Client type generation
+  client?: {
+    enabled?: boolean // default: false
+    outputPath?: string // default: buildDir/types/graphql-client.generated.ts
+    watchPatterns?: string[] // default: src/**/*.{graphql,gql} excluding server/graphql
+    config?: {
+      documentMode?: 'string' | 'graphQLTag'
+      emitLegacyCommonJSImports?: boolean
+      useTypeImports?: boolean
+      enumsAsTypes?: boolean
+    }
   }
 }
 ```
+
+## Development Features
+
+### Hot Reload
+The module watches for changes in your GraphQL files and automatically:
+- Regenerates TypeScript types
+- Reloads the GraphQL schema
+- Updates resolvers
+
+### Bundle Optimization
+- Uses dynamic imports to prevent bundling large codegen dependencies
+- Optimized chunk organization for better caching
+- Minimal logging output with consistent `[graphql]` tagging
+
+### Health Check
+Access the health check endpoint at `/api/graphql/health` to verify your GraphQL server status.
 
 ## Advanced Usage
 
-### Custom Configuration
+### Client Type Generation
 
-You can create a custom GraphQL Yoga configuration file. The module will automatically look for it in these locations:
-- `server/graphql/yoga.config.ts`
-- `server/graphql-yoga.config.ts`
-- `graphql/yoga.config.ts`
-- `graphql-yoga.config.ts`
+Enable client type generation for your frontend queries:
 
 ```ts
-// server/graphql/yoga.config.ts
-import type { YogaServerOptions } from 'graphql-yoga'
-import { useCORS } from '@graphql-yoga/plugin-cors'
-import { useResponseCache } from '@graphql-yoga/plugin-response-cache'
-
-export default {
-  // Add custom plugins
-  plugins: [
-    useCORS({
-      origin: process.env.NODE_ENV === 'production' ? 'https://yourdomain.com' : '*',
-      credentials: true,
-    }),
-    useResponseCache({
-      session: () => null,
-      ttl: 60_000, // 1 minute
-    }),
-  ],
-
-  // Override context
-  context: async ({ request }) => {
-    const event = request.$$event
-    const user = await authenticateUser(event)
-
-    return {
-      event,
-      request,
-      storage: useStorage(),
-      user,
-      db: await connectDatabase(),
+// nitro.config.ts
+export default defineNitroConfig({
+  graphqlYoga: {
+    client: {
+      enabled: true,
+      watchPatterns: [
+        'client/**/*.graphql',
+        'pages/**/*.vue',
+        'components/**/*.vue'
+      ]
     }
-  },
-
-  // Custom error handling
-  maskedErrors: {
-    maskError: (error, message, isDev) => {
-      if (error instanceof CustomError) {
-        return error
-      }
-      return maskError(error, message, isDev)
-    },
-  },
-} satisfies Partial<YogaServerOptions<any, any>>
-```
-
-### Custom Context
-
-You can extend the context by modifying your schema:
-
-```ts
-// server/graphql/schema.ts
-export const schema = makeExecutableSchema({
-  typeDefs,
-  resolvers,
-})
-
-// Add custom context enhancer
-export async function enhanceContext(context) {
-  return {
-    ...context,
-    // Add custom context properties
-    db: await connectToDatabase(),
-    user: await authenticateUser(context.event),
   }
-}
-```
-
-### Multiple Schemas
-
-You can compose multiple schemas:
-
-```ts
-// server/graphql/schema.ts
-import { mergeSchemas } from '@graphql-tools/schema'
-import { postSchema } from './posts'
-import { userSchema } from './users'
-
-export const schema = mergeSchemas({
-  schemas: [userSchema, postSchema],
 })
 ```
+
+### Custom Scalars
+
+```ts
+import { GraphQLScalarType } from 'graphql'
+import { Kind } from 'graphql/language'
+// server/graphql/scalars/DateTime.ts
+import { createResolver } from 'nitro-graphql-yoga'
+
+export default createResolver({
+  DateTime: new GraphQLScalarType({
+    name: 'DateTime',
+    serialize: (value: Date) => value.toISOString(),
+    parseValue: (value: string) => new Date(value),
+    parseLiteral: (ast) => {
+      if (ast.kind === Kind.STRING) {
+        return new Date(ast.value)
+      }
+      return null
+    }
+  })
+})
+```
+
+### Error Handling
+
+```ts
+// server/graphql/users/user-queries.ts
+import { createResolver } from 'nitro-graphql-yoga'
+
+export default createResolver({
+  Query: {
+    user: async (_, { id }, { storage }) => {
+      try {
+        const user = await storage.getItem(`user:${id}`)
+        if (!user) {
+          throw new Error(`User with id ${id} not found`)
+        }
+        return user
+      }
+      catch (error) {
+        console.error('[graphql] Error fetching user:', error)
+        throw error
+      }
+    }
+  }
+})
+```
+
+## Performance
+
+### Bundle Size
+The module is optimized for minimal bundle size:
+- Development dependencies are excluded from production builds
+- Uses Function constructor for dynamic imports to prevent bundling
+- Efficient chunk organization
+
+### Caching
+- Built-in cache headers for Apollo Sandbox (1 week)
+- Configurable cache settings
+- Lazy schema initialization
 
 ## License
 

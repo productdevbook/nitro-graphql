@@ -1,3 +1,5 @@
+import { createResolver } from 'nitro-graphql-yoga'
+
 export default createResolver({
   Mutation: {
     createUser: async (_parent, { input }, context) => {
