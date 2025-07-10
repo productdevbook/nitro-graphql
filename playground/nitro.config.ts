@@ -11,5 +11,12 @@ export default defineNitroConfig({
       origin: '*',
       credentials: true,
     },
+    client: {
+      enabled: true,
+      watchPatterns: [
+        'client/**/*.graphql',
+        'client/**/*.gql',
+      ],
+    },
   },
 })

@@ -9,6 +9,7 @@ import { join } from 'pathe'
 import { generateTypes } from './codegen'
 import { scanGraphQLFiles } from './scanner'
 import { setupGraphQLWatcher } from './watcher'
+import { setupClientWatcher } from './client-watcher'
 
 export default defineNitroModule({
   name: 'nitro:graphql-yoga',
@@ -21,6 +22,17 @@ export default defineNitroModule({
       cacheHeaders: {
         enabled: true,
         maxAge: 604800, // 1 week
+      },
+      client: {
+        enabled: false,
+        outputPath: undefined, // Will default to buildDir/types/graphql-client.generated.ts
+        watchPatterns: undefined, // Will default to src/**/*.{graphql,gql} excluding server/graphql
+        config: {
+          documentMode: 'string',
+          emitLegacyCommonJSImports: false,
+          useTypeImports: true,
+          enumsAsTypes: true,
+        }
       },
       // Merge with user config from nitro.options
       ...(nitro.options as any).graphqlYoga,
@@ -110,9 +122,10 @@ declare module 'nitro-graphql-yoga' {
       consola.success('[graphql] Generated types at:', outputPath)
     }
 
-    // Setup file watcher in dev mode
+    // Setup file watchers in dev mode
     if (nitro.options.dev) {
       await setupGraphQLWatcher(nitro)
+      await setupClientWatcher(nitro, options)
     }
 
     // Add GraphQL Yoga handlers
