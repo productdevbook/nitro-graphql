@@ -1,14 +1,14 @@
 {
   "name": "nitro-graphql",
   "type": "module",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "packageManager": "pnpm@10.13.1",
   "description": "GraphQL integration for Nitro",
   "license": "MIT",
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./dist/types.d.ts",
       "import": "./dist/index.js"
     },
     "./codegen": {
@@ -33,11 +33,11 @@
     },
     "./types": {
       "types": "./dist/types.d.ts",
-      "import": "./dist/types.js"
+      "import": "./dist/types.mjs"
     }
   },
   "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/types.d.ts",
   "files": [
     "dist"
   ],

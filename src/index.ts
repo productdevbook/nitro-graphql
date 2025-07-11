@@ -6,16 +6,6 @@ import { dirname, join, resolve } from 'pathe'
 import { devmode } from './dev'
 import { relativeWithDot } from './utils'
 
-declare module 'nitropack' {
-  interface NitroOptions {
-    graphqlYoga?: NitroGraphQLOptions
-  }
-
-  interface NitroRuntimeConfig {
-    graphqlYoga?: NitroGraphQLOptions
-  }
-}
-
 export default defineNitroModule({
   name: 'nitro:graphql-yoga',
   async setup(nitro: Nitro) {

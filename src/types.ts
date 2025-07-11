@@ -3,6 +3,16 @@ import type { TypeScriptDocumentsPluginConfig } from '@graphql-codegen/typescrip
 import type { YogaServerOptions } from 'graphql-yoga'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
+declare module 'nitropack' {
+  interface NitroOptions {
+    graphqlYoga?: NitroGraphQLOptions
+  }
+
+  interface NitroRuntimeConfig {
+    graphqlYoga?: NitroGraphQLOptions
+  }
+}
+
 export interface GraphQLSchemaConfig {
   typeDefs: string | string[]
   resolvers: any
