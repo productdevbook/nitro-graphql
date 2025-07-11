@@ -5,8 +5,8 @@ import { mergeTypeDefs } from '@graphql-tools/merge'
 import { makeExecutableSchema } from '@graphql-tools/schema'
 import { consola } from 'consola'
 import { join } from 'pathe'
-import { scanGraphQLFiles } from './scanner'
 import { generateTypes } from './codegen'
+import { scanGraphQLFiles } from './scanner'
 
 const logger = consola.withTag('graphql')
 

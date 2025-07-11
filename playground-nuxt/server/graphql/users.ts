@@ -1,4 +1,3 @@
-
 // Mock database
 const users = [
   { id: '1', name: 'John Doe', email: 'john@example.com', createdAt: new Date('2024-01-01') },

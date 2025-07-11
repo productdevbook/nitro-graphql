@@ -1,4 +1,3 @@
-
 export default defineResolver({
   Query: {
     post: async (parent, { id }, context) => {

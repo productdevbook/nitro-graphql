@@ -1,4 +1,3 @@
-
 export default defineResolver({
   Query: {
     todos: async (_parent, _args, { storage }) => {

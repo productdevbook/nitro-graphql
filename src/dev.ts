@@ -1,16 +1,16 @@
 import type { Nitro } from 'nitropack'
 import type { NitroGraphQLOptions } from './types'
+import { existsSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { mergeTypeDefs } from '@graphql-tools/merge'
 import { makeExecutableSchema } from '@graphql-tools/schema'
+import { watch } from 'chokidar'
 import { consola } from 'consola'
 import { join } from 'pathe'
-import { scanGraphQLFiles } from './scanner'
-import { debounce } from './utils'
-import { watch } from 'chokidar'
-import { existsSync } from 'node:fs'
 import { setupClientWatcher } from './client-watcher'
 import { generateTypes } from './codegen'
+import { scanGraphQLFiles } from './scanner'
+import { debounce } from './utils'
 
 const logger = consola.withTag('graphql')
 
@@ -62,7 +62,7 @@ declare module 'nitro-graphql' {
   }
 }
 
-export  function devmode(nitro: Nitro, options: NitroGraphQLOptions) {
+export function devmode(nitro: Nitro, options: NitroGraphQLOptions) {
   // Setup file watchers in dev mode - completely excluded from production
   if (nitro.options.dev) {
     // Setup GraphQL watcher using our own chokidar instance
@@ -134,7 +134,6 @@ export  function devmode(nitro: Nitro, options: NitroGraphQLOptions) {
       await graphqlWatcher.close()
       logger.info('🔒 GraphQL watcher closed')
     })
-
 
     setupClientWatcher(nitro, options)
 

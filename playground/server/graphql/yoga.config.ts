@@ -1,4 +1,3 @@
-
 // Custom GraphQL Yoga configuration
 export default defineYogaConfig({
   // Custom context enhancer - adds additional properties to GraphQL context

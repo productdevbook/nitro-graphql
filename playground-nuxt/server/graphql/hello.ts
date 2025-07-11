@@ -1,4 +1,3 @@
-
 export default defineResolver({
   Query: {
     hello: () => 'Hello from Nuxt + GraphQL!',

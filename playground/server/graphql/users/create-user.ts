@@ -1,4 +1,3 @@
-
 export default defineResolver({
   Mutation: {
     createUser: async (_parent, { input }, context) => {

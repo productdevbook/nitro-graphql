@@ -1,4 +1,3 @@
-
 export default defineResolver({
   Mutation: {
     createPost: async (parent, { input }, context) => {

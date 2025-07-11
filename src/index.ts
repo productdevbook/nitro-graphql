@@ -4,6 +4,7 @@ import type { NitroGraphQLOptions } from './types'
 import { defineNitroModule } from 'nitropack/kit'
 import { join } from 'pathe'
 import { devmode } from './dev'
+
 export default defineNitroModule({
   name: 'nitro:graphql-yoga',
   async setup(nitro: Nitro) {
@@ -11,7 +12,6 @@ export default defineNitroModule({
       nitro.options.rollupConfig ??= {} as any
       if (nitro.options.rollupConfig) {
         nitro.options.rollupConfig.plugins ??= []
-
 
         const originalExternal = nitro.options.rollupConfig.external
         nitro.options.rollupConfig.external = (id, parentId, isResolved) => {
@@ -59,7 +59,6 @@ export default defineNitroModule({
       // Fallback to runtimeConfig for backward compatibility
       ...nitro.options.runtimeConfig?.graphqlYoga,
     }
-
 
     if (nitro.options.dev) {
       devmode(nitro, options)
