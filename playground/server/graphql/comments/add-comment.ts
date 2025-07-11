@@ -1,5 +1,3 @@
-import { defineResolver } from 'nitro-graphql'
-
 export default defineResolver({
   Mutation: {
     addComment: async (parent, { input }, context) => {

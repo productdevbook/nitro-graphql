@@ -1,19 +1,39 @@
 import type { Nitro } from 'nitropack/types'
 import type { NitroGraphQLOptions } from './types'
-import { mkdir, writeFile } from 'node:fs/promises'
-import { mergeTypeDefs } from '@graphql-tools/merge'
-import { makeExecutableSchema } from '@graphql-tools/schema'
-import { consola } from 'consola'
+
 import { defineNitroModule } from 'nitropack/kit'
 import { join } from 'pathe'
-// import { generateTypes } from './codegen' // Conditionally imported to prevent bundling
-import { scanGraphQLFiles } from './scanner'
-
-const logger = consola.withTag('graphql')
-
+import { devmode } from './dev'
 export default defineNitroModule({
   name: 'nitro:graphql-yoga',
   async setup(nitro: Nitro) {
+    if (!nitro.options.dev) {
+      nitro.options.rollupConfig ??= {} as any
+      if (nitro.options.rollupConfig) {
+        nitro.options.rollupConfig.plugins ??= []
+
+
+        const originalExternal = nitro.options.rollupConfig.external
+        nitro.options.rollupConfig.external = (id, parentId, isResolved) => {
+          if (id.startsWith('./dev')) {
+            return true
+          }
+          if (id.startsWith('./prerender') && !nitro.options.prerender) {
+            return true
+          }
+
+          // Orijinal external logic'i koru
+          if (typeof originalExternal === 'function') {
+            return originalExternal(id, parentId, isResolved)
+          }
+          if (Array.isArray(originalExternal)) {
+            return originalExternal.includes(id)
+          }
+          return false
+        }
+      }
+    }
+
     // Get module options from nitro config
     const options: NitroGraphQLOptions = {
       endpoint: '/api/graphql',
@@ -39,6 +59,117 @@ export default defineNitroModule({
       // Fallback to runtimeConfig for backward compatibility
       ...nitro.options.runtimeConfig?.graphqlYoga,
     }
+
+
+    if (nitro.options.dev) {
+      devmode(nitro, options)
+    }
+
+    // Add virtual imports
+    nitro.options.virtual ??= {}
+
+    // Add context type
+    nitro.options.virtual['#nitro-graphql/context'] = () => `
+export type { GraphQLContext } from 'nitro-graphql/context'
+`
+
+    // Add GraphQL Yoga handlers
+    nitro.options.handlers = nitro.options.handlers || []
+    const endpoint = options.endpoint || '/api/graphql'
+
+    if (nitro.options.prerender || nitro.options.dev) {
+      const { prerender } = await import('./prerender')
+      await prerender(nitro, options)
+    }
+    // Main GraphQL endpoint
+    nitro.options.handlers.push({
+      route: endpoint,
+      handler: '#nitro-graphql/handler',
+      method: 'get',
+    })
+
+    nitro.options.handlers.push({
+      route: endpoint,
+      handler: '#nitro-graphql/handler',
+      method: 'post',
+    })
+
+    nitro.options.handlers.push({
+      route: endpoint,
+      handler: '#nitro-graphql/handler',
+      method: 'options',
+    })
+
+    // Health check endpoint
+    nitro.options.handlers.push({
+      route: `${endpoint}/health`,
+      handler: '#nitro-graphql/health',
+      method: 'get',
+    })
+
+    // Health check handler
+    nitro.options.virtual['#nitro-graphql/health'] = () => `
+import { defineEventHandler, setResponseStatus } from 'h3'
+
+export default defineEventHandler(async (event) => {
+  try {
+    const response = await $fetch('${endpoint}', {
+      method: 'POST',
+      body: {
+        query: 'query Health { __typename }',
+        operationName: 'Health',
+      },
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    })
+    
+    if (response && typeof response === 'object' && 'data' in response) {
+      return {
+        status: 'healthy',
+        message: 'GraphQL server is running',
+        timestamp: new Date().toISOString(),
+      }
+    }
+    
+    throw new Error('Invalid response from GraphQL server')
+  } catch (error) {
+    setResponseStatus(event, 503)
+    return {
+      status: 'unhealthy',
+      message: error.message || 'GraphQL server is not responding',
+      timestamp: new Date().toISOString(),
+    }
+  }
+})
+`
+
+    // Auto-import utilities
+    if (nitro.options.imports) {
+      nitro.options.imports.presets.push({
+        from: 'nitro-graphql/utils',
+        imports: [
+          'defineResolver',
+          'defineYogaConfig',
+        ],
+      })
+    }
+
+    // Add TypeScript path alias for IDE support
+    nitro.options.typescript ??= {} as any
+    nitro.options.typescript.tsConfig ??= {}
+    nitro.options.typescript.tsConfig.compilerOptions ??= {}
+    nitro.options.typescript.tsConfig.compilerOptions.paths ??= {}
+    nitro.options.typescript.tsConfig.compilerOptions.paths['#build/graphql-types.generated'] = [
+      join(nitro.options.buildDir, 'types', 'graphql-types.generated.ts'),
+    ]
+    nitro.options.typescript.tsConfig.include = nitro.options.typescript.tsConfig.include || []
+    nitro.options.typescript.tsConfig.include.push(
+      join(nitro.options.buildDir, 'types', 'graphql-types.generated.ts'),
+      join(nitro.options.buildDir, 'types', 'graphql.d.ts'),
+    )
+
     // Add GraphQL path to known chunk prefixes
     const graphqlPath = join(nitro.options.srcDir, 'graphql')
 
@@ -93,409 +224,5 @@ export default defineNitroModule({
         return originalChunkFileNames || 'chunks/_/[name].mjs'
       }
     })
-
-    // Add virtual imports
-    nitro.options.virtual ??= {}
-
-    // Add context type
-    nitro.options.virtual['#nitro-graphql/context'] = () => `
-export type { GraphQLContext } from 'nitro-graphql/context'
-`
-
-    // Initial scan
-    const scanResult = await scanGraphQLFiles(nitro)
-
-    // Log resolver discovery for debugging
-    if (scanResult.resolvers.length > 0) {
-      logger.success(`Found ${scanResult.resolvers.length} resolvers`)
-    }
-
-    // Generate types for both development and build modes
-    if (scanResult.typeDefs.length > 0) {
-      const mergedTypeDefs = mergeTypeDefs(scanResult.typeDefs)
-      const schema = makeExecutableSchema({
-        typeDefs: mergedTypeDefs,
-        resolvers: {},
-      })
-
-      // Use Function constructor to prevent bundling in production
-      const { generateTypes } = await (new Function('return import("nitro-graphql/codegen")'))()
-      const generatedTypes = await generateTypes(schema)
-
-      // Write to file
-      const outputPath = join(nitro.options.buildDir, 'types', 'graphql-types.generated.ts')
-      const typesDir = join(nitro.options.buildDir, 'types')
-      await mkdir(typesDir, { recursive: true })
-      await writeFile(outputPath, generatedTypes)
-
-      // Create graphql.d.ts that declares the module
-      const graphqlDtsPath = join(typesDir, 'graphql.d.ts')
-      const graphqlDtsContent = `// Auto-generated by nitro-graphql
-import type { Resolvers as Test } from './graphql-types.generated'
-
-declare module 'nitro-graphql' {
-  interface Resolvers extends Test {}
-}
-`
-      await writeFile(graphqlDtsPath, graphqlDtsContent)
-
-      logger.success('Types generated')
-    }
-    else {
-      // Create minimal types when no schema files found
-      const typesDir = join(nitro.options.buildDir, 'types')
-      await mkdir(typesDir, { recursive: true })
-
-      const minimalTypes = `// Generated by nitro-graphql (no schema found)
-export type Resolvers = any
-`
-      const outputPath = join(typesDir, 'graphql-types.generated.ts')
-      await writeFile(outputPath, minimalTypes)
-
-      const graphqlDtsPath = join(typesDir, 'graphql.d.ts')
-      const graphqlDtsContent = `// Auto-generated by nitro-graphql
-import type { Resolvers as Test } from './graphql-types.generated'
-
-declare module 'nitro-graphql' {
-  interface Resolvers extends Test {}
-}
-`
-      await writeFile(graphqlDtsPath, graphqlDtsContent)
-
-      logger.info('Created minimal types (no schema found)')
-    }
-
-    // Setup file watchers in dev mode - completely excluded from production
-    if (nitro.options.dev) {
-      // Use Function constructor to prevent bundling in production
-      const setupGraphQLWatcher = (await (new Function('return import("nitro-graphql/watcher")'))()).setupGraphQLWatcher
-      const setupClientWatcher = (await (new Function('return import("nitro-graphql/client-watcher")'))()).setupClientWatcher
-      await setupGraphQLWatcher(nitro)
-      await setupClientWatcher(nitro, options)
-    }
-
-    // Add GraphQL Yoga handlers
-    nitro.options.handlers = nitro.options.handlers || []
-    const endpoint = options.endpoint || '/api/graphql'
-
-    // Main GraphQL endpoint
-    nitro.options.handlers.push({
-      route: endpoint,
-      handler: '#nitro-graphql/handler',
-      method: 'get',
-    })
-
-    nitro.options.handlers.push({
-      route: endpoint,
-      handler: '#nitro-graphql/handler',
-      method: 'post',
-    })
-
-    nitro.options.handlers.push({
-      route: endpoint,
-      handler: '#nitro-graphql/handler',
-      method: 'options',
-    })
-
-    // Health check endpoint
-    nitro.options.handlers.push({
-      route: `${endpoint}/health`,
-      handler: '#nitro-graphql/health',
-      method: 'get',
-    })
-
-    // Create GraphQL handler
-    nitro.options.virtual['#nitro-graphql/handler'] = () => `
-import { createYoga } from 'graphql-yoga'
-import { defineEventHandler, readRawBody, setHeader, setResponseStatus } from 'h3'
-import { useStorage } from 'nitro/runtime'
-import { makeExecutableSchema } from '@graphql-tools/schema'
-import { mergeTypeDefs, mergeResolvers } from '@graphql-tools/merge'
-import { join } from 'pathe'
-// Types are generated at build time to .nitro/graphql-types.generated.ts
-
-// GraphQL Context type is injected via context module
-
-// Create resolver helper
-globalThis.defineResolver = function(resolvers) {
-  return resolvers
-}
-
-// Dynamic schema loading function
-async function loadTypeDefs() {
-  const schemaPath = join('${nitro.options.srcDir}', 'graphql', '**', '*.graphql')
-  const { loadFilesSync } = await import('@graphql-tools/load-files')
-  return loadFilesSync(schemaPath, {
-    recursive: true,
-  })
-}
-
-// Load resolvers using dynamic imports (Nitro handles the bundling)
-const resolverImports = [
-${scanResult.resolvers.map(resolver => `  () => import('${resolver.path}')`).join(',\n')}
-]
-
-// Async function to load resolvers
-async function loadResolvers() {
-  let resolvers = {}
-  try {
-    if (resolverImports.length > 0) {
-      const resolverModules = []
-      
-      for (let i = 0; i < resolverImports.length; i++) {
-        try {
-          const resolverModule = await resolverImports[i]()
-          const resolver = resolverModule.default || resolverModule
-          
-          if (resolver) {
-            resolverModules.push(resolver)
-          }
-        } catch (error) {
-          console.warn('[graphql] Failed to load resolver:', i, error.message)
-        }
-      }
-      
-      if (resolverModules.length > 0) {
-        resolvers = mergeResolvers(resolverModules)
-      } else {
-        console.warn('[graphql] No resolvers could be loaded')
-        resolvers = { Query: {}, Mutation: {} }
-      }
-    } else {
-      console.warn('[graphql] No resolvers found')
-      resolvers = { Query: {}, Mutation: {} }
-    }
-  } catch (error) {
-    console.warn('[graphql] Error loading resolvers:', error.message)
-    resolvers = { Query: {}, Mutation: {} }
-  }
-  return resolvers
-}
-
-// Apollo Sandbox HTML with 1 week cache
-const apolloSandboxHtml = \`<!DOCTYPE html>
-<html lang="en">
-<body style="margin: 0; overflow-x: hidden; overflow-y: hidden">
-<div id="sandbox" style="height:100vh; width:100vw;"></div>
-<script src="https://embeddable-sandbox.cdn.apollographql.com/02e2da0fccbe0240ef03d2396d6c98559bab5b06/embeddable-sandbox.umd.production.min.js"></script>
-<script>
-new window.EmbeddedSandbox({
-  target: "#sandbox",
-  initialEndpoint: window.location.href,
-  hideCookieToggle: false,
-  initialState: {
-    includeCookies: true
-  }
-});
-</script>
-</body>
-</html>\`
-
-// Set cache headers for Apollo Sandbox HTML (1 week = 604800 seconds)
-function setApolloSandboxCacheHeaders(event) {
-  setHeader(event, 'Cache-Control', 'public, max-age=604800, s-maxage=604800')
-  setHeader(event, 'Expires', new Date(Date.now() + 604800000).toUTCString())
-  setHeader(event, 'ETag', \`"apollo-sandbox-\${Date.now()}"\`)
-}
-
-// Lazy initialization
-let yoga = null
-let initPromise = null
-
-async function getYoga() {
-  // In development mode, always reload schema for hot updates
-  const isDev = ${nitro.options.dev}
-  if (yoga && !isDev) return yoga
-  
-  if (!initPromise || isDev) {
-    // Reset yoga instance in development mode
-    if (isDev) {
-      yoga = null
-    }
-    
-    initPromise = (async () => {
-      // Load custom yoga config first (separate from resolvers)
-      let customYogaConfig = {}
-      ${scanResult.yogaConfigPath
-        ? `
-      try {
-        const yogaConfigModule = await import('${scanResult.yogaConfigPath}')
-        customYogaConfig = yogaConfigModule.default || yogaConfigModule
-      } catch (error) {
-        console.warn('[graphql] Failed to load yoga config:', error.message)
-      }`
-        : ''}
-
-      const resolvers = await loadResolvers()
-      const typeDefs = await loadTypeDefs()
-      
-      // Merge schema and resolvers (without yoga config interfering)
-      const schema = makeExecutableSchema({
-        typeDefs: mergeTypeDefs(typeDefs),
-        resolvers,
-      })
-
-      // Default yoga configuration
-      const defaultYogaConfig = {
-        schema,
-        context: async ({ request }) => {
-          const event = request.$$event
-          return {
-            event,
-            request,
-            storage: useStorage(),
-          }
-        },
-        graphqlEndpoint: '${endpoint}',
-        graphiql: ${options.playground !== false},
-        renderGraphiQL: () => apolloSandboxHtml,
-        landingPage: false,
-        cors: ${JSON.stringify(options.cors || false)},
-      }
-
-      // Clean up custom config (remove properties that could be mistaken for GraphQL resolvers)
-      const cleanCustomConfig = { ...customYogaConfig }
-      
-      // Remove empty arrays and functions that GraphQL Tools might confuse with resolvers
-      if (Array.isArray(cleanCustomConfig.plugins) && cleanCustomConfig.plugins.length === 0) {
-        delete cleanCustomConfig.plugins
-      }
-      
-      // Remove these yoga-specific configs from resolver merging
-      const yogaOnlyConfigs = ['context', 'plugins', 'maskedErrors', 'graphiql', 'cors']
-      const cleanResolverConfig = { ...cleanCustomConfig }
-      yogaOnlyConfigs.forEach(key => {
-        delete cleanResolverConfig[key]
-      })
-
-      // Merge custom config with defaults
-      const yogaConfig = {
-        ...defaultYogaConfig,
-        ...cleanCustomConfig,
-        // Always override schema and endpoint from default config
-        schema,
-        graphqlEndpoint: '${endpoint}',
-      }
-
-      yoga = createYoga(yogaConfig)
-      
-      return yoga
-    })()
-  }
-  
-  return initPromise
-}
-
-export default defineEventHandler(async (event) => {
-  const { req } = event.node
-  const host = req.headers.host || 'localhost'
-  const protocol = 'http'
-  const url = new URL(req.url || '/', protocol + '://' + host)
-  
-  // Attach event to request for context
-  req.$$event = event
-  
-  const yogaInstance = await getYoga()
-  const response = await yogaInstance.fetch(url.toString(), {
-    method: req.method || 'GET',
-    headers: req.headers,
-    body: req.method !== 'GET' && req.method !== 'HEAD' ? await readRawBody(event) : undefined,
-  }, {
-    event,
-  })
-  
-  // Set response headers
-  response.headers.forEach((value, key) => {
-    setHeader(event, key, value)
-  })
-  
-  // Set status code
-  setResponseStatus(event, response.status)
-  
-  // Return response body
-  if (response.body) {
-    const contentType = response.headers.get('content-type')
-    if (contentType?.includes('text/html')) {
-      // Set cache headers for Apollo Sandbox HTML
-      setApolloSandboxCacheHeaders(event)
-      return await response.text()
-    }
-    if (contentType?.includes('application/json')) {
-      return await response.text()
-    }
-    return response.body
-  }
-  
-  return null
-})
-`
-
-    // Health check handler
-    nitro.options.virtual['#nitro-graphql/health'] = () => `
-import { defineEventHandler, setResponseStatus } from 'h3'
-
-export default defineEventHandler(async (event) => {
-  try {
-    const response = await $fetch('${endpoint}', {
-      method: 'POST',
-      body: {
-        query: 'query Health { __typename }',
-        operationName: 'Health',
-      },
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    })
-    
-    if (response && typeof response === 'object' && 'data' in response) {
-      return {
-        status: 'healthy',
-        message: 'GraphQL server is running',
-        timestamp: new Date().toISOString(),
-      }
-    }
-    
-    throw new Error('Invalid response from GraphQL server')
-  } catch (error) {
-    setResponseStatus(event, 503)
-    return {
-      status: 'unhealthy',
-      message: error.message || 'GraphQL server is not responding',
-      timestamp: new Date().toISOString(),
-    }
-  }
-})
-`
-
-    // Auto-import utilities
-    if (nitro.options.imports) {
-      nitro.options.imports.presets.push({
-        from: 'nitro-graphql',
-        imports: [
-          'defineResolver',
-          'defineYogaConfig',
-        ],
-      })
-    }
-
-    // Add TypeScript path alias for IDE support
-    nitro.options.typescript ??= {} as any
-    nitro.options.typescript.tsConfig ??= {}
-    nitro.options.typescript.tsConfig.compilerOptions ??= {}
-    nitro.options.typescript.tsConfig.compilerOptions.paths ??= {}
-    nitro.options.typescript.tsConfig.compilerOptions.paths['#build/graphql-types.generated'] = [
-      join(nitro.options.buildDir, 'types', 'graphql-types.generated.ts'),
-    ]
-    nitro.options.typescript.tsConfig.include = nitro.options.typescript.tsConfig.include || []
-    nitro.options.typescript.tsConfig.include.push(
-      join(nitro.options.buildDir, 'types', 'graphql-types.generated.ts'),
-      join(nitro.options.buildDir, 'types', 'graphql.d.ts'),
-    )
   },
 })
-
-export * from './codegen'
-export * from './context'
-export * from './types'
-export { defineGraphQLSchema, defineResolver, defineYogaConfig } from './utils'

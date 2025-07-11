@@ -1,5 +1,4 @@
 import type { User } from '#build/graphql-types.generated'
-import { defineResolver } from 'nitro-graphql'
 
 // Mock database
 const users: User[] = [

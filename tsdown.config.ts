@@ -12,7 +12,6 @@ export default defineConfig({
   entry: [
     'src/index.ts',
     'src/codegen.ts',
-    'src/watcher.ts',
     'src/client-watcher.ts',
     'src/context.ts',
     'src/utils.ts',
@@ -27,8 +26,6 @@ export default defineConfig({
     'graphql',
     'graphql-yoga',
     '@graphql-tools/schema',
-    'node:fs',
-    'node:path',
     ...Object.keys(dependencies || {}),
   ],
   ignoreWatch: [

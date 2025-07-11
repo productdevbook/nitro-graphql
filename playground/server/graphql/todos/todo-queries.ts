@@ -1,4 +1,3 @@
-import { defineResolver } from 'nitro-graphql'
 
 export default defineResolver({
   Query: {

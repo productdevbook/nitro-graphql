@@ -1,4 +1,3 @@
-import { defineResolver } from 'nitro-graphql'
 
 // Mock database
 const users = [

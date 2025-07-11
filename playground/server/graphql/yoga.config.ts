@@ -1,4 +1,3 @@
-import { defineYogaConfig } from 'nitro-graphql'
 
 // Custom GraphQL Yoga configuration
 export default defineYogaConfig({

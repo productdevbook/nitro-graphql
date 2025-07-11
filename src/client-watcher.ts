@@ -30,7 +30,7 @@ async function regenerateClientTypes(nitro: Nitro, options: NitroGraphQLOptions)
       resolvers: {},
     })
 
-    // Framework-specific client GraphQL file patterns
+    // Simple client patterns
     const getClientPatterns = () => {
       if (options.client?.watchPatterns) {
         return options.client.watchPatterns
@@ -39,18 +39,15 @@ async function regenerateClientTypes(nitro: Nitro, options: NitroGraphQLOptions)
       const basePatterns = [
         join(nitro.options.srcDir, '**/*.graphql'),
         join(nitro.options.srcDir, '**/*.gql'),
-        // Exclude server GraphQL files
-        `!${join(nitro.options.srcDir, 'graphql/**/*')}`,
+        `!${join(nitro.options.srcDir, 'graphql/**/*')}`, // Exclude server files
       ]
 
       // Add Nuxt-specific patterns
       if (nitro.options.framework?.name === 'nuxt') {
         if (options.client?.nuxtPatterns) {
-          // Use user-defined Nuxt patterns
           basePatterns.unshift(...options.client.nuxtPatterns)
         }
         else {
-          // Default patterns for Nuxt.js
           basePatterns.unshift(
             join(nitro.options.srcDir, 'app/graphql/**/*.graphql'),
             join(nitro.options.srcDir, 'app/graphql/**/*.gql'),
@@ -95,9 +92,7 @@ export async function setupClientWatcher(nitro: Nitro, options: NitroGraphQLOpti
     return
   }
 
-  // Setting up client file watcher
-
-  // Framework-specific client GraphQL patterns
+  // Simple client patterns
   const getClientPatterns = () => {
     if (options.client?.watchPatterns) {
       return options.client.watchPatterns
@@ -111,11 +106,9 @@ export async function setupClientWatcher(nitro: Nitro, options: NitroGraphQLOpti
     // Add Nuxt-specific patterns
     if (nitro.options.framework?.name === 'nuxt') {
       if (options.client?.nuxtPatterns) {
-        // Use user-defined Nuxt patterns
         basePatterns.unshift(...options.client.nuxtPatterns)
       }
       else {
-        // Default patterns for Nuxt.js
         basePatterns.unshift(
           join(nitro.options.srcDir, 'app/graphql/**/*.graphql'),
           join(nitro.options.srcDir, 'app/graphql/**/*.gql'),
@@ -128,58 +121,55 @@ export async function setupClientWatcher(nitro: Nitro, options: NitroGraphQLOpti
 
   const clientPatterns = getClientPatterns()
 
+  // Create debounced function
   const generateClientTypesDebounced = debounce(async () => {
     await regenerateClientTypes(nitro, options)
   }, 300)
 
+  // Use chokidar directly
   const { watch } = await import('chokidar')
-  const { glob } = await import('tinyglobby')
 
-  // Find existing client GraphQL files
-  const existingClientFiles = await glob(clientPatterns, {
-    absolute: true,
-    ignore: [join(nitro.options.srcDir, 'graphql/**/*')], // Exclude server files
-  })
-
-  // Client file watching setup complete
-
-  const watchPatterns = existingClientFiles.length > 0 ? existingClientFiles : clientPatterns
-
-  const watcher = watch(watchPatterns, {
+  const watcher = watch(clientPatterns, {
     persistent: true,
     ignoreInitial: true,
-    ignored: /(^|[/\\])\../,
+    ignored: [
+      /(^|[/\\])\.\.\./, // ignore dotfiles
+      join(nitro.options.srcDir, 'graphql/**/*'), // Exclude server files
+    ],
     followSymlinks: false,
-    depth: 10,
     usePolling: true,
-    interval: 1000,
-    binaryInterval: 1000,
+    interval: 500,
+    binaryInterval: 500,
   })
 
-  watcher.on('change', (_path) => {
+  // Simple event handlers
+  watcher.on('add', (path) => {
+    logger.info(`📁 Client file added: ${path}`)
     generateClientTypesDebounced()
   })
 
-  watcher.on('add', (_path) => {
+  watcher.on('change', (path) => {
+    logger.info(`📝 Client file changed: ${path}`)
     generateClientTypesDebounced()
   })
 
-  watcher.on('unlink', (_path) => {
+  watcher.on('unlink', (path) => {
+    logger.info(`🗑️ Client file removed: ${path}`)
     generateClientTypesDebounced()
   })
 
   watcher.on('error', (error) => {
-    const errorMessage = error instanceof Error ? error.message : String(error)
-    logger.error('❌ Client watcher error:', errorMessage)
+    logger.error('❌ Client watcher error:', error)
   })
 
+  // Cleanup
   nitro.hooks.hook('close', () => {
     logger.info('🔒 Closing client watcher')
     watcher.close()
   })
 
   // Generate initial types
-  await generateClientTypesDebounced()
+  await regenerateClientTypes(nitro, options)
 
   logger.success('✅ Client watcher ready')
 }

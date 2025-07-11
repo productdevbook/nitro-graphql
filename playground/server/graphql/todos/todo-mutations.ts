@@ -1,5 +1,4 @@
 import type { Todo } from '#build/graphql-types.generated'
-import { defineResolver } from 'nitro-graphql'
 
 export default defineResolver({
   Mutation: {
