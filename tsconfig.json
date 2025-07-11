@@ -1,18 +1,28 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022"],
+    "target": "ESNext",
+    "lib": ["ESNext"],
+    "useDefineForClassFields": true,
     "rootDir": "./src",
+    "customConditions": [],
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "paths": {
+      "nitro-graphql/types": ["./src/types"]
+    },
     "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
     "strict": true,
-    "declaration": true,
-    "declarationMap": true,
-    "outDir": "./dist",
+    "noImplicitOverride": true,
+    "noImplicitThis": true,
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
     "skipLibCheck": true
   },
   "include": ["src/**/*"],

@@ -60,9 +60,7 @@ export default defineNitroModule({
       ...nitro.options.runtimeConfig?.graphqlYoga,
     }
 
-    if (nitro.options.dev) {
-      devmode(nitro, options)
-    }
+    devmode(nitro, options)
 
     // Add virtual imports
     nitro.options.virtual ??= {}
@@ -155,19 +153,20 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Add TypeScript path alias for IDE support
-    nitro.options.typescript ??= {} as any
-    nitro.options.typescript.tsConfig ??= {}
-    nitro.options.typescript.tsConfig.compilerOptions ??= {}
-    nitro.options.typescript.tsConfig.compilerOptions.paths ??= {}
-    nitro.options.typescript.tsConfig.compilerOptions.paths['#build/graphql-types.generated'] = [
-      join(nitro.options.buildDir, 'types', 'graphql-types.generated.ts'),
-    ]
-    nitro.options.typescript.tsConfig.include = nitro.options.typescript.tsConfig.include || []
-    nitro.options.typescript.tsConfig.include.push(
-      join(nitro.options.buildDir, 'types', 'graphql-types.generated.ts'),
-      join(nitro.options.buildDir, 'types', 'graphql.d.ts'),
-    )
+    nitro.hooks.hook('types:extend', (types) => {
+      // Add TypeScript path alias for IDE support
+      types.tsConfig ||= {}
+      types.tsConfig.compilerOptions ??= {}
+      types.tsConfig.compilerOptions.paths ??= {}
+      types.tsConfig.compilerOptions.paths['#build/graphql-types.generated'] = [
+        join(nitro.options.buildDir, 'types', 'graphql-types.generated.ts'),
+      ]
+      types.tsConfig.include = types.tsConfig.include || []
+      types.tsConfig.include.push(
+        join(nitro.options.buildDir, 'types', 'graphql-types.generated.ts'),
+        join(nitro.options.buildDir, 'types', 'graphql.d.ts'),
+      )
+    })
 
     // Add GraphQL path to known chunk prefixes
     const graphqlPath = join(nitro.options.srcDir, 'graphql')

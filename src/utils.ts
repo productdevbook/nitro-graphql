@@ -1,5 +1,5 @@
 import type { YogaServerOptions } from 'graphql-yoga'
-import type { GraphQLSchemaConfig, Resolvers } from './types'
+import type { GraphQLSchemaConfig, Resolvers } from 'nitro-graphql/types'
 
 // TODO: check used.
 export function defineGraphQLSchema(config: GraphQLSchemaConfig): GraphQLSchemaConfig {
@@ -10,18 +10,6 @@ export function defineResolver(
   resolvers: Resolvers,
 ): Resolvers {
   return resolvers
-}
-
-export function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number,
-): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | undefined
-
-  return function (...args: Parameters<T>) {
-    clearTimeout(timeout)
-    timeout = setTimeout(() => func(...args), wait)
-  }
 }
 
 /**

@@ -2,7 +2,7 @@ import { defineConfig } from 'tsdown'
 import { dependencies } from './package.json'
 
 const playground = './playground'
-const playgroundNuxt = './playground/nuxt'
+const playgroundNuxt = './playground-nuxt'
 
 const thisPath = import.meta.url
 const playgroundPath = new URL(playground, thisPath).pathname
@@ -15,11 +15,15 @@ export default defineConfig({
     'src/client-watcher.ts',
     'src/context.ts',
     'src/utils.ts',
+    'src/types.ts',
   ],
   format: ['esm'],
   dts: true,
   clean: true,
+  name: 'nitro-graphql',
+  unbundle: true,
   external: [
+    'nitro-graphql/types',
     'nitropack',
     'nitropack/types',
     'nitropack/kit',

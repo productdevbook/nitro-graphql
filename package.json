@@ -1,7 +1,7 @@
 {
   "name": "nitro-graphql",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "packageManager": "pnpm@10.13.1",
   "description": "GraphQL integration for Nitro",
   "license": "MIT",
@@ -30,6 +30,10 @@
     "./utils": {
       "types": "./dist/utils.d.ts",
       "import": "./dist/utils.js"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "import": "./dist/types.js"
     }
   },
   "main": "./dist/index.js",
@@ -70,6 +74,7 @@
     "graphql-scalars": "^1.24.2",
     "graphql-yoga": "^5.14.0",
     "pathe": "^2.0.3",
+    "perfect-debounce": "^1.0.0",
     "tinyglobby": "^0.2.14"
   },
   "devDependencies": {

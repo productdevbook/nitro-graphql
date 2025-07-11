@@ -5,8 +5,8 @@ import { mergeTypeDefs } from '@graphql-tools/merge'
 import { makeExecutableSchema } from '@graphql-tools/schema'
 import { consola } from 'consola'
 import { join } from 'pathe'
+import { debounce } from 'perfect-debounce'
 import { scanGraphQLFiles } from './scanner'
-import { debounce } from './utils'
 
 const logger = consola.withTag('graphql')
 
