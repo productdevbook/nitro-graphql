@@ -32,14 +32,4 @@ export interface NitroGraphQLOptions {
   yogaConfig?: Partial<YogaServerOptions<any, any>>
 }
 
-declare module 'nitropack' {
-  interface NitroOptions {
-    graphqlYoga?: NitroGraphQLOptions
-  }
-
-  interface NitroRuntimeConfig {
-    graphqlYoga?: NitroGraphQLOptions
-  }
-}
-
 export interface Resolvers {}

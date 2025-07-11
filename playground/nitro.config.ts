@@ -1,4 +1,5 @@
 import { defineNitroConfig } from 'nitropack/config'
+// import 'nitro-graphql' // Import for types
 
 export default defineNitroConfig({
   srcDir: 'server',

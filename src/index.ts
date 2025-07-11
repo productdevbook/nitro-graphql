@@ -2,8 +2,19 @@ import type { Nitro } from 'nitropack/types'
 import type { NitroGraphQLOptions } from './types'
 
 import { defineNitroModule } from 'nitropack/kit'
-import { join } from 'pathe'
+import { dirname, join, resolve } from 'pathe'
 import { devmode } from './dev'
+import { relativeWithDot } from './utils'
+
+declare module 'nitropack' {
+  interface NitroOptions {
+    graphqlYoga?: NitroGraphQLOptions
+  }
+
+  interface NitroRuntimeConfig {
+    graphqlYoga?: NitroGraphQLOptions
+  }
+}
 
 export default defineNitroModule({
   name: 'nitro:graphql-yoga',
@@ -153,18 +164,32 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    const tsConfigPath = resolve(
+      nitro.options.buildDir,
+      nitro.options.typescript.tsconfigPath,
+    )
+    const tsconfigDir = dirname(tsConfigPath)
+    const typesDir = resolve(nitro.options.buildDir, 'types')
+
     nitro.hooks.hook('types:extend', (types) => {
       // Add TypeScript path alias for IDE support
       types.tsConfig ||= {}
       types.tsConfig.compilerOptions ??= {}
       types.tsConfig.compilerOptions.paths ??= {}
-      types.tsConfig.compilerOptions.paths['#build/graphql-types.generated'] = [
-        join(nitro.options.buildDir, 'types', 'graphql-types.generated.ts'),
+      // types.tsConfig.compilerOptions.paths['#build/graphql-types.generated'] = [
+      //   join(nitro.options.buildDir, 'types', 'graphql-types.generated.ts'),
+      // ]
+      types.tsConfig.compilerOptions.paths['#graphql/server'] = [
+        relativeWithDot(tsconfigDir, join(typesDir, 'graphql-types.generated.ts')),
+      ]
+      types.tsConfig.compilerOptions.paths['#graphql/client'] = [
+        relativeWithDot(tsconfigDir, join(typesDir, 'graphql-client.generated.ts')),
       ]
       types.tsConfig.include = types.tsConfig.include || []
       types.tsConfig.include.push(
-        join(nitro.options.buildDir, 'types', 'graphql-types.generated.ts'),
-        join(nitro.options.buildDir, 'types', 'graphql.d.ts'),
+        relativeWithDot(tsconfigDir, join(typesDir, 'graphql-client.generated.ts')),
+        relativeWithDot(tsconfigDir, join(typesDir, 'graphql-types.generated.ts')),
+        relativeWithDot(tsconfigDir, join(typesDir, 'graphql.d.ts')),
       )
     })
 
