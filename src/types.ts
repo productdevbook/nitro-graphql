@@ -1,5 +1,6 @@
 import type { TypeScriptPluginConfig } from '@graphql-codegen/typescript'
 import type { TypeScriptDocumentsPluginConfig } from '@graphql-codegen/typescript-operations'
+import type { IResolvers } from '@graphql-tools/utils'
 import type { YogaServerOptions } from 'graphql-yoga'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
@@ -29,6 +30,7 @@ export interface NitroGraphQLOptions {
   playground?: boolean
   cors?: YogaServerOptions<{ req: IncomingMessage, res: ServerResponse }, any>['cors']
   typedefs: string[]
+  resolvers?: Array<IResolvers<any, any>>
   loader?: {
     include?: RegExp
     exclude?: RegExp

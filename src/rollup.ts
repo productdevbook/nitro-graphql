@@ -6,7 +6,8 @@ import { hash } from 'ohash'
 import { scanGraphql } from './utils'
 
 export async function rollupConfig(app: Nitro) {
-  rollupPlugin(app)
+  virtualDefs(app)
+  virtualResolvers(app)
 
   app.hooks.hook('rollup:before', (nitro, rollupConfig) => {
     rollupConfig.plugins = rollupConfig.plugins || []
@@ -93,13 +94,15 @@ export async function rollupConfig(app: Nitro) {
 declare module 'nitropack/types' {
   interface Nitro {
     scanDefs: any
+    scanResolvers: any
   }
 }
 function getImportId(p: string, lazy?: boolean) {
   return (lazy ? '_lazy_' : '_') + hash(p).replace(/-/g, '').slice(0, 6)
 }
-export function rollupPlugin(app: Nitro) {
-  const getHandlers = () => {
+
+export function virtualDefs(app: Nitro) {
+  const getDefs = () => {
     const defs: string[] = [
       ...app.scanDefs,
       ...(app.options.graphqlYoga?.typedefs ?? []),
@@ -110,7 +113,7 @@ export function rollupPlugin(app: Nitro) {
 
   app.options.virtual ??= {}
   app.options.virtual['#nitro-internal-virtual/server-defs'] = () => {
-    const imports = getHandlers()
+    const imports = getDefs()
 
     const code = /* js */`
 ${imports
@@ -127,6 +130,37 @@ ${imports
 ];
     `
 
+    return code
+  }
+}
+
+export function virtualResolvers(app: Nitro) {
+  const getResolvers = () => {
+    const resolvers: string[] = [
+      ...app.scanResolvers,
+      ...(app.options.graphqlYoga?.resolvers ?? []),
+    ]
+
+    return resolvers
+  }
+
+  app.options.virtual ??= {}
+  app.options.virtual['#nitro-internal-virtual/server-resolvers'] = () => {
+    const imports = getResolvers()
+
+    const code = /* js */`
+${imports
+  .map(handler => `import ${getImportId(handler)} from '${handler}';`)
+  .join('\n')}  
+export const resolvers = [
+${imports
+  .map(
+    h =>
+      /* js */ `{ resolver: ${getImportId(h)} }`,
+  )
+  .join(',\n')}
+];
+    `
     return code
   }
 }

@@ -1,6 +1,8 @@
 import type { YogaServerInstance } from 'graphql-yoga'
 import { defs } from '#nitro-internal-virtual/server-defs'
-import { mergeTypeDefs } from '@graphql-tools/merge'
+import { resolvers } from '#nitro-internal-virtual/server-resolvers'
+
+import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge'
 import { createSchema, createYoga } from 'graphql-yoga'
 import { defineEventHandler } from 'h3'
 
@@ -29,24 +31,29 @@ new window.EmbeddedSandbox({
 //   setHeader(event, 'ETag', `"apollo-sandbox-${Date.now()}"`)
 // }
 
+// Schema ve yoga instance'ını build time'da oluştur
+function createMergedSchema() {
+  try {
+    const mergedDefs = defs.map(schema => schema.def).join('\n\n')
+    const typeDefs = mergeTypeDefs([mergedDefs])
+    const mergedResolvers = mergeResolvers(resolvers.map(r => r.resolver))
+
+    return createSchema({
+      typeDefs,
+      resolvers: mergedResolvers,
+    })
+  }
+  catch (error) {
+    console.error('Schema merge error:', error)
+    throw error
+  }
+}
+
 let yoga: YogaServerInstance<object, object>
 
 export default defineEventHandler(async (event) => {
-  const mergedDefs = defs.map(schema => schema.def).join('\n\n')
-
-  const typeDefs = mergeTypeDefs([mergedDefs])
-  // GraphQL şeması ve resolver'ları birlikte tanımla
-  const schema = createSchema({
-    typeDefs,
-    resolvers: {
-      Query: {
-      },
-      Mutation: {
-      },
-    },
-  })
-
   if (!yoga) {
+    const schema = createMergedSchema()
     // Yoga instance'ı henüz oluşturulmadıysa, oluştur
     yoga = createYoga({
       schema,

@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { defineNitroModule } from 'nitropack/kit'
 import { dirname, join, resolve } from 'pathe'
 import { rollupConfig } from './rollup'
-import { relativeWithDot, scanSchema } from './utils'
+import { relativeWithDot, scanDefs, scanResolvers } from './utils'
 
 export default defineNitroModule({
   name: 'nitro:graphql-yoga',
@@ -35,18 +35,21 @@ export default defineNitroModule({
       }
     }
 
+    const defs = await scanDefs(nitro)
+    nitro.scanDefs = defs
+
+    const resolvers = await scanResolvers(nitro)
+    nitro.scanResolvers = resolvers
+
     nitro.hooks.hook('dev:start', async () => {
-      const schemas = await scanSchema(nitro)
-      nitro.scanDefs = schemas
+      const defs = await scanDefs(nitro)
+      nitro.scanDefs = defs
+
+      const resolvers = await scanResolvers(nitro)
+      nitro.scanResolvers = resolvers
     })
 
-    const schemas = await scanSchema(nitro)
     await rollupConfig(nitro)
-
-    nitro.options.virtual['#nitro-internal-virtual/bbbb'] = () => {
-      return /* js */ `export const defs = 'asdas'
-      `
-    }
 
     // Add GraphQL Yoga handlers
     const aendpoint = '/api/graphql'
@@ -73,6 +76,17 @@ export default defineNitroModule({
       handler: join(runtime, 'graphql'),
       method: 'options',
     })
+
+    // Auto-import utilities
+    if (nitro.options.imports) {
+      nitro.options.imports.presets.push({
+        from: 'nitro-graphql/utils',
+        imports: [
+          'defineResolver',
+          'defineYogaConfig',
+        ],
+      })
+    }
 
     return
 

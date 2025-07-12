@@ -33,6 +33,7 @@ export default defineConfig({
     '@graphql-tools/schema',
     'h3',
     '#nitro-internal-virtual/server-defs',
+    '#nitro-internal-virtual/server-resolvers',
     ...Object.keys(dependencies || {}),
   ],
   ignoreWatch: [
