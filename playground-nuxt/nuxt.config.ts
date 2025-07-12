@@ -4,12 +4,11 @@ import 'nitro-graphql/types'
 export default defineNuxtConfig({
   compatibilityDate: '2024-07-01',
   devtools: { enabled: true },
-
+  modules: [
+    'nitro-graphql/nuxt',
+  ],
   nitro: {
     modules: ['nitro-graphql'],
-    experimental: {
-      wasm: true,
-    },
     // GraphQL Yoga configuration
     graphql: {
       endpoint: '/api/graphql',

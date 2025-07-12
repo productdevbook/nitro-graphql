@@ -19,6 +19,7 @@ export default defineConfig({
     'src/routes',
     'src/internal/index.ts',
     'src/graphql.d.ts',
+    'src/ecosystem'
   ],
   format: ['esm'],
   dts: true,
@@ -36,6 +37,8 @@ export default defineConfig({
     'h3',
     '#nitro-internal-virtual/server-defs',
     '#nitro-internal-virtual/server-resolvers',
+    '@nuxt/kit',
+    '@nuxt/schema',
     ...Object.keys(dependencies || {}),
   ],
   ignoreWatch: [

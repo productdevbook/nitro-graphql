@@ -52,8 +52,13 @@ export async function clientTypeGeneration(
     const schema = buildSchema(graphqlString)
 
     const types = await generateClientTypes(schema, docs)
+    if (types === false) {
+      return
+    }
     const clientTypesPath = resolve(app.options.buildDir, 'types', 'nitro-graphql-client.d.ts')
-    writeFileSync(clientTypesPath, types, 'utf-8')
+    const sdkTypesPath = resolve(app.graphql.clientDir, 'sdk.ts')
+    writeFileSync(clientTypesPath, types.types, 'utf-8')
+    writeFileSync(sdkTypesPath, types.sdk, 'utf-8')
   }
   catch (error) {
     consola.error('Client schema generation error:', error)

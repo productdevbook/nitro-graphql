@@ -14,6 +14,7 @@ declare module 'nitropack/types' {
     graphql: {
       buildDir: string
       watchDirs: string[]
+      clientDir: string
     }
   }
 }

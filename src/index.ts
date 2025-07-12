@@ -15,8 +15,9 @@ export default defineNitroModule({
     nitro.graphql ||= {
       buildDir: '',
       watchDirs: [],
+      clientDir: '',
     }
-    
+
     const graphqlBuildDir = resolve(nitro.options.buildDir, 'graphql')
     nitro.graphql.buildDir = graphqlBuildDir
 
@@ -25,6 +26,7 @@ export default defineNitroModule({
     switch (nitro.options.framework.name) {
       case 'nuxt':
         watchDirs.push(join(nitro.options.rootDir, 'app', 'graphql'))
+        nitro.graphql.clientDir = resolve(nitro.options.rootDir, 'app', 'graphql')
         break
       default:
     }

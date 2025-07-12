@@ -3,6 +3,7 @@ import type { Source } from '@graphql-tools/utils'
 import type { GraphQLSchema } from 'graphql'
 import type { CodegenClientConfig } from './types'
 import { codegen } from '@graphql-codegen/core'
+import { preset } from '@graphql-codegen/import-types-preset'
 import { plugin as typescriptPlugin } from '@graphql-codegen/typescript'
 import { plugin as typescriptGenericSdk } from '@graphql-codegen/typescript-generic-sdk'
 import { plugin as typescriptOperations } from '@graphql-codegen/typescript-operations'
@@ -104,7 +105,7 @@ export async function generateClientTypes(
 ) {
   if (docs.length === 0) {
     consola.info('[graphql] No client GraphQL files found. Skipping client type generation.')
-    return ''
+    return false
   }
 
   consola.info(`[graphql] Found ${docs.length} client GraphQL documents`)
@@ -138,20 +139,55 @@ export async function generateClientTypes(
         { pluginContent: {} },
         { typescript: {} },
         { typescriptOperations: {} },
-        { typescriptGenericSdk: { rawRequest: false } },
       ],
       pluginMap: {
         pluginContent: { plugin: pluginContent },
         typescript: { plugin: typescriptPlugin },
         typescriptOperations: { plugin: typescriptOperations },
+      },
+    })
+
+    const sdkOutput = await preset.buildGeneratesSection({
+      baseOutputDir: outputPath || 'client-types.generated.ts',
+      schema: parse(printSchemaWithDirectives(schema)),
+      documents: [...docs],
+      config: {
+        documentMode: 'string',
+        pureMagicComment: true,
+        strictScalars: true,
+        scalars: {
+          DateTime: 'Date',
+        },
+      },
+      presetConfig: {
+        typesPath: '#graphql-client',
+
+      },
+      plugins: [
+        { pluginContent: {} },
+        { typescriptOperations: {} },
+        { typescriptGenericSdk: { rawRequest: false } },
+      ],
+      pluginMap: {
+        pluginContent: { plugin: pluginContent },
+        typescriptOperations: { plugin: typescriptOperations },
         typescriptGenericSdk: { plugin: typescriptGenericSdk },
       },
     })
 
-    return output
+    const results = await Promise.all(
+      sdkOutput.map(async (config) => {
+        return { file: config.filename, content: await codegen(config) }
+      }),
+    )
+
+    return {
+      types: output,
+      sdk: results[0]?.content || '',
+    }
   }
   catch (error) {
     consola.warn('[graphql] Client type generation failed:', error)
-    return ''
+    return false
   }
 }

@@ -38,6 +38,10 @@
     "./internal": {
       "types": "./dist/internal/index.d.ts",
       "import": "./dist/internal/index.js"
+    },
+    "./nuxt": {
+      "types": "./dist/ecosystem/nuxt.d.ts",
+      "import": "./dist/ecosystem/nuxt.js"
     }
   },
   "main": "./dist/index.js",
@@ -85,6 +89,9 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.16.2",
+    "@graphql-codegen/import-types-preset": "^3.0.1",
+    "@nuxt/kit": "4.0.0-rc.0",
+    "@nuxt/schema": "4.0.0-rc.0",
     "@types/node": "^20.19.7",
     "bumpp": "^10.2.0",
     "changelogen": "^0.6.2",
