@@ -1,6 +1,5 @@
 import type { Nitro } from 'nitropack/types'
 
-import { normalize } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineNitroModule } from 'nitropack/kit'
 import { dirname, join, resolve } from 'pathe'
@@ -10,32 +9,6 @@ import { relativeWithDot, scanDefs, scanResolvers } from './utils'
 export default defineNitroModule({
   name: 'nitro:graphql-yoga',
   async setup(nitro: Nitro) {
-    if (!nitro.options.dev) {
-      nitro.options.rollupConfig ??= {} as any
-      if (nitro.options.rollupConfig) {
-        nitro.options.rollupConfig.plugins ??= []
-
-        const originalExternal = nitro.options.rollupConfig.external
-        nitro.options.rollupConfig.external = (id, parentId, isResolved) => {
-          if (id.startsWith('./dev')) {
-            return true
-          }
-          if (id.startsWith('./prerender') && !nitro.options.prerender) {
-            return true
-          }
-
-          // Orijinal external logic'i koru
-          if (typeof originalExternal === 'function') {
-            return originalExternal(id, parentId, isResolved)
-          }
-          if (Array.isArray(originalExternal)) {
-            return originalExternal.includes(id)
-          }
-          return false
-        }
-      }
-    }
-
     const defs = await scanDefs(nitro)
     nitro.scanDefs = defs
 
@@ -89,36 +62,8 @@ export default defineNitroModule({
       })
     }
 
-    // Add GraphQL path to known chunk prefixes
-    const graphqlPath = join(nitro.options.srcDir, 'graphql')
-
     // Access the internal rollup config and add our prefix
     nitro.hooks.hook('rollup:before', (nitro, rollupConfig) => {
-      // Add codegen packages as external dependencies to prevent bundling
-      rollupConfig.external = rollupConfig.external || []
-      const codegenExternals = [
-        '@graphql-codegen/core',
-        '@graphql-codegen/typescript',
-        '@graphql-codegen/typescript-resolvers',
-        '@graphql-codegen/typescript-operations',
-        '@graphql-codegen/typescript-generic-sdk',
-        '@graphql-tools/graphql-file-loader',
-        '@graphql-tools/load',
-      ]
-
-      if (Array.isArray(rollupConfig.external)) {
-        rollupConfig.external.push(...codegenExternals)
-      }
-      else if (typeof rollupConfig.external === 'function') {
-        const originalExternal = rollupConfig.external
-        rollupConfig.external = (id, parent, isResolved) => {
-          if (codegenExternals.some(external => id.includes(external))) {
-            return true
-          }
-          return originalExternal(id, parent, isResolved)
-        }
-      }
-
       const manualChunks = rollupConfig.output?.manualChunks
       const chunkFiles = rollupConfig.output?.chunkFileNames
 
