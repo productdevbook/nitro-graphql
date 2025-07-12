@@ -16,6 +16,7 @@ export default defineConfig({
     'src/context.ts',
     'src/utils.ts',
     'src/types.ts',
+    'src/routes',
   ],
   format: ['esm'],
   dts: true,
@@ -30,6 +31,8 @@ export default defineConfig({
     'graphql',
     'graphql-yoga',
     '@graphql-tools/schema',
+    'h3',
+    '#nitro-internal-virtual/server-defs',
     ...Object.keys(dependencies || {}),
   ],
   ignoreWatch: [

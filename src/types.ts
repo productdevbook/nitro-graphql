@@ -28,6 +28,13 @@ export interface NitroGraphQLOptions {
   healthCheckEndpoint?: string
   playground?: boolean
   cors?: YogaServerOptions<{ req: IncomingMessage, res: ServerResponse }, any>['cors']
+  typedefs: string[]
+  loader?: {
+    include?: RegExp
+    exclude?: RegExp
+    validate?: boolean
+    typescript?: boolean
+  }
   cacheHeaders?: {
     enabled?: boolean
     maxAge?: number

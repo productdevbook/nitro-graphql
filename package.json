@@ -73,6 +73,7 @@
     "graphql": "^16.11.0",
     "graphql-scalars": "^1.24.2",
     "graphql-yoga": "^5.14.0",
+    "ohash": "^2.0.11",
     "pathe": "^2.0.3",
     "perfect-debounce": "^1.0.0",
     "tinyglobby": "^0.2.14"

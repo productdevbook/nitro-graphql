@@ -65,6 +65,9 @@ importers:
       graphql-yoga:
         specifier: ^5.14.0
         version: 5.14.0(graphql@16.11.0)
+      ohash:
+        specifier: ^2.0.11
+        version: 2.0.11
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
