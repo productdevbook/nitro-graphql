@@ -157,6 +157,10 @@ export async function generateClientTypes(
         strictScalars: true,
         scalars: {
           DateTime: 'Date',
+          JSON: 'any',
+          UUID: 'string',
+          NonEmptyString: 'string',
+          Currency: 'string',
         },
       },
       presetConfig: {
