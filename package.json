@@ -28,12 +28,16 @@
       "import": "./dist/context.js"
     },
     "./utils": {
-      "types": "./dist/utils.d.ts",
-      "import": "./dist/utils.js"
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.js"
     },
     "./types": {
       "types": "./dist/types.d.ts",
       "import": "./dist/types.mjs"
+    },
+    "./internal": {
+      "types": "./dist/internal/index.d.ts",
+      "import": "./dist/internal/index.js"
     }
   },
   "main": "./dist/index.js",
@@ -73,6 +77,7 @@
     "graphql": "^16.11.0",
     "graphql-scalars": "^1.24.2",
     "graphql-yoga": "^5.14.0",
+    "ohash": "^2.0.11",
     "pathe": "^2.0.3",
     "perfect-debounce": "^1.0.0",
     "tinyglobby": "^0.2.14"

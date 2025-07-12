@@ -1,3 +1,4 @@
+import type { LoadSchemaOptions, UnnormalizedTypeDefPointer } from '@graphql-tools/load'
 import type { GraphQLSchema } from 'graphql'
 import type { CodegenClientConfig } from './types'
 import { codegen } from '@graphql-codegen/core'
@@ -5,11 +6,21 @@ import { plugin as typescriptPlugin } from '@graphql-codegen/typescript'
 import { plugin as typescriptGenericSdk } from '@graphql-codegen/typescript-generic-sdk'
 import { plugin as typescriptOperations } from '@graphql-codegen/typescript-operations'
 import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader'
-import { loadDocuments } from '@graphql-tools/load'
+import { loadDocuments, loadSchemaSync } from '@graphql-tools/load'
 import { printSchemaWithDirectives } from '@graphql-tools/utils'
 import { consola } from 'consola'
 import { defu } from 'defu'
 import { parse } from 'graphql'
+
+/**
+ * Type definition pointer for GraphQL schemas
+ */
+export type GraphQLTypeDefPointer = UnnormalizedTypeDefPointer | UnnormalizedTypeDefPointer[]
+
+/**
+ * Options for loading GraphQL schemas
+ */
+export type GraphQLLoadSchemaOptions = Partial<LoadSchemaOptions>
 
 function pluginContent(_schema: any, _documents: any, _config: any, _info: any) {
   return {
@@ -24,7 +35,44 @@ function pluginContent(_schema: any, _documents: any, _config: any, _info: any) 
   }
 }
 
-async function loadGraphQLDocuments(patterns: string | string[]) {
+export async function graphQLLoadSchemaSync(
+  schemaPointers: GraphQLTypeDefPointer,
+  data: GraphQLLoadSchemaOptions = {},
+) {
+  // Exclude vfs directory from schema pointers if using globs
+  const pointers = Array.isArray(schemaPointers) ? schemaPointers : [schemaPointers]
+  const filteredPointers = [
+    ...pointers,
+    '!**/vfs/**', // Exclude all files in any vfs directory
+  ]
+  let result: GraphQLSchema | undefined
+  try {
+    result = loadSchemaSync(filteredPointers, {
+      ...data,
+      loaders: [
+        new GraphQLFileLoader(),
+        ...((data.loaders || []) as any[]),
+      ],
+    })
+  }
+  catch (e: any) {
+    if (
+      // https://www.graphql-tools.com/docs/documents-loading#no-files-found
+      (e.message || '').includes(
+        'Unable to find any GraphQL type definitions for the following pointers:',
+      )
+    ) {
+      // Ignore - it's okay if no GraphQL files exist
+      consola.info('No server GraphQL files found. If you need server-side GraphQL, add .graphql files to your server directory.')
+    }
+    else {
+      throw e
+    }
+  }
+  return result
+}
+
+export async function loadGraphQLDocuments(patterns: string | string[]) {
   try {
     const result = await loadDocuments(patterns, {
       loaders: [new GraphQLFileLoader()],

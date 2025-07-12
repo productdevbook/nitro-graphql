@@ -1,8 +1,10 @@
 import type { GraphQLSchema } from 'graphql'
+import type { CodegenServerConfig } from './types'
 import { codegen } from '@graphql-codegen/core'
 import * as typescriptPlugin from '@graphql-codegen/typescript'
 import * as typescriptResolversPlugin from '@graphql-codegen/typescript-resolvers'
 import { printSchemaWithDirectives } from '@graphql-tools/utils'
+import consola from 'consola'
 import { defu } from 'defu'
 import { parse } from 'graphql'
 import {
@@ -12,14 +14,6 @@ import {
   NonEmptyStringResolver,
   UUIDResolver,
 } from 'graphql-scalars'
-
-export interface CodegenServerConfig {
-  contextType?: string
-  scalars?: Record<string, any>
-  defaultMapper?: string
-  mapperTypeSuffix?: string
-  [key: string]: any
-}
 
 function pluginContent(_schema: any, _documents: any, _config: any, _info: any) {
   return {
@@ -127,7 +121,7 @@ type ResolverReturnTypeObject<T extends object> = {
       typescriptResolvers: typescriptResolversPlugin,
     },
   }).catch((e: any) => {
-    console.warn('[nitro-graphql] Code generation error:', e)
+    consola.withTag('graphql').error('Error generating types:', e)
     return ''
   })
 
