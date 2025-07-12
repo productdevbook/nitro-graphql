@@ -16,8 +16,7 @@ export async function rollupConfig(app: Nitro) {
       include = /\.(graphql|gql)$/i,
       exclude,
       validate = false,
-      typescript = false,
-    } = app.options.graphqlYoga?.loader || {}
+    } = app.options.graphql?.loader || {}
 
     if (Array.isArray(rollupConfig.plugins)) {
       rollupConfig.plugins.push({
@@ -65,32 +64,6 @@ export async function rollupConfig(app: Nitro) {
     }
   })
 
-  if (!app.options.dev) {
-    app.options.rollupConfig ??= {} as any
-    if (app.options.rollupConfig) {
-      app.options.rollupConfig.plugins ??= []
-
-      const originalExternal = app.options.rollupConfig.external
-      app.options.rollupConfig.external = (id, parentId, isResolved) => {
-        if (id.startsWith('./dev')) {
-          return true
-        }
-        if (id.startsWith('./prerender') && !app.options.prerender) {
-          return true
-        }
-
-        // Orijinal external logic'i koru
-        if (typeof originalExternal === 'function') {
-          return originalExternal(id, parentId, isResolved)
-        }
-        if (Array.isArray(originalExternal)) {
-          return originalExternal.includes(id)
-        }
-        return false
-      }
-    }
-  }
-
   app.hooks.hook('dev:reload', async () => {
     await serverTypeGeneration(app)
   })
@@ -110,7 +83,7 @@ export function virtualDefs(app: Nitro) {
   const getDefs = () => {
     const defs: string[] = [
       ...app.scanDefs,
-      ...(app.options.graphqlYoga?.typedefs ?? []),
+      ...(app.options.graphql?.typedefs ?? []),
     ]
 
     return defs
@@ -143,7 +116,7 @@ export function virtualResolvers(app: Nitro) {
   const getResolvers = () => {
     const resolvers: string[] = [
       ...app.scanResolvers,
-      ...(app.options.graphqlYoga?.resolvers ?? []),
+      ...(app.options.graphql?.resolvers ?? []),
     ]
 
     return resolvers

@@ -19,7 +19,7 @@ export async function serverTypeGeneration(app: Nitro) {
       assumeValid: true,
     })
 
-    const data = await generateTypes(schema)
+    const data = await generateTypes(schema, app.options.graphql?.codegen?.server ?? {})
 
     writeFileSync(resolve(app.options.buildDir, 'types', 'nitro-graphql-server.d.ts'), data, 'utf-8')
   }

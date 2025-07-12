@@ -1,16 +1,19 @@
 import type { TypeScriptPluginConfig } from '@graphql-codegen/typescript'
 import type { TypeScriptDocumentsPluginConfig } from '@graphql-codegen/typescript-operations'
+import type { TypeScriptResolversPluginConfig } from '@graphql-codegen/typescript-resolvers'
 import type { IResolvers } from '@graphql-tools/utils'
 import type { YogaServerOptions } from 'graphql-yoga'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
+export type CodegenServerConfig = TypeScriptPluginConfig & TypeScriptResolversPluginConfig
+
 declare module 'nitropack' {
   interface NitroOptions {
-    graphqlYoga?: NitroGraphQLOptions
+    graphql?: NitroGraphQLOptions
   }
 
   interface NitroRuntimeConfig {
-    graphqlYoga?: NitroGraphQLOptions
+    graphql?: NitroGraphQLOptions
   }
 }
 
@@ -29,24 +32,26 @@ export interface NitroGraphQLOptions {
   healthCheckEndpoint?: string
   playground?: boolean
   cors?: YogaServerOptions<{ req: IncomingMessage, res: ServerResponse }, any>['cors']
-  typedefs: string[]
+  typedefs?: string[]
   resolvers?: Array<IResolvers<any, any>>
   loader?: {
     include?: RegExp
     exclude?: RegExp
     validate?: boolean
-    typescript?: boolean
   }
   cacheHeaders?: {
     enabled?: boolean
     maxAge?: number
+  }
+  codegen?: {
+    server?: CodegenServerConfig
+    client?: CodegenClientConfig
   }
   client?: {
     enabled?: boolean
     outputPath?: string
     watchPatterns?: string[]
     nuxtPatterns?: string[]
-    config?: CodegenClientConfig
   }
   yogaConfig?: Partial<YogaServerOptions<any, any>>
 }
