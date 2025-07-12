@@ -24,6 +24,7 @@ export default defineConfig({
   dts: true,
   clean: true,
   name: 'nitro-graphql',
+  fixedExtension: true,
   unbundle: true,
   external: [
     'nitro-graphql/types',
