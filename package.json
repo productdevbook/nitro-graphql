@@ -8,41 +8,41 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./dist/index.d.mts",
-      "import": "./dist/index.mjs"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./codegen": {
-      "types": "./dist/codegen.d.mts",
-      "import": "./dist/codegen.mjs"
+      "types": "./dist/codegen.d.ts",
+      "import": "./dist/codegen.js"
     },
     "./watcher": {
-      "types": "./dist/watcher.d.mts",
-      "import": "./dist/watcher.mjs"
+      "types": "./dist/watcher.d.ts",
+      "import": "./dist/watcher.js"
     },
     "./client-watcher": {
-      "types": "./dist/client-watcher.d.mts",
-      "import": "./dist/client-watcher.mjs"
+      "types": "./dist/client-watcher.d.ts",
+      "import": "./dist/client-watcher.js"
     },
     "./context": {
-      "types": "./dist/context.d.mts",
-      "import": "./dist/context.mjs"
+      "types": "./dist/context.d.ts",
+      "import": "./dist/context.js"
     },
     "./utils": {
-      "types": "./dist/utils/index.d.mts",
-      "import": "./dist/utils/index.mjs"
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.js"
     },
     "./types": {
-      "types": "./dist/types.d.mts",
-      "import": "./dist/types.mjs"
+      "types": "./dist/types.d.ts",
+      "import": "./dist/types.js"
     },
     "./internal": {
-      "types": "./dist/internal/index.d.mts",
-      "import": "./dist/internal/index.mjs"
+      "types": "./dist/internal/index.d.ts",
+      "import": "./dist/internal/index.js"
     }
   },
-  "main": "./dist/index.mjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.mts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
@@ -50,7 +50,7 @@
     "prepack": "pnpm build",
     "build": "tsdown",
     "dev": "tsdown --watch",
-    "bumpp": "bumpp package.mjson",
+    "bumpp": "bumpp package.json",
     "release": "pnpm build && pnpm bumpp && pnpm publish --no-git-checks --access public",
     "playground": "cd playground && pnpm install && pnpm dev",
     "lint": "eslint .",

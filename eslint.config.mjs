@@ -21,7 +21,10 @@ export default antfu({
     'no-new-func': 'off',
   },
 }, {
-  files: ['playground/**/*.{ts,js,mjs,cjs}'],
+  files: [
+    'playground/**/*.{ts,js,mjs,cjs}',
+    'playground-nuxt/**/*.{ts,js,mjs,cjs}',
+  ],
   rules: {
     'no-console': 'off',
     'unused-imports/no-unused-vars': 'off',
