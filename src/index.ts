@@ -1,5 +1,6 @@
 import type { Nitro } from 'nitropack/types'
 
+import { normalize } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineNitroModule } from 'nitropack/kit'
 import { dirname, join, resolve } from 'pathe'
@@ -88,37 +89,6 @@ export default defineNitroModule({
       })
     }
 
-    return
-
-    const tsConfigPath = resolve(
-      nitro.options.buildDir,
-      nitro.options.typescript.tsconfigPath,
-    )
-    const tsconfigDir = dirname(tsConfigPath)
-    const typesDir = resolve(nitro.options.buildDir, 'types')
-
-    nitro.hooks.hook('types:extend', (types) => {
-      // Add TypeScript path alias for IDE support
-      types.tsConfig ||= {}
-      types.tsConfig.compilerOptions ??= {}
-      types.tsConfig.compilerOptions.paths ??= {}
-      // types.tsConfig.compilerOptions.paths['#build/graphql-types.generated'] = [
-      //   join(nitro.options.buildDir, 'types', 'graphql-types.generated.ts'),
-      // ]
-      types.tsConfig.compilerOptions.paths['#graphql/server'] = [
-        relativeWithDot(tsconfigDir, join(typesDir, 'graphql-types.generated.ts')),
-      ]
-      types.tsConfig.compilerOptions.paths['#graphql/client'] = [
-        relativeWithDot(tsconfigDir, join(typesDir, 'graphql-client.generated.ts')),
-      ]
-      types.tsConfig.include = types.tsConfig.include || []
-      types.tsConfig.include.push(
-        relativeWithDot(tsconfigDir, join(typesDir, 'graphql-client.generated.ts')),
-        relativeWithDot(tsconfigDir, join(typesDir, 'graphql-types.generated.ts')),
-        relativeWithDot(tsconfigDir, join(typesDir, 'graphql.d.ts')),
-      )
-    })
-
     // Add GraphQL path to known chunk prefixes
     const graphqlPath = join(nitro.options.srcDir, 'graphql')
 
@@ -149,29 +119,73 @@ export default defineNitroModule({
         }
       }
 
-      // Add GraphQL path to chunkNamePrefixes
-      const originalChunkFileNames = rollupConfig.output.chunkFileNames
-      rollupConfig.output.chunkFileNames = (chunk) => {
-        // Only GraphQL resolvers (actual resolver files) should go to graphql folder
-        const allIds = chunk.moduleIds || []
+      const manualChunks = rollupConfig.output?.manualChunks
+      const chunkFiles = rollupConfig.output?.chunkFileNames
 
-        const hasGraphQLResolverFile = allIds.some(id =>
-          // Only server/graphql resolver files (not node_modules, not virtual modules)
-          id.includes(graphqlPath)
-          && !id.includes('node_modules')
-          && !id.includes('#nitro-graphql')
-          && (id.endsWith('.ts') || id.endsWith('.js') || id.endsWith('.mjs')),
-        )
+      rollupConfig.output.manualChunks = (id, meta) => {
+        if (id.endsWith('.graphql') || id.endsWith('.gql')) {
+          return 'schemas'
+        }
 
-        if (hasGraphQLResolverFile) {
+        // resolsvers and defs are not in the same directory, so we need to check both
+        if (id.endsWith('.resolver.ts')) {
+          return 'resolvers'
+        }
+
+        if (typeof manualChunks === 'function') {
+          return manualChunks(id, meta)
+        }
+        // If manualChunks is not a function, do not call it
+        return undefined
+      }
+
+      rollupConfig.output.chunkFileNames = (chunkInfo) => {
+        // GraphQL dosyalarını kontrol et
+        if (chunkInfo.moduleIds && chunkInfo.moduleIds.some(id =>
+          id.includes('/graphql/') || id.includes('.graphql') || id.includes('.resolver.ts') || id.includes('.gql'),
+        )) {
           return `chunks/graphql/[name].mjs`
         }
+
         // Use original logic for other chunks
-        if (typeof originalChunkFileNames === 'function') {
-          return originalChunkFileNames(chunk)
+        if (typeof chunkFiles === 'function') {
+          return chunkFiles(chunkInfo)
         }
-        return originalChunkFileNames || 'chunks/_/[name].mjs'
+
+        // Unknown path
+        return `chunks/_/[name].mjs`
       }
+    })
+
+    return
+
+    const tsConfigPath = resolve(
+      nitro.options.buildDir,
+      nitro.options.typescript.tsconfigPath,
+    )
+    const tsconfigDir = dirname(tsConfigPath)
+    const typesDir = resolve(nitro.options.buildDir, 'types')
+
+    nitro.hooks.hook('types:extend', (types) => {
+      // Add TypeScript path alias for IDE support
+      types.tsConfig ||= {}
+      types.tsConfig.compilerOptions ??= {}
+      types.tsConfig.compilerOptions.paths ??= {}
+      // types.tsConfig.compilerOptions.paths['#build/graphql-types.generated'] = [
+      //   join(nitro.options.buildDir, 'types', 'graphql-types.generated.ts'),
+      // ]
+      types.tsConfig.compilerOptions.paths['#graphql/server'] = [
+        relativeWithDot(tsconfigDir, join(typesDir, 'graphql-types.generated.ts')),
+      ]
+      types.tsConfig.compilerOptions.paths['#graphql/client'] = [
+        relativeWithDot(tsconfigDir, join(typesDir, 'graphql-client.generated.ts')),
+      ]
+      types.tsConfig.include = types.tsConfig.include || []
+      types.tsConfig.include.push(
+        relativeWithDot(tsconfigDir, join(typesDir, 'graphql-client.generated.ts')),
+        relativeWithDot(tsconfigDir, join(typesDir, 'graphql-types.generated.ts')),
+        relativeWithDot(tsconfigDir, join(typesDir, 'graphql.d.ts')),
+      )
     })
   },
 })
