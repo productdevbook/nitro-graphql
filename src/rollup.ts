@@ -52,13 +52,23 @@ export async function rollupConfig(app: Nitro) {
         name: 'nitro-graphql-watcher',
         async buildStart() {
           const graphqlFiles = await scanGraphql(nitro)
+          // const clientGraphqlFiles = await scanClient(nitro)
 
           for (const file of graphqlFiles) {
             this.addWatchFile(file)
           }
 
+          // for (const file of clientGraphqlFiles) {
+          //   this.addWatchFile(file)
+          // }
+
           // 2. Directory watching (partial çalışır)
           this.addWatchFile('server/graphql/')
+
+          // 3. Client GraphQL files
+          // if (app.options.framework.name === 'nuxt') {
+          //   this.addWatchFile('app/graphql/')
+          // }
         },
       })
     }
@@ -69,12 +79,6 @@ export async function rollupConfig(app: Nitro) {
   })
 }
 
-declare module 'nitropack/types' {
-  interface Nitro {
-    scanDefs: string[]
-    scanResolvers: any
-  }
-}
 function getImportId(p: string, lazy?: boolean) {
   return (lazy ? '_lazy_' : '_') + hash(p).replace(/-/g, '').slice(0, 6)
 }

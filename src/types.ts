@@ -7,6 +7,17 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 
 export type CodegenServerConfig = TypeScriptPluginConfig & TypeScriptResolversPluginConfig
 
+declare module 'nitropack/types' {
+  interface Nitro {
+    scanDefs: string[]
+    scanResolvers: any
+    graphql: {
+      buildDir: string
+      watchDirs: string[]
+    }
+  }
+}
+
 declare module 'nitropack' {
   interface NitroOptions {
     graphql?: NitroGraphQLOptions

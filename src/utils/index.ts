@@ -33,6 +33,16 @@ export function relativeWithDot(from: string, to: string) {
   return RELATIVE_RE.test(rel) ? rel : `./${rel}`
 }
 
+// export async function scanClient(nitro: Nitro) {
+//   if (nitro.options.framework.name === 'nuxt') {
+//     const graphql = join(nitro.options.rootDir, 'app')
+//     const files = await scanDir(nitro, graphql, 'graphql', '**/*.graphql')
+//     return files.map(f => f.fullPath)
+//   }
+
+//   return []
+// }
+
 export async function scanGraphql(nitro: Nitro) {
   const files = await scanFiles(nitro, 'graphql')
   return files.map(f => f.fullPath)

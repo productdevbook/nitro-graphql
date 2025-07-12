@@ -1,4 +1,5 @@
 import type { LoadSchemaOptions, UnnormalizedTypeDefPointer } from '@graphql-tools/load'
+import type { Source } from '@graphql-tools/utils'
 import type { GraphQLSchema } from 'graphql'
 import type { CodegenClientConfig } from './types'
 import { codegen } from '@graphql-codegen/core'
@@ -97,12 +98,10 @@ export async function loadGraphQLDocuments(patterns: string | string[]) {
 
 export async function generateClientTypes(
   schema: GraphQLSchema,
-  patterns: string | string[],
+  docs: Source[],
   config: CodegenClientConfig = {},
   outputPath?: string,
 ) {
-  const docs = await loadGraphQLDocuments(patterns)
-
   if (docs.length === 0) {
     consola.info('[graphql] No client GraphQL files found. Skipping client type generation.')
     return ''

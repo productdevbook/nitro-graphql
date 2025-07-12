@@ -1,16 +1,44 @@
 import type { Nitro } from 'nitropack/types'
-
 import { writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import { watch } from 'chokidar'
 import { defineNitroModule } from 'nitropack/kit'
 import { dirname, join, resolve } from 'pathe'
+
 import { rollupConfig } from './rollup'
 import { relativeWithDot, scanDefs, scanResolvers } from './utils'
-import { serverTypeGeneration } from './utils/server-type-generation'
+import { clientTypeGeneration, serverTypeGeneration } from './utils/server-type-generation'
 
 export default defineNitroModule({
   name: 'nitro-graphql',
   async setup(nitro: Nitro) {
+    nitro.graphql ||= {
+      buildDir: '',
+      watchDirs: [],
+    }
+    
+    const graphqlBuildDir = resolve(nitro.options.buildDir, 'graphql')
+    nitro.graphql.buildDir = graphqlBuildDir
+
+    const watchDirs: string[] = []
+
+    switch (nitro.options.framework.name) {
+      case 'nuxt':
+        watchDirs.push(join(nitro.options.rootDir, 'app', 'graphql'))
+        break
+      default:
+    }
+
+    watch(watchDirs, {
+      persistent: true,
+      ignoreInitial: true,
+      ignored: nitro.options.ignore,
+    }).on('all', async (event, path) => {
+      if (path.endsWith('.graphql') || path.endsWith('.gql')) {
+        await clientTypeGeneration(nitro, path)
+      }
+    })
+
     const tsConfigPath = resolve(
       nitro.options.buildDir,
       nitro.options.typescript.tsconfigPath,
@@ -34,28 +62,27 @@ export default defineNitroModule({
 
     await rollupConfig(nitro)
 
-    // Add GraphQL Yoga handlers
-    const aendpoint = '/api/graphql'
+    const endpoint = '/api/graphql'
 
     const runtime = fileURLToPath(
       new URL('routes', import.meta.url),
     )
     // Main GraphQL endpoint
     nitro.options.handlers.push({
-      route: aendpoint,
+      route: endpoint,
       handler: join(runtime, 'graphql'),
       method: 'get',
     })
 
     // Main GraphQL endpoint
     nitro.options.handlers.push({
-      route: aendpoint,
+      route: endpoint,
       handler: join(runtime, 'graphql'),
       method: 'post',
     })
 
     nitro.options.handlers.push({
-      route: aendpoint,
+      route: endpoint,
       handler: join(runtime, 'graphql'),
       method: 'options',
     })
@@ -133,12 +160,13 @@ declare module 'nitro-graphql/types' {
       types.tsConfig.compilerOptions.paths['#graphql/server'] = [
         relativeWithDot(tsconfigDir, join(typesDir, 'nitro-graphql-server.d.ts')),
       ]
-      // types.tsConfig.compilerOptions.paths['#graphql/client'] = [
-      //   relativeWithDot(tsconfigDir, join(typesDir, 'graphql-client.generated.ts')),
-      // ]
+      types.tsConfig.compilerOptions.paths['#graphql/client'] = [
+        relativeWithDot(tsconfigDir, join(typesDir, 'nitro-graphql-client.d.ts')),
+      ]
       types.tsConfig.include = types.tsConfig.include || []
       types.tsConfig.include.push(
         relativeWithDot(tsconfigDir, join(typesDir, 'nitro-graphql-server.d.ts')),
+        relativeWithDot(tsconfigDir, join(typesDir, 'nitro-graphql-client.d.ts')),
         relativeWithDot(tsconfigDir, join(typesDir, 'graphql.d.ts')),
       )
     })
