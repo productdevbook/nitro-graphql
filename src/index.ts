@@ -5,6 +5,7 @@ import { defineNitroModule } from 'nitropack/kit'
 import { dirname, join, resolve } from 'pathe'
 import { rollupConfig } from './rollup'
 import { relativeWithDot, scanDefs, scanResolvers } from './utils'
+import { serverTypeGeneration } from './utils/server-type-generation'
 
 export default defineNitroModule({
   name: 'nitro:graphql-yoga',
@@ -104,6 +105,7 @@ export default defineNitroModule({
       }
     })
 
+    await serverTypeGeneration(nitro)
     return
 
     const tsConfigPath = resolve(

@@ -28,12 +28,16 @@
       "import": "./dist/context.js"
     },
     "./utils": {
-      "types": "./dist/utils.d.ts",
-      "import": "./dist/utils.js"
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.js"
     },
     "./types": {
       "types": "./dist/types.d.ts",
       "import": "./dist/types.mjs"
+    },
+    "./internal": {
+      "types": "./dist/internal/index.d.ts",
+      "import": "./dist/internal/index.js"
     }
   },
   "main": "./dist/index.js",

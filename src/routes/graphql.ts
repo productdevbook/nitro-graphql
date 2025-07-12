@@ -5,6 +5,8 @@ import { resolvers } from '#nitro-internal-virtual/server-resolvers'
 import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge'
 import { createSchema, createYoga } from 'graphql-yoga'
 import { defineEventHandler } from 'h3'
+// TODO: https://github.com/nitrojs/nitro/issues/3403 if used import this error.
+// import { createMergedSchema } from 'nitro-graphql/internal'
 
 // Apollo Sandbox HTML with 1 week cache
 const apolloSandboxHtml = `<!DOCTYPE html>

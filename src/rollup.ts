@@ -1,9 +1,10 @@
 import type { Nitro } from 'nitropack'
+
 import { readFile } from 'node:fs/promises'
 import { parse } from 'graphql'
 import { hash } from 'ohash'
-
 import { scanGraphql } from './utils'
+import { serverTypeGeneration } from './utils/server-type-generation'
 
 export async function rollupConfig(app: Nitro) {
   virtualDefs(app)
@@ -89,11 +90,15 @@ export async function rollupConfig(app: Nitro) {
       }
     }
   }
+
+  app.hooks.hook('dev:reload', async () => {
+    await serverTypeGeneration(app)
+  })
 }
 
 declare module 'nitropack/types' {
   interface Nitro {
-    scanDefs: any
+    scanDefs: string[]
     scanResolvers: any
   }
 }
