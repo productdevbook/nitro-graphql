@@ -67,21 +67,23 @@ export default defineNitroModule({
       const manualChunks = rollupConfig.output?.manualChunks
       const chunkFiles = rollupConfig.output?.chunkFileNames
 
-      rollupConfig.output.manualChunks = (id, meta) => {
-        if (id.endsWith('.graphql') || id.endsWith('.gql')) {
-          return 'schemas'
-        }
+      if (!rollupConfig.output.inlineDynamicImports) {
+        rollupConfig.output.manualChunks = (id, meta) => {
+          if (id.endsWith('.graphql') || id.endsWith('.gql')) {
+            return 'schemas'
+          }
 
-        // resolsvers and defs are not in the same directory, so we need to check both
-        if (id.endsWith('.resolver.ts')) {
-          return 'resolvers'
-        }
+          // resolsvers and defs are not in the same directory, so we need to check both
+          if (id.endsWith('.resolver.ts')) {
+            return 'resolvers'
+          }
 
-        if (typeof manualChunks === 'function') {
-          return manualChunks(id, meta)
+          if (typeof manualChunks === 'function') {
+            return manualChunks(id, meta)
+          }
+          // If manualChunks is not a function, do not call it
+          return undefined
         }
-        // If manualChunks is not a function, do not call it
-        return undefined
       }
 
       rollupConfig.output.chunkFileNames = (chunkInfo) => {
