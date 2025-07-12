@@ -18,6 +18,7 @@ export default defineConfig({
     'src/types.ts',
     'src/routes',
     'src/internal/index.ts',
+    'src/graphql.d.ts',
   ],
   format: ['esm'],
   dts: true,

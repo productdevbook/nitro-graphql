@@ -9,7 +9,7 @@ import { relativeWithDot, scanDefs, scanResolvers } from './utils'
 import { serverTypeGeneration } from './utils/server-type-generation'
 
 export default defineNitroModule({
-  name: 'nitro:graphql',
+  name: 'nitro-graphql',
   async setup(nitro: Nitro) {
     const tsConfigPath = resolve(
       nitro.options.buildDir,

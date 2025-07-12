@@ -5,7 +5,7 @@ export default defineNitroConfig({
   srcDir: 'server',
   modules: ['nitro-graphql'],
   compatibilityDate: '2025-07-01',
-  graphqlYoga: {
+  graphql: {
     endpoint: '/api/graphql',
     playground: true,
     cors: {

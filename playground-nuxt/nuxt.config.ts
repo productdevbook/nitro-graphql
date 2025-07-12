@@ -1,4 +1,6 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
+// TODO: temporary solution
+import 'nitro-graphql/types'
+
 export default defineNuxtConfig({
   compatibilityDate: '2024-07-01',
   devtools: { enabled: true },
@@ -9,7 +11,7 @@ export default defineNuxtConfig({
       wasm: true,
     },
     // GraphQL Yoga configuration
-    graphqlYoga: {
+    graphql: {
       endpoint: '/api/graphql',
       playground: true,
       cors: {

@@ -15,6 +15,10 @@ declare module 'nitropack' {
   interface NitroRuntimeConfig {
     graphql?: NitroGraphQLOptions
   }
+
+  interface NitroConfig {
+    graphql?: NitroGraphQLOptions
+  }
 }
 
 export interface GraphQLSchemaConfig {
