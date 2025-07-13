@@ -14,9 +14,6 @@ importers:
       '@graphql-codegen/core':
         specifier: ^4.0.2
         version: 4.0.2(graphql@16.11.0)
-      '@graphql-codegen/plugin-helpers':
-        specifier: ^5.1.1
-        version: 5.1.1(graphql@16.11.0)
       '@graphql-codegen/typescript':
         specifier: ^4.1.6
         version: 4.1.6(graphql@16.11.0)
@@ -56,9 +53,6 @@ importers:
       defu:
         specifier: ^6.1.4
         version: 6.1.4
-      graphql:
-        specifier: ^16.11.0
-        version: 16.11.0
       graphql-scalars:
         specifier: ^1.24.2
         version: 1.24.2(graphql@16.11.0)
@@ -71,9 +65,6 @@ importers:
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
-      perfect-debounce:
-        specifier: ^1.0.0
-        version: 1.0.0
       tinyglobby:
         specifier: ^0.2.14
         version: 0.2.14
@@ -102,6 +93,9 @@ importers:
       eslint:
         specifier: ^9.31.0
         version: 9.31.0(jiti@2.4.2)
+      graphql:
+        specifier: ^16.11.0
+        version: 16.11.0
       h3:
         specifier: ^1.15.3
         version: 1.15.3

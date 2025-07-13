@@ -1,7 +1,7 @@
 {
   "name": "nitro-graphql",
   "type": "module",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "packageManager": "pnpm@10.13.1",
   "description": "GraphQL integration for Nitro",
   "license": "MIT",
@@ -61,11 +61,11 @@
     "lint:fix": "eslint . --fix"
   },
   "peerDependencies": {
+    "graphql": "^16.11.0",
     "nitropack": "^2.11.13"
   },
   "dependencies": {
     "@graphql-codegen/core": "^4.0.2",
-    "@graphql-codegen/plugin-helpers": "^5.1.1",
     "@graphql-codegen/typescript": "^4.1.6",
     "@graphql-codegen/typescript-generic-sdk": "^4.0.2",
     "@graphql-codegen/typescript-operations": "^4.6.1",
@@ -79,12 +79,10 @@
     "chokidar": "^4.0.3",
     "consola": "^3.4.2",
     "defu": "^6.1.4",
-    "graphql": "^16.11.0",
     "graphql-scalars": "^1.24.2",
     "graphql-yoga": "^5.15.1",
     "ohash": "^2.0.11",
     "pathe": "^2.0.3",
-    "perfect-debounce": "^1.0.0",
     "tinyglobby": "^0.2.14"
   },
   "devDependencies": {
@@ -96,6 +94,7 @@
     "bumpp": "^10.2.0",
     "changelogen": "^0.6.2",
     "eslint": "^9.31.0",
+    "graphql": "^16.11.0",
     "h3": "^1.15.3",
     "nitropack": "^2.11.13",
     "tsdown": "^0.12.9",
