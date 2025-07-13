@@ -162,10 +162,11 @@ export async function generateClientTypes(
           NonEmptyString: 'string',
           Currency: 'string',
         },
+        useTypeImports: true,
+
       },
       presetConfig: {
         typesPath: '#graphql/client',
-
       },
       plugins: [
         { pluginContent: {} },

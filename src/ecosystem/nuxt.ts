@@ -1,6 +1,6 @@
 import type { VueTSConfig } from '@nuxt/schema'
-import { addImportsDir, defineNuxtModule } from '@nuxt/kit'
-import { join } from 'pathe'
+import { defineNuxtModule } from '@nuxt/kit'
+import { join, resolve } from 'pathe'
 
 export interface ModuleOptions {
 
@@ -14,8 +14,7 @@ export default defineNuxtModule<ModuleOptions>({
       nuxt: '>=3.16.0',
     },
   },
-  defaults: {},
-  setup: (options, nuxt) => {
+  setup: async (_options, nuxt) => {
     nuxt.hooks.hook('prepare:types', (options) => {
       options.references.push({ path: 'types/nitro-graphql-client.d.ts' })
 
@@ -33,6 +32,8 @@ export default defineNuxtModule<ModuleOptions>({
     nuxt.options.alias = nuxt.options.alias || {}
     nuxt.options.alias['#graphql/client'] = join(nuxt.options.buildDir, 'types/nitro-graphql-client.d.ts')
 
-    addImportsDir(join(nuxt.options.srcDir, 'graphql'))
+    nuxt.hook('imports:dirs', (dirs) => {
+      dirs.push(resolve(nuxt.options.srcDir, 'graphql'))
+    })
   },
 })

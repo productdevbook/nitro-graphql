@@ -31,7 +31,7 @@ export default defineNitroModule({
       default:
     }
 
-    watch(watchDirs, {
+    const watcher = watch(watchDirs, {
       persistent: true,
       ignoreInitial: true,
       ignored: nitro.options.ignore,
@@ -39,6 +39,10 @@ export default defineNitroModule({
       if (path.endsWith('.graphql') || path.endsWith('.gql')) {
         await clientTypeGeneration(nitro, path)
       }
+    })
+
+    nitro.hooks.hook('close', () => {
+      watcher.close()
     })
 
     const tsConfigPath = resolve(
