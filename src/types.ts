@@ -15,6 +15,7 @@ declare module 'nitropack/types' {
       buildDir: string
       watchDirs: string[]
       clientDir: string
+      serverDir: string
     }
   }
 }

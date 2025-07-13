@@ -1,10 +1,10 @@
 import type { YogaServerInstance } from 'graphql-yoga'
 import { defs } from '#nitro-internal-virtual/server-defs'
-import { resolvers } from '#nitro-internal-virtual/server-resolvers'
 
+import { resolvers } from '#nitro-internal-virtual/server-resolvers'
 import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge'
 import { createSchema, createYoga } from 'graphql-yoga'
-import { defineEventHandler } from 'h3'
+import { defineEventHandler, toWebRequest } from 'h3'
 // TODO: https://github.com/nitrojs/nitro/issues/3403 if used import this error.
 // import { createMergedSchema } from 'nitro-graphql/internal'
 
@@ -64,6 +64,8 @@ export default defineEventHandler(async (event) => {
       renderGraphiQL: () => apolloSandboxHtml,
     })
   }
+  const request = toWebRequest(event)
+  const response = await yoga.handleRequest(request, event as any)
 
-  return yoga.handle(event.node.req, event.node.res)
+  return new Response(response.body, response)
 })

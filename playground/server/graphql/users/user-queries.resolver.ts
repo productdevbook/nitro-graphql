@@ -1,4 +1,4 @@
-import type { User } from '#build/graphql-types.generated'
+import type { User } from '#graphql/server'
 
 // Mock database
 const users: User[] = [

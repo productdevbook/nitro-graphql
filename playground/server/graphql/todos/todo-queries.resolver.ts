@@ -1,6 +1,6 @@
 export default defineResolver({
   Query: {
-    todos: async (_parent, _args, { storage }) => {
+    todos: async (_parent, _args, context) => {
       // const todos = await storage.getItem('todos') || []
       return [{
         id: '1',
@@ -10,8 +10,8 @@ export default defineResolver({
       }]
     },
 
-    todo: async (_parent, { id }, { storage }) => {
-      const todos = await storage.getItem('todos') || []
+    todo: async (_parent, { id }, context) => {
+      const todos = []
       return todos.find((todo: any) => todo.id === id) || null
     },
   },

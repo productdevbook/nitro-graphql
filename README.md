@@ -173,7 +173,7 @@ The module automatically generates TypeScript types from your GraphQL schema:
 These types are automatically available in your resolvers:
 
 ```ts
-import type { QueryResolvers } from '#build/graphql-types.generated'
+import type { QueryResolvers } from '#graphql/server'
 // server/graphql/users/user-queries.ts
 import { defineResolver } from 'nitro-graphql'
 

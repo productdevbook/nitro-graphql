@@ -57,7 +57,7 @@ export async function generateTypes(
     },
     defaultScalarType: 'unknown',
     defaultMapper: `ResolverReturnType<{T}>`,
-    contextType: './context#GraphQLContext',
+    contextType: 'h3#H3Event',
     maybeValue: 'T | null | undefined',
     inputMaybeValue: 'T | undefined',
     enumsAsTypes: true,

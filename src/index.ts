@@ -18,6 +18,7 @@ export default defineNitroModule({
       buildDir: '',
       watchDirs: [],
       clientDir: '',
+      serverDir: resolve(nitro.options.srcDir, 'graphql'),
     }
 
     nitro.options.runtimeConfig.graphql = defu(nitro.options.runtimeConfig.graphql || {}, {

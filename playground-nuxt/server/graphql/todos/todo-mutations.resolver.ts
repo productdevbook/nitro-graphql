@@ -1,4 +1,4 @@
-import type { Todo } from '#build/graphql-types.generated'
+import type { Todo } from '#graphql/server'
 
 export default defineResolver({
   Mutation: {
