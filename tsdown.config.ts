@@ -15,7 +15,6 @@ export default defineConfig({
     'src/client-watcher.ts',
     'src/context.ts',
     'src/utils/index.ts',
-    'src/types.ts',
     'src/routes',
     'src/internal/index.ts',
     'src/graphql.d.ts',
@@ -27,7 +26,7 @@ export default defineConfig({
   name: 'nitro-graphql',
   unbundle: true,
   external: [
-    'nitro-graphql/types',
+    'nitro-graphql',
     'nitropack',
     'nitropack/types',
     'nitropack/kit',

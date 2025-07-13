@@ -5,6 +5,8 @@ import type { IResolvers } from '@graphql-tools/utils'
 import type { YogaServerOptions } from 'graphql-yoga'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
+export type { StandardSchemaV1 } from './standard-schema'
+
 export type CodegenServerConfig = TypeScriptPluginConfig & TypeScriptResolversPluginConfig
 
 declare module 'nitropack/types' {
@@ -74,5 +76,3 @@ export interface NitroGraphQLOptions {
   }
   yogaConfig?: Partial<YogaServerOptions<any, any>>
 }
-
-export interface Resolvers {}

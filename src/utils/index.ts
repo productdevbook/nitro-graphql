@@ -1,5 +1,5 @@
 import type { YogaServerOptions } from 'graphql-yoga'
-import type { GraphQLSchemaConfig, Resolvers } from 'nitro-graphql/types'
+import type { GraphQLSchemaConfig, Resolvers } from 'nitro-graphql'
 import type { Nitro } from 'nitropack'
 import { join, relative } from 'pathe'
 import { glob } from 'tinyglobby'

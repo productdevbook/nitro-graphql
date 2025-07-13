@@ -1,5 +1,5 @@
 // TODO: temporary solution
-import 'nitro-graphql/types'
+// import 'nitro-graphql/types'
 
 export default defineNuxtConfig({
   compatibilityDate: '2024-07-01',
@@ -11,19 +11,7 @@ export default defineNuxtConfig({
     modules: ['nitro-graphql'],
     // GraphQL Yoga configuration
     graphql: {
-      endpoint: '/api/graphql',
-      playground: true,
-      cors: {
-        origin: '*',
-        credentials: true,
-      },
-      client: {
-        enabled: true,
-        watchPatterns: [
-          'server/graphql/**/*.graphql',
-          'server/graphql/**/*.gql',
-        ],
-      },
+
     },
   },
 
