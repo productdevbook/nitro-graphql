@@ -44,8 +44,10 @@ export interface CodegenClientConfig extends TypeScriptPluginConfig, TypeScriptD
 }
 
 export interface NitroGraphQLOptions {
-  endpoint?: string
-  healthCheckEndpoint?: string
+  endpoint?: {
+    graphql?: string
+    healthCheck?: string
+  }
   playground?: boolean
   cors?: YogaServerOptions<{ req: IncomingMessage, res: ServerResponse }, any>['cors']
   typedefs?: string[]

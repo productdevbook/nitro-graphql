@@ -1,10 +1,12 @@
 import type { Nitro } from 'nitropack/types'
+import type { NitroGraphQLOptions } from './types'
 import { writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { watch } from 'chokidar'
+import defu from 'defu'
+
 import { defineNitroModule } from 'nitropack/kit'
 import { dirname, join, resolve } from 'pathe'
-
 import { rollupConfig } from './rollup'
 import { relativeWithDot, scanDefs, scanResolvers } from './utils'
 import { clientTypeGeneration, serverTypeGeneration } from './utils/server-type-generation'
@@ -17,6 +19,14 @@ export default defineNitroModule({
       watchDirs: [],
       clientDir: '',
     }
+
+    nitro.options.runtimeConfig.graphql = defu(nitro.options.runtimeConfig.graphql || {}, {
+      endpoint: {
+        graphql: '/api/graphql',
+        healthCheck: '/api/graphql/health',
+      },
+      playground: true,
+    } as NitroGraphQLOptions)
 
     const graphqlBuildDir = resolve(nitro.options.buildDir, 'graphql')
     nitro.graphql.buildDir = graphqlBuildDir
@@ -72,30 +82,34 @@ export default defineNitroModule({
     await serverTypeGeneration(nitro)
     await clientTypeGeneration(nitro, nitro.graphql.clientDir)
 
-    // Define the main GraphQL endpoint
-    const endpoint = '/api/graphql'
-
     const runtime = fileURLToPath(
       new URL('routes', import.meta.url),
     )
     // Main GraphQL endpoint
     nitro.options.handlers.push({
-      route: endpoint,
+      route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
       handler: join(runtime, 'graphql'),
       method: 'get',
     })
 
     // Main GraphQL endpoint
     nitro.options.handlers.push({
-      route: endpoint,
+      route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
       handler: join(runtime, 'graphql'),
       method: 'post',
     })
 
     nitro.options.handlers.push({
-      route: endpoint,
+      route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
       handler: join(runtime, 'graphql'),
       method: 'options',
+    })
+
+    // Health check endpoint
+    nitro.options.handlers.push({
+      route: nitro.options.runtimeConfig.graphql?.endpoint?.healthCheck || '/api/graphql/health',
+      handler: join(runtime, 'health'),
+      method: 'get',
     })
 
     // Auto-import utilities
