@@ -1,5 +1,6 @@
 import type { VueTSConfig } from '@nuxt/schema'
-import { defineNuxtModule } from '@nuxt/kit'
+import { addImportsDir, defineNuxtModule } from '@nuxt/kit'
+import { join } from 'pathe'
 
 export interface ModuleOptions {
 
@@ -21,11 +22,17 @@ export default defineNuxtModule<ModuleOptions>({
       options.tsConfig ??= {} as VueTSConfig
       options.tsConfig.compilerOptions ??= {}
       options.tsConfig.compilerOptions.paths ??= {}
-      options.tsConfig.compilerOptions.paths['#graphql-client'] = [
+      options.tsConfig.compilerOptions.paths['#graphql/client'] = [
         './types/nitro-graphql-client.d.ts',
       ]
       options.tsConfig.include = options.tsConfig.include || []
       options.tsConfig.include.push('./types/nitro-graphql-client.d.ts')
     })
+
+    // Add Vite/webpack alias for runtime resolution
+    nuxt.options.alias = nuxt.options.alias || {}
+    nuxt.options.alias['#graphql/client'] = join(nuxt.options.buildDir, 'types/nitro-graphql-client.d.ts')
+
+    addImportsDir(join(nuxt.options.srcDir, 'graphql'))
   },
 })

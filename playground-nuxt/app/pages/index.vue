@@ -81,24 +81,19 @@
   </div>
 </template>
 
-<script setup>
-const helloResult = ref('')
+<script setup lang="ts">
+const helloResult = ref()
 const greetingResult = ref('')
 const users = ref([])
 const newUser = ref({ name: '', email: '' })
+const api = useGraphQL()
 
 const testHello = async () => {
   try {
-    const response = await $fetch('/api/graphql', {
-      method: 'POST',
-      body: {
-        query: `query { hello }`
-      }
-    })
-    helloResult.value = response.data.hello
+    const response = await api.GetUsers()
+    helloResult.value = response.users
   } catch (error) {
     console.error('Hello query failed:', error)
-    helloResult.value = 'Error: ' + error.message
   }
 }
 

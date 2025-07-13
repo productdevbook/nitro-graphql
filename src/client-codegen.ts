@@ -164,7 +164,7 @@ export async function generateClientTypes(
         },
       },
       presetConfig: {
-        typesPath: '#graphql-client',
+        typesPath: '#graphql/client',
 
       },
       plugins: [

@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 /* prettier-ignore */
-import * as Types from '#graphql-client';
+import * as Types from '#graphql/client';
 
 export type CreateUserMutationVariables = Types.Exact<{
   input: Types.CreateUserInput;
