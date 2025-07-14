@@ -7,8 +7,8 @@ import { printSchemaWithDirectives } from '@graphql-tools/utils'
 import consola from 'consola'
 import { buildASTSchema, buildSchema } from 'graphql'
 import { dirname, join, resolve } from 'pathe'
-import { generateClientTypes, loadGraphQLDocuments } from '../client-codegen'
-import { generateTypes } from '../codegen'
+import { generateClientTypes, loadGraphQLDocuments } from './client-codegen'
+import { generateTypes } from './server-codegen'
 
 export async function serverTypeGeneration(app: Nitro) {
   try {

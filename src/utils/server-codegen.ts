@@ -1,5 +1,5 @@
 import type { GraphQLSchema } from 'graphql'
-import type { CodegenServerConfig } from './types'
+import type { CodegenServerConfig } from '../types'
 import { codegen } from '@graphql-codegen/core'
 import * as typescriptPlugin from '@graphql-codegen/typescript'
 import * as typescriptResolversPlugin from '@graphql-codegen/typescript-resolvers'
