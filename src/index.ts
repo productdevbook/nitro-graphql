@@ -126,20 +126,20 @@ export default defineNitroModule({
     if (nitro.options.graphql?.framework === 'graphql-yoga') {
       nitro.options.handlers.push({
         route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
-        handler: join(runtime, 'graphql'),
+        handler: join(runtime, 'graphql-yoga'),
         method: 'get',
       })
 
       // Main GraphQL endpoint
       nitro.options.handlers.push({
         route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
-        handler: join(runtime, 'graphql'),
+        handler: join(runtime, 'graphql-yoga'),
         method: 'post',
       })
 
       nitro.options.handlers.push({
         route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
-        handler: join(runtime, 'graphql'),
+        handler: join(runtime, 'graphql-yoga'),
         method: 'options',
       })
     }
