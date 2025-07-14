@@ -61,6 +61,7 @@
     "nitropack": "^2.11.13"
   },
   "dependencies": {
+    "@as-integrations/h3": "^2.0.0",
     "@graphql-codegen/core": "^4.0.2",
     "@graphql-codegen/typescript": "^4.1.6",
     "@graphql-codegen/typescript-generic-sdk": "^4.0.2",
@@ -83,8 +84,8 @@
     "tinyglobby": "^0.2.14"
   },
   "devDependencies": {
-
     "@antfu/eslint-config": "^4.16.2",
+    "@apollo/server": "^4.12.2",
     "@graphql-codegen/import-types-preset": "^3.0.1",
     "@nuxt/kit": "4.0.0-rc.0",
     "@nuxt/schema": "4.0.0-rc.0",

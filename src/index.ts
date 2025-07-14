@@ -123,25 +123,27 @@ export default defineNitroModule({
       new URL('routes', import.meta.url),
     )
     // Main GraphQL endpoint
+    const methods = ['get', 'post', 'options'] as const
     if (nitro.options.graphql?.framework === 'graphql-yoga') {
-      nitro.options.handlers.push({
-        route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
-        handler: join(runtime, 'graphql-yoga'),
-        method: 'get',
-      })
+      // Register the GraphQL Yoga handler for all methods
+      for (const method of methods) {
+        nitro.options.handlers.push({
+          route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
+          handler: join(runtime, 'graphql-yoga'),
+          method,
+        })
+      }
+    }
 
-      // Main GraphQL endpoint
-      nitro.options.handlers.push({
-        route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
-        handler: join(runtime, 'graphql-yoga'),
-        method: 'post',
-      })
-
-      nitro.options.handlers.push({
-        route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
-        handler: join(runtime, 'graphql-yoga'),
-        method: 'options',
-      })
+    if (nitro.options.graphql?.framework === 'apollo-server') {
+      // Register the Apollo Server handler for all methods
+      for (const method of methods) {
+        nitro.options.handlers.push({
+          route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
+          handler: join(runtime, 'apollo-server'),
+          method,
+        })
+      }
     }
 
     // Health check endpoint

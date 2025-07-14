@@ -38,7 +38,8 @@ export default defineConfig({
     '#nitro-internal-virtual/server-resolvers',
     '@nuxt/kit',
     '@nuxt/schema',
-    'node:fs',
+    '@apollo/server',
+    '@apollo/server/plugin/landingPage/default',
     ...Object.keys(dependencies || {}),
   ],
   ignoreWatch: [
