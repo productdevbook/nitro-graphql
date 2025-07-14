@@ -1,4 +1,4 @@
-export default defineResolver({
+export const define1 = defineResolver({
   Mutation: {
     createUser: async (_parent, { input }, context) => {
       // In a real app, you would save to database

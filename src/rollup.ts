@@ -2,8 +2,8 @@ import type { Nitro } from 'nitropack'
 
 import { readFile } from 'node:fs/promises'
 import { parse } from 'graphql'
-import { hash } from 'ohash'
-import { scanGraphql } from './utils'
+import { genImport } from 'knitwork'
+import { getImportId, scanGraphql } from './utils'
 import { serverTypeGeneration } from './utils/server-type-generation'
 
 export async function rollupConfig(app: Nitro) {
@@ -79,10 +79,6 @@ export async function rollupConfig(app: Nitro) {
   })
 }
 
-function getImportId(p: string, lazy?: boolean) {
-  return (lazy ? '_lazy_' : '_') + hash(p).replace(/-/g, '').slice(0, 6)
-}
-
 export function virtualDefs(app: Nitro) {
   const getDefs = () => {
     const defs: string[] = [
@@ -118,9 +114,9 @@ ${imports
 
 export function virtualResolvers(app: Nitro) {
   const getResolvers = () => {
-    const resolvers: string[] = [
+    const resolvers = [
       ...app.scanResolvers,
-      ...(app.options.graphql?.resolvers ?? []),
+      // ...(app.options.graphql?.resolvers ?? []),
     ]
 
     return resolvers
@@ -129,20 +125,35 @@ export function virtualResolvers(app: Nitro) {
   app.options.virtual ??= {}
   app.options.virtual['#nitro-internal-virtual/server-resolvers'] = () => {
     const imports = getResolvers()
+    //     const code = /* js */`
+    const importsContent = [
+      ...imports.map(({ specifier, imports, options }) => {
+        // https://github.com/unjs/knitwork/pull/113 extendiso support (silgi.options.typescript.removeFileExtension)
+        return genImport(specifier, imports, options)
+      }),
+    ]
 
-    const code = /* js */`
-${imports
-  .map(handler => `import ${getImportId(handler)} from '${handler}';`)
-  .join('\n')}  
-export const resolvers = [
-${imports
-  .map(
-    h =>
-      /* js */ `{ resolver: ${getImportId(h)} }`,
-  )
-  .join(',\n')}
-];
-    `
+    const data = imports.map(({ imports }) => {
+      for (const i of imports) {
+        if (i.type === 'resolver') {
+          // return `${i.as}`
+          return `{ resolver: ${i.as} }`
+        }
+      }
+      return undefined
+    }).filter(Boolean).join(',\n')
+
+    const content = [
+      'export const resolvers = [',
+      data,
+      ']',
+      '',
+    ]
+
+    content.unshift(...importsContent)
+
+    const code = content.join('\n')
+
     return code
   }
 }

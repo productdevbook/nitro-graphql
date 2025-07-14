@@ -1,4 +1,4 @@
-export default defineResolver({
+export const define1 = defineResolver({
   Mutation: {
     createPost: async (parent, { input }, context) => {
       return {

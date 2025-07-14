@@ -38,6 +38,7 @@ export default defineConfig({
     '#nitro-internal-virtual/server-resolvers',
     '@nuxt/kit',
     '@nuxt/schema',
+    'node:fs',
     ...Object.keys(dependencies || {}),
   ],
   ignoreWatch: [

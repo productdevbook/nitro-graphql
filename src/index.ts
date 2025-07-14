@@ -20,12 +20,38 @@ export interface Resolvers {}
 export default defineNitroModule({
   name: 'nitro-graphql',
   async setup(nitro: Nitro) {
+    nitro.options.externals = nitro.options.externals || {}
+    nitro.options.externals.external ??= []
+    nitro.options.externals.external.push('oxc-parser')
+    nitro.options.externals.external.push('@oxc-parser')
+
     nitro.graphql ||= {
       buildDir: '',
       watchDirs: [],
       clientDir: '',
       serverDir: resolve(nitro.options.srcDir, 'graphql'),
     }
+
+    nitro.hooks.hook('rollup:before', (nitro, rollupConfig) => {
+      rollupConfig.external = rollupConfig.external || []
+      const codegenExternals = [
+        'oxc-parser',
+        '@oxc-parser',
+      ]
+
+      if (Array.isArray(rollupConfig.external)) {
+        rollupConfig.external.push(...codegenExternals)
+      }
+      else if (typeof rollupConfig.external === 'function') {
+        const originalExternal = rollupConfig.external
+        rollupConfig.external = (id, parent, isResolved) => {
+          if (codegenExternals.some(external => id.includes(external))) {
+            return true
+          }
+          return originalExternal(id, parent, isResolved)
+        }
+      }
+    })
 
     nitro.options.runtimeConfig.graphql = defu(nitro.options.runtimeConfig.graphql || {}, {
       endpoint: {

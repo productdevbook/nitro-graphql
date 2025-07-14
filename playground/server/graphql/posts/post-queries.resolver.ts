@@ -1,4 +1,4 @@
-export default defineResolver({
+export const define1 = defineResolver({
   Query: {
     post: async (parent, { id }, context) => {
       return {

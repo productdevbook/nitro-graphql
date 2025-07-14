@@ -1,6 +1,6 @@
 import type { Todo } from '#graphql/server'
 
-export default defineResolver({
+export const define1 = defineResolver({
   Mutation: {
     addTodo: async (_parent, { title }, { storage }) => {
       const todos = await storage.getItem('todos') || []

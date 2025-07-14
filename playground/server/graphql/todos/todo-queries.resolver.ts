@@ -1,4 +1,4 @@
-export default defineResolver({
+export const define1 = defineResolver({
   Query: {
     todos: async (_parent, _args, context) => {
       // const todos = await storage.getItem('todos') || []

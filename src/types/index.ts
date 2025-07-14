@@ -3,16 +3,29 @@ import type { TypeScriptDocumentsPluginConfig } from '@graphql-codegen/typescrip
 import type { TypeScriptResolversPluginConfig } from '@graphql-codegen/typescript-resolvers'
 import type { IResolvers } from '@graphql-tools/utils'
 import type { YogaServerOptions } from 'graphql-yoga'
+import type { ESMCodeGenOptions } from 'knitwork'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
 export type { StandardSchemaV1 } from './standard-schema'
 
 export type CodegenServerConfig = TypeScriptPluginConfig & TypeScriptResolversPluginConfig
 
+interface IESMImport {
+  name: string
+  as?: string
+  type: 'resolver' | 'query' | 'mutation' | 'type'
+}
+
+export interface GenImport {
+  specifier: string
+  imports: IESMImport[]
+  options?: ESMCodeGenOptions
+}
+
 declare module 'nitropack/types' {
   interface Nitro {
     scanDefs: string[]
-    scanResolvers: any
+    scanResolvers: GenImport[]
     graphql: {
       buildDir: string
       watchDirs: string[]
