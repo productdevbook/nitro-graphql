@@ -4,9 +4,6 @@ export default defineResolver({
       // const todos = await storage.getItem('todos') || []
       return [{
         id: '1',
-        title: 'Sample Todo',
-        completed: false,
-        createdAt: new Date().toISOString(),
       }]
     },
 

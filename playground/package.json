@@ -7,7 +7,8 @@
     "preview": "node .output/server/index.mjs"
   },
   "dependencies": {
-    "nitro-graphql": "link:../"
+    "nitro-graphql": "link:../",
+    "zod": "^4.0.5"
   },
   "devDependencies": {
     "nitropack": "^2.11.13"

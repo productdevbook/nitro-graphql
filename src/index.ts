@@ -181,6 +181,7 @@ declare module 'nitro-graphql' {
 `
 
     writeFileSync(join(typesDir, 'graphql.d.ts'), graphqlDtsContent)
+    nitro.options.typescript.strict = true
 
     nitro.hooks.hook('types:extend', (types) => {
       // Add TypeScript path alias for IDE support
@@ -192,6 +193,9 @@ declare module 'nitro-graphql' {
       ]
       types.tsConfig.compilerOptions.paths['#graphql/client'] = [
         relativeWithDot(tsconfigDir, join(typesDir, 'nitro-graphql-client.d.ts')),
+      ]
+      types.tsConfig.compilerOptions.paths['#graphql/schemas'] = [
+        relativeWithDot(tsconfigDir, join(nitro.graphql.serverDir, 'schemas.ts')),
       ]
       types.tsConfig.include = types.tsConfig.include || []
       types.tsConfig.include.push(

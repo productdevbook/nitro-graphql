@@ -60,10 +60,14 @@ export async function generateTypes(
     contextType: 'h3#H3Event',
     maybeValue: 'T | null | undefined',
     inputMaybeValue: 'T | undefined',
-    enumsAsTypes: true,
-    useTypeImports: true,
+    declarationKind: 'interface',
+    allowParentTypeOverride: false,
+    // Type safety maximization
     strictScalars: true,
-    emitLegacyCommonJSImports: false,
+    // Modern TypeScript support
+    useTypeImports: true,
+    enumsAsTypes: true,
+    immutableTypes: true,
   }
 
   const mergedConfig = defu(config, defaultConfig)
@@ -84,38 +88,58 @@ export async function generateTypes(
         plugin: pluginContent,
       },
       imports: {
-        plugin: () => ({
-          prepend: [
-            `type Primitive =
-    | null
-    | undefined
-    | string
-    | number
-    | boolean
-    | symbol
-    | bigint;
+        plugin: () => {
+          return {
+            prepend: [
+              `import { schemas } from '#graphql/schemas'`,
+              `import type { StandardSchemaV1 } from 'nitro-graphql'`,
+
+              `
+export type SchemaType = Partial<Record<Partial<keyof ResolversTypes>, StandardSchemaV1>>
+type SchemaKeys = keyof typeof schemas;
+
+type InferInput<T> = T extends StandardSchemaV1 ? StandardSchemaV1.InferInput<T> : unknown;
+type InferOutput<T> = T extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<T> : unknown;
+
+type InferInputFromSchema<T extends SchemaKeys> = InferInput<(typeof schemas)[T]>;
+type InferOutputFromSchema<T extends SchemaKeys> = InferOutput<(typeof schemas)[T]>;
+
+type Primitive =
+| null
+| undefined
+| string
+| number
+| boolean
+| symbol
+| bigint;
 
 type BuiltIns = Primitive | void | Date | RegExp;
 
-type ResolverReturnType<T> = T extends BuiltIns
-    ? T
-    : T extends (...args: any[]) => unknown
-    ? T | undefined
-    : T extends object
-    ? T extends Array<infer ItemType> // Test for arrays/tuples, per https://github.com/microsoft/TypeScript/issues/35156
-        ? ItemType[] extends T // Test for arrays (non-tuples) specifically
-            ? Array<ResolverReturnType<ItemType>>
-            : ResolverReturnTypeObject<T> // Tuples behave properly
-        : ResolverReturnTypeObject<T>
-    : unknown;
 
-type ResolverReturnTypeObject<T extends object> = {
-  [K in keyof T]: ResolverReturnType<T[K]>
-};`,
-            '',
-          ],
-          content: '',
-        }),
+type ResolverReturnType<T> = T extends BuiltIns
+? T
+: T extends (...args: any[]) => unknown
+? T | undefined
+: T extends object
+? T extends Array<infer ItemType> // Test for arrays/tuples, per https://github.com/microsoft/TypeScript/issues/35156
+  ? ItemType[] extends T // Test for arrays (non-tuples) specifically
+    ? Array<ResolverReturnType<ItemType>>
+    : ResolverReturnTypeObject<T> // Tuples behave properly
+  : ResolverReturnTypeObject<T>
+: unknown;
+
+type ResolverReturnTypeObject<T extends object> =
+  T extends { __typename?: infer TTypename }
+    ? TTypename extends SchemaKeys
+      ? InferOutputFromSchema<TTypename>
+      : { [K in keyof T]: ResolverReturnType<T[K]> }
+    : { [K in keyof T]: ResolverReturnType<T[K]> };
+`,
+              '',
+            ],
+            content: '',
+          }
+        },
       },
       typescript: typescriptPlugin,
       typescriptResolvers: typescriptResolversPlugin,
