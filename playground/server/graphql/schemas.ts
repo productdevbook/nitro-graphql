@@ -1,8 +1,7 @@
-import type { SchemaType } from '#graphql/server'
 import { z } from 'zod/v4'
 
-export const schemas: SchemaType = {
+export default defineSchema({
   Todo: z.object({
     id: z.string(),
   }),
-}
+})

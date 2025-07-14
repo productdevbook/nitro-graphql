@@ -47,11 +47,6 @@ declare module 'nitropack' {
   }
 }
 
-export interface GraphQLSchemaConfig {
-  typeDefs: string | string[]
-  resolvers: any
-}
-
 export interface CodegenClientConfig extends TypeScriptPluginConfig, TypeScriptDocumentsPluginConfig {
   endpoint?: string
   documentMode?: 'string' | 'graphQLTag' | 'documentNode' | 'documentNodeImportFragments' | 'external'

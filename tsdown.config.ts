@@ -10,6 +10,7 @@ const playgroundNuxtPath = new URL(playgroundNuxt, thisPath).pathname
 
 export default defineConfig({
   entry: [
+    'src/graphql/',
     'src/index.ts',
     'src/codegen.ts',
     'src/client-watcher.ts',
@@ -40,6 +41,7 @@ export default defineConfig({
     '@nuxt/schema',
     '@apollo/server',
     '@apollo/server/plugin/landingPage/default',
+    '#graphql/server',
     ...Object.keys(dependencies || {}),
   ],
   ignoreWatch: [

@@ -1,10 +1,15 @@
+import type { ResolversTypes, StandardSchemaV1 } from '#graphql/server'
 import type { ApolloServerOptions, BaseContext } from '@apollo/server'
 import type { YogaServerOptions } from 'graphql-yoga'
-import type { GraphQLFramework, GraphQLSchemaConfig, Resolvers } from 'nitro-graphql'
 
-// TODO: check used.
-export function defineSchema(config: GraphQLSchemaConfig): GraphQLSchemaConfig {
-  return config
+import type { GraphQLFramework, Resolvers } from 'nitro-graphql'
+
+type Flatten<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
+
+export function defineSchema<T extends Partial<Record<keyof ResolversTypes, StandardSchemaV1>>>(
+  config: T,
+): Flatten<T> {
+  return config as any
 }
 
 export function defineResolver(

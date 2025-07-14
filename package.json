@@ -6,6 +6,12 @@
   "description": "GraphQL integration for Nitro",
   "license": "MIT",
   "sideEffects": false,
+  "imports": {
+    "#graphql/server": {
+      "types": "./dist/graphql/server.d.ts",
+      "import": "./dist/graphql/server.js"
+    }
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

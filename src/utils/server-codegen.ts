@@ -61,13 +61,6 @@ export async function generateTypes(
     maybeValue: 'T | null | undefined',
     inputMaybeValue: 'T | undefined',
     declarationKind: 'interface',
-    allowParentTypeOverride: false,
-    // Type safety maximization
-    strictScalars: true,
-    // Modern TypeScript support
-    useTypeImports: true,
-    enumsAsTypes: true,
-    immutableTypes: true,
   }
 
   const mergedConfig = defu(config, defaultConfig)
@@ -91,7 +84,7 @@ export async function generateTypes(
         plugin: () => {
           return {
             prepend: [
-              `import { schemas } from '#graphql/schemas'`,
+              `import schemas from '#graphql/schemas'`,
               `import type { StandardSchemaV1 } from 'nitro-graphql'`,
 
               `
