@@ -7,7 +7,6 @@ import { startServerAndCreateH3Handler } from '@as-integrations/h3'
 import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge'
 import { defineEventHandler } from 'h3'
 
-// Schema oluşturma fonksiyonu
 function createMergedSchema() {
   try {
     const mergedDefs = defs.map(schema => schema.def).join('\n\n')
@@ -25,27 +24,19 @@ function createMergedSchema() {
   }
 }
 
-// Apollo Server instance'ını oluştur
 const { typeDefs, resolvers: mergedResolvers } = createMergedSchema()
 
-let apolloServer: ApolloServer<BaseContext> | null = null
-
-// H3 handler'ını oluştur ve export et
-export default defineEventHandler(async (event) => {
-  if (!apolloServer) {
-    apolloServer = new ApolloServer<BaseContext>({
-      typeDefs,
-      resolvers: mergedResolvers,
-      introspection: true,
-      plugins: [
-        // Apollo Studio sandbox için landing page
-        ApolloServerPluginLandingPageLocalDefault({ embed: true }),
-      ],
-    })
-  }
-
-  const handler = startServerAndCreateH3Handler(apolloServer, {
-    context: async () => (event),
-  })
+const apolloServer = new ApolloServer<BaseContext>({
+  typeDefs,
+  resolvers: mergedResolvers,
+  introspection: true,
+  plugins: [
+    ApolloServerPluginLandingPageLocalDefault({ embed: true }),
+  ],
+})
+const handler = startServerAndCreateH3Handler(apolloServer, {
+  context: async event => ({ event }),
+})
+export default defineEventHandler((event) => {
   return handler(event)
 })
