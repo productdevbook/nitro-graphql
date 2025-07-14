@@ -46,21 +46,6 @@ export default defineNitroConfig({
     endpoint: '/api/graphql', // default
     playground: true, // default (Apollo Sandbox)
     cors: false, // default
-    cacheHeaders: {
-      enabled: true, // default
-      maxAge: 604800, // default (1 week)
-    },
-    client: {
-      enabled: false, // default
-      outputPath: undefined, // Will default to .nitro/types/graphql-client.generated.ts
-      watchPatterns: undefined, // Will default to src/**/*.{graphql,gql} excluding server/graphql
-      config: {
-        documentMode: 'string',
-        emitLegacyCommonJSImports: false,
-        useTypeImports: true,
-        enumsAsTypes: true,
-      }
-    }
   }
 })
 ```
@@ -258,12 +243,6 @@ interface NitroGraphQLYogaOptions {
     methods?: string[]
   }
 
-  // Cache headers configuration
-  cacheHeaders?: {
-    enabled?: boolean // default: true
-    maxAge?: number // default: 604800 (1 week)
-  }
-
   // Client type generation
   client?: {
     enabled?: boolean // default: false
@@ -362,14 +341,6 @@ Enable client type generation for your frontend queries:
 // nitro.config.ts
 export default defineNitroConfig({
   graphqlYoga: {
-    client: {
-      enabled: true,
-      watchPatterns: [
-        'client/**/*.graphql',
-        'pages/**/*.vue',
-        'components/**/*.vue'
-      ]
-    }
   }
 })
 ```

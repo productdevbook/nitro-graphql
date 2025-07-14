@@ -11,7 +11,7 @@ export default defineNuxtConfig({
     modules: ['nitro-graphql'],
     // GraphQL Yoga configuration
     graphql: {
-
+      framework: 'graphql-yoga',
     },
   },
 

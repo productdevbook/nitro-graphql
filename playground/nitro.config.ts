@@ -6,19 +6,7 @@ export default defineNitroConfig({
   modules: ['nitro-graphql'],
   compatibilityDate: '2025-07-01',
   graphql: {
-    endpoint: '/api/graphql',
-    playground: true,
-    cors: {
-      origin: '*',
-      credentials: true,
-    },
-    client: {
-      enabled: true,
-      watchPatterns: [
-        'client/**/*.graphql',
-        'client/**/*.gql',
-      ],
-    },
+    framework: 'graphql-yoga',
   },
   esbuild: {
     options: {

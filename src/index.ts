@@ -123,24 +123,26 @@ export default defineNitroModule({
       new URL('routes', import.meta.url),
     )
     // Main GraphQL endpoint
-    nitro.options.handlers.push({
-      route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
-      handler: join(runtime, 'graphql'),
-      method: 'get',
-    })
+    if (nitro.options.graphql?.framework === 'graphql-yoga') {
+      nitro.options.handlers.push({
+        route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
+        handler: join(runtime, 'graphql'),
+        method: 'get',
+      })
 
-    // Main GraphQL endpoint
-    nitro.options.handlers.push({
-      route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
-      handler: join(runtime, 'graphql'),
-      method: 'post',
-    })
+      // Main GraphQL endpoint
+      nitro.options.handlers.push({
+        route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
+        handler: join(runtime, 'graphql'),
+        method: 'post',
+      })
 
-    nitro.options.handlers.push({
-      route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
-      handler: join(runtime, 'graphql'),
-      method: 'options',
-    })
+      nitro.options.handlers.push({
+        route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
+        handler: join(runtime, 'graphql'),
+        method: 'options',
+      })
+    }
 
     // Health check endpoint
     nitro.options.handlers.push({

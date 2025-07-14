@@ -60,6 +60,7 @@ export interface CodegenClientConfig extends TypeScriptPluginConfig, TypeScriptD
 }
 
 export interface NitroGraphQLOptions {
+  framework: 'graphql-yoga' | 'apollo-server'
   endpoint?: {
     graphql?: string
     healthCheck?: string
@@ -73,19 +74,9 @@ export interface NitroGraphQLOptions {
     exclude?: RegExp
     validate?: boolean
   }
-  cacheHeaders?: {
-    enabled?: boolean
-    maxAge?: number
-  }
   codegen?: {
     server?: CodegenServerConfig
     client?: CodegenClientConfig
-  }
-  client?: {
-    enabled?: boolean
-    outputPath?: string
-    watchPatterns?: string[]
-    nuxtPatterns?: string[]
   }
   yogaConfig?: Partial<YogaServerOptions<any, any>>
 }
