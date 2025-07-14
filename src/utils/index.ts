@@ -1,5 +1,3 @@
-import type { YogaServerOptions } from 'graphql-yoga'
-import type { GraphQLSchemaConfig, Resolvers } from 'nitro-graphql'
 import type { Nitro } from 'nitropack'
 import type { GenImport } from '../types'
 import { readFile } from 'node:fs/promises'
@@ -15,66 +13,6 @@ export function getImportId(p: string, lazy?: boolean) {
   return (lazy ? '_lazy_' : '_') + hash(p).replace(/-/g, '').slice(0, 6)
 }
 
-// TODO: check used.
-export function defineGraphQLSchema(config: GraphQLSchemaConfig): GraphQLSchemaConfig {
-  return config
-}
-
-export function defineResolver(
-  resolvers: Resolvers,
-): Resolvers {
-  return resolvers
-}
-
-// Kullanım için utility type
-export type ResolverQuery = Resolvers extends { Query: infer Q }
-  ? Q
-  : never
-
-export function defineQuery(
-  resolvers: Resolvers['Query'] = {},
-): Resolvers {
-  return {
-    Query: {
-      ...resolvers,
-    },
-  }
-}
-
-export function defineMutation(
-  resolvers: Resolvers['Mutation'] = {},
-): Resolvers {
-  return {
-    Mutation: {
-      ...resolvers,
-    },
-  }
-}
-
-export function defineSubscription(
-  resolvers: Resolvers['Subscription'] = {},
-): Resolvers {
-  return {
-    Subscription: {
-      ...resolvers,
-    },
-  }
-}
-
-export function defineType(
-  resolvers: Resolvers,
-): Resolvers {
-  return resolvers
-}
-
-/**
- * Helper function to define GraphQL Yoga configuration with type safety
- */
-export function defineYogaConfig<TServerContext = any, TUserContext = any>(
-  config: Partial<YogaServerOptions<TServerContext, TUserContext>>,
-): Partial<YogaServerOptions<TServerContext, TUserContext>> {
-  return config
-}
 const RELATIVE_RE = /^\.{1,2}\//
 
 export function relativeWithDot(from: string, to: string) {
