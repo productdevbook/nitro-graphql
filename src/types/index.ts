@@ -13,7 +13,7 @@ export type CodegenServerConfig = TypeScriptPluginConfig & TypeScriptResolversPl
 interface IESMImport {
   name: string
   as?: string
-  type: 'resolver' | 'query' | 'mutation' | 'type'
+  type: 'resolver' | 'query' | 'mutation' | 'type' | 'subscription'
 }
 
 export interface GenImport {

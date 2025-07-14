@@ -1,7 +1,7 @@
 import type { LoadSchemaOptions, UnnormalizedTypeDefPointer } from '@graphql-tools/load'
 import type { Source } from '@graphql-tools/utils'
 import type { GraphQLSchema } from 'graphql'
-import type { CodegenClientConfig } from './types'
+import type { CodegenClientConfig } from '../types'
 import { codegen } from '@graphql-codegen/core'
 import { preset } from '@graphql-codegen/import-types-preset'
 import { plugin as typescriptPlugin } from '@graphql-codegen/typescript'

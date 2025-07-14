@@ -133,15 +133,12 @@ export function virtualResolvers(app: Nitro) {
       }),
     ]
 
-    const data = imports.map(({ imports }) => {
-      for (const i of imports) {
-        if (i.type === 'resolver') {
-          // return `${i.as}`
-          return `{ resolver: ${i.as} }`
-        }
-      }
-      return undefined
-    }).filter(Boolean).join(',\n')
+    const data = imports
+      .map(({ imports }) =>
+        imports.map(i => `{ resolver: ${i.as} }`).join(',\n'),
+      )
+      .filter(Boolean)
+      .join(',\n')
 
     const content = [
       'export const resolvers = [',

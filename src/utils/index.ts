@@ -26,6 +26,47 @@ export function defineResolver(
   return resolvers
 }
 
+// Kullanım için utility type
+export type ResolverQuery = Resolvers extends { Query: infer Q }
+  ? Q
+  : never
+
+export function defineQuery(
+  resolvers: Resolvers['Query'] = {},
+): Resolvers {
+  return {
+    Query: {
+      ...resolvers,
+    },
+  }
+}
+
+export function defineMutation(
+  resolvers: Resolvers['Mutation'] = {},
+): Resolvers {
+  return {
+    Mutation: {
+      ...resolvers,
+    },
+  }
+}
+
+export function defineSubscription(
+  resolvers: Resolvers['Subscription'] = {},
+): Resolvers {
+  return {
+    Subscription: {
+      ...resolvers,
+    },
+  }
+}
+
+export function defineType(
+  resolvers: Resolvers,
+): Resolvers {
+  return resolvers
+}
+
 /**
  * Helper function to define GraphQL Yoga configuration with type safety
  */
@@ -64,6 +105,10 @@ export async function scanResolvers(nitro: Nitro) {
     const fileContent = await readFile(file.fullPath, 'utf-8')
     const parsed = await parseAsync(file.fullPath, fileContent)
 
+    const exports: GenImport = {
+      imports: [],
+      specifier: file.fullPath,
+    }
     for (const node of parsed.program.body) {
       if (
         node.type === 'ExportNamedDeclaration'
@@ -74,31 +119,51 @@ export async function scanResolvers(nitro: Nitro) {
           if (decl.type === 'VariableDeclarator' && decl.init && decl.id.type === 'Identifier') {
             if (decl.init && decl.init.type === 'CallExpression') {
               if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineResolver') {
-                exportName.push({
-                  specifier: file.fullPath,
-                  imports: [{
-                    name: decl.id.name,
-                    type: 'resolver',
-                    as: `_${hash(decl.id.name + file.path).replace(/-/g, '').slice(0, 10)}`,
-                  }],
+                exports.imports.push({
+                  name: decl.id.name,
+                  type: 'resolver',
+                  as: `_${hash(decl.id.name + file.path).replace(/-/g, '').slice(0, 6)}`,
                 })
               }
 
               if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineQuery') {
-                console.log('Found schema:', decl.id.name)
+                exports.imports.push({
+                  name: decl.id.name,
+                  type: 'query',
+                  as: `_${hash(decl.id.name + file.path).replace(/-/g, '').slice(0, 6)}`,
+                })
               }
 
               if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineMutation') {
-                console.log('Found mutation:', decl.id.name)
+                exports.imports.push({
+                  name: decl.id.name,
+                  type: 'mutation',
+                  as: `_${hash(decl.id.name + file.path).replace(/-/g, '').slice(0, 6)}`,
+                })
               }
 
               if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineType') {
-                console.log('Found type:', decl.id.name)
+                exports.imports.push({
+                  name: decl.id.name,
+                  type: 'type',
+                  as: `_${hash(decl.id.name + file.path).replace(/-/g, '').slice(0, 6)}`,
+                })
+              }
+
+              if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineSubscription') {
+                exports.imports.push({
+                  name: decl.id.name,
+                  type: 'subscription',
+                  as: `_${hash(decl.id.name + file.path).replace(/-/g, '').slice(0, 6)}`,
+                })
               }
             }
           }
         }
       }
+    }
+    if (exports.imports.length > 0) {
+      exportName.push(exports)
     }
   }
 
