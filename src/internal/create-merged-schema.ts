@@ -2,7 +2,7 @@ import { defs } from '#nitro-internal-virtual/server-defs'
 import { resolvers } from '#nitro-internal-virtual/server-resolvers'
 
 import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge'
-import { createSchema } from 'graphql-yoga'
+import { makeExecutableSchema } from '@graphql-tools/schema'
 
 export function createMergedSchema() {
   try {
@@ -10,7 +10,7 @@ export function createMergedSchema() {
     const typeDefs = mergeTypeDefs([mergedDefs])
     const mergedResolvers = mergeResolvers(resolvers.map(r => r.resolver))
 
-    return createSchema({
+    return makeExecutableSchema({
       typeDefs,
       resolvers: mergedResolvers,
     })

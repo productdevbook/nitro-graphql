@@ -2,9 +2,7 @@ import type { TypeScriptPluginConfig } from '@graphql-codegen/typescript'
 import type { TypeScriptDocumentsPluginConfig } from '@graphql-codegen/typescript-operations'
 import type { TypeScriptResolversPluginConfig } from '@graphql-codegen/typescript-resolvers'
 import type { IResolvers } from '@graphql-tools/utils'
-import type { YogaServerOptions } from 'graphql-yoga'
 import type { ESMCodeGenOptions } from 'knitwork'
-import type { IncomingMessage, ServerResponse } from 'node:http'
 
 export type { StandardSchemaV1 } from './standard-schema'
 
@@ -66,7 +64,6 @@ export interface NitroGraphQLOptions {
     healthCheck?: string
   }
   playground?: boolean
-  cors?: YogaServerOptions<{ req: IncomingMessage, res: ServerResponse }, any>['cors']
   typedefs?: string[]
   resolvers?: Array<IResolvers<any, any>>
   loader?: {
@@ -78,5 +75,4 @@ export interface NitroGraphQLOptions {
     server?: CodegenServerConfig
     client?: CodegenClientConfig
   }
-  yogaConfig?: Partial<YogaServerOptions<any, any>>
 }
