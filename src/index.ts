@@ -3,8 +3,9 @@ import type { NitroGraphQLOptions } from './types'
 import { writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { watch } from 'chokidar'
-import defu from 'defu'
+import consola from 'consola'
 
+import defu from 'defu'
 import { defineNitroModule } from 'nitropack/kit'
 import { dirname, join, resolve } from 'pathe'
 import { rollupConfig } from './rollup'
@@ -36,6 +37,11 @@ export type GraphQLFramework = 'graphql-yoga'
 export default defineNitroModule({
   name: 'nitro-graphql',
   async setup(nitro: Nitro) {
+    if (!nitro.options.graphql?.framework) {
+      consola.warn('No GraphQL framework specified. Please set graphql.framework to "graphql-yoga" or "apollo-server".')
+      return
+    }
+
     nitro.graphql ||= {
       buildDir: '',
       watchDirs: [],
@@ -125,6 +131,11 @@ export default defineNitroModule({
     // Generate server and client types
     await serverTypeGeneration(nitro)
     await clientTypeGeneration(nitro, nitro.graphql.clientDir)
+
+    nitro.hooks.hook('close', async () => {
+      await serverTypeGeneration(nitro)
+      await clientTypeGeneration(nitro, nitro.graphql.clientDir)
+    })
 
     const runtime = fileURLToPath(
       new URL('routes', import.meta.url),

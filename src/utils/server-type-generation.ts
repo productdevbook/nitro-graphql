@@ -1,6 +1,6 @@
 import type { Nitro } from 'nitropack'
 
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { loadFilesSync } from '@graphql-tools/load-files'
 import { mergeTypeDefs } from '@graphql-tools/merge'
 import { printSchemaWithDirectives } from '@graphql-tools/utils'
@@ -13,6 +13,12 @@ import { generateTypes } from './server-codegen'
 export async function serverTypeGeneration(app: Nitro) {
   try {
     const defs = app.scanDefs || []
+
+    if (!defs.length) {
+      consola.info('No GraphQL definitions found for server type generation.')
+      return
+    }
+
     const loadDefs = loadFilesSync(defs)
     const mergedDefs = mergeTypeDefs(loadDefs)
 
@@ -48,7 +54,14 @@ export async function clientTypeGeneration(
       return
     }
     const docs = await loadGraphQLDocuments(root)
-    const graphqlString = readFileSync(join(app.graphql.buildDir, 'schema.graphql'), 'utf-8')
+
+    const schemaFilePath = join(app.graphql.buildDir, 'schema.graphql')
+    if (!existsSync(schemaFilePath)) {
+      consola.info('Schema file not ready yet for client type generation. Server types need to be generated first.')
+      return
+    }
+
+    const graphqlString = readFileSync(schemaFilePath, 'utf-8')
     const schema = buildSchema(graphqlString)
 
     const types = await generateClientTypes(schema, docs)
