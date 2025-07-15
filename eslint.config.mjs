@@ -12,6 +12,7 @@ const nitro = {
     '**/assets',
     '**/vfs',
     'README.md',
+    'CONTRIBUTING.md',
   ],
 }
 export default antfu({
