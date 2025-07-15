@@ -6,7 +6,7 @@ export default defineNitroConfig({
   modules: ['nitro-graphql'],
   compatibilityDate: '2025-07-01',
   graphql: {
-    framework: 'apollo-server',
+    framework: 'graphql-yoga',
   },
   esbuild: {
     options: {
