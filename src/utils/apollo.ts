@@ -1,3 +1,10 @@
+/*
+This file Copy from 'https://github.com/apollo-server-integrations/apollo-server-integration-h3/blob/main/src/index.ts'
+
+There is a bug, after it is fixed, the will be used again
+
+*/
+
 import type {
   ApolloServer,
   BaseContext,

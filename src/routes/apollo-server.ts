@@ -1,11 +1,5 @@
-/*
-This file Copy from 'https://github.com/apollo-server-integrations/apollo-server-integration-h3/blob/main/src/index.ts'
-
-There is a bug, after it is fixed, the will be used again
-
-*/
-
 import type { BaseContext } from '@apollo/server'
+import { importedConfig } from '#nitro-internal-virtual/graphql-config'
 import { defs } from '#nitro-internal-virtual/server-defs'
 import { resolvers } from '#nitro-internal-virtual/server-resolvers'
 import { ApolloServer } from '@apollo/server'
@@ -13,6 +7,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
 // TODO: fix bug
 // import { startServerAndCreateH3Handler } from '@as-integrations/h3'
 import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge'
+import defu from 'defu'
 import { startServerAndCreateH3Handler } from '../utils/apollo'
 
 function createMergedSchema() {
@@ -38,14 +33,14 @@ function createApolloServer() {
   if (!apolloServer) {
     const { typeDefs, resolvers: mergedResolvers } = createMergedSchema()
 
-    apolloServer = new ApolloServer<BaseContext>({
+    apolloServer = new ApolloServer<BaseContext>(defu({
       typeDefs,
       resolvers: mergedResolvers,
       introspection: true,
       plugins: [
         ApolloServerPluginLandingPageLocalDefault({ embed: true }),
       ],
-    })
+    }, importedConfig))
   }
   return apolloServer
 }
