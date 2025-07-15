@@ -37,6 +37,10 @@
       "types": "./dist/utils/index.d.ts",
       "import": "./dist/utils/index.js"
     },
+    "./utils/define": {
+      "types": "./dist/utils/define.d.ts",
+      "import": "./dist/utils/define.js"
+    },
     "./internal": {
       "types": "./dist/internal/index.d.ts",
       "import": "./dist/internal/index.js"

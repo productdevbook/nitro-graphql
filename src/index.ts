@@ -36,11 +36,6 @@ export type GraphQLFramework = 'graphql-yoga'
 export default defineNitroModule({
   name: 'nitro-graphql',
   async setup(nitro: Nitro) {
-    nitro.options.externals = nitro.options.externals || {}
-    nitro.options.externals.external ??= []
-    nitro.options.externals.external.push('oxc-parser')
-    nitro.options.externals.external.push('@oxc-parser')
-
     nitro.graphql ||= {
       buildDir: '',
       watchDirs: [],
@@ -61,6 +56,7 @@ export default defineNitroModule({
       else if (typeof rollupConfig.external === 'function') {
         const originalExternal = rollupConfig.external
         rollupConfig.external = (id, parent, isResolved) => {
+          console.log('Checking external:', id, parent, isResolved)
           if (codegenExternals.some(external => id.includes(external))) {
             return true
           }
@@ -168,7 +164,7 @@ export default defineNitroModule({
     // Auto-import utilities
     if (nitro.options.imports) {
       nitro.options.imports.presets.push({
-        from: 'nitro-graphql',
+        from: 'nitro-graphql/utils/define',
         imports: [
           'defineResolver',
           'defineYogaConfig',
