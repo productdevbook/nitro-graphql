@@ -6,4 +6,6 @@ type Query {
   greeting(name: String!): String!
 }
 
-type Mutation
+type Mutation {
+  _empty: String
+}
