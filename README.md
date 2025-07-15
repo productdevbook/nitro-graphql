@@ -1007,6 +1007,39 @@ const client = createGraphQLClient({
 > [!IMPORTANT]
 > Please don't forget to read the [Contribution Guidelines](CONTRIBUTING.md) document before contributing.
 
+## 📋 Community TODOs
+
+Help us improve nitro-graphql! Pick any item and contribute:
+
+### 🚀 Framework Examples
+- [ ] Nitro-compatible framework integrations
+- [ ] Nuxt + Pinia Colada example
+- [ ] StackBlitz playground demos
+
+### 🧹 Code Quality
+- [ ] Performance benchmarks
+- [ ] Bundle size optimization
+- [ ] Testing utilities
+- [ ] Error handling patterns
+
+### 📚 Documentation  
+- [ ] Video tutorials
+- [ ] Migration guides
+- [ ] Best practices guide
+
+### 🔧 Developer Tools
+- [ ] VS Code extension
+- [ ] CLI tools
+- [ ] Debug utilities
+
+### 🌐 Integrations
+- [ ] Database adapters (Prisma, Drizzle)
+- [ ] Cache strategies
+- [ ] Deployment guides
+
+> [!NOTE]
+> Have other ideas? Open an issue to discuss!
+
 ---
 
 ### 🌟 Thank You
