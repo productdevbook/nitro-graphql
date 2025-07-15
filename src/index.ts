@@ -199,7 +199,7 @@ export default defineNitroModule({
       rollupConfig.output.chunkFileNames = (chunkInfo) => {
         // GraphQL dosyalarını kontrol et
         if (chunkInfo.moduleIds && chunkInfo.moduleIds.some(id =>
-          id.includes('/graphql/') || id.includes('.graphql') || id.includes('.resolver.ts') || id.includes('.gql'),
+          id.endsWith('.graphql') || id.endsWith('.resolver.ts') || id.endsWith('.gql'),
         )) {
           return `chunks/graphql/[name].mjs`
         }
