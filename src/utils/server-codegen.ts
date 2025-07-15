@@ -80,7 +80,7 @@ export async function generateTypes(
         plugin: () => {
           return {
             prepend: [
-              `import schemas from '#graphql/schemas'`,
+              `import schemas from '#graphql/schema'`,
               `import type { StandardSchemaV1 } from 'nitro-graphql'`,
 
               `

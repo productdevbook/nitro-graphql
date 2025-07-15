@@ -191,6 +191,7 @@ server/
 │   │   ├── post-queries.resolver.ts # Post query resolvers (use named exports)
 │   │   └── create-post.resolver.ts  # Post mutation resolvers (use named exports)
 │   └── config.ts                   # Optional GraphQL configuration
+│   └── schema.ts                   # Changing Special Return types
 ```
 
 > [!TIP]
@@ -621,6 +622,7 @@ export const postTypes = defineType({
 You can override schema types if needed. StandardSchema supported — Zod, Valibot, anything works:
 
 ```ts
+# server/graphql/schema.ts
 import { defineSchema } from 'nitro-graphql/utils/define'
 import { z } from 'zod'
 
