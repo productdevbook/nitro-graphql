@@ -1053,6 +1053,20 @@ Help us improve nitro-graphql! Pick any item and contribute:
 > [!NOTE]
 > Have other ideas? Open an issue to discuss!
 
+## 🛠️ VS Code Extensions
+
+For the best development experience with GraphQL, install these recommended VS Code extensions:
+
+- **[GraphQL: Language Feature Support](https://marketplace.visualstudio.com/items?itemName=GraphQL.vscode-graphql)** - Provides GraphQL language features like autocompletion, go-to definition, and schema validation
+- **[GraphQL: Syntax Highlighting](https://marketplace.visualstudio.com/items?itemName=GraphQL.vscode-graphql-syntax)** - Adds syntax highlighting for GraphQL queries, mutations, subscriptions, and schema files
+
+These extensions will enable:
+- 🎨 Syntax highlighting for `.graphql` files
+- 📝 IntelliSense and autocompletion based on your schema
+- ✅ Real-time validation of GraphQL queries
+- 🔍 Go-to definition for types and fields
+- 💡 Hover information for GraphQL elements
+
 ---
 
 ### 🌟 Thank You
