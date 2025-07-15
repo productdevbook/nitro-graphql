@@ -7,11 +7,11 @@
     "preview": "node .output/server/index.mjs"
   },
   "dependencies": {
-    "@apollo/server": "^4.12.2",
+    "@apollo/server": "catalog:",
     "nitro-graphql": "link:../",
-    "zod": "^4.0.5"
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "nitropack": "^2.11.13"
+    "nitropack": "catalog:"
   }
 }
