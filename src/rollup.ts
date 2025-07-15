@@ -3,13 +3,14 @@ import type { Nitro } from 'nitropack'
 import { readFile } from 'node:fs/promises'
 import { parse } from 'graphql'
 import { genImport } from 'knitwork'
+import { resolve } from 'pathe'
 import { getImportId, scanGraphql } from './utils'
 import { serverTypeGeneration } from './utils/server-type-generation'
 
 export async function rollupConfig(app: Nitro) {
   virtualDefs(app)
   virtualResolvers(app)
-
+  getGraphQLConfig(app)
   app.hooks.hook('rollup:before', (nitro, rollupConfig) => {
     rollupConfig.plugins = rollupConfig.plugins || []
     const {
@@ -152,5 +153,17 @@ export function virtualResolvers(app: Nitro) {
     const code = content.join('\n')
 
     return code
+  }
+}
+
+export function getGraphQLConfig(app: Nitro) {
+  const configPath = resolve(app.graphql.serverDir, 'config.ts')
+
+  app.options.virtual ??= {}
+  app.options.virtual['#nitro-internal-virtual/graphql-config'] = () => {
+    return `import config from '${configPath}'
+const importedConfig = config
+export { importedConfig }
+`
   }
 }
