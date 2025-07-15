@@ -36,17 +36,30 @@
 
 ### Step 1: Installation
 
-Choose your preferred package manager:
+Choose your GraphQL framework and install required dependencies:
 
+**For GraphQL Yoga:**
 ```bash
 # npm
-npm install nitro-graphql
+npm install nitro-graphql graphql-yoga graphql
 
 # pnpm (recommended)
-pnpm add nitro-graphql
+pnpm add nitro-graphql graphql-yoga graphql
 
 # yarn
-yarn add nitro-graphql
+yarn add nitro-graphql graphql-yoga graphql
+```
+
+**For Apollo Server:**
+```bash
+# npm
+npm install nitro-graphql @apollo/server graphql
+
+# pnpm (recommended)
+pnpm add nitro-graphql @apollo/server graphql
+
+# yarn
+yarn add nitro-graphql @apollo/server graphql
 ```
 
 ### Step 2: Setup Your Project
