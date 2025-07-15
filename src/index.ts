@@ -245,6 +245,9 @@ declare module 'nitro-graphql' {
       types.tsConfig.compilerOptions.paths['#graphql/client'] = [
         relativeWithDot(tsconfigDir, join(typesDir, 'nitro-graphql-client.d.ts')),
       ]
+      types.tsConfig.compilerOptions.paths['#graphql/schemas'] = [
+        relativeWithDot(tsconfigDir, join(nitro.graphql.serverDir, 'schemas.ts')),
+      ]
       types.tsConfig.include = types.tsConfig.include || []
       types.tsConfig.include.push(
         relativeWithDot(tsconfigDir, join(typesDir, 'nitro-graphql-server.d.ts')),
