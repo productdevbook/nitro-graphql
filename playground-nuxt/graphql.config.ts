@@ -1,4 +1,3 @@
-
 import type { IGraphQLConfig } from 'graphql-config'
 
 export function createGraphQLConfig(config?: IGraphQLConfig): IGraphQLConfig {
@@ -14,5 +13,5 @@ export function createGraphQLConfig(config?: IGraphQLConfig): IGraphQLConfig {
       },
     },
   }
-  return newConfig;
+  return newConfig
 }

@@ -123,10 +123,17 @@ Create a resolver for your queries:
 // server/graphql/hello.resolver.ts
 import { defineResolver } from 'nitro-graphql/utils/define'
 
-export default defineResolver({
+export const helloResolver = defineResolver({
   Query: {
     hello: () => 'Hello from GraphQL!',
     greeting: (_, { name }) => `Hello, ${name}!`,
+  },
+})
+
+// You can also export multiple resolvers from the same file
+export const additionalResolver = defineResolver({
+  Query: {
+    // Additional query resolvers
   },
 })
 ```
@@ -159,17 +166,20 @@ The module uses a domain-driven file structure under `server/graphql/`:
 server/
 ├── graphql/
 │   ├── schema.graphql              # Main schema with scalars and base types
-│   ├── hello.resolver.ts           # Global resolvers
+│   ├── hello.resolver.ts           # Global resolvers (use named exports)
 │   ├── users/
 │   │   ├── user.graphql           # User schema definitions
-│   │   ├── user-queries.resolver.ts # User query resolvers
-│   │   └── create-user.resolver.ts  # User mutation resolvers
+│   │   ├── user-queries.resolver.ts # User query resolvers (use named exports)
+│   │   └── create-user.resolver.ts  # User mutation resolvers (use named exports)
 │   ├── posts/
 │   │   ├── post.graphql           # Post schema definitions
-│   │   ├── post-queries.resolver.ts # Post query resolvers
-│   │   └── create-post.resolver.ts  # Post mutation resolvers
+│   │   ├── post-queries.resolver.ts # Post query resolvers (use named exports)
+│   │   └── create-post.resolver.ts  # Post mutation resolvers (use named exports)
 │   └── config.ts                   # Optional GraphQL configuration
 ```
+
+> [!TIP]
+> **New Named Export Pattern**: The module now supports named exports for GraphQL resolvers, allowing you to export multiple resolvers from a single file. This provides better organization and flexibility in structuring your resolver code.
 
 ### Building Your First Feature
 
@@ -211,7 +221,7 @@ extend type Mutation {
 // server/graphql/users/user-queries.resolver.ts
 import { defineQuery } from 'nitro-graphql/utils/define'
 
-export default defineQuery({
+export const userQueries = defineQuery({
   users: async (_, __, { storage }) => {
     return await storage.getItem('users') || []
   },
@@ -219,6 +229,14 @@ export default defineQuery({
     const users = await storage.getItem('users') || []
     return users.find(user => user.id === id)
   }
+})
+
+// You can also split queries into separate named exports
+export const additionalUserQueries = defineQuery({
+  userCount: async (_, __, { storage }) => {
+    const users = await storage.getItem('users') || []
+    return users.length
+  },
 })
 ```
 
@@ -231,7 +249,7 @@ export default defineQuery({
 // server/graphql/users/create-user.resolver.ts
 import { defineMutation } from 'nitro-graphql/utils/define'
 
-export default defineMutation({
+export const createUserMutation = defineMutation({
   createUser: async (_, { input }, { storage }) => {
     const users = await storage.getItem('users') || []
     const user = {
@@ -242,6 +260,20 @@ export default defineMutation({
     users.push(user)
     await storage.setItem('users', users)
     return user
+  }
+})
+
+// You can also export multiple mutations from the same file
+export const updateUserMutation = defineMutation({
+  updateUser: async (_, { id, input }, { storage }) => {
+    const users = await storage.getItem('users') || []
+    const userIndex = users.findIndex(user => user.id === id)
+    if (userIndex === -1)
+      throw new Error('User not found')
+
+    users[userIndex] = { ...users[userIndex], ...input }
+    await storage.setItem('users', users)
+    return users[userIndex]
   }
 })
 ```
@@ -310,10 +342,10 @@ export default defineNitroConfig({
   runtimeConfig: {
     graphql: {
       endpoint: {
-        graphql: '/api/graphql',        // GraphQL endpoint
+        graphql: '/api/graphql', // GraphQL endpoint
         healthCheck: '/api/graphql/health' // Health check endpoint
       },
-      playground: true,                 // Enable Apollo Sandbox
+      playground: true, // Enable Apollo Sandbox
     }
   }
 })
@@ -361,7 +393,18 @@ Both examples include working GraphQL schemas, resolvers, and demonstrate the mo
 > [!NOTE]
 > **Auto-Import Available**: All utilities are automatically imported in your resolver files thanks to Nitro's auto-import feature. You can use them directly without import statements, or use explicit imports if you prefer:
 > ```ts
-> import { defineResolver, defineQuery, defineMutation } from 'nitro-graphql/utils/define'
+> import { defineMutation, defineQuery, defineResolver } from 'nitro-graphql/utils/define'
+> ```
+
+> [!IMPORTANT]
+> **Named Exports Required**: All GraphQL resolvers must now use named exports instead of default exports. This allows you to export multiple resolvers from a single file, providing better organization and flexibility. For example:
+> ```ts
+> // ✅ Correct - Named exports
+> export const userQueries = defineQuery({ ... })
+> export const userMutations = defineMutation({ ... })
+> 
+> // ❌ Incorrect - Default exports (deprecated)
+> export default defineQuery({ ... })
 > ```
 
 <details>
@@ -370,7 +413,7 @@ Both examples include working GraphQL schemas, resolvers, and demonstrate the mo
 ```ts
 import { defineResolver } from 'nitro-graphql/utils/define'
 
-export default defineResolver({
+export const mainResolver = defineResolver({
   Query: {
     // Query resolvers
   },
@@ -378,6 +421,13 @@ export default defineResolver({
     // Mutation resolvers
   },
   // Custom type resolvers
+})
+
+// You can also export multiple resolvers from the same file
+export const additionalResolver = defineResolver({
+  Query: {
+    // Additional query resolvers
+  },
 })
 ```
 
@@ -389,7 +439,7 @@ export default defineResolver({
 ```ts
 import { defineQuery } from 'nitro-graphql/utils/define'
 
-export default defineQuery({
+export const userQueries = defineQuery({
   users: async (_, __, { storage }) => {
     return await storage.getItem('users') || []
   },
@@ -397,6 +447,14 @@ export default defineQuery({
     const users = await storage.getItem('users') || []
     return users.find(user => user.id === id)
   }
+})
+
+// You can also split queries into separate named exports
+export const userStatsQueries = defineQuery({
+  userCount: async (_, __, { storage }) => {
+    const users = await storage.getItem('users') || []
+    return users.length
+  },
 })
 ```
 
@@ -408,7 +466,7 @@ export default defineQuery({
 ```ts
 import { defineMutation } from 'nitro-graphql/utils/define'
 
-export default defineMutation({
+export const userMutations = defineMutation({
   createUser: async (_, { input }, { storage }) => {
     const users = await storage.getItem('users') || []
     const user = {
@@ -421,6 +479,20 @@ export default defineMutation({
     return user
   }
 })
+
+// You can also export multiple mutations from the same file
+export const userUpdateMutations = defineMutation({
+  updateUser: async (_, { id, input }, { storage }) => {
+    const users = await storage.getItem('users') || []
+    const userIndex = users.findIndex(user => user.id === id)
+    if (userIndex === -1)
+      throw new Error('User not found')
+
+    users[userIndex] = { ...users[userIndex], ...input }
+    await storage.setItem('users', users)
+    return users[userIndex]
+  }
+})
 ```
 
 </details>
@@ -431,7 +503,7 @@ export default defineMutation({
 ```ts
 import { defineSubscription } from 'nitro-graphql/utils/define'
 
-export default defineSubscription({
+export const userSubscriptions = defineSubscription({
   userAdded: {
     subscribe: () => pubsub.asyncIterator('USER_ADDED'),
   },
@@ -441,6 +513,13 @@ export default defineSubscription({
       (payload, variables) => payload.postUpdated.id === variables.postId
     ),
   }
+})
+
+// You can also export multiple subscriptions from the same file
+export const notificationSubscriptions = defineSubscription({
+  notificationAdded: {
+    subscribe: () => pubsub.asyncIterator('NOTIFICATION_ADDED'),
+  },
 })
 ```
 
@@ -452,13 +531,23 @@ export default defineSubscription({
 ```ts
 import { defineType } from 'nitro-graphql/utils/define'
 
-export default defineType({
+export const userTypes = defineType({
   User: {
     posts: async (parent, _, { storage }) => {
       const posts = await storage.getItem('posts') || []
       return posts.filter(post => post.authorId === parent.id)
     },
-    fullName: (parent) => `${parent.firstName} ${parent.lastName}`,
+    fullName: parent => `${parent.firstName} ${parent.lastName}`,
+  },
+})
+
+// You can also export multiple type resolvers from the same file
+export const postTypes = defineType({
+  Post: {
+    author: async (parent, _, { storage }) => {
+      const users = await storage.getItem('users') || []
+      return users.find(user => user.id === parent.authorId)
+    },
   },
 })
 ```
@@ -521,7 +610,7 @@ export default defineSchema({
 
 ### Types not generating
 
-**Solution**: 
+**Solution**:
 1. Restart your dev server
 2. Check that your schema files end with `.graphql`
 3. Verify your resolver files end with `.resolver.ts`
@@ -537,11 +626,23 @@ export default defineSchema({
 
 **Solution**:
 ```ts
-// ✅ Correct
-import { defineResolver } from 'nitro-graphql/utils/define'
-
-// ❌ Incorrect
+// ❌ Incorrect import path
 import { defineResolver } from 'nitro-graphql'
+
+// ✅ Correct import path
+import { defineResolver } from 'nitro-graphql/utils/define'
+```
+
+### Export pattern errors
+
+**Solution**:
+```ts
+// ❌ Incorrect - Default exports (deprecated)
+export default defineResolver({ ... })
+
+// ✅ Correct - Named exports
+export const myResolver = defineResolver({ ... })
+export const anotherResolver = defineResolver({ ... })
 ```
 
 </details>
@@ -587,7 +688,7 @@ import { GraphQLScalarType } from 'graphql'
 import { Kind } from 'graphql/language'
 import { defineResolver } from 'nitro-graphql/utils/define'
 
-export default defineResolver({
+export const dateTimeScalar = defineResolver({
   DateTime: new GraphQLScalarType({
     name: 'DateTime',
     serialize: (value: Date) => value.toISOString(),
@@ -595,6 +696,21 @@ export default defineResolver({
     parseLiteral: (ast) => {
       if (ast.kind === Kind.STRING) {
         return new Date(ast.value)
+      }
+      return null
+    }
+  })
+})
+
+// You can also export multiple scalars from the same file
+export const jsonScalar = defineResolver({
+  JSON: new GraphQLScalarType({
+    name: 'JSON',
+    serialize: value => value,
+    parseValue: value => value,
+    parseLiteral: (ast) => {
+      if (ast.kind === Kind.STRING) {
+        return JSON.parse(ast.value)
       }
       return null
     }
@@ -611,7 +727,7 @@ export default defineResolver({
 // server/graphql/users/user-queries.resolver.ts
 import { defineQuery } from 'nitro-graphql/utils/define'
 
-export default defineQuery({
+export const userQueries = defineQuery({
   user: async (_, { id }, { storage }) => {
     try {
       const user = await storage.getItem(`user:${id}`)
@@ -619,9 +735,24 @@ export default defineQuery({
         throw new Error(`User with id ${id} not found`)
       }
       return user
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Error fetching user:', error)
       throw error
+    }
+  }
+})
+
+// You can also export additional error handling queries
+export const safeUserQueries = defineQuery({
+  userSafe: async (_, { id }, { storage }) => {
+    try {
+      const user = await storage.getItem(`user:${id}`)
+      return user || null // Return null instead of throwing
+    }
+    catch (error) {
+      console.error('Error fetching user:', error)
+      return null
     }
   }
 })
@@ -650,6 +781,183 @@ export default defineNuxtConfig({
 ```
 
 Client-side GraphQL files are automatically detected in the `app/graphql/` directory.
+
+### Client-Side Usage
+
+The module automatically generates a GraphQL SDK and provides type-safe client access for frontend usage.
+
+<details>
+<summary>📁 <strong>GraphQL File Structure</strong></summary>
+
+Create your GraphQL queries and mutations in the `app/graphql/` directory:
+
+```
+app/
+├── graphql/
+│   ├── queries.graphql         # GraphQL queries
+│   ├── mutations.graphql       # GraphQL mutations
+│   └── subscriptions.graphql   # GraphQL subscriptions (optional)
+```
+
+</details>
+
+<details>
+<summary>🔥 <strong>Creating GraphQL Files</strong></summary>
+
+**Query File Example:**
+```graphql
+# app/graphql/queries.graphql
+query GetUsers {
+  users {
+    id
+    name
+    email
+    createdAt
+  }
+}
+
+query GetUser($id: ID!) {
+  user(id: $id) {
+    id
+    name
+    email
+    createdAt
+  }
+}
+```
+
+**Mutation File Example:**
+```graphql
+# app/graphql/mutations.graphql
+mutation CreateUser($input: CreateUserInput!) {
+  createUser(input: $input) {
+    id
+    name
+    email
+    createdAt
+  }
+}
+
+mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {
+  updateUser(id: $id, input: $input) {
+    id
+    name
+    email
+    createdAt
+  }
+}
+```
+
+</details>
+
+<details>
+<summary>⚡ <strong>Using the Generated SDK</strong></summary>
+
+The module automatically generates a type-safe SDK based on your GraphQL files:
+
+```ts
+// The SDK is automatically generated and available as an import
+import { createGraphQLClient } from '#graphql/client'
+
+// Create a client instance
+const client = createGraphQLClient({
+  endpoint: '/api/graphql',
+  headers: {
+    'Authorization': 'Bearer your-token-here'
+  }
+})
+
+// Use the generated methods with full type safety
+const getUsersData = await client.GetUsers()
+console.log(getUsersData.users) // Fully typed response
+
+const newUser = await client.CreateUser({
+  input: {
+    name: 'John Doe',
+    email: 'john@example.com'
+  }
+})
+console.log(newUser.createUser) // Fully typed response
+```
+
+</details>
+
+<details>
+<summary>🎯 <strong>Basic Usage Examples</strong></summary>
+
+**Fetching Data:**
+```ts
+// Import the generated client
+import { createGraphQLClient } from '#graphql/client'
+
+const client = createGraphQLClient()
+
+// Query users
+const { users } = await client.GetUsers()
+console.log(users) // Array of User objects with full typing
+
+// Query specific user
+const { user } = await client.GetUser({ id: '123' })
+console.log(user) // User object or null
+```
+
+**Creating Data:**
+```ts
+// Create a new user
+const { createUser } = await client.CreateUser({
+  input: {
+    name: 'Jane Doe',
+    email: 'jane@example.com'
+  }
+})
+console.log(createUser) // Newly created user with full typing
+```
+
+**Error Handling:**
+```ts
+try {
+  const { users } = await client.GetUsers()
+  console.log(users)
+} catch (error) {
+  console.error('GraphQL Error:', error)
+  // Handle GraphQL errors appropriately
+}
+```
+
+</details>
+
+<details>
+<summary>🔧 <strong>Client Configuration</strong></summary>
+
+```ts
+import { createGraphQLClient } from '#graphql/client'
+
+// Basic configuration
+const client = createGraphQLClient({
+  endpoint: '/api/graphql',
+  headers: {
+    'Authorization': 'Bearer your-token',
+    'X-Client-Version': '1.0.0'
+  },
+  timeout: 10000
+})
+
+// Advanced configuration with dynamic headers
+const client = createGraphQLClient({
+  endpoint: '/api/graphql',
+  headers: async () => {
+    const token = await getAuthToken()
+    return {
+      'Authorization': token ? `Bearer ${token}` : '',
+      'X-Request-ID': crypto.randomUUID()
+    }
+  },
+  retry: 3,
+  timeout: 30000
+})
+```
+
+</details>
 
 </details>
 

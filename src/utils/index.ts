@@ -53,6 +53,7 @@ export async function scanResolvers(nitro: Nitro) {
         && node.declaration
         && node.declaration.type === 'VariableDeclaration'
       ) {
+        // TODO: if there is no cost, there is a mistake
         for (const decl of node.declaration.declarations) {
           if (decl.type === 'VariableDeclarator' && decl.init && decl.id.type === 'Identifier') {
             if (decl.init && decl.init.type === 'CallExpression') {

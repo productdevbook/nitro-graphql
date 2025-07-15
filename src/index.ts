@@ -249,7 +249,6 @@ declare module 'nitro-graphql' {
     })
 
     if (!existsSync(join(nitro.options.rootDir, 'graphql.config.ts'))) {
-
       const schemaPath = relativeWithDot(nitro.options.rootDir, resolve(nitro.graphql.buildDir, 'schema.graphql'))
       const documentsPath = relativeWithDot(nitro.options.rootDir, resolve(nitro.graphql.clientDir, '**/*.{graphql,js,ts,jsx,tsx}'))
 

@@ -10,12 +10,18 @@ input CreateUserInput {
   email: String!
 }
 
+input UpdateUserInput {
+  name: String
+  email: String
+}
+
 extend type Query {
   users: [User!]!
   user(id: ID!): User
-  allUsers: [User!]!
 }
 
 extend type Mutation {
   createUser(input: CreateUserInput!): User!
+  updateUser(id: ID!, input: UpdateUserInput!): User!
+  deleteUser(id: ID!): Boolean!
 }

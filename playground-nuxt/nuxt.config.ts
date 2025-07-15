@@ -3,6 +3,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: [
     'nitro-graphql/nuxt',
+    '@nuxtjs/tailwindcss',
   ],
   nitro: {
     modules: ['nitro-graphql'],

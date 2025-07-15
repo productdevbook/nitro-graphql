@@ -15,35 +15,3 @@ query GetUser($id: ID!) {
     createdAt
   }
 }
-
-query GetTodos {
-  todos {
-    id
-    title
-    completed
-    createdAt
-  }
-}
-
-query GetPosts {
-  posts {
-    id
-    title
-    content
-    authorId
-  }
-}
-
-query GetPostWithComments($postId: ID!) {
-  post(id: $postId) {
-    id
-    title
-    content
-    authorId
-  }
-  comments(postId: $postId) {
-    id
-    content
-    authorId
-  }
-}

@@ -1,15 +1,17 @@
-import type { User } from '#graphql/server'
+import { users } from '../data'
 
-// Mock database
-const users: User[] = [
-  { id: '1', name: 'John Doe', email: 'john@example.com', createdAt: new Date('2024-01-01') },
-  { id: '2', name: 'Jane Smith', email: 'jane@example.com', createdAt: new Date('2024-01-02') },
-]
-
-export const define1 = defineResolver({
+export const userQueries = defineResolver({
   Query: {
-    users: () => users,
-    user: (_parent, { id }) => users.find(user => user.id === id) || null,
-    allUsers: () => users,
+    users: () => {
+      console.log('[GraphQL] Users query called')
+      console.log('[GraphQL] Users array:', users)
+      return users
+    },
+    user: (_parent, { id }) => {
+      console.log('[GraphQL] User query called with id:', id)
+      const user = users.find(user => user.id === id) || null
+      console.log('[GraphQL] Found user:', user)
+      return user
+    },
   },
 })
