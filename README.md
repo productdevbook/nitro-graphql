@@ -1,11 +1,24 @@
 # Nitro GraphQL
 
+<div align="center">
+
+[![npm version][npm-version-src]][npm-version-href]
+[![npm downloads][npm-downloads-src]][npm-downloads-href]
+[![bundle][bundle-src]][bundle-href]
+[![License][license-src]][license-href]
+
+**A standalone Nitro module that integrates GraphQL servers into any Nitro application with automatic type generation, file watching, and seamless framework integration.**
+
+[🚀 Quick Start](#-quick-start) • [📖 Documentation](#-documentation) • [🎮 Playground](#-playground) • [💬 Community](#-community--contributing)
+
+</div>
+
+---
+
 > [!NOTE]
 > This project is actively under development. We're always open to new ideas, different perspectives, and feature suggestions! If you have a suggestion, please first [open an issue](https://github.com/productdevbook/nitro-graphql/issues) to discuss it, then you can contribute with a PR.
 
-A standalone Nitro module that integrates GraphQL servers into any Nitro application with automatic type generation, file watching, and seamless framework integration.
-
-## Features
+## ✨ Features
 
 - 🚀 **Multi-Framework Support**: Works with GraphQL Yoga and Apollo Server
 - 🔧 **Auto-Discovery**: Automatically scans and loads GraphQL schema and resolver files
@@ -19,22 +32,30 @@ A standalone Nitro module that integrates GraphQL servers into any Nitro applica
 - 📦 **Optimized Bundling**: Smart chunking and dynamic imports for production
 - 🌐 **Nuxt Integration**: First-class Nuxt.js support with dedicated module
 
-## Installation
+## 🚀 Quick Start
+
+### Step 1: Installation
+
+Choose your preferred package manager:
 
 ```bash
+# npm
 npm install nitro-graphql
-# or
+
+# pnpm (recommended)
 pnpm add nitro-graphql
-# or
+
+# yarn
 yarn add nitro-graphql
 ```
 
-## Quick Start
+### Step 2: Setup Your Project
 
-### Standalone Nitro
+<details>
+<summary>🔧 <strong>For Standalone Nitro Projects</strong></summary>
 
+1. **Update your `nitro.config.ts`:**
 ```ts
-// nitro.config.ts
 import { defineNitroConfig } from 'nitropack/config'
 
 export default defineNitroConfig({
@@ -45,10 +66,18 @@ export default defineNitroConfig({
 })
 ```
 
-### Nuxt.js
+2. **Create the GraphQL directory structure:**
+```bash
+mkdir -p server/graphql
+```
 
+</details>
+
+<details>
+<summary>🟢 <strong>For Nuxt.js Projects</strong></summary>
+
+1. **Update your `nuxt.config.ts`:**
 ```ts
-// nuxt.config.ts
 export default defineNuxtConfig({
   modules: [
     'nitro-graphql/nuxt',
@@ -62,7 +91,67 @@ export default defineNuxtConfig({
 })
 ```
 
-## Project Structure
+2. **Create the GraphQL directory structure:**
+```bash
+mkdir -p server/graphql
+```
+
+</details>
+
+### Step 3: Create Your First Schema
+
+Create your main schema file:
+
+```graphql
+# server/graphql/schema.graphql
+scalar DateTime
+scalar JSON
+
+type Query {
+  hello: String!
+  greeting(name: String!): String!
+}
+
+type Mutation
+```
+
+### Step 4: Create Your First Resolver
+
+Create a resolver for your queries:
+
+```ts
+// server/graphql/hello.resolver.ts
+import { defineResolver } from 'nitro-graphql'
+
+export default defineResolver({
+  Query: {
+    hello: () => 'Hello from GraphQL!',
+    greeting: (_, { name }) => `Hello, ${name}!`,
+  },
+})
+```
+
+### Step 5: Start Your Server
+
+```bash
+# For Nitro
+pnpm dev
+
+# For Nuxt
+pnpm dev
+```
+
+### Step 6: Test Your GraphQL API
+
+🎉 **That's it!** Your GraphQL server is now running at:
+
+- **GraphQL Endpoint**: `http://localhost:3000/api/graphql`
+- **Apollo Sandbox**: `http://localhost:3000/api/graphql` (in browser)
+- **Health Check**: `http://localhost:3000/api/graphql/health`
+
+## 📖 Documentation
+
+### Project Structure
 
 The module uses a domain-driven file structure under `server/graphql/`:
 
@@ -82,38 +171,12 @@ server/
 │   └── config.ts                   # Optional GraphQL configuration
 ```
 
-## Basic Usage
+### Building Your First Feature
 
-### 1. Create Schema Files
+Let's create a complete user management feature:
 
-```graphql
-# server/graphql/schema.graphql
-scalar DateTime
-scalar JSON
-
-type Query {
-  hello: String!
-  greeting(name: String!): String!
-}
-
-type Mutation
-```
-
-### 2. Create Resolvers
-
-```ts
-// server/graphql/hello.resolver.ts
-import { defineResolver } from 'nitro-graphql'
-
-export const define1 = defineResolver({
-  Query: {
-    hello: () => 'Hello from auto-discovered resolver!',
-    greeting: (_parent, { name }) => `Hello, ${name}!`,
-  },
-})
-```
-
-### 3. Domain-Specific Schemas
+<details>
+<summary>👤 <strong>Step 1: Define User Schema</strong></summary>
 
 ```graphql
 # server/graphql/users/user.graphql
@@ -139,51 +202,97 @@ extend type Mutation {
 }
 ```
 
-### 4. Domain-Specific Resolvers
+</details>
+
+<details>
+<summary>🔍 <strong>Step 2: Create Query Resolvers</strong></summary>
 
 ```ts
 // server/graphql/users/user-queries.resolver.ts
-import { defineResolver } from 'nitro-graphql'
+import { defineQuery } from 'nitro-graphql'
 
-export default defineResolver({
-  Query: {
-    users: async (_, __, { storage }) => {
-      return await storage.getItem('users') || []
-    },
-    user: async (_, { id }, { storage }) => {
-      const users = await storage.getItem('users') || []
-      return users.find(user => user.id === id)
-    }
+export default defineQuery({
+  users: async (_, __, { storage }) => {
+    return await storage.getItem('users') || []
+  },
+  user: async (_, { id }, { storage }) => {
+    const users = await storage.getItem('users') || []
+    return users.find(user => user.id === id)
   }
 })
 ```
 
-## Type Generation
+</details>
 
-The module automatically generates TypeScript types:
+<details>
+<summary>✏️ <strong>Step 3: Create Mutation Resolvers</strong></summary>
+
+```ts
+// server/graphql/users/create-user.resolver.ts
+import { defineMutation } from 'nitro-graphql'
+
+export default defineMutation({
+  createUser: async (_, { input }, { storage }) => {
+    const users = await storage.getItem('users') || []
+    const user = {
+      id: Date.now().toString(),
+      ...input,
+      createdAt: new Date()
+    }
+    users.push(user)
+    await storage.setItem('users', users)
+    return user
+  }
+})
+```
+
+</details>
+
+<details>
+<summary>🧪 <strong>Step 4: Test Your Feature</strong></summary>
+
+Open Apollo Sandbox at `http://localhost:3000/api/graphql` and try:
+
+```graphql
+# Create a user
+mutation {
+  createUser(input: {
+    name: "John Doe"
+    email: "john@example.com"
+  }) {
+    id
+    name
+    email
+    createdAt
+  }
+}
+
+# Query users
+query {
+  users {
+    id
+    name
+    email
+  }
+}
+```
+
+</details>
+
+### Type Generation
+
+The module automatically generates TypeScript types for you:
 
 - **Server types**: `.nitro/types/nitro-graphql-server.d.ts`
 - **Client types**: `.nitro/types/nitro-graphql-client.d.ts`
 - **Auto-imports**: Available for `defineResolver` and other utilities
 
-Types are automatically available in your resolvers:
+Your IDE will automatically provide type safety and autocomplete!
 
-```ts
-// server/graphql/users/user-queries.resolver.ts
-import { defineResolver } from 'nitro-graphql'
+### Configuration
 
-export default defineResolver({
-  Query: {
-    users: async (_, __, { storage }): Promise<User[]> => {
-      return await storage.getItem('users') || []
-    }
-  }
-})
-```
-
-## Configuration
-
-### Runtime Configuration
+<details>
+<summary>⚙️ <strong>Runtime Configuration</strong></summary>
 
 ```ts
 // nitro.config.ts
@@ -204,9 +313,10 @@ export default defineNitroConfig({
 })
 ```
 
-### Custom GraphQL Configuration
+</details>
 
-Create a configuration file for advanced customization:
+<details>
+<summary>🔧 <strong>Advanced Configuration</strong></summary>
 
 ```ts
 // server/graphql/config.ts
@@ -227,9 +337,207 @@ export default defineGraphQLConfig({
 })
 ```
 
-## Framework Support
+</details>
 
-### GraphQL Yoga
+## 🎮 Playground
+
+Try out the examples:
+
+- **Standalone Nitro**: [`playground/`](playground/)
+- **Nuxt.js Integration**: [`playground-nuxt/`](playground-nuxt/)
+
+Both examples include working GraphQL schemas, resolvers, and demonstrate the module's capabilities.
+
+## 🔧 API Reference
+
+### Core Utilities
+
+<details>
+<summary><strong>defineResolver</strong> - Define complete resolvers</summary>
+
+```ts
+import { defineResolver } from 'nitro-graphql'
+
+export default defineResolver({
+  Query: {
+    // Query resolvers
+  },
+  Mutation: {
+    // Mutation resolvers
+  },
+  // Custom type resolvers
+})
+```
+
+</details>
+
+<details>
+<summary><strong>defineQuery</strong> - Define only Query resolvers</summary>
+
+```ts
+import { defineQuery } from 'nitro-graphql'
+
+export default defineQuery({
+  users: async (_, __, { storage }) => {
+    return await storage.getItem('users') || []
+  },
+  user: async (_, { id }, { storage }) => {
+    const users = await storage.getItem('users') || []
+    return users.find(user => user.id === id)
+  }
+})
+```
+
+</details>
+
+<details>
+<summary><strong>defineMutation</strong> - Define only Mutation resolvers</summary>
+
+```ts
+import { defineMutation } from 'nitro-graphql'
+
+export default defineMutation({
+  createUser: async (_, { input }, { storage }) => {
+    const users = await storage.getItem('users') || []
+    const user = {
+      id: Date.now().toString(),
+      ...input,
+      createdAt: new Date()
+    }
+    users.push(user)
+    await storage.setItem('users', users)
+    return user
+  }
+})
+```
+
+</details>
+
+<details>
+<summary><strong>defineSubscription</strong> - Define Subscription resolvers</summary>
+
+```ts
+import { defineSubscription } from 'nitro-graphql'
+
+export default defineSubscription({
+  userAdded: {
+    subscribe: () => pubsub.asyncIterator('USER_ADDED'),
+  },
+  postUpdated: {
+    subscribe: withFilter(
+      () => pubsub.asyncIterator('POST_UPDATED'),
+      (payload, variables) => payload.postUpdated.id === variables.postId
+    ),
+  }
+})
+```
+
+</details>
+
+<details>
+<summary><strong>defineType</strong> - Define custom type resolvers</summary>
+
+```ts
+import { defineType } from 'nitro-graphql'
+
+export default defineType({
+  User: {
+    posts: async (parent, _, { storage }) => {
+      const posts = await storage.getItem('posts') || []
+      return posts.filter(post => post.authorId === parent.id)
+    },
+    fullName: (parent) => `${parent.firstName} ${parent.lastName}`,
+  },
+})
+```
+
+</details>
+
+<details>
+<summary><strong>defineSchema</strong> - Define custom schema with validation</summary>
+
+You can override schema types if needed. StandardSchema supported — Zod, Valibot, anything works:
+
+```ts
+import { defineSchema } from 'nitro-graphql'
+import { z } from 'zod'
+
+export default defineSchema({
+  Todo: z.object({
+    id: z.string(),
+    title: z.string(),
+    completed: z.boolean(),
+    createdAt: z.date(),
+  }),
+  User: z.object({
+    id: z.string(),
+    name: z.string(),
+    email: z.string().email(),
+    age: z.number().min(0),
+  }),
+})
+```
+
+**With Drizzle Schema:**
+```ts
+import { defineSchema } from 'nitro-graphql'
+import { z } from 'zod'
+import { userSchema } from './drizzle/user'
+
+export default defineSchema({
+  Todo: z.object({
+    id: z.string(),
+    title: z.string(),
+  }),
+  User: userSchema, // Import from Drizzle schema
+})
+```
+
+</details>
+
+## 🚨 Troubleshooting
+
+<details>
+<summary><strong>Common Issues</strong></summary>
+
+### GraphQL endpoint returns 404
+
+**Solution**: Make sure you have:
+1. Added `nitro-graphql` to your modules
+2. Set the `graphql.framework` option
+3. Created at least one schema file
+
+### Types not generating
+
+**Solution**: 
+1. Restart your dev server
+2. Check that your schema files end with `.graphql`
+3. Verify your resolver files end with `.resolver.ts`
+
+### Hot reload not working
+
+**Solution**:
+1. Make sure you're in development mode
+2. Check file naming conventions
+3. Restart the dev server
+
+### Import errors with utilities
+
+**Solution**:
+```ts
+// ✅ Correct
+import { defineResolver } from 'nitro-graphql'
+
+// ❌ Incorrect
+import { defineResolver } from 'nitro-graphql/utils'
+```
+
+</details>
+
+## 🌟 Framework Support
+
+<details>
+<summary><strong>GraphQL Yoga</strong></summary>
 
 ```ts
 // nitro.config.ts
@@ -240,7 +548,10 @@ export default defineNitroConfig({
 })
 ```
 
-### Apollo Server
+</details>
+
+<details>
+<summary><strong>Apollo Server</strong></summary>
 
 ```ts
 // nitro.config.ts
@@ -251,32 +562,12 @@ export default defineNitroConfig({
 })
 ```
 
-## Development Features
+</details>
 
-### Hot Reload
+## 🔥 Advanced Features
 
-The module watches for changes in GraphQL files and automatically:
-- Regenerates TypeScript types
-- Reloads the GraphQL schema
-- Updates resolvers
-
-### Health Check
-
-Access the health check endpoint to verify your GraphQL server status:
-
-```bash
-curl http://localhost:3000/api/graphql/health
-```
-
-### Bundle Optimization
-
-- Uses dynamic imports to prevent bundling large codegen dependencies
-- Optimized chunk organization for GraphQL-related code
-- Efficient resolver and schema loading
-
-## Advanced Usage
-
-### Custom Scalars
+<details>
+<summary><strong>Custom Scalars</strong></summary>
 
 ```ts
 // server/graphql/scalars/DateTime.resolver.ts
@@ -299,31 +590,35 @@ export default defineResolver({
 })
 ```
 
-### Error Handling
+</details>
+
+<details>
+<summary><strong>Error Handling</strong></summary>
 
 ```ts
 // server/graphql/users/user-queries.resolver.ts
-import { defineResolver } from 'nitro-graphql'
+import { defineQuery } from 'nitro-graphql'
 
-export default defineResolver({
-  Query: {
-    user: async (_, { id }, { storage }) => {
-      try {
-        const user = await storage.getItem(`user:${id}`)
-        if (!user) {
-          throw new Error(`User with id ${id} not found`)
-        }
-        return user
-      } catch (error) {
-        console.error('Error fetching user:', error)
-        throw error
+export default defineQuery({
+  user: async (_, { id }, { storage }) => {
+    try {
+      const user = await storage.getItem(`user:${id}`)
+      if (!user) {
+        throw new Error(`User with id ${id} not found`)
       }
+      return user
+    } catch (error) {
+      console.error('Error fetching user:', error)
+      throw error
     }
   }
 })
 ```
 
-## Nuxt Integration
+</details>
+
+<details>
+<summary><strong>Nuxt Integration</strong></summary>
 
 For Nuxt.js applications, the module provides enhanced integration:
 
@@ -344,217 +639,9 @@ export default defineNuxtConfig({
 
 Client-side GraphQL files are automatically detected in the `app/graphql/` directory.
 
-## API Reference
+</details>
 
-### defineResolver
-
-Utility for defining GraphQL resolvers with type safety:
-
-```ts
-import { defineResolver } from 'nitro-graphql'
-
-export default defineResolver({
-  Query: {
-    // Query resolvers
-  },
-  Mutation: {
-    // Mutation resolvers
-  },
-  // Custom type resolvers
-})
-```
-
-### defineQuery
-
-Utility for defining only Query resolvers:
-
-```ts
-import { defineQuery } from 'nitro-graphql'
-
-export default defineQuery({
-  users: async (_, __, { storage }) => {
-    return await storage.getItem('users') || []
-  },
-  user: async (_, { id }, { storage }) => {
-    const users = await storage.getItem('users') || []
-    return users.find(user => user.id === id)
-  }
-})
-```
-
-### defineMutation
-
-Utility for defining only Mutation resolvers:
-
-```ts
-import { defineMutation } from 'nitro-graphql'
-
-export default defineMutation({
-  createUser: async (_, { input }, { storage }) => {
-    const users = await storage.getItem('users') || []
-    const user = {
-      id: Date.now().toString(),
-      ...input,
-      createdAt: new Date()
-    }
-    users.push(user)
-    await storage.setItem('users', users)
-    return user
-  }
-})
-```
-
-### defineSubscription
-
-Utility for defining Subscription resolvers:
-
-```ts
-import { defineSubscription } from 'nitro-graphql'
-
-export default defineSubscription({
-  userAdded: {
-    subscribe: () => pubsub.asyncIterator('USER_ADDED'),
-  },
-  postUpdated: {
-    subscribe: withFilter(
-      () => pubsub.asyncIterator('POST_UPDATED'),
-      (payload, variables) => payload.postUpdated.id === variables.postId
-    ),
-  }
-})
-```
-
-### defineType
-
-Utility for defining custom type resolvers:
-
-```ts
-import { defineType } from 'nitro-graphql'
-
-export default defineType({
-  User: {
-    posts: async (parent, _, { storage }) => {
-      const posts = await storage.getItem('posts') || []
-      return posts.filter(post => post.authorId === parent.id)
-    },
-    fullName: (parent) => `${parent.firstName} ${parent.lastName}`,
-  },
-})
-```
-
-### defineSchema
-
-Utility for defining custom schema types with validation. You can override schema types if needed. StandardSchema supported — Zod, Valibot, anything works:
-
-```ts
-import { defineSchema } from 'nitro-graphql'
-import { z } from 'zod'
-
-export default defineSchema({
-  Todo: z.object({
-    id: z.string(),
-    title: z.string(),
-    completed: z.boolean(),
-    createdAt: z.date(),
-  }),
-  User: z.object({
-    id: z.string(),
-    name: z.string(),
-    email: z.string().email(),
-    age: z.number().min(0),
-  }),
-})
-```
-
-#### With Drizzle Schema
-
-```ts
-import { defineSchema } from 'nitro-graphql'
-import { z } from 'zod'
-import { userSchema } from './drizzle/user'
-import { postSchema } from './drizzle/post'
-
-export default defineSchema({
-  Todo: z.object({
-    id: z.string(),
-    title: z.string(),
-    completed: z.boolean().default(false),
-  }),
-  User: userSchema, // Import from Drizzle schema
-  Post: postSchema, // Import from Drizzle schema
-})
-```
-
-#### With Valibot
-
-```ts
-import { defineSchema } from 'nitro-graphql'
-import * as v from 'valibot'
-
-export default defineSchema({
-  Todo: v.object({
-    id: v.string(),
-    title: v.string(),
-    completed: v.boolean(),
-  }),
-  User: v.object({
-    id: v.string(),
-    name: v.string(),
-    email: v.pipe(v.string(), v.email()),
-    age: v.pipe(v.number(), v.minValue(0)),
-  }),
-})
-```
-
-#### With Mixed Validation Libraries
-
-```ts
-import { defineSchema } from 'nitro-graphql'
-import { z } from 'zod'
-import * as v from 'valibot'
-import { userSchema } from './drizzle/user'
-
-export default defineSchema({
-  // Zod schema
-  Todo: z.object({
-    id: z.string(),
-    title: z.string(),
-  }),
-  // Valibot schema
-  Comment: v.object({
-    id: v.string(),
-    content: v.string(),
-    authorId: v.string(),
-  }),
-  // Drizzle schema
-  User: userSchema,
-})
-```
-
-### defineGraphQLConfig
-
-Utility for custom GraphQL server configuration:
-
-```ts
-import { defineGraphQLConfig } from 'nitro-graphql'
-
-export default defineGraphQLConfig({
-  plugins: [],
-  context: async ({ request }) => ({}),
-  // Framework-specific options
-})
-```
-
-## Examples
-
-Check out the example projects:
-
-- **Standalone Nitro**: [`playground/`](playground/)
-- **Nuxt.js Integration**: [`playground-nuxt/`](playground-nuxt/)
-
-Both examples include working GraphQL schemas, resolvers, and demonstrate the module's capabilities.
-
-## Development
+## 🛠️ Development
 
 ### Scripts
 
@@ -569,7 +656,7 @@ Both examples include working GraphQL schemas, resolvers, and demonstrate the mo
 - Node.js 20.x or later
 - pnpm (required package manager)
 
-## Community & Contributing
+## 💬 Community & Contributing
 
 > [!TIP]
 > **Want to contribute?** We believe you can play a role in the growth of this project!
@@ -616,3 +703,15 @@ Thank you for using and developing this project. Every contribution makes the Gr
 ## License
 
 [MIT](./LICENSE) License © 2023 [productdevbook](https://github.com/productdevbook)
+
+<!-- Badges -->
+
+[npm-version-src]: https://img.shields.io/npm/v/nitro-graphql?style=flat&colorA=080f12&colorB=1fa669
+[npm-version-href]: https://npmjs.com/package/nitro-graphql
+[npm-downloads-src]: https://img.shields.io/npm/dm/nitro-graphql?style=flat&colorA=080f12&colorB=1fa669
+[npm-downloads-href]: https://npmjs.com/package/nitro-graphql
+[bundle-src]: https://deno.bundlejs.com/badge?q=nitro-graphql@0.0.4
+[bundle-href]: https://deno.bundlejs.com/badge?q=nitro-graphql@0.0.4
+[license-src]: https://img.shields.io/github/license/productdevbook/nitro-graphql.svg?style=flat&colorA=080f12&colorB=1fa669
+[license-href]: https://github.com/productdevbook/nitro-graphql/blob/main/LICENSE
+[jsdocs-href]: https://www.jsdocs.io/package/nitro-graphql
