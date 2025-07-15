@@ -4,6 +4,144 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@antfu/eslint-config':
+      specifier: ^4.16.2
+      version: 4.16.2
+    '@apollo/server':
+      specifier: ^4.12.2
+      version: 4.12.2
+    '@apollo/utils.withrequired':
+      specifier: ^3.0.0
+      version: 3.0.0
+    '@as-integrations/h3':
+      specifier: ^2.0.0
+      version: 2.0.0
+    '@graphql-codegen/core':
+      specifier: ^4.0.2
+      version: 4.0.2
+    '@graphql-codegen/import-types-preset':
+      specifier: ^3.0.1
+      version: 3.0.1
+    '@graphql-codegen/typescript':
+      specifier: ^4.1.6
+      version: 4.1.6
+    '@graphql-codegen/typescript-generic-sdk':
+      specifier: ^4.0.2
+      version: 4.0.2
+    '@graphql-codegen/typescript-operations':
+      specifier: ^4.6.1
+      version: 4.6.1
+    '@graphql-codegen/typescript-resolvers':
+      specifier: ^4.5.1
+      version: 4.5.1
+    '@graphql-tools/graphql-file-loader':
+      specifier: ^8.0.20
+      version: 8.0.20
+    '@graphql-tools/load':
+      specifier: ^8.1.0
+      version: 8.1.0
+    '@graphql-tools/load-files':
+      specifier: ^7.0.1
+      version: 7.0.1
+    '@graphql-tools/merge':
+      specifier: ^9.0.24
+      version: 9.0.24
+    '@graphql-tools/schema':
+      specifier: ^10.0.23
+      version: 10.0.23
+    '@graphql-tools/utils':
+      specifier: ^10.8.6
+      version: 10.8.6
+    '@nuxt/kit':
+      specifier: 4.0.0-rc.0
+      version: 4.0.0-rc.0
+    '@nuxt/schema':
+      specifier: 4.0.0-rc.0
+      version: 4.0.0-rc.0
+    '@nuxtjs/tailwindcss':
+      specifier: 7.0.0-beta.0
+      version: 7.0.0-beta.0
+    '@types/node':
+      specifier: ^20.19.7
+      version: 20.19.7
+    bumpp:
+      specifier: ^10.2.0
+      version: 10.2.0
+    changelogen:
+      specifier: ^0.6.2
+      version: 0.6.2
+    chokidar:
+      specifier: ^4.0.3
+      version: 4.0.3
+    consola:
+      specifier: ^3.4.2
+      version: 3.4.2
+    crossws:
+      specifier: 0.3.5
+      version: 0.3.5
+    defu:
+      specifier: ^6.1.4
+      version: 6.1.4
+    eslint:
+      specifier: ^9.31.0
+      version: 9.31.0
+    graphql:
+      specifier: ^16.11.0
+      version: 16.11.0
+    graphql-config:
+      specifier: ^5.1.5
+      version: 5.1.5
+    graphql-scalars:
+      specifier: ^1.24.2
+      version: 1.24.2
+    graphql-yoga:
+      specifier: ^5.15.1
+      version: 5.15.1
+    h3:
+      specifier: ^1.15.3
+      version: 1.15.3
+    knitwork:
+      specifier: ^1.2.0
+      version: 1.2.0
+    nitropack:
+      specifier: ^2.11.13
+      version: 2.11.13
+    nuxt:
+      specifier: 4.0.0-rc.0
+      version: 4.0.0-rc.0
+    ohash:
+      specifier: ^2.0.11
+      version: 2.0.11
+    oxc-parser:
+      specifier: ^0.77.0
+      version: 0.77.0
+    pathe:
+      specifier: ^2.0.3
+      version: 2.0.3
+    tailwindcss:
+      specifier: ^4.1.11
+      version: 4.1.11
+    tinyglobby:
+      specifier: ^0.2.14
+      version: 0.2.14
+    tsdown:
+      specifier: ^0.12.9
+      version: 0.12.9
+    typescript:
+      specifier: ^5.8.3
+      version: 5.8.3
+    vue:
+      specifier: ^3.5.17
+      version: 3.5.17
+    vue-router:
+      specifier: ^4.5.1
+      version: 4.5.1
+    zod:
+      specifier: ^4.0.5
+      version: 4.0.5
+
 overrides:
   nitro-graphql: link:.
 
@@ -12,159 +150,159 @@ importers:
   .:
     dependencies:
       '@apollo/utils.withrequired':
-        specifier: ^3.0.0
+        specifier: 'catalog:'
         version: 3.0.0
       '@as-integrations/h3':
-        specifier: ^2.0.0
+        specifier: 'catalog:'
         version: 2.0.0(@apollo/server@4.12.2(graphql@16.11.0))(crossws@0.3.5)(graphql-ws@6.0.6(crossws@0.3.5)(graphql@16.11.0)(ws@8.18.3))(graphql@16.11.0)(h3@1.15.3)
       '@graphql-codegen/core':
-        specifier: ^4.0.2
+        specifier: 'catalog:'
         version: 4.0.2(graphql@16.11.0)
       '@graphql-codegen/typescript':
-        specifier: ^4.1.6
+        specifier: 'catalog:'
         version: 4.1.6(graphql@16.11.0)
       '@graphql-codegen/typescript-generic-sdk':
-        specifier: ^4.0.2
+        specifier: 'catalog:'
         version: 4.0.2(graphql-tag@2.12.6(graphql@16.11.0))(graphql@16.11.0)
       '@graphql-codegen/typescript-operations':
-        specifier: ^4.6.1
+        specifier: 'catalog:'
         version: 4.6.1(graphql@16.11.0)
       '@graphql-codegen/typescript-resolvers':
-        specifier: ^4.5.1
+        specifier: 'catalog:'
         version: 4.5.1(graphql@16.11.0)
       '@graphql-tools/graphql-file-loader':
-        specifier: ^8.0.20
+        specifier: 'catalog:'
         version: 8.0.20(graphql@16.11.0)
       '@graphql-tools/load':
-        specifier: ^8.1.0
+        specifier: 'catalog:'
         version: 8.1.0(graphql@16.11.0)
       '@graphql-tools/load-files':
-        specifier: ^7.0.1
+        specifier: 'catalog:'
         version: 7.0.1(graphql@16.11.0)
       '@graphql-tools/merge':
-        specifier: ^9.0.24
+        specifier: 'catalog:'
         version: 9.0.24(graphql@16.11.0)
       '@graphql-tools/schema':
-        specifier: ^10.0.23
+        specifier: 'catalog:'
         version: 10.0.23(graphql@16.11.0)
       '@graphql-tools/utils':
-        specifier: ^10.8.6
+        specifier: 'catalog:'
         version: 10.8.6(graphql@16.11.0)
       chokidar:
-        specifier: ^4.0.3
+        specifier: 'catalog:'
         version: 4.0.3
       consola:
-        specifier: ^3.4.2
+        specifier: 'catalog:'
         version: 3.4.2
       defu:
-        specifier: ^6.1.4
+        specifier: 'catalog:'
         version: 6.1.4
       graphql-config:
-        specifier: ^5.1.5
+        specifier: 'catalog:'
         version: 5.1.5(@types/node@20.19.7)(crossws@0.3.5)(graphql@16.11.0)(typescript@5.8.3)
       graphql-scalars:
-        specifier: ^1.24.2
+        specifier: 'catalog:'
         version: 1.24.2(graphql@16.11.0)
       knitwork:
-        specifier: ^1.2.0
+        specifier: 'catalog:'
         version: 1.2.0
       ohash:
-        specifier: ^2.0.11
+        specifier: 'catalog:'
         version: 2.0.11
       oxc-parser:
-        specifier: ^0.77.0
+        specifier: 'catalog:'
         version: 0.77.0
       pathe:
-        specifier: ^2.0.3
+        specifier: 'catalog:'
         version: 2.0.3
       tinyglobby:
-        specifier: ^0.2.14
+        specifier: 'catalog:'
         version: 0.2.14
     devDependencies:
       '@antfu/eslint-config':
-        specifier: ^4.16.2
+        specifier: 'catalog:'
         version: 4.16.2(@vue/compiler-sfc@3.5.17)(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)
       '@apollo/server':
-        specifier: ^4.12.2
+        specifier: 'catalog:'
         version: 4.12.2(graphql@16.11.0)
       '@graphql-codegen/import-types-preset':
-        specifier: ^3.0.1
+        specifier: 'catalog:'
         version: 3.0.1(graphql@16.11.0)
       '@nuxt/kit':
-        specifier: 4.0.0-rc.0
+        specifier: 'catalog:'
         version: 4.0.0-rc.0(magicast@0.3.5)
       '@nuxt/schema':
-        specifier: 4.0.0-rc.0
+        specifier: 'catalog:'
         version: 4.0.0-rc.0
       '@types/node':
-        specifier: ^20.19.7
+        specifier: 'catalog:'
         version: 20.19.7
       bumpp:
-        specifier: ^10.2.0
+        specifier: 'catalog:'
         version: 10.2.0(magicast@0.3.5)
       changelogen:
-        specifier: ^0.6.2
+        specifier: 'catalog:'
         version: 0.6.2(magicast@0.3.5)
       crossws:
-        specifier: 0.3.5
+        specifier: 'catalog:'
         version: 0.3.5
       eslint:
-        specifier: ^9.31.0
+        specifier: 'catalog:'
         version: 9.31.0(jiti@2.4.2)
       graphql:
-        specifier: ^16.11.0
+        specifier: 'catalog:'
         version: 16.11.0
       graphql-yoga:
-        specifier: ^5.15.1
+        specifier: 'catalog:'
         version: 5.15.1(graphql@16.11.0)
       h3:
-        specifier: ^1.15.3
+        specifier: 'catalog:'
         version: 1.15.3
       nitropack:
-        specifier: ^2.11.13
+        specifier: 'catalog:'
         version: 2.11.13(rolldown@1.0.0-beta.24)
       tsdown:
-        specifier: ^0.12.9
+        specifier: 'catalog:'
         version: 0.12.9(typescript@5.8.3)
       typescript:
-        specifier: ^5.8.3
+        specifier: 'catalog:'
         version: 5.8.3
 
   playground:
     dependencies:
       '@apollo/server':
-        specifier: ^4.12.2
+        specifier: 'catalog:'
         version: 4.12.2(graphql@16.11.0)
       nitro-graphql:
         specifier: link:..
         version: link:..
       zod:
-        specifier: ^4.0.5
+        specifier: 'catalog:'
         version: 4.0.5
     devDependencies:
       nitropack:
-        specifier: ^2.11.13
+        specifier: 'catalog:'
         version: 2.11.13(rolldown@1.0.0-beta.24)
 
   playground-nuxt:
     dependencies:
       '@nuxtjs/tailwindcss':
-        specifier: 7.0.0-beta.0
+        specifier: 'catalog:'
         version: 7.0.0-beta.0(magicast@0.3.5)(vite@7.0.4(@types/node@20.19.7)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0))
       nitro-graphql:
         specifier: link:..
         version: link:..
       nuxt:
-        specifier: 4.0.0-rc.0
+        specifier: 'catalog:'
         version: 4.0.0-rc.0(@parcel/watcher@2.5.1)(@types/node@20.19.7)(@vue/compiler-sfc@3.5.17)(db0@0.3.2)(eslint@9.31.0(jiti@2.4.2))(ioredis@5.6.1)(lightningcss@1.30.1)(magicast@0.3.5)(optionator@0.9.4)(rolldown@1.0.0-beta.24)(rollup@4.44.2)(terser@5.43.1)(typescript@5.8.3)(vite@7.0.4(@types/node@20.19.7)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(yaml@2.8.0))(yaml@2.8.0)
       tailwindcss:
-        specifier: ^4.1.11
+        specifier: 'catalog:'
         version: 4.1.11
       vue:
-        specifier: ^3.5.17
+        specifier: 'catalog:'
         version: 3.5.17(typescript@5.8.3)
       vue-router:
-        specifier: ^4.5.1
+        specifier: 'catalog:'
         version: 4.5.1(vue@3.5.17(typescript@5.8.3))
 
 packages:
@@ -1334,9 +1472,6 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  '@napi-rs/wasm-runtime@0.2.11':
-    resolution: {integrity: sha512-9DPkXtvHydrcOsopiYpUgPHpmj0HWZKMUnL2dZqpvC42lsratuBG06V5ipyno0fUek5VlFsNQ+AcFATSrJXgMA==}
-
   '@napi-rs/wasm-runtime@0.2.12':
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==}
 
@@ -2302,9 +2437,6 @@ packages:
 
   '@tybys/wasm-util@0.10.0':
     resolution: {integrity: sha512-VyyPYFlOMNylG45GoAe0xDoLwWuowvf92F9kySqzYh8vmYm7D2u4iUJKa1tOUpS70Ku13ASrOkS4ScXFsTaCNQ==}
-
-  '@tybys/wasm-util@0.9.0':
-    resolution: {integrity: sha512-6+7nlbMVX/PVDCwaIQ8nTOPveOcFLSt8GcXdx8hD0bt39uWxYT88uXzqTd4fTvqta7oeUJqudepapKNt2DYJFw==}
 
   '@types/body-parser@1.19.6':
     resolution: {integrity: sha512-HLFeCYgz89uk22N5Qg3dvGvsv46B8GLvKKo1zKG4NybA8U2DiEO3w9lqGg29t/tfLRJpJ6iQxnVw4OnB7MoM9g==}
@@ -7812,13 +7944,6 @@ snapshots:
       - encoding
       - supports-color
 
-  '@napi-rs/wasm-runtime@0.2.11':
-    dependencies:
-      '@emnapi/core': 1.4.4
-      '@emnapi/runtime': 1.4.4
-      '@tybys/wasm-util': 0.9.0
-    optional: true
-
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
       '@emnapi/core': 1.4.4
@@ -8227,7 +8352,7 @@ snapshots:
 
   '@oxc-minify/binding-wasm32-wasi@0.75.1':
     dependencies:
-      '@napi-rs/wasm-runtime': 0.2.11
+      '@napi-rs/wasm-runtime': 0.2.12
     optional: true
 
   '@oxc-minify/binding-win32-arm64-msvc@0.75.1':
@@ -8310,7 +8435,7 @@ snapshots:
 
   '@oxc-parser/binding-wasm32-wasi@0.75.1':
     dependencies:
-      '@napi-rs/wasm-runtime': 0.2.11
+      '@napi-rs/wasm-runtime': 0.2.12
     optional: true
 
   '@oxc-parser/binding-wasm32-wasi@0.77.0':
@@ -8374,7 +8499,7 @@ snapshots:
 
   '@oxc-transform/binding-wasm32-wasi@0.75.1':
     dependencies:
-      '@napi-rs/wasm-runtime': 0.2.11
+      '@napi-rs/wasm-runtime': 0.2.12
     optional: true
 
   '@oxc-transform/binding-win32-arm64-msvc@0.75.1':
@@ -8522,7 +8647,7 @@ snapshots:
 
   '@rolldown/binding-wasm32-wasi@1.0.0-beta.24':
     dependencies:
-      '@napi-rs/wasm-runtime': 0.2.11
+      '@napi-rs/wasm-runtime': 0.2.12
     optional: true
 
   '@rolldown/binding-win32-arm64-msvc@1.0.0-beta.24':
@@ -8759,11 +8884,6 @@ snapshots:
   '@trysound/sax@0.2.0': {}
 
   '@tybys/wasm-util@0.10.0':
-    dependencies:
-      tslib: 2.8.1
-    optional: true
-
-  '@tybys/wasm-util@0.9.0':
     dependencies:
       tslib: 2.8.1
     optional: true
