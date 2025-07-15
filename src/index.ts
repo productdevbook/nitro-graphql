@@ -14,16 +14,6 @@ import { clientTypeGeneration, serverTypeGeneration } from './utils/server-type-
 
 export type * from './types'
 
-export {
-  defineGraphQLConfig,
-  defineMutation,
-  defineQuery,
-  defineResolver,
-  defineSchema,
-  defineSubscription,
-  defineType,
-} from './utils/define'
-
 // This is the main entry point for the nitro-graphql module.
 // It sets up the module, configures the GraphQL endpoints, and handles type generation.
 export interface Resolvers extends Record<string, any> {
@@ -173,8 +163,11 @@ export default defineNitroModule({
 
     // Auto-import utilities
     if (nitro.options.imports) {
+      nitro.options.imports.presets ??= []
       nitro.options.imports.presets.push({
-        from: 'nitro-graphql/utils/define',
+        // TODO: this bugs: nitro-graphql v0.0.16
+        // from: 'nitro-graphql/utils/define',
+        from: fileURLToPath(new URL('utils/define', import.meta.url)),
         imports: [
           'defineResolver',
           'defineMutation',

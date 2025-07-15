@@ -1,7 +1,7 @@
 {
   "name": "nitro-graphql",
   "type": "module",
-  "version": "0.0.10",
+  "version": "0.0.17",
   "packageManager": "pnpm@10.13.1",
   "description": "GraphQL integration for Nitro",
   "license": "MIT",
@@ -50,7 +50,6 @@
       "import": "./dist/ecosystem/nuxt.js"
     }
   },
-  "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [

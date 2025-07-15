@@ -15,7 +15,7 @@ export default defineConfig({
     'src/codegen.ts',
     'src/client-watcher.ts',
     'src/context.ts',
-    'src/utils/index.ts',
+    'src/utils/',
     'src/routes',
     'src/graphql.d.ts',
     'src/ecosystem',
