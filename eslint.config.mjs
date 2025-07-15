@@ -11,6 +11,7 @@ const nitro = {
     '**/dist',
     '**/assets',
     '**/vfs',
+    'README.md',
   ],
 }
 export default antfu({

@@ -402,7 +402,7 @@ Both examples include working GraphQL schemas, resolvers, and demonstrate the mo
 > // ✅ Correct - Named exports
 > export const userQueries = defineQuery({ ... })
 > export const userMutations = defineMutation({ ... })
-> 
+>
 > // ❌ Incorrect - Default exports (deprecated)
 > export default defineQuery({ ... })
 > ```
@@ -863,7 +863,7 @@ import { createGraphQLClient } from '#graphql/client'
 const client = createGraphQLClient({
   endpoint: '/api/graphql',
   headers: {
-    'Authorization': 'Bearer your-token-here'
+    Authorization: 'Bearer your-token-here'
   }
 })
 
@@ -918,7 +918,8 @@ console.log(createUser) // Newly created user with full typing
 try {
   const { users } = await client.GetUsers()
   console.log(users)
-} catch (error) {
+}
+catch (error) {
   console.error('GraphQL Error:', error)
   // Handle GraphQL errors appropriately
 }
