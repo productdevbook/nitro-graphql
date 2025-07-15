@@ -1,6 +1,6 @@
 import type { Nitro } from 'nitropack/types'
 import type { NitroGraphQLOptions } from './types'
-import { writeFileSync } from 'node:fs'
+import { existsSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { watch } from 'chokidar'
 import consola from 'consola'
@@ -247,5 +247,27 @@ declare module 'nitro-graphql' {
         relativeWithDot(tsconfigDir, join(typesDir, 'graphql.d.ts')),
       )
     })
+
+    if (!existsSync(join(nitro.options.rootDir, 'graphql.config.ts'))) {
+
+      const schemaPath = relativeWithDot(nitro.options.rootDir, resolve(nitro.graphql.buildDir, 'schema.graphql'))
+      const documentsPath = relativeWithDot(nitro.options.rootDir, resolve(nitro.graphql.clientDir, '**/*.{graphql,js,ts,jsx,tsx}'))
+
+      writeFileSync(join(nitro.options.rootDir, 'graphql.config.ts'), `
+import type { IGraphQLConfig } from 'graphql-config'
+
+export default <IGraphQLConfig> {
+    projects: {
+      default: {
+        schema: [
+          '${schemaPath}',
+        ],
+        documents: [
+          '${documentsPath}',
+        ],
+      },
+    },
+}`, 'utf-8')
+    }
   },
 })

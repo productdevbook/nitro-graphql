@@ -1,7 +1,7 @@
 {
   "name": "nitro-graphql",
   "type": "module",
-  "version": "0.0.21",
+  "version": "0.0.23",
   "packageManager": "pnpm@10.13.1",
   "description": "GraphQL integration for Nitro",
   "license": "MIT",
@@ -86,6 +86,7 @@
     "chokidar": "^4.0.3",
     "consola": "^3.4.2",
     "defu": "^6.1.4",
+    "graphql-config": "^5.1.5",
     "graphql-scalars": "^1.24.2",
     "knitwork": "^1.2.0",
     "ohash": "^2.0.11",
