@@ -121,7 +121,7 @@ Create a resolver for your queries:
 
 ```ts
 // server/graphql/hello.resolver.ts
-import { defineResolver } from 'nitro-graphql'
+import { defineResolver } from 'nitro-graphql/utils/define'
 
 export default defineResolver({
   Query: {
@@ -209,7 +209,7 @@ extend type Mutation {
 
 ```ts
 // server/graphql/users/user-queries.resolver.ts
-import { defineQuery } from 'nitro-graphql'
+import { defineQuery } from 'nitro-graphql/utils/define'
 
 export default defineQuery({
   users: async (_, __, { storage }) => {
@@ -229,7 +229,7 @@ export default defineQuery({
 
 ```ts
 // server/graphql/users/create-user.resolver.ts
-import { defineMutation } from 'nitro-graphql'
+import { defineMutation } from 'nitro-graphql/utils/define'
 
 export default defineMutation({
   createUser: async (_, { input }, { storage }) => {
@@ -289,6 +289,12 @@ The module automatically generates TypeScript types for you:
 
 Your IDE will automatically provide type safety and autocomplete!
 
+> [!TIP]
+> **Nitro Auto-Imports**: Thanks to Nitro's auto-import feature, you don't need to manually import `defineResolver`, `defineQuery`, `defineMutation`, and other utilities in your resolver files. They're available globally! However, if you prefer explicit imports, you can use:
+> ```ts
+> import { defineResolver } from 'nitro-graphql/utils/define'
+> ```
+
 ### Configuration
 
 <details>
@@ -320,7 +326,7 @@ export default defineNitroConfig({
 
 ```ts
 // server/graphql/config.ts
-import { defineGraphQLConfig } from 'nitro-graphql'
+import { defineGraphQLConfig } from 'nitro-graphql/utils/define'
 
 export default defineGraphQLConfig({
   // Custom GraphQL Yoga or Apollo Server configuration
@@ -352,11 +358,17 @@ Both examples include working GraphQL schemas, resolvers, and demonstrate the mo
 
 ### Core Utilities
 
+> [!NOTE]
+> **Auto-Import Available**: All utilities are automatically imported in your resolver files thanks to Nitro's auto-import feature. You can use them directly without import statements, or use explicit imports if you prefer:
+> ```ts
+> import { defineResolver, defineQuery, defineMutation } from 'nitro-graphql/utils/define'
+> ```
+
 <details>
 <summary><strong>defineResolver</strong> - Define complete resolvers</summary>
 
 ```ts
-import { defineResolver } from 'nitro-graphql'
+import { defineResolver } from 'nitro-graphql/utils/define'
 
 export default defineResolver({
   Query: {
@@ -375,7 +387,7 @@ export default defineResolver({
 <summary><strong>defineQuery</strong> - Define only Query resolvers</summary>
 
 ```ts
-import { defineQuery } from 'nitro-graphql'
+import { defineQuery } from 'nitro-graphql/utils/define'
 
 export default defineQuery({
   users: async (_, __, { storage }) => {
@@ -394,7 +406,7 @@ export default defineQuery({
 <summary><strong>defineMutation</strong> - Define only Mutation resolvers</summary>
 
 ```ts
-import { defineMutation } from 'nitro-graphql'
+import { defineMutation } from 'nitro-graphql/utils/define'
 
 export default defineMutation({
   createUser: async (_, { input }, { storage }) => {
@@ -417,7 +429,7 @@ export default defineMutation({
 <summary><strong>defineSubscription</strong> - Define Subscription resolvers</summary>
 
 ```ts
-import { defineSubscription } from 'nitro-graphql'
+import { defineSubscription } from 'nitro-graphql/utils/define'
 
 export default defineSubscription({
   userAdded: {
@@ -438,7 +450,7 @@ export default defineSubscription({
 <summary><strong>defineType</strong> - Define custom type resolvers</summary>
 
 ```ts
-import { defineType } from 'nitro-graphql'
+import { defineType } from 'nitro-graphql/utils/define'
 
 export default defineType({
   User: {
@@ -459,7 +471,7 @@ export default defineType({
 You can override schema types if needed. StandardSchema supported — Zod, Valibot, anything works:
 
 ```ts
-import { defineSchema } from 'nitro-graphql'
+import { defineSchema } from 'nitro-graphql/utils/define'
 import { z } from 'zod'
 
 export default defineSchema({
@@ -480,7 +492,7 @@ export default defineSchema({
 
 **With Drizzle Schema:**
 ```ts
-import { defineSchema } from 'nitro-graphql'
+import { defineSchema } from 'nitro-graphql/utils/define'
 import { z } from 'zod'
 import { userSchema } from './drizzle/user'
 
@@ -526,10 +538,10 @@ export default defineSchema({
 **Solution**:
 ```ts
 // ✅ Correct
-import { defineResolver } from 'nitro-graphql'
+import { defineResolver } from 'nitro-graphql/utils/define'
 
 // ❌ Incorrect
-import { defineResolver } from 'nitro-graphql/utils'
+import { defineResolver } from 'nitro-graphql'
 ```
 
 </details>
@@ -573,7 +585,7 @@ export default defineNitroConfig({
 // server/graphql/scalars/DateTime.resolver.ts
 import { GraphQLScalarType } from 'graphql'
 import { Kind } from 'graphql/language'
-import { defineResolver } from 'nitro-graphql'
+import { defineResolver } from 'nitro-graphql/utils/define'
 
 export default defineResolver({
   DateTime: new GraphQLScalarType({
@@ -597,7 +609,7 @@ export default defineResolver({
 
 ```ts
 // server/graphql/users/user-queries.resolver.ts
-import { defineQuery } from 'nitro-graphql'
+import { defineQuery } from 'nitro-graphql/utils/define'
 
 export default defineQuery({
   user: async (_, { id }, { storage }) => {
