@@ -609,7 +609,7 @@ Thank you for using and developing this project. Every contribution makes the Gr
 
 <p align="center">
   <a href="https://cdn.jsdelivr.net/gh/productdevbook/static/sponsors.svg">
-    <img src='https://cdn.jsdelivr.net/gh/productdevbook/static/sponsors.svg?v=2025'/>
+    <img src='https://cdn.jsdelivr.net/gh/productdevbook/static/sponsors.svg?t=1721043966'/>
   </a>
 </p>
 
