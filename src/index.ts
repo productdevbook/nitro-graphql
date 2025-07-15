@@ -56,7 +56,6 @@ export default defineNitroModule({
       else if (typeof rollupConfig.external === 'function') {
         const originalExternal = rollupConfig.external
         rollupConfig.external = (id, parent, isResolved) => {
-          console.log('Checking external:', id, parent, isResolved)
           if (codegenExternals.some(external => id.includes(external))) {
             return true
           }
@@ -167,7 +166,6 @@ export default defineNitroModule({
         from: 'nitro-graphql/utils/define',
         imports: [
           'defineResolver',
-          'defineYogaConfig',
           'defineMutation',
           'defineQuery',
           'defineSubscription',

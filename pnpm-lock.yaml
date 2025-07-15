@@ -11,6 +11,9 @@ importers:
 
   .:
     dependencies:
+      '@apollo/utils.withrequired':
+        specifier: ^3.0.0
+        version: 3.0.0
       '@as-integrations/h3':
         specifier: ^2.0.0
         version: 2.0.0(@apollo/server@4.12.2(graphql@16.11.0))(crossws@0.3.5)(graphql@16.11.0)(h3@1.15.3)
@@ -99,6 +102,9 @@ importers:
       changelogen:
         specifier: ^0.6.2
         version: 0.6.2(magicast@0.3.5)
+      crossws:
+        specifier: 0.3.5
+        version: 0.3.5
       eslint:
         specifier: ^9.31.0
         version: 9.31.0(jiti@2.4.2)
