@@ -125,7 +125,9 @@ type Query {
   greeting(name: String!): String!
 }
 
-type Mutation
+type Mutation {
+  _empty: String
+}
 ```
 
 ### Step 4: Create Your First Resolver
