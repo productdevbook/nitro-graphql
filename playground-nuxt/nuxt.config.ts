@@ -1,6 +1,3 @@
-// TODO: temporary solution
-// import 'nitro-graphql/types'
-
 export default defineNuxtConfig({
   compatibilityDate: '2024-07-01',
   devtools: { enabled: true },
