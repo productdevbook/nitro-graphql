@@ -336,6 +336,52 @@ The module automatically generates TypeScript types for you:
 
 Your IDE will automatically provide type safety and autocomplete!
 
+#### Using Generated Types
+
+You can import and use the generated types in your code:
+
+**Client-side types** (`#graphql/client`):
+```ts
+// Import generated types for queries, mutations, and operations
+import type { GetUsersQuery, CreateUserInput } from '#graphql/client'
+
+// Use in Vue components
+const users = ref<GetUsersQuery['users']>([])
+
+// Use in composables
+export function useUsers() {
+  const createUser = async (input: CreateUserInput) => {
+    // Type-safe input
+  }
+}
+```
+
+**Server-side types** (`#graphql/server`):
+```ts
+// Import generated types and interfaces
+import type { User, Post, CreateUserInput } from '#graphql/server'
+
+// Use types in your server code
+function validateUser(user: User): boolean {
+  return user.email.includes('@')
+}
+
+// Use in data layer
+async function getUserPosts(user: User): Promise<Post[]> {
+  // user is fully typed with all fields
+  return await db.posts.findMany({ where: { authorId: user.id } })
+}
+
+// Use input types for validation
+function validateCreateUserInput(input: CreateUserInput): void {
+  if (!input.email || !input.name) {
+    throw new Error('Email and name are required')
+  }
+}
+```
+
+These imports provide full TypeScript support with autocompletion, type checking, and IntelliSense in your IDE.
+
 > [!TIP]
 > **Nitro Auto-Imports**: Thanks to Nitro's auto-import feature, you don't need to manually import `defineResolver`, `defineQuery`, `defineMutation`, and other utilities in your resolver files. They're available globally! However, if you prefer explicit imports, you can use:
 > ```ts
