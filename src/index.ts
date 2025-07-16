@@ -1,6 +1,6 @@
 import type { Nitro } from 'nitropack/types'
 import type { NitroGraphQLOptions } from './types'
-import { existsSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { watch } from 'chokidar'
 import consola from 'consola'
@@ -266,6 +266,48 @@ export default <IGraphQLConfig> {
         ],
       },
     },
+}`, 'utf-8')
+    }
+
+    if (!existsSync(nitro.graphql.serverDir)) {
+      mkdirSync(nitro.graphql.serverDir, { recursive: true })
+    }
+
+    if (!existsSync(join(nitro.graphql.serverDir, 'schema.ts'))) {
+      writeFileSync(join(nitro.graphql.serverDir, 'schema.ts'), `export default defineSchema({
+
+})
+`, 'utf-8')
+    }
+
+    if (!existsSync(join(nitro.graphql.serverDir, 'config.ts'))) {
+      writeFileSync(join(nitro.graphql.serverDir, 'config.ts'), `// Example GraphQL config file please change it to your needs
+// import * as tables from '../drizzle/schema/index'
+// import { useDatabase } from '../utils/useDb'
+
+export default defineGraphQLConfig({
+// graphql-yoga example config
+// context: () => {
+//   return {
+//     context: {
+//       useDatabase,
+//       tables,
+//     },
+//   }
+// },
+})
+`, 'utf-8')
+    }
+
+    if (!existsSync(join(nitro.graphql.serverDir, 'context.d.ts'))) {
+      writeFileSync(join(nitro.graphql.serverDir, 'context.d.ts'), `// Example context definition please change it to your needs
+// import type { Database } from '../utils/useDb'
+
+declare module 'h3' {
+  interface H3EventContext {
+    // useDatabase: () => Database
+    // tables: typeof import('~~/server/drizzle/schema/index')
+  }
 }`, 'utf-8')
     }
   },
