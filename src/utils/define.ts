@@ -1,8 +1,8 @@
-import type { Resolvers, ResolversTypes, StandardSchemaV1 } from '#graphql/server'
+import type { Resolvers, ResolversTypes } from '#graphql/server'
 import type { ApolloServerOptions, BaseContext } from '@apollo/server'
 import type { YogaServerOptions } from 'graphql-yoga'
 
-import type { GraphQLFramework } from 'nitro-graphql'
+import type { GraphQLFramework, StandardSchemaV1 } from 'nitro-graphql'
 
 type Flatten<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
 
