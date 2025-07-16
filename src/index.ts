@@ -21,7 +21,6 @@ export default defineNitroModule({
   async setup(nitro: Nitro) {
     if (!nitro.options.graphql?.framework) {
       consola.warn('No GraphQL framework specified. Please set graphql.framework to "graphql-yoga" or "apollo-server".')
-      return
     }
 
     nitro.graphql ||= {
