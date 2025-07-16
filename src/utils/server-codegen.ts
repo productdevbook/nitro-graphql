@@ -85,7 +85,18 @@ export async function generateTypes(
 
               `
 export type SchemaType = Partial<Record<Partial<keyof ResolversTypes>, StandardSchemaV1>>
-type SchemaKeys = keyof typeof schemas;
+
+// Check if schemas is empty object, return never if so
+type SafeSchemaKeys<T> = T extends Record<PropertyKey, never> 
+  ? never 
+  : keyof T extends string | number | symbol
+    ? keyof T extends never 
+      ? never 
+      : keyof T
+    : never;
+    
+
+type SchemaKeys = SafeSchemaKeys<typeof schemas>;
 
 type InferInput<T> = T extends StandardSchemaV1 ? StandardSchemaV1.InferInput<T> : unknown;
 type InferOutput<T> = T extends StandardSchemaV1 ? StandardSchemaV1.InferOutput<T> : unknown;
