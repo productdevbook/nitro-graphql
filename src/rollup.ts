@@ -91,7 +91,7 @@ export function virtualSchemas(app: Nitro) {
   }
 
   app.options.virtual ??= {}
-  app.options.virtual['#nitro-internal-virtual/server-defs'] = () => {
+  app.options.virtual['#nitro-internal-virtual/server-schemas'] = () => {
     const imports = getSchemas()
 
     const code = /* js */`
@@ -99,7 +99,7 @@ ${imports
   .map(handler => `import ${getImportId(handler)} from '${handler}';`)
   .join('\n')}
 
-export const defs = [
+export const schemas = [
 ${imports
   .map(
     h =>

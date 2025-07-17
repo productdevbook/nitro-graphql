@@ -33,7 +33,7 @@ export default defineConfig({
     'graphql',
     'graphql-yoga',
     'h3',
-    '#nitro-internal-virtual/server-defs',
+    '#nitro-internal-virtual/server-schemas',
     '#nitro-internal-virtual/server-resolvers',
     '#nitro-internal-virtual/graphql-config',
     '@nuxt/kit',

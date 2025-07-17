@@ -113,8 +113,8 @@ export default defineNitroModule({
     nitro.scanResolvers = resolvers
 
     nitro.hooks.hook('dev:start', async () => {
-      const defs = await scanSchemas(nitro)
-      nitro.scanSchemas = defs
+      const schemas = await scanSchemas(nitro)
+      nitro.scanSchemas = schemas
 
       const resolvers = await scanResolvers(nitro)
       nitro.scanResolvers = resolvers
@@ -198,7 +198,7 @@ export default defineNitroModule({
             return 'schemas'
           }
 
-          // resolsvers and defs are not in the same directory, so we need to check both
+          // resolsvers and schemas are not in the same directory, so we need to check both
           if (id.endsWith('.resolver.ts')) {
             return 'resolvers'
           }

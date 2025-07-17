@@ -1,8 +1,8 @@
 import type { YogaServerInstance } from 'graphql-yoga'
 import { importedConfig } from '#nitro-internal-virtual/graphql-config'
 
-import { defs } from '#nitro-internal-virtual/server-defs'
 import { resolvers } from '#nitro-internal-virtual/server-resolvers'
+import { schemas } from '#nitro-internal-virtual/server-schemas'
 
 import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge'
 import defu from 'defu'
@@ -39,8 +39,8 @@ new window.EmbeddedSandbox({
 // Schema ve yoga instance'ını build time'da oluştur
 function createMergedSchema() {
   try {
-    const mergedDefs = defs.map(schema => schema.def).join('\n\n')
-    const typeDefs = mergeTypeDefs([mergedDefs])
+    const mergedSchemas = schemas.map(schema => schema.def).join('\n\n')
+    const typeDefs = mergeTypeDefs([mergedSchemas])
     const mergedResolvers = mergeResolvers(resolvers.map(r => r.resolver))
 
     return createSchema({

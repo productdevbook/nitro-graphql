@@ -12,17 +12,17 @@ import { generateTypes } from './server-codegen'
 
 export async function serverTypeGeneration(app: Nitro) {
   try {
-    const defs = app.scanSchemas || []
+    const schemas = app.scanSchemas || []
 
-    if (!defs.length) {
+    if (!schemas.length) {
       consola.info('No GraphQL definitions found for server type generation.')
       return
     }
 
-    const loadDefs = loadFilesSync(defs)
-    const mergedDefs = mergeTypeDefs(loadDefs)
+    const loadSchemas = loadFilesSync(schemas)
+    const mergedSchemas = mergeTypeDefs(loadSchemas)
 
-    const schema = buildASTSchema(mergedDefs, {
+    const schema = buildASTSchema(mergedSchemas, {
       assumeValidSDL: true,
       assumeValid: true,
     })
