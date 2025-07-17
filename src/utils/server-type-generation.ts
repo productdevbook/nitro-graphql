@@ -60,7 +60,7 @@ export async function clientTypeGeneration(
     const graphqlString = readFileSync(schemaFilePath, 'utf-8')
     const schema = buildSchema(graphqlString)
 
-    const types = await generateClientTypes(schema, loadDocs)
+    const types = await generateClientTypes(schema, loadDocs, nitro.options.graphql?.codegen?.client ?? {})
     if (types === false) {
       return
     }
