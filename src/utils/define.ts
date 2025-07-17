@@ -61,7 +61,7 @@ export function defineType(
 }
 
 export type DefineServerConfig = GraphQLFramework extends 'graphql-yoga'
-  ? Partial<YogaServerOptions<H3Event, H3Event>>
+  ? Partial<YogaServerOptions<H3Event, Partial<H3Event>>>
   : GraphQLFramework extends 'apollo-server'
     ? Partial<ApolloServerOptions<H3Event>>
     : Record<string, any>
