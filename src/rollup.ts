@@ -5,10 +5,10 @@ import { parse } from 'graphql'
 import { genImport } from 'knitwork'
 import { resolve } from 'pathe'
 import { getImportId, scanGraphql } from './utils'
-import { serverTypeGeneration } from './utils/server-type-generation'
+import { clientTypeGeneration, serverTypeGeneration } from './utils/server-type-generation'
 
 export async function rollupConfig(app: Nitro) {
-  virtualDefs(app)
+  virtualSchemas(app)
   virtualResolvers(app)
   getGraphQLConfig(app)
   app.hooks.hook('rollup:before', (nitro, rollupConfig) => {
@@ -40,9 +40,8 @@ export async function rollupConfig(app: Nitro) {
             return `export default ${JSON.stringify(content)}`
           }
           catch (error) {
-            // Dosya okuma hatası vs
             if ((error as any).code === 'ENOENT') {
-              return null // Dosya bulunamazsa sessizce geç
+              return null
             }
             this.error(`Failed to read GraphQL file ${id}: ${(error as any).message}`)
           }
@@ -77,29 +76,30 @@ export async function rollupConfig(app: Nitro) {
 
   app.hooks.hook('dev:reload', async () => {
     await serverTypeGeneration(app)
+    await clientTypeGeneration(app)
   })
 }
 
-export function virtualDefs(app: Nitro) {
-  const getDefs = () => {
-    const defs: string[] = [
-      ...app.scanDefs,
+export function virtualSchemas(app: Nitro) {
+  const getSchemas = () => {
+    const schemas: string[] = [
+      ...app.scanSchemas,
       ...(app.options.graphql?.typedefs ?? []),
     ]
 
-    return defs
+    return schemas
   }
 
   app.options.virtual ??= {}
-  app.options.virtual['#nitro-internal-virtual/server-defs'] = () => {
-    const imports = getDefs()
+  app.options.virtual['#nitro-internal-virtual/server-schemas'] = () => {
+    const imports = getSchemas()
 
     const code = /* js */`
 ${imports
   .map(handler => `import ${getImportId(handler)} from '${handler}';`)
   .join('\n')}
 
-export const defs = [
+export const schemas = [
 ${imports
   .map(
     h =>

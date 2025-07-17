@@ -119,8 +119,13 @@ export async function scanTypeDefs(nitro: Nitro) {
   return files.map(f => f.fullPath)
 }
 
-export async function scanDefs(nitro: Nitro) {
+export async function scanSchemas(nitro: Nitro) {
   const files = await scanFiles(nitro, 'graphql', '**/*.graphql')
+  return files.map(f => f.fullPath)
+}
+
+export async function scanDocs(nitro: Nitro) {
+  const files = await scanDir(nitro, nitro.options.rootDir, nitro.graphql.dir.client, '**/*.graphql')
   return files.map(f => f.fullPath)
 }
 
@@ -159,8 +164,4 @@ async function scanDir(
       }
     })
     .sort((a, b) => a.path.localeCompare(b.path))
-}
-
-export function unique(arr: any[]) {
-  return [...new Set(arr)]
 }

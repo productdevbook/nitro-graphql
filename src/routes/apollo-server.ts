@@ -1,7 +1,7 @@
 import type { BaseContext } from '@apollo/server'
 import { importedConfig } from '#nitro-internal-virtual/graphql-config'
-import { defs } from '#nitro-internal-virtual/server-defs'
 import { resolvers } from '#nitro-internal-virtual/server-resolvers'
+import { schemas } from '#nitro-internal-virtual/server-schemas'
 import { ApolloServer } from '@apollo/server'
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default'
 // TODO: fix bug
@@ -12,8 +12,8 @@ import { startServerAndCreateH3Handler } from '../utils/apollo'
 
 function createMergedSchema() {
   try {
-    const mergedDefs = defs.map(schema => schema.def).join('\n\n')
-    const typeDefs = mergeTypeDefs([mergedDefs])
+    const mergedSchemas = schemas.map(schema => schema.def).join('\n\n')
+    const typeDefs = mergeTypeDefs([mergedSchemas])
     const mergedResolvers = mergeResolvers(resolvers.map(r => r.resolver))
 
     return {
@@ -27,7 +27,7 @@ function createMergedSchema() {
   }
 }
 
-let apolloServer: ApolloServer<BaseContext>
+let apolloServer: ApolloServer<BaseContext> | null = null
 
 function createApolloServer() {
   if (!apolloServer) {
@@ -45,6 +45,9 @@ function createApolloServer() {
   return apolloServer
 }
 
-export default startServerAndCreateH3Handler(createApolloServer, {
-  context: async event => ({ event }),
-})
+export default startServerAndCreateH3Handler(
+  apolloServer || createApolloServer,
+  {
+    context: async event => ({ event }),
+  },
+)

@@ -12,17 +12,17 @@ import { generateTypes } from './server-codegen'
 
 export async function serverTypeGeneration(app: Nitro) {
   try {
-    const defs = app.scanDefs || []
+    const schemas = app.scanSchemas || []
 
-    if (!defs.length) {
+    if (!schemas.length) {
       consola.info('No GraphQL definitions found for server type generation.')
       return
     }
 
-    const loadDefs = loadFilesSync(defs)
-    const mergedDefs = mergeTypeDefs(loadDefs)
+    const loadSchemas = loadFilesSync(schemas)
+    const mergedSchemas = mergeTypeDefs(loadSchemas)
 
-    const schema = buildASTSchema(mergedDefs, {
+    const schema = buildASTSchema(mergedSchemas, {
       assumeValidSDL: true,
       assumeValid: true,
     })
@@ -45,17 +45,13 @@ export async function serverTypeGeneration(app: Nitro) {
 }
 
 export async function clientTypeGeneration(
-  app: Nitro,
-  path: string,
+  nitro: Nitro,
 ) {
   try {
-    const root = app.graphql.watchDirs.find(dir => path.startsWith(dir)) || path
-    if (!root) {
-      return
-    }
-    const docs = await loadGraphQLDocuments(root)
+    const docs = nitro.scanDocuments
 
-    const schemaFilePath = join(app.graphql.buildDir, 'schema.graphql')
+    const loadDocs = await loadGraphQLDocuments(docs)
+    const schemaFilePath = join(nitro.graphql.buildDir, 'schema.graphql')
     if (!existsSync(schemaFilePath)) {
       consola.info('Schema file not ready yet for client type generation. Server types need to be generated first.')
       return
@@ -64,12 +60,12 @@ export async function clientTypeGeneration(
     const graphqlString = readFileSync(schemaFilePath, 'utf-8')
     const schema = buildSchema(graphqlString)
 
-    const types = await generateClientTypes(schema, docs)
+    const types = await generateClientTypes(schema, loadDocs)
     if (types === false) {
       return
     }
-    const clientTypesPath = resolve(app.options.buildDir, 'types', 'nitro-graphql-client.d.ts')
-    const sdkTypesPath = resolve(app.graphql.clientDir, 'sdk.ts')
+    const clientTypesPath = resolve(nitro.options.buildDir, 'types', 'nitro-graphql-client.d.ts')
+    const sdkTypesPath = resolve(nitro.graphql.clientDir, 'sdk.ts')
     writeFileSync(clientTypesPath, types.types, 'utf-8')
     writeFileSync(sdkTypesPath, types.sdk, 'utf-8')
   }
