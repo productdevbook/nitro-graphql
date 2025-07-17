@@ -1,6 +1,7 @@
 import type { Resolvers, ResolversTypes } from '#graphql/server'
-import type { ApolloServerOptions, BaseContext } from '@apollo/server'
+import type { ApolloServerOptions } from '@apollo/server'
 import type { YogaServerOptions } from 'graphql-yoga'
+import type { H3Event } from 'h3'
 
 import type { GraphQLFramework, StandardSchemaV1 } from 'nitro-graphql'
 
@@ -60,9 +61,9 @@ export function defineType(
 }
 
 export type DefineServerConfig = GraphQLFramework extends 'graphql-yoga'
-  ? Partial<YogaServerOptions<any, any>>
+  ? Partial<YogaServerOptions<H3Event, H3Event>>
   : GraphQLFramework extends 'apollo-server'
-    ? Partial<ApolloServerOptions<BaseContext>>
+    ? Partial<ApolloServerOptions<H3Event>>
     : Record<string, any>
 
 export function defineGraphQLConfig(
