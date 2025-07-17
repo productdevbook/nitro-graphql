@@ -49,9 +49,6 @@ export function startServerAndCreateH3Handler<TContext extends BaseContext>(
   server: ApolloServer<TContext> | (() => ApolloServer<TContext>),
   options?: H3HandlerOptions<TContext>,
 ): EventHandler {
-  const apolloServer = typeof server === 'function' ? server() : server
-  apolloServer.startInBackgroundHandlingStartupErrorsByLoggingAndFailingAllRequests()
-
   const defaultContext: ContextFunction<
     [H3ContextFunctionArgument],
     any
@@ -64,6 +61,9 @@ export function startServerAndCreateH3Handler<TContext extends BaseContext>(
 
   return eventHandler({
     handler: async (event) => {
+      const apolloServer = typeof server === 'function' ? server() : server
+      apolloServer.startInBackgroundHandlingStartupErrorsByLoggingAndFailingAllRequests()
+
       // Apollo-server doesn't handle OPTIONS calls, so we have to do this on our own
       // https://github.com/apollographql/apollo-server/blob/fa82c1d5299c4803f9ef8ae7fa2e367eadd8c0e6/packages/server/src/runHttpQuery.ts#L182-L192
       if (isMethod(event, 'OPTIONS')) {

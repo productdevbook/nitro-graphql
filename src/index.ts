@@ -3,13 +3,13 @@ import type { NitroGraphQLOptions } from './types'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { watch } from 'chokidar'
-import consola from 'consola'
 
+import consola from 'consola'
 import defu from 'defu'
 import { defineNitroModule } from 'nitropack/kit'
-import { dirname, join, resolve } from 'pathe'
+import { dirname, join, relative, resolve } from 'pathe'
 import { rollupConfig } from './rollup'
-import { relativeWithDot, scanDefs, scanResolvers } from './utils'
+import { relativeWithDot, scanDocs, scanResolvers, scanSchemas } from './utils'
 import { clientTypeGeneration, serverTypeGeneration } from './utils/server-type-generation'
 
 export type * from './types'
@@ -28,6 +28,11 @@ export default defineNitroModule({
       watchDirs: [],
       clientDir: '',
       serverDir: resolve(nitro.options.srcDir, 'graphql'),
+      dir: {
+        build: relative(nitro.options.rootDir, nitro.options.buildDir),
+        client: 'graphql',
+        server: 'server',
+      },
     }
 
     nitro.hooks.hook('rollup:before', (nitro, rollupConfig) => {
@@ -68,6 +73,11 @@ export default defineNitroModule({
       case 'nuxt':
         watchDirs.push(join(nitro.options.rootDir, 'app', 'graphql'))
         nitro.graphql.clientDir = resolve(nitro.options.rootDir, 'app', 'graphql')
+        nitro.graphql.dir.client = 'app/graphql'
+        break
+      case 'nitro':
+        nitro.graphql.clientDir = resolve(nitro.options.rootDir, 'graphql')
+        nitro.graphql.dir.client = 'graphql'
         break
       default:
     }
@@ -78,7 +88,7 @@ export default defineNitroModule({
       ignored: nitro.options.ignore,
     }).on('all', async (event, path) => {
       if (path.endsWith('.graphql') || path.endsWith('.gql')) {
-        await clientTypeGeneration(nitro, path)
+        await clientTypeGeneration(nitro)
       }
     })
 
@@ -93,29 +103,35 @@ export default defineNitroModule({
     const tsconfigDir = dirname(tsConfigPath)
     const typesDir = resolve(nitro.options.buildDir, 'types')
 
-    const defs = await scanDefs(nitro)
-    nitro.scanDefs = defs
+    const schemas = await scanSchemas(nitro)
+    nitro.scanSchemas = schemas
+
+    const docs = await scanDocs(nitro)
+    nitro.scanDocuments = docs
 
     const resolvers = await scanResolvers(nitro)
     nitro.scanResolvers = resolvers
 
     nitro.hooks.hook('dev:start', async () => {
-      const defs = await scanDefs(nitro)
-      nitro.scanDefs = defs
+      const defs = await scanSchemas(nitro)
+      nitro.scanSchemas = defs
 
       const resolvers = await scanResolvers(nitro)
       nitro.scanResolvers = resolvers
+
+      const docs = await scanDocs(nitro)
+      nitro.scanDocuments = docs
     })
 
     await rollupConfig(nitro)
 
     // Generate server and client types
     await serverTypeGeneration(nitro)
-    await clientTypeGeneration(nitro, nitro.graphql.clientDir)
+    await clientTypeGeneration(nitro)
 
     nitro.hooks.hook('close', async () => {
       await serverTypeGeneration(nitro)
-      await clientTypeGeneration(nitro, nitro.graphql.clientDir)
+      await clientTypeGeneration(nitro)
     })
 
     const runtime = fileURLToPath(

@@ -22,13 +22,19 @@ export interface GenImport {
 
 declare module 'nitropack/types' {
   interface Nitro {
-    scanDefs: string[]
+    scanSchemas: string[]
+    scanDocuments: string[]
     scanResolvers: GenImport[]
     graphql: {
       buildDir: string
       watchDirs: string[]
       clientDir: string
       serverDir: string
+      dir: {
+        build: string
+        client: string
+        server: string
+      }
     }
   }
 }

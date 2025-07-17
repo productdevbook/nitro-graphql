@@ -27,7 +27,7 @@ function createMergedSchema() {
   }
 }
 
-let apolloServer: ApolloServer<BaseContext>
+let apolloServer: ApolloServer<BaseContext> | null = null
 
 function createApolloServer() {
   if (!apolloServer) {
@@ -45,6 +45,9 @@ function createApolloServer() {
   return apolloServer
 }
 
-export default startServerAndCreateH3Handler(createApolloServer, {
-  context: async event => ({ event }),
-})
+export default startServerAndCreateH3Handler(
+  apolloServer || createApolloServer,
+  {
+    context: async event => ({ event }),
+  },
+)
