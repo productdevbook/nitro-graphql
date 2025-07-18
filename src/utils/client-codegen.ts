@@ -170,12 +170,10 @@ export async function generateClientTypes(
       },
       plugins: [
         { pluginContent: {} },
-        { typescriptOperations: {} },
         { typescriptGenericSdk: { rawRequest: false } },
       ],
       pluginMap: {
         pluginContent: { plugin: pluginContent },
-        typescriptOperations: { plugin: typescriptOperations },
         typescriptGenericSdk: { plugin: typescriptGenericSdk },
       },
     })

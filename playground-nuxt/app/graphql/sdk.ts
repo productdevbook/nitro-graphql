@@ -5,40 +5,6 @@
 /* prettier-ignore */
 import type * as Types from '#graphql/client';
 
-export type CreateUserMutationVariables = Types.Exact<{
-  input: Types.CreateUserInput;
-}>;
-
-
-export type CreateUserMutation = { __typename?: 'Mutation', createUser: { __typename?: 'User', id: string, name: string, email: string, createdAt: Date } };
-
-export type UpdateUserMutationVariables = Types.Exact<{
-  id: Types.Scalars['ID']['input'];
-  input: Types.UpdateUserInput;
-}>;
-
-
-export type UpdateUserMutation = { __typename?: 'Mutation', updateUser: { __typename?: 'User', id: string, name: string, email: string, createdAt: Date } };
-
-export type DeleteUserMutationVariables = Types.Exact<{
-  id: Types.Scalars['ID']['input'];
-}>;
-
-
-export type DeleteUserMutation = { __typename?: 'Mutation', deleteUser: boolean };
-
-export type GetUsersQueryVariables = Types.Exact<{ [key: string]: never; }>;
-
-
-export type GetUsersQuery = { __typename?: 'Query', users: Array<{ __typename?: 'User', id: string, name: string, email: string, createdAt: Date }> };
-
-export type GetUserQueryVariables = Types.Exact<{
-  id: Types.Scalars['ID']['input'];
-}>;
-
-
-export type GetUserQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, name: string, email: string, createdAt: Date } | null };
-
 
 export const CreateUserDocument = /*#__PURE__*/ `
     mutation CreateUser($input: CreateUserInput!) {
