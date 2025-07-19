@@ -10,7 +10,7 @@ import { defineNitroModule } from 'nitropack/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { rollupConfig } from './rollup'
 import { relativeWithDot, scanDocs, scanResolvers, scanSchemas } from './utils'
-import { clientTypeGeneration, serverTypeGeneration } from './utils/server-type-generation'
+import { clientTypeGeneration, serverTypeGeneration } from './utils/type-generation'
 
 export type * from './types'
 

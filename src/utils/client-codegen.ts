@@ -152,9 +152,15 @@ export async function generateClientTypes(
       schema: parse(printSchemaWithDirectives(schema)),
       documents: [...docs],
       config: {
+        fetcher: 'function',
         documentMode: 'string',
         pureMagicComment: true,
         strictScalars: true,
+        avoidOptionals: true,
+        useTypeImports: true,
+        dedupeOperationSuffix: true,
+        exportFragmentSpreadSubTypes: true,
+        enumsAsTypes: true,
         scalars: {
           DateTime: 'Date',
           JSON: 'any',
@@ -162,8 +168,6 @@ export async function generateClientTypes(
           NonEmptyString: 'string',
           Currency: 'string',
         },
-        useTypeImports: true,
-
       },
       presetConfig: {
         typesPath: '#graphql/client',
