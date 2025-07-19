@@ -10,6 +10,41 @@ import { dirname, join, resolve } from 'pathe'
 import { generateClientTypes, loadGraphQLDocuments } from './client-codegen'
 import { generateTypes } from './server-codegen'
 
+function generateNuxtOfetchClient(clientDir: string) {
+  const ofetchPath = resolve(clientDir, 'ofetch.ts')
+
+  // Only create ofetch.ts if it doesn't exist
+  if (!existsSync(ofetchPath)) {
+    const ofetchContent = `// This file is auto-generated once by nitro-graphql for quick start
+// You can modify this file according to your needs
+import type { ExecutionResult } from 'graphql'
+import type { Requester } from './sdk'
+import { getSdk } from './sdk'
+
+export function createGraphQLClient(endpoint: string): Requester {
+  return async <R>(doc: string, vars?: any): Promise<R> => {
+    const headers = import.meta.server ? useRequestHeaders() : undefined
+
+    const result = await $fetch(endpoint, {
+      method: 'POST',
+      body: { query: doc, variables: vars },
+      headers: {
+        'Content-Type': 'application/json',
+        ...headers,
+      },
+    }) as ExecutionResult
+
+    return result.errors?.length
+      ? Promise.reject(new Error(result.errors[0]?.message || 'GraphQL error'))
+      : result.data as R
+  }
+}
+
+export const $sdk = getSdk(createGraphQLClient('/api/graphql'))`
+    writeFileSync(ofetchPath, ofetchContent, 'utf-8')
+  }
+}
+
 export async function serverTypeGeneration(app: Nitro) {
   try {
     const schemas = app.scanSchemas || []
@@ -68,6 +103,11 @@ export async function clientTypeGeneration(
     const sdkTypesPath = resolve(nitro.graphql.clientDir, 'sdk.ts')
     writeFileSync(clientTypesPath, types.types, 'utf-8')
     writeFileSync(sdkTypesPath, types.sdk, 'utf-8')
+
+    // Generate ofetch client for Nuxt framework
+    if (nitro.options.framework?.name === 'nuxt') {
+      generateNuxtOfetchClient(nitro.graphql.clientDir)
+    }
   }
   catch (error) {
     consola.error('Client schema generation error:', error)

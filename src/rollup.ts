@@ -5,7 +5,7 @@ import { parse } from 'graphql'
 import { genImport } from 'knitwork'
 import { resolve } from 'pathe'
 import { getImportId, scanGraphql } from './utils'
-import { clientTypeGeneration, serverTypeGeneration } from './utils/server-type-generation'
+import { clientTypeGeneration, serverTypeGeneration } from './utils/type-generation'
 
 export async function rollupConfig(app: Nitro) {
   virtualSchemas(app)
