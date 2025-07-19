@@ -15,8 +15,7 @@
 
 ---
 
-> [!NOTE]
-> This project is actively under development. We're always open to new ideas, different perspectives, and feature suggestions! If you have a suggestion, please first [open an issue](https://github.com/productdevbook/nitro-graphql/issues) to discuss it, then you can contribute with a PR.
+*"GraphQL is not just a query language; it's a new way to think about APIs and client-server interaction."*
 
 ## ✨ Features
 
