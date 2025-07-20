@@ -1,7 +1,7 @@
 import type { LoadSchemaOptions, UnnormalizedTypeDefPointer } from '@graphql-tools/load'
 import type { Source } from '@graphql-tools/utils'
 import type { GraphQLSchema } from 'graphql'
-import type { CodegenClientConfig } from '../types'
+import type { CodegenClientConfig, GenericSdkConfig } from '../types'
 import { codegen } from '@graphql-codegen/core'
 import { preset } from '@graphql-codegen/import-types-preset'
 import { plugin as typescriptPlugin } from '@graphql-codegen/typescript'
@@ -111,7 +111,6 @@ export async function generateClientTypes(
   consola.info(`[graphql] Found ${docs.length} client GraphQL documents`)
 
   const defaultConfig: CodegenClientConfig = {
-    documentMode: 'string',
     emitLegacyCommonJSImports: false,
     useTypeImports: true,
     enumsAsTypes: true,
@@ -161,6 +160,7 @@ export async function generateClientTypes(
         dedupeOperationSuffix: true,
         exportFragmentSpreadSubTypes: true,
         enumsAsTypes: true,
+        rawRequest: true,
         scalars: {
           DateTime: 'Date',
           JSON: 'any',
@@ -168,13 +168,13 @@ export async function generateClientTypes(
           NonEmptyString: 'string',
           Currency: 'string',
         },
-      },
+      } as GenericSdkConfig,
       presetConfig: {
         typesPath: '#graphql/client',
       },
       plugins: [
         { pluginContent: {} },
-        { typescriptGenericSdk: { rawRequest: false } },
+        { typescriptGenericSdk: { } },
       ],
       pluginMap: {
         pluginContent: { plugin: pluginContent },
