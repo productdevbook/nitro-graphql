@@ -1,6 +1,5 @@
 // This file is auto-generated once by nitro-graphql for quick start
 // You can modify this file according to your needs
-import type { ExecutionResult } from 'graphql'
 import type { Requester } from './sdk'
 import { getSdk } from './sdk'
 
@@ -15,11 +14,9 @@ export function createGraphQLClient(endpoint: string): Requester {
         'Content-Type': 'application/json',
         ...headers,
       },
-    }) as ExecutionResult
+    })
 
-    return result.errors?.length
-      ? Promise.reject(new Error(result.errors[0]?.message || 'GraphQL error'))
-      : result.data as R
+    return result as R
   }
 }
 
