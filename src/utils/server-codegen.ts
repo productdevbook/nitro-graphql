@@ -57,6 +57,7 @@ export async function generateTypes(
     maybeValue: 'T | null | undefined',
     inputMaybeValue: 'T | undefined',
     declarationKind: 'interface',
+    enumsAsTypes: true,
   }
 
   const mergedConfig = defu(config, defaultConfig)
