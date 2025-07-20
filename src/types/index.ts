@@ -10,7 +10,13 @@ export type { StandardSchemaV1 } from './standard-schema'
 export type CodegenServerConfig = TypeScriptPluginConfig & TypeScriptResolversPluginConfig
 
 // CODEGEN
-export type GenericSdkConfig = Parameters<typeof typescriptGenericSdk>[2]
+type DocumentModeConfig = Pick<Parameters<typeof typescriptGenericSdk>[2], 'documentMode'>
+type DocumentModeEnum = NonNullable<DocumentModeConfig['documentMode']>
+type DocumentModeType = `${DocumentModeEnum}`
+
+export type GenericSdkConfig = Omit<Parameters<typeof typescriptGenericSdk>[2], 'documentMode'> & {
+  documentMode?: DocumentModeType
+}
 
 export type CodegenClientConfig = TypeScriptPluginConfig & TypeScriptDocumentsPluginConfig & {
   endpoint?: string

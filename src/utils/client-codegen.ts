@@ -101,6 +101,7 @@ export async function generateClientTypes(
   schema: GraphQLSchema,
   docs: Source[],
   config: CodegenClientConfig = {},
+  sdkConfig: GenericSdkConfig = {},
   outputPath?: string,
 ) {
   if (docs.length === 0) {
@@ -128,6 +129,25 @@ export async function generateClientTypes(
 
   const mergedConfig = defu(config, defaultConfig)
 
+  const defaultSdkConfig: GenericSdkConfig = {
+    documentMode: 'string',
+    pureMagicComment: true,
+    strictScalars: true,
+    useTypeImports: true,
+    dedupeOperationSuffix: true,
+    rawRequest: true,
+
+    scalars: {
+      DateTime: 'Date',
+      JSON: 'any',
+      UUID: 'string',
+      NonEmptyString: 'string',
+      Currency: 'string',
+    },
+  }
+
+  const mergedSdkConfig = defu(sdkConfig, defaultSdkConfig)
+
   try {
     const output = await codegen({
       filename: outputPath || 'client-types.generated.ts',
@@ -150,25 +170,7 @@ export async function generateClientTypes(
       baseOutputDir: outputPath || 'client-types.generated.ts',
       schema: parse(printSchemaWithDirectives(schema)),
       documents: [...docs],
-      config: {
-        fetcher: 'function',
-        documentMode: 'string',
-        pureMagicComment: true,
-        strictScalars: true,
-        avoidOptionals: true,
-        useTypeImports: true,
-        dedupeOperationSuffix: true,
-        exportFragmentSpreadSubTypes: true,
-        enumsAsTypes: true,
-        rawRequest: true,
-        scalars: {
-          DateTime: 'Date',
-          JSON: 'any',
-          UUID: 'string',
-          NonEmptyString: 'string',
-          Currency: 'string',
-        },
-      } as GenericSdkConfig,
+      config: mergedSdkConfig,
       presetConfig: {
         typesPath: '#graphql/client',
       },
