@@ -1,4 +1,5 @@
 import type { TypeScriptPluginConfig } from '@graphql-codegen/typescript'
+import type { plugin as typescriptGenericSdk } from '@graphql-codegen/typescript-generic-sdk'
 import type { TypeScriptDocumentsPluginConfig } from '@graphql-codegen/typescript-operations'
 import type { TypeScriptResolversPluginConfig } from '@graphql-codegen/typescript-resolvers'
 import type { IResolvers } from '@graphql-tools/utils'
@@ -7,6 +8,19 @@ import type { ESMCodeGenOptions } from 'knitwork'
 export type { StandardSchemaV1 } from './standard-schema'
 
 export type CodegenServerConfig = TypeScriptPluginConfig & TypeScriptResolversPluginConfig
+
+// CODEGEN
+type DocumentModeConfig = Pick<Parameters<typeof typescriptGenericSdk>[2], 'documentMode'>
+type DocumentModeEnum = NonNullable<DocumentModeConfig['documentMode']>
+type DocumentModeType = `${DocumentModeEnum}`
+
+export type GenericSdkConfig = Omit<Parameters<typeof typescriptGenericSdk>[2], 'documentMode'> & {
+  documentMode?: DocumentModeType
+}
+
+export type CodegenClientConfig = TypeScriptPluginConfig & TypeScriptDocumentsPluginConfig & {
+  endpoint?: string
+}
 
 interface IESMImport {
   name: string
@@ -53,11 +67,6 @@ declare module 'nitropack' {
   }
 }
 
-export interface CodegenClientConfig extends TypeScriptPluginConfig, TypeScriptDocumentsPluginConfig {
-  endpoint?: string
-  documentMode?: 'string' | 'graphQLTag' | 'documentNode' | 'documentNodeImportFragments' | 'external'
-}
-
 export interface NitroGraphQLOptions {
   framework: 'graphql-yoga' | 'apollo-server'
   endpoint?: {
@@ -75,5 +84,6 @@ export interface NitroGraphQLOptions {
   codegen?: {
     server?: CodegenServerConfig
     client?: CodegenClientConfig
+    clientSDK?: GenericSdkConfig
   }
 }

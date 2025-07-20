@@ -1,7 +1,7 @@
 import type { LoadSchemaOptions, UnnormalizedTypeDefPointer } from '@graphql-tools/load'
 import type { Source } from '@graphql-tools/utils'
 import type { GraphQLSchema } from 'graphql'
-import type { CodegenClientConfig } from '../types'
+import type { CodegenClientConfig, GenericSdkConfig } from '../types'
 import { codegen } from '@graphql-codegen/core'
 import { preset } from '@graphql-codegen/import-types-preset'
 import { plugin as typescriptPlugin } from '@graphql-codegen/typescript'
@@ -101,6 +101,7 @@ export async function generateClientTypes(
   schema: GraphQLSchema,
   docs: Source[],
   config: CodegenClientConfig = {},
+  sdkConfig: GenericSdkConfig = {},
   outputPath?: string,
 ) {
   if (docs.length === 0) {
@@ -111,7 +112,6 @@ export async function generateClientTypes(
   consola.info(`[graphql] Found ${docs.length} client GraphQL documents`)
 
   const defaultConfig: CodegenClientConfig = {
-    documentMode: 'string',
     emitLegacyCommonJSImports: false,
     useTypeImports: true,
     enumsAsTypes: true,
@@ -128,6 +128,25 @@ export async function generateClientTypes(
   }
 
   const mergedConfig = defu(config, defaultConfig)
+
+  const defaultSdkConfig: GenericSdkConfig = {
+    documentMode: 'string',
+    pureMagicComment: true,
+    strictScalars: true,
+    useTypeImports: true,
+    dedupeOperationSuffix: true,
+    rawRequest: true,
+
+    scalars: {
+      DateTime: 'Date',
+      JSON: 'any',
+      UUID: 'string',
+      NonEmptyString: 'string',
+      Currency: 'string',
+    },
+  }
+
+  const mergedSdkConfig = defu(sdkConfig, defaultSdkConfig)
 
   try {
     const output = await codegen({
@@ -151,30 +170,13 @@ export async function generateClientTypes(
       baseOutputDir: outputPath || 'client-types.generated.ts',
       schema: parse(printSchemaWithDirectives(schema)),
       documents: [...docs],
-      config: {
-        fetcher: 'function',
-        documentMode: 'string',
-        pureMagicComment: true,
-        strictScalars: true,
-        avoidOptionals: true,
-        useTypeImports: true,
-        dedupeOperationSuffix: true,
-        exportFragmentSpreadSubTypes: true,
-        enumsAsTypes: true,
-        scalars: {
-          DateTime: 'Date',
-          JSON: 'any',
-          UUID: 'string',
-          NonEmptyString: 'string',
-          Currency: 'string',
-        },
-      },
+      config: mergedSdkConfig,
       presetConfig: {
         typesPath: '#graphql/client',
       },
       plugins: [
         { pluginContent: {} },
-        { typescriptGenericSdk: { rawRequest: false } },
+        { typescriptGenericSdk: { } },
       ],
       pluginMap: {
         pluginContent: { plugin: pluginContent },
