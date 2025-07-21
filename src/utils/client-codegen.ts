@@ -127,7 +127,7 @@ export async function generateClientTypes(
     },
   }
 
-  const mergedConfig = defu(config, defaultConfig)
+  const mergedConfig = defu(defaultConfig, config)
 
   const defaultSdkConfig: GenericSdkConfig = {
     documentMode: 'string',
@@ -146,7 +146,7 @@ export async function generateClientTypes(
     },
   }
 
-  const mergedSdkConfig = defu(sdkConfig, defaultSdkConfig)
+  const mergedSdkConfig = defu(defaultSdkConfig, sdkConfig)
 
   try {
     const output = await codegen({

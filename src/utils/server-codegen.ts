@@ -60,7 +60,7 @@ export async function generateTypes(
     enumsAsTypes: true,
   }
 
-  const mergedConfig = defu(config, defaultConfig)
+  const mergedConfig = defu(defaultConfig, config)
 
   const output = await codegen({
     filename: outputPath || 'types.generated.ts',
