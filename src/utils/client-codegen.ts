@@ -13,6 +13,7 @@ import { printSchemaWithDirectives } from '@graphql-tools/utils'
 import { consola } from 'consola'
 import { defu } from 'defu'
 import { parse } from 'graphql'
+import { CurrencyResolver, DateTimeISOResolver, DateTimeResolver, JSONObjectResolver, JSONResolver, NonEmptyStringResolver, UUIDResolver } from 'graphql-scalars'
 
 /**
  * Type definition pointer for GraphQL schemas
@@ -111,42 +112,35 @@ export async function generateClientTypes(
 
   consola.info(`[graphql] Found ${docs.length} client GraphQL documents`)
 
-  const defaultConfig: CodegenClientConfig = {
+  const defaultConfig: CodegenClientConfig | GenericSdkConfig = {
     emitLegacyCommonJSImports: false,
     useTypeImports: true,
     enumsAsTypes: true,
     strictScalars: true,
     maybeValue: 'T | null | undefined',
     inputMaybeValue: 'T | undefined',
+    documentMode: 'string',
+    pureMagicComment: true,
+    dedupeOperationSuffix: true,
+    rawRequest: true,
     scalars: {
-      DateTime: 'string',
-      JSON: 'any',
-      UUID: 'string',
-      NonEmptyString: 'string',
-      Currency: 'string',
+      DateTime: DateTimeResolver.extensions.codegenScalarType as any,
+      DateTimeISO: DateTimeISOResolver.extensions.codegenScalarType as any,
+      UUID: UUIDResolver.extensions.codegenScalarType as any,
+      JSON: JSONResolver.extensions.codegenScalarType as any,
+      JSONObject: JSONObjectResolver.extensions.codegenScalarType as any,
+      NonEmptyString: NonEmptyStringResolver.extensions.codegenScalarType as any,
+      Currency: CurrencyResolver.extensions.codegenScalarType as any,
+      File: {
+        input: 'File',
+        output: 'File',
+      },
     },
   }
 
   const mergedConfig = defu(defaultConfig, config)
 
-  const defaultSdkConfig: GenericSdkConfig = {
-    documentMode: 'string',
-    pureMagicComment: true,
-    strictScalars: true,
-    useTypeImports: true,
-    dedupeOperationSuffix: true,
-    rawRequest: true,
-
-    scalars: {
-      DateTime: 'Date',
-      JSON: 'any',
-      UUID: 'string',
-      NonEmptyString: 'string',
-      Currency: 'string',
-    },
-  }
-
-  const mergedSdkConfig = defu(defaultSdkConfig, sdkConfig)
+  const mergedSdkConfig = defu(mergedConfig, sdkConfig)
 
   try {
     const output = await codegen({

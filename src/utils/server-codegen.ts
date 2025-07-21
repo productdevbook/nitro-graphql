@@ -7,6 +7,7 @@ import { printSchemaWithDirectives } from '@graphql-tools/utils'
 import consola from 'consola'
 import { defu } from 'defu'
 import { parse } from 'graphql'
+import { CurrencyResolver, DateTimeISOResolver, DateTimeResolver, JSONObjectResolver, JSONResolver, NonEmptyStringResolver, UUIDResolver } from 'graphql-scalars'
 // import {
 //   CurrencyResolver,
 //   DateTimeResolver,
@@ -35,20 +36,16 @@ export async function generateTypes(
 ) {
   const defaultConfig: CodegenServerConfig = {
     scalars: {
-      // DateTime: DateTimeResolver.extensions.codegenScalarType as any,
-      // DateTimeISO: DateTimeResolver.extensions.codegenScalarType as any,
-      // UUID: UUIDResolver.extensions.codegenScalarType as any,
-      // JSON: JSONResolver.extensions.codegenScalarType as any,
-      // JSONObject: JSONResolver.extensions.codegenScalarType as any,
-      // NonEmptyString: NonEmptyStringResolver.extensions.codegenScalarType as any,
-      // Currency: CurrencyResolver.extensions.codegenScalarType as any,
+      DateTime: DateTimeResolver.extensions.codegenScalarType as any,
+      DateTimeISO: DateTimeISOResolver.extensions.codegenScalarType as any,
+      UUID: UUIDResolver.extensions.codegenScalarType as any,
+      JSON: JSONResolver.extensions.codegenScalarType as any,
+      JSONObject: JSONObjectResolver.extensions.codegenScalarType as any,
+      NonEmptyString: NonEmptyStringResolver.extensions.codegenScalarType as any,
+      Currency: CurrencyResolver.extensions.codegenScalarType as any,
       File: {
         input: 'File',
         output: 'File',
-      },
-      Cursor: {
-        input: 'number',
-        output: 'number',
       },
     },
     defaultScalarType: 'unknown',
