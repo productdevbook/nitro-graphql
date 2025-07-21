@@ -98,7 +98,9 @@ export async function clientTypeGeneration(
     }
     const clientTypesPath = resolve(nitro.options.buildDir, 'types', 'nitro-graphql-client.d.ts')
     const sdkTypesPath = resolve(nitro.graphql.clientDir, 'sdk.ts')
+    mkdirSync(dirname(clientTypesPath), { recursive: true })
     writeFileSync(clientTypesPath, types.types, 'utf-8')
+    mkdirSync(dirname(sdkTypesPath), { recursive: true })
     writeFileSync(sdkTypesPath, types.sdk, 'utf-8')
 
     // Generate ofetch client for Nuxt framework
