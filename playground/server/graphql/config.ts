@@ -5,5 +5,4 @@ export default defineGraphQLConfig({
   graphiql: true,
   // Additional yoga options can be added here
   // See: https://the-guild.dev/graphql/yoga-server/docs
-  context: ({}) => {},
 })
