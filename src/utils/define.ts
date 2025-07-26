@@ -1,9 +1,9 @@
-import type { Resolvers, ResolversTypes } from '#graphql/server'
+import type { NPMConfig, Resolvers, ResolversTypes } from '#graphql/server'
 import type { ApolloServerOptions } from '@apollo/server'
 import type { YogaServerOptions } from 'graphql-yoga'
 import type { H3Event } from 'h3'
 
-import type { GraphQLFramework, StandardSchemaV1 } from 'nitro-graphql'
+import type { StandardSchemaV1 } from 'nitro-graphql'
 
 type Flatten<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
 
@@ -60,14 +60,14 @@ export function defineType(
   return resolvers
 }
 
-export type DefineServerConfig = GraphQLFramework extends 'graphql-yoga'
+export type DefineServerConfig<T extends NPMConfig = NPMConfig> = T['framework'] extends 'graphql-yoga'
   ? Partial<YogaServerOptions<H3Event, Partial<H3Event>>>
-  : GraphQLFramework extends 'apollo-server'
+  : T['framework'] extends 'apollo-server'
     ? Partial<ApolloServerOptions<H3Event>>
-    : Record<string, any>
+    : Partial<YogaServerOptions<H3Event, Partial<H3Event>>> | Partial<ApolloServerOptions<H3Event>>
 
-export function defineGraphQLConfig(
-  config: Partial<DefineServerConfig>,
-): Partial<DefineServerConfig> {
+export function defineGraphQLConfig<T extends NPMConfig = NPMConfig>(
+  config: Partial<DefineServerConfig<T>>,
+): Partial<DefineServerConfig<T>> {
   return config
 }
