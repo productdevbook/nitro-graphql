@@ -67,6 +67,7 @@
   },
   "peerDependencies": {
     "graphql": "^16.11.0",
+    "h3": "^1.15.3",
     "nitropack": "^2.11.13"
   },
   "dependencies": {

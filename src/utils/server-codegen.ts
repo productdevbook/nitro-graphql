@@ -30,6 +30,7 @@ function pluginContent(_schema: any, _documents: any, _config: any, _info: any) 
 }
 
 export async function generateTypes(
+  selectFremework: string,
   schema: GraphQLSchema,
   config: CodegenServerConfig = {},
   outputPath?: string,
@@ -82,6 +83,10 @@ export async function generateTypes(
               `import type { StandardSchemaV1 } from 'nitro-graphql'`,
 
               `
+export interface NPMConfig {
+  framework: '${selectFremework || 'graphql-yoga'}';
+}
+
 export type SchemaType = Partial<Record<Partial<keyof ResolversTypes>, StandardSchemaV1>>
 
 // Check if schemas is empty object, return never if so

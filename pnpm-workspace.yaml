@@ -1,6 +1,7 @@
 packages:
   - playground
   - playground-nuxt
+
 catalog:
   '@antfu/eslint-config': ^4.17.0
   '@apollo/server': ^5.0.0
@@ -33,7 +34,7 @@ catalog:
   graphql-config: ^5.1.5
   graphql-scalars: ^1.24.2
   graphql-yoga: ^5.15.1
-  h3: ^1.15.3
+  h3: 1.15.3
   knitwork: ^1.2.0
   nitropack: ^2.12.3
   nuxt: 4.0.0-rc.0

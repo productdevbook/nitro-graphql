@@ -59,7 +59,7 @@ export async function serverTypeGeneration(app: Nitro) {
       assumeValid: true,
     })
 
-    const data = await generateTypes(schema, app.options.graphql?.codegen?.server ?? {})
+    const data = await generateTypes(app.options.graphql?.framework || 'graphql-yoga', schema, app.options.graphql?.codegen?.server ?? {})
 
     const printSchema = printSchemaWithDirectives(schema)
 

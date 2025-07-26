@@ -100,7 +100,7 @@ catalogs:
       specifier: ^5.15.1
       version: 5.15.1
     h3:
-      specifier: ^1.15.3
+      specifier: 1.15.3
       version: 1.15.3
     knitwork:
       specifier: ^1.2.0
