@@ -1,8 +1,17 @@
 type User {
   id: ID!
-  name: String!
-  email: String!
+  name: String! @transform(upper: true, trim: true)
+  displayName: String! @format(operations: ["TRIM", "CAPITALIZE"])
+  email: String! @transform(lower: true, trim: true)
+  bio: String @transform(truncate: 200, default: "No bio provided")
+  phone: String @validate(pattern: "^\\+?[1-9]\\d{1,14}$")
+  age: Int @validate(min: 0, max: 150)
+  role: String!
+  roles: [String!]! @permission(roles: ["ADMIN"])
+  isActive: Boolean!
   createdAt: DateTime!
+  createdAtFormats: DateTime @format(dateFormats: ["ISO", "TIMESTAMP", "DATE_ONLY"])
+  posts: [Post!]! @list(max: 10, sort: "publishedAt", sortDesc: true)
 }
 
 input CreateUserInput {

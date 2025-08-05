@@ -35,6 +35,7 @@ export default defineConfig({
     'h3',
     '#nitro-internal-virtual/server-schemas',
     '#nitro-internal-virtual/server-resolvers',
+    '#nitro-internal-virtual/server-directives',
     '#nitro-internal-virtual/graphql-config',
     '@nuxt/kit',
     '@nuxt/schema',

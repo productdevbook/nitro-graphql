@@ -1,12 +1,14 @@
 import type { YogaServerInstance } from 'graphql-yoga'
 import { importedConfig } from '#nitro-internal-virtual/graphql-config'
 
+import { directives } from '#nitro-internal-virtual/server-directives'
 import { resolvers } from '#nitro-internal-virtual/server-resolvers'
 import { schemas } from '#nitro-internal-virtual/server-schemas'
 
 import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge'
+import { makeExecutableSchema } from '@graphql-tools/schema'
 import defu from 'defu'
-import { createSchema, createYoga } from 'graphql-yoga'
+import { createYoga } from 'graphql-yoga'
 import { defineEventHandler, toWebRequest } from 'h3'
 // TODO: https://github.com/nitrojs/nitro/issues/3403 if used import this error.
 // import { createMergedSchema } from 'nitro-graphql/internal'
@@ -43,10 +45,21 @@ function createMergedSchema() {
     const typeDefs = mergeTypeDefs([mergedSchemas])
     const mergedResolvers = mergeResolvers(resolvers.map(r => r.resolver))
 
-    return createSchema({
+    let schema = makeExecutableSchema({
       typeDefs,
       resolvers: mergedResolvers,
     })
+
+    // Apply directives if any
+    if (directives && directives.length > 0) {
+      for (const { directive } of directives) {
+        if (directive.transformer) {
+          schema = directive.transformer(schema)
+        }
+      }
+    }
+
+    return schema
   }
   catch (error) {
     console.error('Schema merge error:', error)

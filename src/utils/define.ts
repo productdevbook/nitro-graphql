@@ -1,5 +1,6 @@
 import type { NPMConfig, Resolvers, ResolversTypes } from '#graphql/server'
 import type { ApolloServerOptions } from '@apollo/server'
+import type { GraphQLSchema } from 'graphql'
 import type { YogaServerOptions } from 'graphql-yoga'
 import type { H3Event } from 'h3'
 
@@ -69,5 +70,65 @@ export type DefineServerConfig<T extends NPMConfig = NPMConfig> = T['framework']
 export function defineGraphQLConfig<T extends NPMConfig = NPMConfig>(
   config: Partial<DefineServerConfig<T>>,
 ): Partial<DefineServerConfig<T>> {
+  return config
+}
+
+type DirectiveLocationName
+  = | 'QUERY'
+    | 'MUTATION'
+    | 'SUBSCRIPTION'
+    | 'FIELD'
+    | 'FRAGMENT_DEFINITION'
+    | 'FRAGMENT_SPREAD'
+    | 'INLINE_FRAGMENT'
+    | 'VARIABLE_DEFINITION'
+    | 'SCHEMA'
+    | 'SCALAR'
+    | 'OBJECT'
+    | 'FIELD_DEFINITION'
+    | 'ARGUMENT_DEFINITION'
+    | 'INTERFACE'
+    | 'UNION'
+    | 'ENUM'
+    | 'ENUM_VALUE'
+    | 'INPUT_OBJECT'
+    | 'INPUT_FIELD_DEFINITION'
+
+export interface DirectiveDefinition {
+  name: string
+  locations: DirectiveLocationName[]
+  args?: Record<string, {
+    type: string
+    defaultValue?: any
+    description?: string
+  }>
+  description?: string
+  isRepeatable?: boolean
+  transformer?: (schema: GraphQLSchema) => GraphQLSchema
+}
+
+export function defineDirective(config: DirectiveDefinition): DirectiveDefinition {
+  // Generate GraphQL schema string for the directive
+  const args = config.args
+    ? Object.entries(config.args)
+        .map(([name, arg]) => {
+          const defaultValue = arg.defaultValue !== undefined ? ` = ${JSON.stringify(arg.defaultValue)}` : ''
+          return `${name}: ${arg.type}${defaultValue}`
+        })
+        .join(', ')
+    : ''
+
+  const argsString = args ? `(${args})` : ''
+  const locations = config.locations.join(' | ')
+  const schemaDefinition = `directive @${config.name}${argsString} on ${locations}`
+
+  // Add a non-enumerable property to store the schema
+  Object.defineProperty(config, '__schema', {
+    value: schemaDefinition,
+    enumerable: false,
+    configurable: false,
+    writable: false,
+  })
+
   return config
 }
