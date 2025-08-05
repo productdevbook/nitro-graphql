@@ -302,18 +302,29 @@ export default defineGraphQLConfig({
 `, 'utf-8')
     }
 
-    if (!existsSync(join(nitro.graphql.serverDir, 'context.d.ts'))) {
-      writeFileSync(join(nitro.graphql.serverDir, 'context.d.ts'), `// Example context definition please change it to your needs
-import type { H3EventContext as OriginalH3EventContext } from 'h3'
-
-export interface ExtendedH3EventContext extends OriginalH3EventContext {
-  // useDatabase: () => Database
-  // tables: typeof import('~~/server/drizzle/schema/index')
-}
+    if (!existsSync(join(nitro.graphql.serverDir, 'context.ts'))) {
+      writeFileSync(join(nitro.graphql.serverDir, 'context.ts'), `// Example context definition - please change it to your needs
+// import type { Database } from '../utils/useDb'
 
 declare module 'h3' {
-  interface H3EventContext extends ExtendedH3EventContext {}
+  interface H3EventContext {
+    // Add your custom context properties here
+    // useDatabase: () => Database
+    // tables: typeof import('../drizzle/schema')
+    // auth?: {
+    //   user?: {
+    //     id: string
+    //     role: 'admin' | 'user'
+    //   }
+    // }
+  }
 }`, 'utf-8')
+    }
+
+    // Check for old context.d.ts file and warn users to migrate
+    if (existsSync(join(nitro.graphql.serverDir, 'context.d.ts'))) {
+      consola.warn('nitro-graphql: Found context.d.ts file. Please rename it to context.ts for the new structure.')
+      consola.info('The context file should now be context.ts instead of context.d.ts')
     }
   },
 })
