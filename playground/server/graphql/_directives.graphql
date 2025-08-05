@@ -14,6 +14,8 @@ directive @list(max: Int, sort: String, sortDesc: Boolean = false, filter: Strin
 
 directive @permission(roles: [String!], scopes: [String!], requireAll: Boolean = false) on FIELD_DEFINITION | OBJECT
 
+directive @rateLimit(limit: Int!, window: Int!, skipIf: [String!], keyBy: [String!], message: String = "Too many requests", burst: Int, cost: Float = 1) on FIELD_DEFINITION | OBJECT
+
 directive @transform(upper: Boolean, lower: Boolean, trim: Boolean = true, truncate: Int, default: String) on FIELD_DEFINITION | ARGUMENT_DEFINITION
 
 directive @validate(minLength: Int, maxLength: Int, pattern: String, min: Int, max: Int) on FIELD_DEFINITION | ARGUMENT_DEFINITION

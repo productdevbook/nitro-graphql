@@ -1,10 +1,9 @@
-import { defineDirective } from '#graphql/utils'
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils'
 import { defaultFieldResolver } from 'graphql'
 
 /**
  * @format directive - Apply multiple formatting operations
- * 
+ *
  * Examples:
  * - @format(operations: ["UPPERCASE", "TRIM"]) - Apply operations in order
  * - @format(operations: ["LOWERCASE", "SNAKE_CASE"]) - Convert to lowercase snake_case
@@ -33,13 +32,13 @@ export const formatDirective = defineDirective({
     return mapSchema(schema, {
       [MapperKind.OBJECT_FIELD]: (fieldConfig) => {
         const formatConfig = getDirective(schema, fieldConfig, 'format')?.[0]
-        
+
         if (formatConfig) {
           const { resolve = defaultFieldResolver } = fieldConfig
-          
+
           fieldConfig.resolve = async function (source, args, context, info) {
             let result = await resolve(source, args, context, info)
-            
+
             // Apply string operations
             if (formatConfig.operations && typeof result === 'string') {
               for (const operation of formatConfig.operations) {
@@ -65,7 +64,7 @@ export const formatDirective = defineDirective({
                 }
               }
             }
-            
+
             // Apply date formats
             if (formatConfig.dateFormats && result instanceof Date) {
               const formats = {}
@@ -87,7 +86,7 @@ export const formatDirective = defineDirective({
               }
               return formats
             }
-            
+
             // Validate against custom patterns
             if (formatConfig.customPatterns && typeof result === 'string') {
               for (const pattern of formatConfig.customPatterns) {
@@ -97,11 +96,11 @@ export const formatDirective = defineDirective({
                 }
               }
             }
-            
+
             return result
           }
         }
-        
+
         return fieldConfig
       },
     })

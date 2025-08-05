@@ -127,7 +127,7 @@ export default defineNitroModule({
           const nameMatch = fileContent.match(/name:\s*['"`](\w+)['"`]/)
           const locationsMatch = fileContent.match(/locations:\s*\[([\s\S]*?)\]/)
           const argsMatch = fileContent.match(/args:\s*\{([\s\S]*?)\}\s*,\s*(?:description|transformer)/)
-          
+
           if (nameMatch && locationsMatch) {
             const name = nameMatch[1]
             const locations = locationsMatch[1]
@@ -135,21 +135,21 @@ export default defineNitroModule({
               .map(l => l.trim().replace(/['"`]/g, ''))
               .filter(Boolean)
               .join(' | ')
-            
+
             let args = ''
             if (argsMatch && argsMatch[1] && argsMatch[1].trim()) {
               // Parse each argument
               const argDefs: string[] = []
               const argMatches = argsMatch[1].matchAll(/(\w+):\s*\{([^}]+)\}/g)
-              
+
               for (const argMatch of argMatches) {
                 const argName = argMatch[1]
                 const argBody = argMatch[2]
-                
+
                 // Extract type (including array types)
                 const typeMatch = argBody.match(/type:\s*['"`](\[[\w!]+\]|\w+)['"`]/)
                 const type = typeMatch ? typeMatch[1] : 'String'
-                
+
                 // Extract default value
                 const defaultMatch = argBody.match(/defaultValue:\s*(['"`]([^'"`]+)['"`]|(\d+)|true|false)/)
                 let defaultValue = ''
@@ -157,16 +157,18 @@ export default defineNitroModule({
                   const value = defaultMatch[2] || defaultMatch[3] || defaultMatch[1].replace(/['"`]/g, '')
                   if (type === 'String') {
                     defaultValue = ` = "${value}"`
-                  } else if (type === 'Int' || type === 'Float') {
+                  }
+                  else if (type === 'Int' || type === 'Float') {
                     defaultValue = ` = ${value}`
-                  } else if (type === 'Boolean') {
+                  }
+                  else if (type === 'Boolean') {
                     defaultValue = ` = ${value}`
                   }
                 }
-                
+
                 argDefs.push(`${argName}: ${type}${defaultValue}`)
               }
-              
+
               if (argDefs.length > 0) {
                 args = `(${argDefs.join(', ')})`
               }
@@ -221,7 +223,7 @@ ${directiveSchemas.join('\n\n')}`
             const nameMatch = fileContent.match(/name:\s*['"`](\w+)['"`]/)
             const locationsMatch = fileContent.match(/locations:\s*\[([\s\S]*?)\]/)
             const argsMatch = fileContent.match(/args:\s*\{([\s\S]*?)\}\s*,\s*(?:description|transformer)/)
-            
+
             if (nameMatch && locationsMatch) {
               const name = nameMatch[1]
               const locations = locationsMatch[1]
@@ -229,21 +231,21 @@ ${directiveSchemas.join('\n\n')}`
                 .map(l => l.trim().replace(/['"`]/g, ''))
                 .filter(Boolean)
                 .join(' | ')
-              
+
               let args = ''
               if (argsMatch && argsMatch[1] && argsMatch[1].trim()) {
                 // Parse each argument
                 const argDefs: string[] = []
                 const argMatches = argsMatch[1].matchAll(/(\w+):\s*\{([^}]+)\}/g)
-                
+
                 for (const argMatch of argMatches) {
                   const argName = argMatch[1]
                   const argBody = argMatch[2]
-                  
+
                   // Extract type (including array types)
                   const typeMatch = argBody.match(/type:\s*['"`](\[?\w+!?\]?)['"`]/)
                   const type = typeMatch ? typeMatch[1] : 'String'
-                  
+
                   // Extract default value
                   const defaultMatch = argBody.match(/defaultValue:\s*(['"`]([^'"`]+)['"`]|(\d+)|true|false)/)
                   let defaultValue = ''
@@ -251,16 +253,18 @@ ${directiveSchemas.join('\n\n')}`
                     const value = defaultMatch[2] || defaultMatch[3] || defaultMatch[1].replace(/['"`]/g, '')
                     if (type === 'String') {
                       defaultValue = ` = "${value}"`
-                    } else if (type === 'Int' || type === 'Float') {
+                    }
+                    else if (type === 'Int' || type === 'Float') {
                       defaultValue = ` = ${value}`
-                    } else if (type === 'Boolean') {
+                    }
+                    else if (type === 'Boolean') {
                       defaultValue = ` = ${value}`
                     }
                   }
-                  
+
                   argDefs.push(`${argName}: ${type}${defaultValue}`)
                 }
-                
+
                 if (argDefs.length > 0) {
                   args = `(${argDefs.join(', ')})`
                 }
