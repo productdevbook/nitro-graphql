@@ -7,6 +7,9 @@ import { join, relative } from 'pathe'
 import { glob } from 'tinyglobby'
 
 export const GLOB_SCAN_PATTERN = '**/*.{graphql,gql,js,mjs,cjs,ts,mts,cts,tsx,jsx}'
+
+// Re-export directive parser utilities
+export { directiveParser, generateDirectiveSchema, generateDirectiveSchemas } from './directive-parser'
 interface FileInfo { path: string, fullPath: string }
 
 export function getImportId(p: string, lazy?: boolean) {

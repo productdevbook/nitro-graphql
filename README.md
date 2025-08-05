@@ -30,6 +30,7 @@
 - 🔄 **Hot Reload**: Development mode with automatic schema and resolver updates
 - 📦 **Optimized Bundling**: Smart chunking and dynamic imports for production
 - 🌐 **Nuxt Integration**: First-class Nuxt.js support with dedicated module
+- 🎭 **Custom Directives**: Create reusable GraphQL directives with automatic schema generation
 
 ## 🚀 Quick Start
 
@@ -181,6 +182,10 @@ server/
 ├── graphql/
 │   ├── schema.graphql              # Main schema with scalars and base types
 │   ├── hello.resolver.ts           # Global resolvers (use named exports)
+│   ├── directives/                 # Custom GraphQL directives
+│   │   ├── auth.directive.ts       # Authentication directive
+│   │   ├── cache.directive.ts      # Caching directive
+│   │   └── validate.directive.ts   # Validation directive
 │   ├── users/
 │   │   ├── user.graphql           # User schema definitions
 │   │   ├── user-queries.resolver.ts # User query resolvers (use named exports)
@@ -616,6 +621,90 @@ export const postTypes = defineType({
 </details>
 
 <details>
+<summary><strong>defineDirective</strong> - Create custom GraphQL directives</summary>
+
+```ts
+import { defineDirective } from 'nitro-graphql/utils/define'
+import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils'
+import { defaultFieldResolver, GraphQLError } from 'graphql'
+
+export const authDirective = defineDirective({
+  name: 'auth',
+  locations: ['FIELD_DEFINITION', 'OBJECT'],
+  args: {
+    requires: {
+      type: 'String',
+      defaultValue: 'USER',
+      description: 'Required role to access this field',
+    },
+  },
+  description: 'Directive to check authentication and authorization',
+  transformer: (schema) => {
+    return mapSchema(schema, {
+      [MapperKind.OBJECT_FIELD]: (fieldConfig) => {
+        const authDirectiveConfig = getDirective(schema, fieldConfig, 'auth')?.[0]
+        
+        if (authDirectiveConfig) {
+          const { resolve = defaultFieldResolver } = fieldConfig
+          
+          fieldConfig.resolve = async function (source, args, context, info) {
+            if (!context.user) {
+              throw new GraphQLError('You must be logged in')
+            }
+            
+            if (context.user.role !== authDirectiveConfig.requires) {
+              throw new GraphQLError('Insufficient permissions')
+            }
+            
+            return resolve(source, args, context, info)
+          }
+        }
+        
+        return fieldConfig
+      },
+    })
+  },
+})
+```
+
+**Usage in Schema:**
+```graphql
+type User {
+  id: ID!
+  name: String!
+  email: String! @auth(requires: "ADMIN")
+  secretData: String @auth(requires: "SUPER_ADMIN")
+}
+
+type Query {
+  users: [User!]! @auth
+  adminStats: AdminStats @auth(requires: "ADMIN")
+}
+```
+
+**Available Argument Types:**
+- Basic scalars: `String`, `Int`, `Float`, `Boolean`, `ID`, `JSON`, `DateTime`
+- Non-nullable: `String!`, `Int!`, `Float!`, `Boolean!`, `ID!`, `JSON!`, `DateTime!`
+- Arrays: `[String]`, `[String!]`, `[String]!`, `[String!]!` (and all combinations for other types)
+- Custom types: Any string for your custom GraphQL types
+
+**Helper Function:**
+```ts
+export const validateDirective = defineDirective({
+  name: 'validate',
+  locations: ['FIELD_DEFINITION', 'ARGUMENT_DEFINITION'],
+  args: {
+    minLength: arg('Int', { description: 'Minimum length' }),
+    maxLength: arg('Int', { description: 'Maximum length' }),
+    pattern: arg('String', { description: 'Regex pattern' }),
+  },
+  // ... transformer implementation
+})
+```
+
+</details>
+
+<details>
 <summary><strong>defineSchema</strong> - Define custom schema with validation</summary>
 
 You can override schema types if needed. StandardSchema supported — Zod, Valibot, anything works:
@@ -740,6 +829,75 @@ export default defineNitroConfig({
 </details>
 
 ## 🔥 Advanced Features
+
+<details>
+<summary><strong>Custom Directives</strong></summary>
+
+Create reusable GraphQL directives with automatic schema generation:
+
+```ts
+// server/graphql/directives/auth.directive.ts
+import { defineDirective } from 'nitro-graphql/utils/define'
+import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils'
+
+export const authDirective = defineDirective({
+  name: 'auth',
+  locations: ['FIELD_DEFINITION', 'OBJECT'],
+  args: {
+    requires: {
+      type: 'String',
+      defaultValue: 'USER',
+      description: 'Required role to access this field',
+    },
+  },
+  description: 'Authentication and authorization directive',
+  transformer: (schema) => {
+    return mapSchema(schema, {
+      [MapperKind.OBJECT_FIELD]: (fieldConfig) => {
+        const authConfig = getDirective(schema, fieldConfig, 'auth')?.[0]
+        if (authConfig) {
+          // Transform field resolvers to check authentication
+          const { resolve = defaultFieldResolver } = fieldConfig
+          fieldConfig.resolve = async (source, args, context, info) => {
+            if (!context.user || context.user.role !== authConfig.requires) {
+              throw new GraphQLError('Access denied')
+            }
+            return resolve(source, args, context, info)
+          }
+        }
+        return fieldConfig
+      },
+    })
+  },
+})
+```
+
+**Common Directive Examples:**
+- `@auth(requires: "ADMIN")` - Role-based authentication
+- `@cache(ttl: 300, scope: "PUBLIC")` - Field-level caching
+- `@rateLimit(limit: 10, window: 60)` - Rate limiting
+- `@validate(minLength: 5, maxLength: 100)` - Input validation
+- `@transform(upper: true, trim: true)` - Data transformation
+- `@permission(roles: ["ADMIN", "MODERATOR"])` - Multi-role permissions
+
+**Usage in Schema:**
+```graphql
+type User {
+  id: ID!
+  name: String!
+  email: String! @auth(requires: "ADMIN")
+  posts: [Post!]! @cache(ttl: 300)
+}
+
+type Query {
+  users: [User!]! @rateLimit(limit: 100, window: 3600)
+  sensitiveData: String @auth(requires: "SUPER_ADMIN")
+}
+```
+
+The module automatically generates the directive schema definitions and integrates them with both GraphQL Yoga and Apollo Server.
+
+</details>
 
 <details>
 <summary><strong>Custom Scalars</strong></summary>

@@ -2,7 +2,9 @@
 # Do not modify this file directly. It will be overwritten.
 # To define custom directives, create .directive.ts files using defineDirective()
 
-directive @auth(requires: String = "USER") on FIELD_DEFINITION | OBJECT | ARGUMENT_DEFINITION
+directive @auth(requires: String = "USER") on FIELD_DEFINITION
+
+directive @hasRole(role: String!) on FIELD_DEFINITION
 
 directive @cache(ttl: Int = 60, scope: String = "PUBLIC") on FIELD_DEFINITION
 
@@ -14,7 +16,7 @@ directive @list(max: Int, sort: String, sortDesc: Boolean = false, filter: Strin
 
 directive @permission(roles: [String!], scopes: [String!], requireAll: Boolean = false) on FIELD_DEFINITION | OBJECT
 
-directive @rateLimit(limit: Int!, window: Int!, skipIf: [String!], keyBy: [String!], message: String = "Too many requests", burst: Int, cost: Float = 1) on FIELD_DEFINITION | OBJECT
+directive @rateLimit(limit: Int!, window: Int! = 60, skipIf: [String!], keyBy: [String!], message: String = "Too many requests", burst: Int, cost: Float = 1) on FIELD_DEFINITION | OBJECT
 
 directive @transform(upper: Boolean, lower: Boolean, trim: Boolean = true, truncate: Int, default: String) on FIELD_DEFINITION | ARGUMENT_DEFINITION
 

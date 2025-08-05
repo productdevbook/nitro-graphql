@@ -3,7 +3,7 @@ import { defaultFieldResolver, GraphQLError } from 'graphql'
 
 export const authDirective = defineDirective({
   name: 'auth',
-  locations: ['FIELD_DEFINITION', 'OBJECT', 'ARGUMENT_DEFINITION'],
+  locations: ['FIELD_DEFINITION'],
   args: {
     requires: {
       type: 'String',
@@ -11,19 +11,20 @@ export const authDirective = defineDirective({
       description: 'Required role to access this field',
     },
   },
-  description: 'Directive to check authentication and authorization',
+  description: 'Directive to check authentication',
   transformer: (schema) => {
     return mapSchema(schema, {
       [MapperKind.OBJECT_FIELD]: (fieldConfig) => {
         const authDirectiveConfig = getDirective(schema, fieldConfig, 'auth')?.[0]
 
         if (authDirectiveConfig) {
-          const { requires: requiredRole } = authDirectiveConfig
           const { resolve = defaultFieldResolver } = fieldConfig
 
           fieldConfig.resolve = async function (source, args, context, info) {
-            // Example authentication check
-            if (!context.user) {
+            const { auth } = context
+            const user = auth?.user
+
+            if (!user?.id) {
               throw new GraphQLError('You must be logged in to access this field', {
                 extensions: {
                   code: 'UNAUTHENTICATED',
@@ -31,8 +32,50 @@ export const authDirective = defineDirective({
               })
             }
 
-            // Example authorization check
-            if (requiredRole && context.user.role !== requiredRole) {
+            return resolve(source, args, context, info)
+          }
+        }
+
+        return fieldConfig
+      },
+    })
+  },
+})
+
+export const hasRoleDirective = defineDirective({
+  name: 'hasRole',
+  locations: ['FIELD_DEFINITION'],
+  args: {
+    role: {
+      type: 'String!',
+      description: 'Required role to access this field',
+    },
+  },
+  description: 'Directive to check user role authorization',
+  transformer: (schema) => {
+    return mapSchema(schema, {
+      [MapperKind.OBJECT_FIELD]: (fieldConfig) => {
+        const hasRoleDirectiveConfig = getDirective(schema, fieldConfig, 'hasRole')?.[0]
+
+        if (hasRoleDirectiveConfig) {
+          const { role: requiredRole } = hasRoleDirectiveConfig
+          const { resolve = defaultFieldResolver } = fieldConfig
+
+          fieldConfig.resolve = async function (source, args, context, info) {
+            const { auth } = context
+            const user = auth?.user
+
+            if (!user?.id) {
+              throw new GraphQLError('You must be logged in to access this field', {
+                extensions: {
+                  code: 'UNAUTHENTICATED',
+                },
+              })
+            }
+
+            const userRole = context.userRole
+
+            if (!userRole || userRole !== requiredRole) {
               throw new GraphQLError(`You must have ${requiredRole} role to access this field`, {
                 extensions: {
                   code: 'FORBIDDEN',
