@@ -1,4 +1,4 @@
-mutation CreateUser($input: CreateUserInput!) {
+mutation createUser($input: CreateUserInput!) {
   createUser(input: $input) {
     id
     name
@@ -7,7 +7,7 @@ mutation CreateUser($input: CreateUserInput!) {
   }
 }
 
-mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {
+mutation updateUser($id: ID!, $input: UpdateUserInput!) {
   updateUser(id: $id, input: $input) {
     id
     name
@@ -16,6 +16,6 @@ mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {
   }
 }
 
-mutation DeleteUser($id: ID!) {
+mutation deleteUser($id: ID!) {
   deleteUser(id: $id)
 }

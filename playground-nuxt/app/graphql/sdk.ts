@@ -8,7 +8,7 @@ import type * as Types from '#graphql/client';
 import type { ExecutionResult } from 'graphql';
 
 export const CreateUserDocument = /*#__PURE__*/ `
-    mutation CreateUser($input: CreateUserInput!) {
+    mutation createUser($input: CreateUserInput!) {
   createUser(input: $input) {
     id
     name
@@ -18,7 +18,7 @@ export const CreateUserDocument = /*#__PURE__*/ `
 }
     `;
 export const UpdateUserDocument = /*#__PURE__*/ `
-    mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {
+    mutation updateUser($id: ID!, $input: UpdateUserInput!) {
   updateUser(id: $id, input: $input) {
     id
     name
@@ -28,7 +28,7 @@ export const UpdateUserDocument = /*#__PURE__*/ `
 }
     `;
 export const DeleteUserDocument = /*#__PURE__*/ `
-    mutation DeleteUser($id: ID!) {
+    mutation deleteUser($id: ID!) {
   deleteUser(id: $id)
 }
     `;
@@ -55,13 +55,13 @@ export const GetUserDocument = /*#__PURE__*/ `
 export type Requester<C = {}, E = unknown> = <R, V>(doc: string, vars?: V, options?: C) => Promise<ExecutionResult<R, E>> | AsyncIterable<ExecutionResult<R, E>>
 export function getSdk<C, E>(requester: Requester<C, E>) {
   return {
-    CreateUser(variables: Types.CreateUserMutationVariables, options?: C): Promise<ExecutionResult<Types.CreateUserMutation, E>> {
+    createUser(variables: Types.CreateUserMutationVariables, options?: C): Promise<ExecutionResult<Types.CreateUserMutation, E>> {
       return requester<Types.CreateUserMutation, Types.CreateUserMutationVariables>(CreateUserDocument, variables, options) as Promise<ExecutionResult<Types.CreateUserMutation, E>>;
     },
-    UpdateUser(variables: Types.UpdateUserMutationVariables, options?: C): Promise<ExecutionResult<Types.UpdateUserMutation, E>> {
+    updateUser(variables: Types.UpdateUserMutationVariables, options?: C): Promise<ExecutionResult<Types.UpdateUserMutation, E>> {
       return requester<Types.UpdateUserMutation, Types.UpdateUserMutationVariables>(UpdateUserDocument, variables, options) as Promise<ExecutionResult<Types.UpdateUserMutation, E>>;
     },
-    DeleteUser(variables: Types.DeleteUserMutationVariables, options?: C): Promise<ExecutionResult<Types.DeleteUserMutation, E>> {
+    deleteUser(variables: Types.DeleteUserMutationVariables, options?: C): Promise<ExecutionResult<Types.DeleteUserMutation, E>> {
       return requester<Types.DeleteUserMutation, Types.DeleteUserMutationVariables>(DeleteUserDocument, variables, options) as Promise<ExecutionResult<Types.DeleteUserMutation, E>>;
     },
     GetUsers(variables?: Types.GetUsersQueryVariables, options?: C): Promise<ExecutionResult<Types.GetUsersQuery, E>> {

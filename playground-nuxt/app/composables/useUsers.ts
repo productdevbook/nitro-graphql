@@ -1,8 +1,6 @@
 import type { CreateUserInput, GetUsersQuery, UpdateUserInput } from '#graphql/client'
 
 export function useUsers() {
-  const api = useGraphQL()
-
   // State
   const users = ref<GetUsersQuery['users']>([])
   const isLoading = ref(false)
@@ -18,8 +16,8 @@ export function useUsers() {
     error.value = null
 
     try {
-      const { users: fetchedUsers } = await api.GetUsers()
-      users.value = fetchedUsers
+      const { data: fetchedUsers } = await $sdk.GetUsers()
+      users.value = fetchedUsers?.users || []
     }
     catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch users'
@@ -32,8 +30,10 @@ export function useUsers() {
 
   const createUser = async (input: CreateUserInput) => {
     try {
-      const { createUser: newUser } = await api.CreateUser({ input })
-      users.value.unshift(newUser)
+      const { data: newUser } = await $sdk.createUser({ input })
+      if (newUser?.createUser) {
+        users.value.unshift(newUser.createUser)
+      }
       return newUser
     }
     catch (err) {
@@ -44,10 +44,10 @@ export function useUsers() {
 
   const updateUser = async (id: string, input: UpdateUserInput) => {
     try {
-      const { updateUser: updatedUser } = await api.UpdateUser({ id, input })
+      const { data: updatedUser } = await $sdk.updateUser({ id, input })
       const index = users.value.findIndex(u => u.id === id)
-      if (index !== -1) {
-        users.value[index] = updatedUser
+      if (index !== -1 && updatedUser?.updateUser) {
+        users.value[index] = updatedUser.updateUser
       }
       return updatedUser
     }
@@ -59,7 +59,7 @@ export function useUsers() {
 
   const deleteUser = async (id: string) => {
     try {
-      await api.DeleteUser({ id })
+      await $sdk.deleteUser({ id })
       users.value = users.value.filter(u => u.id !== id)
     }
     catch (err) {
