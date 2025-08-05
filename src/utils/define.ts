@@ -233,5 +233,8 @@ export function defineDirective(config: DefineDirectiveConfig): DirectiveDefinit
     writable: false,
   })
 
-  return config
+  return {
+    ...config,
+    locations: [...config.locations], // Convert readonly array to mutable
+  }
 }

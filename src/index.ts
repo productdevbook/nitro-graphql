@@ -121,7 +121,7 @@ export default defineNitroModule({
     if (directives.length > 0) {
       const directiveSchemas: string[] = []
       for (const dir of directives) {
-        for (const imp of dir.imports) {
+        for (const _imp of dir.imports) {
           // Read the file to extract directive definition
           const fileContent = await readFile(dir.specifier, 'utf-8')
           const nameMatch = fileContent.match(/name:\s*['"`](\w+)['"`]/)
@@ -130,11 +130,11 @@ export default defineNitroModule({
 
           if (nameMatch && locationsMatch) {
             const name = nameMatch[1]
-            const locations = locationsMatch[1]
-              .split(',')
+            const locations = locationsMatch?.[1]
+              ?.split(',')
               .map(l => l.trim().replace(/['"`]/g, ''))
               .filter(Boolean)
-              .join(' | ')
+              .join(' | ') || ''
 
             let args = ''
             if (argsMatch && argsMatch[1] && argsMatch[1].trim()) {
@@ -147,14 +147,14 @@ export default defineNitroModule({
                 const argBody = argMatch[2]
 
                 // Extract type (including array types)
-                const typeMatch = argBody.match(/type:\s*['"`](\[[\w!]+\]|\w+)['"`]/)
+                const typeMatch = argBody?.match(/type:\s*['"`](\[[\w!]+\]|\w+)['"`]/)
                 const type = typeMatch ? typeMatch[1] : 'String'
 
                 // Extract default value
-                const defaultMatch = argBody.match(/defaultValue:\s*(['"`]([^'"`]+)['"`]|(\d+)|true|false)/)
+                const defaultMatch = argBody?.match(/defaultValue:\s*(['"`]([^'"`]+)['"`]|(\d+)|true|false)/)
                 let defaultValue = ''
                 if (defaultMatch) {
-                  const value = defaultMatch[2] || defaultMatch[3] || defaultMatch[1].replace(/['"`]/g, '')
+                  const value = defaultMatch[2] || defaultMatch[3] || defaultMatch[1]?.replace(/['"`]/g, '')
                   if (type === 'String') {
                     defaultValue = ` = "${value}"`
                   }
@@ -218,7 +218,7 @@ ${directiveSchemas.join('\n\n')}`
       if (directives.length > 0) {
         const directiveSchemas: string[] = []
         for (const dir of directives) {
-          for (const imp of dir.imports) {
+          for (const _imp of dir.imports) {
             const fileContent = await readFile(dir.specifier, 'utf-8')
             const nameMatch = fileContent.match(/name:\s*['"`](\w+)['"`]/)
             const locationsMatch = fileContent.match(/locations:\s*\[([\s\S]*?)\]/)
@@ -226,11 +226,11 @@ ${directiveSchemas.join('\n\n')}`
 
             if (nameMatch && locationsMatch) {
               const name = nameMatch[1]
-              const locations = locationsMatch[1]
-                .split(',')
+              const locations = locationsMatch?.[1]
+                ?.split(',')
                 .map(l => l.trim().replace(/['"`]/g, ''))
                 .filter(Boolean)
-                .join(' | ')
+                .join(' | ') || ''
 
               let args = ''
               if (argsMatch && argsMatch[1] && argsMatch[1].trim()) {
@@ -243,14 +243,14 @@ ${directiveSchemas.join('\n\n')}`
                   const argBody = argMatch[2]
 
                   // Extract type (including array types)
-                  const typeMatch = argBody.match(/type:\s*['"`](\[?\w+!?\]?)['"`]/)
+                  const typeMatch = argBody?.match(/type:\s*['"`](\[?\w+!?\]?)['"`]/)
                   const type = typeMatch ? typeMatch[1] : 'String'
 
                   // Extract default value
-                  const defaultMatch = argBody.match(/defaultValue:\s*(['"`]([^'"`]+)['"`]|(\d+)|true|false)/)
+                  const defaultMatch = argBody?.match(/defaultValue:\s*(['"`]([^'"`]+)['"`]|(\d+)|true|false)/)
                   let defaultValue = ''
                   if (defaultMatch) {
-                    const value = defaultMatch[2] || defaultMatch[3] || defaultMatch[1].replace(/['"`]/g, '')
+                    const value = defaultMatch[2] || defaultMatch[3] || defaultMatch[1]?.replace(/['"`]/g, '')
                     if (type === 'String') {
                       defaultValue = ` = "${value}"`
                     }
