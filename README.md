@@ -35,7 +35,7 @@
 
 Projects using Nitro GraphQL in production:
 
-- [**Nitroping**](https://github.com/productdevbook/nitroping) - A modern ping monitoring service
+- [**Nitroping**](https://github.com/productdevbook/nitroping) - Open-source, self-hosted push notification service
 
 ## 🎥 Video Tutorials
 
