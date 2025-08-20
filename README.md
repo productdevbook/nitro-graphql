@@ -31,7 +31,20 @@
 - 📦 **Optimized Bundling**: Smart chunking and dynamic imports for production
 - 🌐 **Nuxt Integration**: First-class Nuxt.js support with dedicated module
 
-## 🚀 Quick Start
+## 🎯 Used Projects
+
+Projects using Nitro GraphQL in production:
+
+- [**Nitroping**](https://github.com/productdevbook/nitroping) - A modern ping monitoring service
+
+## 🎥 Video Tutorials
+
+Learn how to use Nitro GraphQL with these video tutorials:
+
+- [**Nuxt 4 Usage**](https://x.com/productdevbook/status/1947314569531076633) - How to integrate Nitro GraphQL with Nuxt 4
+- [**Nitro Usage**](https://x.com/productdevbook/status/1945759751393976348) - How to use Nitro GraphQL with standalone Nitro
+
+## 🎯 Quick Start
 
 ### Step 1: Installation
 
