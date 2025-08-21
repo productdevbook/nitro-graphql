@@ -355,7 +355,6 @@ export async function generateClientTypes(
       })
 
       // For schema-only generation, create a generic SDK
-      const typesPath = serviceName ? `#graphql/client/${serviceName}` : '#graphql/client'
       const sdkContent = `// THIS FILE IS GENERATED, DO NOT EDIT!
 /* eslint-disable eslint-comments/no-unlimited-disable */
 /* tslint:disable */
