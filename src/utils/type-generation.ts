@@ -150,10 +150,13 @@ export async function clientTypeGeneration(
   nitro: Nitro,
 ) {
   try {
-    // Generate main service types
-    await generateMainClientTypes(nitro)
+    // Generate main service types (only if server schema exists)
+    const hasServerSchema = nitro.scanSchemas && nitro.scanSchemas.length > 0
+    if (hasServerSchema) {
+      await generateMainClientTypes(nitro)
+    }
 
-    // Generate external service types
+    // Generate external service types (can work independently)
     if (nitro.options.graphql?.externalServices?.length) {
       await generateExternalServicesTypes(nitro)
     }
@@ -228,7 +231,13 @@ async function generateMainClientTypes(nitro: Nitro) {
 
   // Generate ofetch client for Nuxt framework
   if (nitro.options.framework?.name === 'nuxt') {
-    generateNuxtOfetchClient(nitro.graphql.clientDir, 'default')
+    // Check if user has their own app/graphql setup
+    const appGraphqlDir = resolve(nitro.options.rootDir, 'app/graphql')
+    const hasUserGraphqlSetup = existsSync(appGraphqlDir)
+
+    if (!hasUserGraphqlSetup) {
+      generateNuxtOfetchClient(nitro.graphql.clientDir, 'default')
+    }
     const externalServices = nitro.options.graphql?.externalServices || []
     generateGraphQLIndexFile(nitro.graphql.clientDir, externalServices)
   }
