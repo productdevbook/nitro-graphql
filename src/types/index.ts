@@ -78,7 +78,8 @@ export interface ExternalGraphQLService {
   headers?: Record<string, string> | (() => Record<string, string>)
   /** Optional: specific document patterns for this service */
   documents?: string[]
-  /** Optional: Download and cache schema locally for offline usage
+  /**
+   * Optional: Download and cache schema locally for offline usage
    * - true or 'once': Download if file doesn't exist, then use cached version (offline-friendly)
    * - 'always': Check for updates on every build (current behavior)
    * - 'manual': Never download automatically, user manages schema files manually
