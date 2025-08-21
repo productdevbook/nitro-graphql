@@ -172,8 +172,10 @@ function checkOldStructure(clientDir: string): void {
 
   if (existsSync(oldOfetchPath) || existsSync(oldSdkPath)) {
     const foundFiles = []
-    if (existsSync(oldOfetchPath)) foundFiles.push('app/graphql/ofetch.ts')
-    if (existsSync(oldSdkPath)) foundFiles.push('app/graphql/sdk.ts')
+    if (existsSync(oldOfetchPath))
+      foundFiles.push('app/graphql/ofetch.ts')
+    if (existsSync(oldSdkPath))
+      foundFiles.push('app/graphql/sdk.ts')
 
     consola.error(`⚠️  OLD GRAPHQL STRUCTURE DETECTED!
 
