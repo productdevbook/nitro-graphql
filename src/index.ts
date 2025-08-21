@@ -101,7 +101,7 @@ export default defineNitroModule({
             if (!pattern)
               continue
             // Extract directory from pattern for watching
-            const baseDir = pattern.split('**')[0].replace(/\/$/, '') || '.'
+            const baseDir = pattern.split('**')[0]?.replace(/\/$/, '') || '.'
             const resolvedDir = resolve(nitro.options.rootDir, baseDir)
             if (!watchDirs.includes(resolvedDir)) {
               watchDirs.push(resolvedDir)
