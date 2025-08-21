@@ -30,6 +30,7 @@
 - 🔄 **Hot Reload**: Development mode with automatic schema and resolver updates
 - 📦 **Optimized Bundling**: Smart chunking and dynamic imports for production
 - 🌐 **Nuxt Integration**: First-class Nuxt.js support with dedicated module
+- 🔗 **Multi-Service Support**: Connect to multiple external GraphQL APIs alongside your main server
 
 ## 🎯 Used Projects
 
@@ -1114,6 +1115,249 @@ Help us improve nitro-graphql! Pick any item and contribute:
 
 > [!NOTE]
 > Have other ideas? Open an issue to discuss!
+
+## 🔗 Multi-Service GraphQL Support
+
+Connect to multiple external GraphQL APIs alongside your main GraphQL server. Perfect for integrating with services like GitHub API, Shopify API, or any GraphQL endpoint.
+
+### Configuration
+
+```typescript
+// nuxt.config.ts (for Nuxt projects)
+export default defineNuxtConfig({
+  nitro: {
+    graphql: {
+      framework: 'graphql-yoga',
+      externalServices: [
+        {
+          name: 'countries',
+          schema: 'https://countries.trevorblades.com',
+          endpoint: 'https://countries.trevorblades.com',
+          documents: ['app/graphql/external/countries/**/*.graphql'],
+          headers: {
+            // Optional: Add custom headers
+            'Authorization': 'Bearer your-token'
+          }
+        },
+        {
+          name: 'github',
+          schema: 'https://api.github.com/graphql',
+          endpoint: 'https://api.github.com/graphql',
+          documents: ['app/graphql/external/github/**/*.graphql'],
+          headers: () => ({
+            // Dynamic headers with function
+            'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
+          })
+        }
+      ]
+    }
+  }
+})
+```
+
+### Schema Download & Caching (Optional)
+
+For better performance and offline development, you can download and cache external schemas locally:
+
+```typescript
+// nuxt.config.ts
+export default defineNuxtConfig({
+  nitro: {
+    graphql: {
+      framework: 'graphql-yoga',
+      externalServices: [
+        {
+          name: 'github',
+          schema: 'https://docs.github.com/public/schema.docs.graphql',
+          endpoint: 'https://api.github.com/graphql',
+          downloadSchema: 'once', // Download mode (see options below)
+          downloadPath: './schemas/github.graphql', // Optional: custom download path
+          headers: () => ({
+            'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
+          })
+        }
+      ]
+    }
+  }
+})
+```
+
+**Download Modes:**
+
+| Mode | Behavior | Use Case |
+|------|----------|----------|
+| `true` or `'once'` | Download only if file doesn't exist | **Offline-friendly development** |
+| `'always'` | Check for updates on every build | **Always stay up-to-date** |
+| `'manual'` | Never download automatically | **Full manual control** |
+| `false` | Disable schema downloading | **Always use remote** |
+
+**Benefits:**
+- **Offline Development**: Work without internet connection after initial download
+- **Faster Builds**: No remote fetching on each build when using 'once' mode
+- **Version Control**: Commit downloaded schemas to track API changes
+- **Network Reliability**: Fallback to cached schema if remote is unavailable
+
+**How it works:**
+- **'once' mode (recommended)**: Downloads schema only if file doesn't exist, then uses cached version
+- **'always' mode**: Checks for schema changes on every build using hash comparison
+- **'manual' mode**: User manages schema files manually, no automatic downloading
+
+**File locations:**
+- Default: `.nitro/graphql/schemas/[serviceName].graphql`
+- Custom: Use `downloadPath` option to specify your preferred location
+
+### Usage
+
+#### 1. Create External Service Queries
+
+```graphql
+<!-- app/graphql/external/countries/countries.graphql -->
+query GetCountries {
+  countries {
+    code
+    name
+    emoji
+    continent {
+      name
+    }
+  }
+}
+
+query GetCountry($code: ID!) {
+  country(code: $code) {
+    code
+    name
+    capital
+    currency
+  }
+}
+```
+
+#### 2. Use Generated SDKs
+
+```typescript
+// Import from centralized index
+import { $sdk, $countriesSdk, $githubSdk } from '~/app/graphql'
+
+// Or import directly from service folders
+import { $countriesSdk } from '~/app/graphql/countries/ofetch'
+
+// Use in components
+const countries = await $countriesSdk.GetCountries()
+const country = await $countriesSdk.GetCountry({ code: 'US' })
+
+// Your main service still works
+const users = await $sdk.GetUsers()
+```
+
+#### 3. Folder Structure
+
+After configuration, your project structure becomes:
+
+```
+app/graphql/
+├── index.ts                    # Centralized exports (auto-generated)
+├── default/                    # Your main GraphQL service
+│   ├── ofetch.ts              # Main service client
+│   └── sdk.ts                 # Main service SDK
+├── countries/                  # External countries service
+│   ├── ofetch.ts              # Countries service client  
+│   └── sdk.ts                 # Countries service SDK
+├── github/                     # External GitHub service
+│   ├── ofetch.ts              # GitHub service client
+│   └── sdk.ts                 # GitHub service SDK
+└── external/                   # Your external service queries
+    ├── countries/
+    │   └── countries.graphql
+    └── github/
+        └── repositories.graphql
+```
+
+#### 4. TypeScript Support
+
+Each service gets its own type definitions:
+
+```typescript
+// Types are automatically generated and available
+import type { GetCountriesQuery } from '#graphql/client/countries'
+import type { GetUsersQuery } from '#graphql/client'
+
+const handleCountries = (countries: GetCountriesQuery) => {
+  // Fully typed countries data
+}
+```
+
+### Service Configuration Options
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `name` | `string` | ✅ | Unique service name (used for folder/file names) |
+| `schema` | `string` \| `string[]` | ✅ | GraphQL schema URL or file path |
+| `endpoint` | `string` | ✅ | GraphQL endpoint URL for queries |
+| `documents` | `string[]` | ❌ | Glob patterns for GraphQL query files |
+| `headers` | `Record<string, string>` \| `() => Record<string, string>` | ❌ | Custom headers for schema introspection and queries |
+| `codegen.client` | `CodegenClientConfig` | ❌ | Custom codegen configuration for client types |
+| `codegen.clientSDK` | `GenericSdkConfig` | ❌ | Custom codegen configuration for SDK generation |
+
+## 🛠️ GraphQL Config (Optional but Recommended)
+
+To enable GraphQL language features in your IDE (autocompletion, validation, go-to definition), create a `graphql.config.ts` file in your project root:
+
+### For Single Service (Main GraphQL Server Only)
+
+```typescript
+// graphql.config.ts
+import type { IGraphQLConfig } from 'graphql-config'
+
+export default <IGraphQLConfig> {
+  schema: ['./.nuxt/graphql/schema.graphql'],
+  documents: ['./app/graphql/**/*.{graphql,js,ts,jsx,tsx}'],
+  exclude: ['./app/graphql/external/**/*'] // Exclude external service documents
+}
+```
+
+### For Multi-Service Setup
+
+```typescript
+// graphql.config.ts
+import type { IGraphQLConfig } from 'graphql-config'
+
+export default <IGraphQLConfig> {
+  projects: {
+    // Main GraphQL server
+    default: {
+      schema: ['./.nuxt/graphql/schema.graphql'],
+      documents: ['./app/graphql/default/**/*.{graphql,js,ts,jsx,tsx}']
+    },
+    // External services
+    github: {
+      schema: [
+        // Use downloaded schema if available, otherwise use remote
+        './.nuxt/graphql/schemas/github.graphql',
+        // Fallback to remote if local doesn't exist
+        'https://docs.github.com/public/schema.docs.graphql'
+      ],
+      documents: ['./app/graphql/external/github/**/*.graphql']
+    },
+    countries: {
+      schema: ['./.nuxt/graphql/schemas/countries.graphql'],
+      documents: ['./app/graphql/external/countries/**/*.graphql']
+    }
+  }
+}
+```
+
+### Schema Paths for Different Download Modes
+
+- **Downloaded schemas**: `./.nuxt/graphql/schemas/[serviceName].graphql`
+- **Custom download path**: Use your `downloadPath` configuration
+- **Remote fallback**: Include remote URL as second option
+
+This configuration enables:
+- 🎯 **Service-specific validation**: Each GraphQL service gets its own validation rules
+- 🚀 **IDE autocompletion**: Full IntelliSense for queries and mutations
+- ✅ **Real-time validation**: Catch GraphQL errors while typing
+- 🔍 **Go-to definition**: Navigate to type definitions across services
 
 ## 🛠️ VS Code Extensions
 
