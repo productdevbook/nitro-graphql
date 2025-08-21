@@ -14,11 +14,11 @@ catalog:
   '@graphql-codegen/typescript-operations': ^4.6.1
   '@graphql-codegen/typescript-resolvers': ^4.5.1
   '@graphql-tools/graphql-file-loader': ^8.0.21
-  '@graphql-tools/url-loader': ^8.0.33
   '@graphql-tools/load': ^8.1.1
   '@graphql-tools/load-files': ^7.0.1
   '@graphql-tools/merge': ^9.1.0
   '@graphql-tools/schema': ^10.0.24
+  '@graphql-tools/url-loader': ^8.0.33
   '@graphql-tools/utils': ^10.9.0
   '@nuxt/kit': ^4.0.3
   '@nuxt/schema': ^4.0.3

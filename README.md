@@ -1116,6 +1116,138 @@ Help us improve nitro-graphql! Pick any item and contribute:
 > [!NOTE]
 > Have other ideas? Open an issue to discuss!
 
+## 🔗 Multi-Service GraphQL Support
+
+Connect to multiple external GraphQL APIs alongside your main GraphQL server. Perfect for integrating with services like GitHub API, Shopify API, or any GraphQL endpoint.
+
+### Configuration
+
+```typescript
+// nuxt.config.ts (for Nuxt projects)
+export default defineNuxtConfig({
+  nitro: {
+    graphql: {
+      framework: 'graphql-yoga',
+      externalServices: [
+        {
+          name: 'countries',
+          schema: 'https://countries.trevorblades.com',
+          endpoint: 'https://countries.trevorblades.com',
+          documents: ['app/graphql/external/countries/**/*.graphql'],
+          headers: {
+            // Optional: Add custom headers
+            'Authorization': 'Bearer your-token'
+          }
+        },
+        {
+          name: 'github',
+          schema: 'https://api.github.com/graphql',
+          endpoint: 'https://api.github.com/graphql',
+          documents: ['app/graphql/external/github/**/*.graphql'],
+          headers: () => ({
+            // Dynamic headers with function
+            'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
+          })
+        }
+      ]
+    }
+  }
+})
+```
+
+### Usage
+
+#### 1. Create External Service Queries
+
+```graphql
+<!-- app/graphql/external/countries/countries.graphql -->
+query GetCountries {
+  countries {
+    code
+    name
+    emoji
+    continent {
+      name
+    }
+  }
+}
+
+query GetCountry($code: ID!) {
+  country(code: $code) {
+    code
+    name
+    capital
+    currency
+  }
+}
+```
+
+#### 2. Use Generated SDKs
+
+```typescript
+// Import from centralized index
+import { $sdk, $countriesSdk, $githubSdk } from '~/app/graphql'
+
+// Or import directly from service folders
+import { $countriesSdk } from '~/app/graphql/countries/ofetch'
+
+// Use in components
+const countries = await $countriesSdk.GetCountries()
+const country = await $countriesSdk.GetCountry({ code: 'US' })
+
+// Your main service still works
+const users = await $sdk.GetUsers()
+```
+
+#### 3. Folder Structure
+
+After configuration, your project structure becomes:
+
+```
+app/graphql/
+├── index.ts                    # Centralized exports (auto-generated)
+├── default/                    # Your main GraphQL service
+│   ├── ofetch.ts              # Main service client
+│   └── sdk.ts                 # Main service SDK
+├── countries/                  # External countries service
+│   ├── ofetch.ts              # Countries service client  
+│   └── sdk.ts                 # Countries service SDK
+├── github/                     # External GitHub service
+│   ├── ofetch.ts              # GitHub service client
+│   └── sdk.ts                 # GitHub service SDK
+└── external/                   # Your external service queries
+    ├── countries/
+    │   └── countries.graphql
+    └── github/
+        └── repositories.graphql
+```
+
+#### 4. TypeScript Support
+
+Each service gets its own type definitions:
+
+```typescript
+// Types are automatically generated and available
+import type { GetCountriesQuery } from '#graphql/client/countries'
+import type { GetUsersQuery } from '#graphql/client'
+
+const handleCountries = (countries: GetCountriesQuery) => {
+  // Fully typed countries data
+}
+```
+
+### Service Configuration Options
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `name` | `string` | ✅ | Unique service name (used for folder/file names) |
+| `schema` | `string` \| `string[]` | ✅ | GraphQL schema URL or file path |
+| `endpoint` | `string` | ✅ | GraphQL endpoint URL for queries |
+| `documents` | `string[]` | ❌ | Glob patterns for GraphQL query files |
+| `headers` | `Record<string, string>` \| `() => Record<string, string>` | ❌ | Custom headers for schema introspection and queries |
+| `codegen.client` | `CodegenClientConfig` | ❌ | Custom codegen configuration for client types |
+| `codegen.clientSDK` | `GenericSdkConfig` | ❌ | Custom codegen configuration for SDK generation |
+
 ## 🛠️ VS Code Extensions
 
 For the best development experience with GraphQL, install these recommended VS Code extensions:
