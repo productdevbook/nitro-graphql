@@ -163,7 +163,41 @@ export async function clientTypeGeneration(
   }
 }
 
+/**
+ * Check for old structure files and warn user about manual migration
+ */
+function checkOldStructure(clientDir: string): void {
+  const oldOfetchPath = resolve(clientDir, 'ofetch.ts')
+  const oldSdkPath = resolve(clientDir, 'sdk.ts')
+
+  if (existsSync(oldOfetchPath) || existsSync(oldSdkPath)) {
+    const foundFiles = []
+    if (existsSync(oldOfetchPath)) foundFiles.push('app/graphql/ofetch.ts')
+    if (existsSync(oldSdkPath)) foundFiles.push('app/graphql/sdk.ts')
+
+    consola.error(`⚠️  OLD GRAPHQL STRUCTURE DETECTED!
+
+📁 Found old files in app/graphql/ directory that need to be moved:
+   • ${foundFiles.join('\n   • ')}
+
+🔄 Please manually move these files to the new structure:
+   • app/graphql/ofetch.ts → app/graphql/default/ofetch.ts
+   • app/graphql/sdk.ts → app/graphql/default/sdk.ts
+
+📝 Also update your app/graphql/index.ts to include:
+   export * from './default/ofetch'
+
+💡 After moving, update your imports to use:
+   import { $sdk } from "#graphql/client"
+
+🚫 The old files will cause import conflicts until moved!`)
+  }
+}
+
 async function generateMainClientTypes(nitro: Nitro) {
+  // Check for old structure files and warn user
+  checkOldStructure(nitro.graphql.clientDir)
+
   const docs = nitro.scanDocuments
   const loadDocs = await loadGraphQLDocuments(docs)
 
