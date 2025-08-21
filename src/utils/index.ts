@@ -190,7 +190,9 @@ export function validateExternalServices(services: any[]): string[] {
     else {
       // Basic URL validation
       try {
-        new URL(service.endpoint)
+        const url = new URL(service.endpoint)
+        // URL is valid if we reach this point
+        void url
       }
       catch {
         errors.push(`${prefix}.endpoint "${service.endpoint}" must be a valid URL`)
