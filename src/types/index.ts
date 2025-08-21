@@ -68,6 +68,34 @@ declare module 'nitropack' {
   }
 }
 
+export interface ExternalGraphQLService {
+  /** Unique name for this service (used for file naming and type generation) */
+  name: string
+  /** Schema source - can be URL(s) for remote schemas or file path(s) for local schemas */
+  schema: string | string[]
+  /** GraphQL endpoint for this service */
+  endpoint: string
+  /** Optional headers for schema introspection and client requests */
+  headers?: Record<string, string> | (() => Record<string, string>)
+  /** Optional: specific document patterns for this service */
+  documents?: string[]
+  /**
+   * Optional: Download and cache schema locally for offline usage
+   * - true or 'once': Download if file doesn't exist, then use cached version (offline-friendly)
+   * - 'always': Check for updates on every build (current behavior)
+   * - 'manual': Never download automatically, user manages schema files manually
+   * - false: Disable schema downloading
+   */
+  downloadSchema?: boolean | 'once' | 'always' | 'manual'
+  /** Optional: Custom path to save downloaded schema (default: .nitro/graphql/schemas/[serviceName].graphql) */
+  downloadPath?: string
+  /** Optional: service-specific codegen configuration */
+  codegen?: {
+    client?: CodegenClientConfig
+    clientSDK?: GenericSdkConfig
+  }
+}
+
 export interface NitroGraphQLOptions {
   framework: 'graphql-yoga' | 'apollo-server'
   endpoint?: {
@@ -87,4 +115,6 @@ export interface NitroGraphQLOptions {
     client?: CodegenClientConfig
     clientSDK?: GenericSdkConfig
   }
+  /** External GraphQL services to generate types and SDKs for */
+  externalServices?: ExternalGraphQLService[]
 }
