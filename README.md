@@ -30,6 +30,7 @@
 - 🔄 **Hot Reload**: Development mode with automatic schema and resolver updates
 - 📦 **Optimized Bundling**: Smart chunking and dynamic imports for production
 - 🌐 **Nuxt Integration**: First-class Nuxt.js support with dedicated module
+- 🔗 **Multi-Service Support**: Connect to multiple external GraphQL APIs alongside your main server
 
 ## 🎯 Used Projects
 
