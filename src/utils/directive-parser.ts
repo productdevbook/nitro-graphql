@@ -1,5 +1,3 @@
-import type { DirectiveDefinition } from './define'
-
 export interface ParsedDirective {
   name: string
   locations: string[]
@@ -30,7 +28,7 @@ export class DirectiveParser {
       const result = this.oxc.parseSync(filePath, fileContent, {
         lang: filePath.endsWith('.ts') ? 'ts' : 'js',
         sourceType: 'module',
-        astType: 'ts'
+        astType: 'ts',
       })
 
       if (result.errors.length > 0) {
@@ -39,7 +37,8 @@ export class DirectiveParser {
       }
 
       return this.extractDirectiveDefinitions(result.program)
-    } catch (error) {
+    }
+    catch (error) {
       console.warn(`Failed to parse ${filePath} with oxc:`, error)
       return []
     }
@@ -67,7 +66,8 @@ export class DirectiveParser {
    * Traverse AST nodes recursively
    */
   private traverse(node: any, visitor: (node: any) => void) {
-    if (!node || typeof node !== 'object') return
+    if (!node || typeof node !== 'object')
+      return
 
     visitor(node)
 
@@ -76,7 +76,8 @@ export class DirectiveParser {
       const child = node[key]
       if (Array.isArray(child)) {
         child.forEach(item => this.traverse(item, visitor))
-      } else if (child && typeof child === 'object') {
+      }
+      else if (child && typeof child === 'object') {
         this.traverse(child, visitor)
       }
     }
@@ -87,10 +88,10 @@ export class DirectiveParser {
    */
   private isDefineDirectiveCall(node: any): boolean {
     return (
-      node.type === 'CallExpression' &&
-      node.callee?.type === 'Identifier' &&
-      node.callee.name === 'defineDirective' &&
-      node.arguments?.length > 0
+      node.type === 'CallExpression'
+      && node.callee?.type === 'Identifier'
+      && node.callee.name === 'defineDirective'
+      && node.arguments?.length > 0
     )
   }
 
@@ -99,7 +100,8 @@ export class DirectiveParser {
    */
   private extractDirectiveFromCall(node: any): ParsedDirective | null {
     const arg = node.arguments[0]
-    if (arg?.type !== 'ObjectExpression') return null
+    if (arg?.type !== 'ObjectExpression')
+      return null
 
     return this.extractDirectiveFromObject(arg)
   }
@@ -115,7 +117,8 @@ export class DirectiveParser {
     let isRepeatable: boolean | undefined
 
     for (const prop of objNode.properties || []) {
-      if (prop.type !== 'Property' || prop.key?.type !== 'Identifier') continue
+      if (prop.type !== 'Property' || prop.key?.type !== 'Identifier')
+        continue
 
       switch (prop.key.name) {
         case 'name':
@@ -136,7 +139,7 @@ export class DirectiveParser {
       }
     }
 
-    return name && locations.length > 0 
+    return name && locations.length > 0
       ? { name, locations, args, description, isRepeatable }
       : null
   }
@@ -165,7 +168,8 @@ export class DirectiveParser {
    * Extract array of strings
    */
   private extractStringArray(node: any): string[] {
-    if (node?.type !== 'ArrayExpression') return []
+    if (node?.type !== 'ArrayExpression')
+      return []
 
     return (node.elements || [])
       .filter((el: any) => el?.type === 'Literal' && typeof el.value === 'string')
@@ -176,16 +180,18 @@ export class DirectiveParser {
    * Extract arguments object
    */
   private extractArgsObject(node: any): Record<string, { type: string, defaultValue?: any }> {
-    if (node?.type !== 'ObjectExpression') return {}
+    if (node?.type !== 'ObjectExpression')
+      return {}
 
     const args: Record<string, { type: string, defaultValue?: any }> = {}
 
     for (const prop of node.properties || []) {
-      if (prop.type !== 'Property' || prop.key?.type !== 'Identifier') continue
+      if (prop.type !== 'Property' || prop.key?.type !== 'Identifier')
+        continue
 
       const argName = prop.key.name
       const argConfig = this.extractArgConfig(prop.value)
-      
+
       if (argConfig) {
         args[argName] = argConfig
       }
@@ -198,19 +204,23 @@ export class DirectiveParser {
    * Extract argument configuration
    */
   private extractArgConfig(node: any): { type: string, defaultValue?: any } | null {
-    if (node?.type !== 'ObjectExpression') return null
+    if (node?.type !== 'ObjectExpression')
+      return null
 
     let type = 'String'
     let defaultValue: any
 
     for (const prop of node.properties || []) {
-      if (prop.type !== 'Property' || prop.key?.type !== 'Identifier') continue
+      if (prop.type !== 'Property' || prop.key?.type !== 'Identifier')
+        continue
 
       switch (prop.key.name) {
-        case 'type':
+        case 'type': {
           const typeValue = this.extractStringLiteral(prop.value)
-          if (typeValue) type = typeValue
+          if (typeValue)
+            type = typeValue
           break
+        }
         case 'defaultValue':
           defaultValue = this.extractLiteralValue(prop.value)
           break
@@ -242,7 +252,8 @@ export function generateDirectiveSchema(directive: ParsedDirective): string {
       if (arg.defaultValue !== undefined) {
         if (typeof arg.defaultValue === 'string') {
           defaultValue = ` = "${arg.defaultValue}"`
-        } else {
+        }
+        else {
           defaultValue = ` = ${arg.defaultValue}`
         }
       }
@@ -259,7 +270,8 @@ export function generateDirectiveSchema(directive: ParsedDirective): string {
  * Generate directive schemas file from scanned directives
  */
 export async function generateDirectiveSchemas(nitro: any, directives: any[]) {
-  if (directives.length === 0) return
+  if (directives.length === 0)
+    return
 
   const { existsSync, readFileSync, writeFileSync } = await import('node:fs')
   const { readFile } = await import('node:fs/promises')
@@ -267,11 +279,12 @@ export async function generateDirectiveSchemas(nitro: any, directives: any[]) {
 
   const directiveSchemas: string[] = []
   const seenDirectives = new Set<string>()
+  const parser = new DirectiveParser()
 
   for (const dir of directives) {
     for (const _imp of dir.imports) {
       const fileContent = await readFile(dir.specifier, 'utf-8')
-      const directiveDefs = await directiveParser.parseDirectives(fileContent, dir.specifier)
+      const directiveDefs = await parser.parseDirectives(fileContent, dir.specifier)
 
       for (const def of directiveDefs) {
         // Skip duplicates
