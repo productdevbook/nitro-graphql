@@ -94,40 +94,53 @@ export async function loadExternalSchema(service: ExternalGraphQLService, buildD
       const schemaFilePath = service.downloadPath ? resolve(service.downloadPath) : defaultPath
 
       if (existsSync(schemaFilePath)) {
-        consola.info(`[graphql:${service.name}] Loading schema from local file: ${schemaFilePath}`)
-
         try {
           const result = loadSchemaSync([schemaFilePath], {
             loaders: [new GraphQLFileLoader()],
           })
-          consola.info(`[graphql:${service.name}] External schema loaded successfully from local file`)
           return result
         }
-        catch (localError) {
-          consola.warn(`[graphql:${service.name}] Failed to load local schema, falling back to remote:`, localError)
+        catch {
+          consola.warn(`[graphql:${service.name}] Cached schema invalid, loading from source`)
         }
       }
     }
 
-    consola.info(`[graphql:${service.name}] Loading external schema from: ${schemas.join(', ')}`)
+    // Determine appropriate loaders based on schema sources
+    const hasUrls = schemas.some(schema => isUrl(schema))
+    const hasLocalFiles = schemas.some(schema => !isUrl(schema))
+    const loaders = []
+    if (hasLocalFiles) {
+      loaders.push(new GraphQLFileLoader())
+    }
+    if (hasUrls) {
+      loaders.push(new UrlLoader())
+    }
+
+    if (loaders.length === 0) {
+      throw new Error('No appropriate loaders found for schema sources')
+    }
 
     const result = loadSchemaSync(schemas, {
-      loaders: [
-        new GraphQLFileLoader(),
-        new UrlLoader(),
-      ],
+      loaders,
       ...(Object.keys(headers).length > 0 && {
         headers,
       }),
     })
 
-    consola.info(`[graphql:${service.name}] External schema loaded successfully`)
     return result
   }
   catch (error) {
     consola.error(`[graphql:${service.name}] Failed to load external schema:`, error)
     return undefined
   }
+}
+
+/**
+ * Check if a path is a URL (http/https)
+ */
+function isUrl(path: string): boolean {
+  return path.startsWith('http://') || path.startsWith('https://')
 }
 
 /**
@@ -149,6 +162,10 @@ export async function downloadAndSaveSchema(service: ExternalGraphQLService, bui
     const headers = typeof service.headers === 'function' ? service.headers() : service.headers || {}
     const schemas = Array.isArray(service.schema) ? service.schema : [service.schema]
 
+    // Check if any schemas are local files vs URLs
+    const hasUrlSchemas = schemas.some(schema => isUrl(schema))
+    const hasLocalSchemas = schemas.some(schema => !isUrl(schema))
+
     // Determine download behavior based on mode
     let shouldDownload = false
     const fileExists = existsSync(schemaFilePath)
@@ -157,10 +174,10 @@ export async function downloadAndSaveSchema(service: ExternalGraphQLService, bui
       // Always check for updates (original behavior)
       shouldDownload = true
 
-      if (fileExists) {
-        // Compare with remote schema
+      if (fileExists && hasUrlSchemas) {
+        // Only compare with remote schema if we have URL schemas
         try {
-          const remoteSchema = loadSchemaSync(schemas, {
+          const remoteSchema = loadSchemaSync(schemas.filter(isUrl), {
             loaders: [new UrlLoader()],
             ...(Object.keys(headers).length > 0 && { headers }),
           })
@@ -180,39 +197,74 @@ export async function downloadAndSaveSchema(service: ExternalGraphQLService, bui
           shouldDownload = true
         }
       }
+      else if (fileExists && hasLocalSchemas) {
+        // For local schemas, check if source files are newer
+        const localFiles = schemas.filter(schema => !isUrl(schema))
+        let sourceIsNewer = false
+
+        for (const localFile of localFiles) {
+          if (existsSync(localFile)) {
+            const { statSync } = await import('node:fs')
+            const sourceStats = statSync(localFile)
+            const cachedStats = statSync(schemaFilePath)
+            if (sourceStats.mtime > cachedStats.mtime) {
+              sourceIsNewer = true
+              break
+            }
+          }
+        }
+
+        if (!sourceIsNewer) {
+          shouldDownload = false
+        }
+      }
     }
     else if (downloadMode === true || downloadMode === 'once') {
-      // Download only if file doesn't exist (offline-friendly)
+      // Download/copy only if file doesn't exist (offline-friendly)
       shouldDownload = !fileExists
 
-      if (fileExists) {
-        consola.info(`[graphql:${service.name}] Using cached schema from: ${schemaFilePath}`)
-      }
+      // File exists, will use cached version
     }
 
     if (shouldDownload) {
-      consola.info(`[graphql:${service.name}] Downloading schema to: ${schemaFilePath}`)
+      if (hasUrlSchemas && hasLocalSchemas) {
+        // Mixed schemas: load both URL and local schemas
+        const schema = loadSchemaSync(schemas, {
+          loaders: [new GraphQLFileLoader(), new UrlLoader()],
+          ...(Object.keys(headers).length > 0 && { headers }),
+        })
 
-      const schema = loadSchemaSync(schemas, {
-        loaders: [new UrlLoader()],
-        ...(Object.keys(headers).length > 0 && { headers }),
-      })
+        const schemaString = printSchemaWithDirectives(schema)
+        mkdirSync(dirname(schemaFilePath), { recursive: true })
+        writeFileSync(schemaFilePath, schemaString, 'utf-8')
+      }
+      else if (hasUrlSchemas) {
+        // URL schemas: download from remote
+        const schema = loadSchemaSync(schemas, {
+          loaders: [new UrlLoader()],
+          ...(Object.keys(headers).length > 0 && { headers }),
+        })
 
-      const schemaString = printSchemaWithDirectives(schema)
+        const schemaString = printSchemaWithDirectives(schema)
+        mkdirSync(dirname(schemaFilePath), { recursive: true })
+        writeFileSync(schemaFilePath, schemaString, 'utf-8')
+      }
+      else if (hasLocalSchemas) {
+        // Local schemas: copy/merge local files
+        const schema = loadSchemaSync(schemas, {
+          loaders: [new GraphQLFileLoader()],
+        })
 
-      // Ensure directory exists
-      mkdirSync(dirname(schemaFilePath), { recursive: true })
-
-      // Save schema to file
-      writeFileSync(schemaFilePath, schemaString, 'utf-8')
-
-      consola.success(`[graphql:${service.name}] Schema downloaded and saved successfully`)
+        const schemaString = printSchemaWithDirectives(schema)
+        mkdirSync(dirname(schemaFilePath), { recursive: true })
+        writeFileSync(schemaFilePath, schemaString, 'utf-8')
+      }
     }
 
     return schemaFilePath
   }
   catch (error) {
-    consola.error(`[graphql:${service.name}] Failed to download schema:`, error)
+    consola.error(`[graphql:${service.name}] Failed to download/copy schema:`, error)
     return undefined
   }
 }
@@ -248,15 +300,13 @@ export async function generateClientTypes(
   outputPath?: string,
   serviceName?: string,
 ) {
-  if (docs.length === 0) {
-    const serviceLabel = serviceName ? `:${serviceName}` : ''
-    consola.info(`[graphql${serviceLabel}] No client GraphQL files found. Skipping client type generation.`)
+  // For external services, allow schema-only generation (no documents required)
+  if (docs.length === 0 && !serviceName) {
+    consola.info('No client GraphQL files found. Skipping client type generation.')
     return false
   }
 
   const serviceLabel = serviceName ? `:${serviceName}` : ''
-  consola.info(`[graphql${serviceLabel}] Found ${docs.length} client GraphQL documents`)
-
   const defaultConfig: CodegenClientConfig | GenericSdkConfig = {
     emitLegacyCommonJSImports: false,
     useTypeImports: true,
@@ -284,10 +334,60 @@ export async function generateClientTypes(
   }
 
   const mergedConfig = defu(defaultConfig, config)
-
   const mergedSdkConfig = defu(mergedConfig, sdkConfig)
 
   try {
+    // Schema-only generation (no documents)
+    if (docs.length === 0) {
+      const output = await codegen({
+        filename: outputPath || 'client-types.generated.ts',
+        schema: parse(printSchemaWithDirectives(schema)),
+        documents: [],
+        config: mergedConfig,
+        plugins: [
+          { pluginContent: {} },
+          { typescript: {} },
+        ],
+        pluginMap: {
+          pluginContent: { plugin: pluginContent },
+          typescript: { plugin: typescriptPlugin },
+        },
+      })
+
+      // For schema-only generation, create a generic SDK
+      const sdkContent = `// THIS FILE IS GENERATED, DO NOT EDIT!
+/* eslint-disable eslint-comments/no-unlimited-disable */
+/* tslint:disable */
+/* eslint-disable */
+/* prettier-ignore */
+
+import type { GraphQLResolveInfo } from 'graphql'
+export type RequireFields<T, K extends keyof T> = Omit<T, K> & { [P in K]-?: NonNullable<T[P]> }
+
+export interface Requester<C = {}, E = unknown> {
+  <R, V>(doc: string, vars?: V, options?: C): Promise<R> | AsyncIterable<R>
+}
+
+export type Sdk = {
+  request: <R, V = Record<string, any>>(document: string, variables?: V) => Promise<R>
+}
+
+export function getSdk(requester: Requester): Sdk {
+  return {
+    request: <R, V = Record<string, any>>(document: string, variables?: V): Promise<R> => {
+      return requester<R, V>(document, variables)
+    }
+  }
+}
+`
+
+      return {
+        types: output,
+        sdk: sdkContent,
+      }
+    }
+
+    // Full generation with documents
     const output = await codegen({
       filename: outputPath || 'client-types.generated.ts',
       schema: parse(printSchemaWithDirectives(schema)),

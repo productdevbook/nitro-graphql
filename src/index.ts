@@ -403,34 +403,5 @@ declare module 'h3' {
       consola.warn('nitro-graphql: Found context.d.ts file. Please rename it to context.ts for the new structure.')
       consola.info('The context file should now be context.ts instead of context.d.ts')
     }
-
-    // Create client directory for Nuxt projects
-    if (nitro.options.framework.name === 'nuxt') {
-      if (!existsSync(nitro.graphql.clientDir)) {
-        mkdirSync(nitro.graphql.clientDir, { recursive: true })
-      }
-
-      // Create default subdirectory for the new folder structure
-      const defaultDir = join(nitro.graphql.clientDir, 'default')
-      if (!existsSync(defaultDir)) {
-        mkdirSync(defaultDir, { recursive: true })
-      }
-
-      // Create a sample GraphQL query file to help users get started
-      const sampleQueryFile = join(defaultDir, 'queries.graphql')
-      if (!existsSync(sampleQueryFile)) {
-        writeFileSync(sampleQueryFile, `# Example GraphQL queries
-# Add your GraphQL queries here
-
-# query GetUser($id: ID!) {
-#   user(id: $id) {
-#     id
-#     name
-#     email
-#   }
-# }
-`, 'utf-8')
-      }
-    }
   },
 })
