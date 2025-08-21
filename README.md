@@ -1299,6 +1299,66 @@ const handleCountries = (countries: GetCountriesQuery) => {
 | `codegen.client` | `CodegenClientConfig` | ❌ | Custom codegen configuration for client types |
 | `codegen.clientSDK` | `GenericSdkConfig` | ❌ | Custom codegen configuration for SDK generation |
 
+## 🛠️ GraphQL Config (Optional but Recommended)
+
+To enable GraphQL language features in your IDE (autocompletion, validation, go-to definition), create a `graphql.config.ts` file in your project root:
+
+### For Single Service (Main GraphQL Server Only)
+
+```typescript
+// graphql.config.ts
+import type { IGraphQLConfig } from 'graphql-config'
+
+export default <IGraphQLConfig> {
+  schema: ['./.nuxt/graphql/schema.graphql'],
+  documents: ['./app/graphql/**/*.{graphql,js,ts,jsx,tsx}'],
+  exclude: ['./app/graphql/external/**/*'] // Exclude external service documents
+}
+```
+
+### For Multi-Service Setup
+
+```typescript
+// graphql.config.ts
+import type { IGraphQLConfig } from 'graphql-config'
+
+export default <IGraphQLConfig> {
+  projects: {
+    // Main GraphQL server
+    default: {
+      schema: ['./.nuxt/graphql/schema.graphql'],
+      documents: ['./app/graphql/default/**/*.{graphql,js,ts,jsx,tsx}']
+    },
+    // External services
+    github: {
+      schema: [
+        // Use downloaded schema if available, otherwise use remote
+        './.nuxt/graphql/schemas/github.graphql',
+        // Fallback to remote if local doesn't exist
+        'https://docs.github.com/public/schema.docs.graphql'
+      ],
+      documents: ['./app/graphql/external/github/**/*.graphql']
+    },
+    countries: {
+      schema: ['./.nuxt/graphql/schemas/countries.graphql'],
+      documents: ['./app/graphql/external/countries/**/*.graphql']
+    }
+  }
+}
+```
+
+### Schema Paths for Different Download Modes
+
+- **Downloaded schemas**: `./.nuxt/graphql/schemas/[serviceName].graphql`
+- **Custom download path**: Use your `downloadPath` configuration
+- **Remote fallback**: Include remote URL as second option
+
+This configuration enables:
+- 🎯 **Service-specific validation**: Each GraphQL service gets its own validation rules
+- 🚀 **IDE autocompletion**: Full IntelliSense for queries and mutations
+- ✅ **Real-time validation**: Catch GraphQL errors while typing
+- 🔍 **Go-to definition**: Navigate to type definitions across services
+
 ## 🛠️ VS Code Extensions
 
 For the best development experience with GraphQL, install these recommended VS Code extensions:
