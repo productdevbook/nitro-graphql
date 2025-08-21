@@ -10,6 +10,15 @@ export default defineNuxtConfig({
     // GraphQL Yoga configuration
     graphql: {
       framework: 'graphql-yoga',
+      // Example external services configuration (commented out by default)
+      externalServices: [
+        {
+          name: 'countries',
+          schema: 'https://countries.trevorblades.com',
+          endpoint: 'https://countries.trevorblades.com',
+          documents: ['app/graphql/external/countries/**/*.graphql'],
+        },
+      ],
     },
   },
 

@@ -83,6 +83,7 @@
     "@graphql-tools/load-files": "catalog:",
     "@graphql-tools/merge": "catalog:",
     "@graphql-tools/schema": "catalog:",
+    "@graphql-tools/url-loader": "catalog:",
     "@graphql-tools/utils": "catalog:",
     "chokidar": "catalog:",
     "consola": "catalog:",

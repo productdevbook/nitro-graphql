@@ -9,7 +9,7 @@ import defu from 'defu'
 import { defineNitroModule } from 'nitropack/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { rollupConfig } from './rollup'
-import { relativeWithDot, scanDocs, scanResolvers, scanSchemas } from './utils'
+import { relativeWithDot, scanDocs, scanResolvers, scanSchemas, validateExternalServices } from './utils'
 import { clientTypeGeneration, serverTypeGeneration } from './utils/type-generation'
 
 export type * from './types'
@@ -19,6 +19,19 @@ export default defineNitroModule({
   async setup(nitro: Nitro) {
     if (!nitro.options.graphql?.framework) {
       consola.warn('No GraphQL framework specified. Please set graphql.framework to "graphql-yoga" or "apollo-server".')
+    }
+
+    // Validate external services configuration
+    if (nitro.options.graphql?.externalServices?.length) {
+      const validationErrors = validateExternalServices(nitro.options.graphql.externalServices)
+      if (validationErrors.length > 0) {
+        consola.error('External services configuration errors:')
+        for (const error of validationErrors) {
+          consola.error(`  - ${error}`)
+        }
+        throw new Error('Invalid external services configuration')
+      }
+      consola.info(`Configured ${nitro.options.graphql.externalServices.length} external GraphQL services`)
     }
 
     nitro.graphql ||= {
@@ -78,6 +91,22 @@ export default defineNitroModule({
         nitro.graphql.dir.client = 'graphql'
         break
       default:
+    }
+
+    // Add external service document patterns to watch
+    if (nitro.options.graphql?.externalServices?.length) {
+      for (const service of nitro.options.graphql.externalServices) {
+        if (service.documents?.length) {
+          for (const pattern of service.documents) {
+            // Extract directory from pattern for watching
+            const baseDir = pattern.split('**')[0].replace(/\/$/, '') || '.'
+            const resolvedDir = resolve(nitro.options.rootDir, baseDir)
+            if (!watchDirs.includes(resolvedDir)) {
+              watchDirs.push(resolvedDir)
+            }
+          }
+        }
+      }
     }
 
     const watcher = watch(watchDirs, {
@@ -243,13 +272,43 @@ export default defineNitroModule({
       types.tsConfig.compilerOptions.paths['#graphql/schema'] = [
         relativeWithDot(tsconfigDir, join(nitro.graphql.serverDir, 'schema.ts')),
       ]
+
+      // Add path mappings for external services
+      if (nitro.options.graphql?.externalServices?.length) {
+        for (const service of nitro.options.graphql.externalServices) {
+          types.tsConfig.compilerOptions.paths[`#graphql/client/${service.name}`] = [
+            relativeWithDot(tsconfigDir, join(typesDir, `nitro-graphql-client-${service.name}.d.ts`)),
+          ]
+        }
+      }
+
       types.tsConfig.include = types.tsConfig.include || []
       types.tsConfig.include.push(
         relativeWithDot(tsconfigDir, join(typesDir, 'nitro-graphql-server.d.ts')),
         relativeWithDot(tsconfigDir, join(typesDir, 'nitro-graphql-client.d.ts')),
         relativeWithDot(tsconfigDir, join(typesDir, 'graphql.d.ts')),
       )
+
+      // Add external service type files to include
+      if (nitro.options.graphql?.externalServices?.length) {
+        for (const service of nitro.options.graphql.externalServices) {
+          types.tsConfig.include.push(
+            relativeWithDot(tsconfigDir, join(typesDir, `nitro-graphql-client-${service.name}.d.ts`)),
+          )
+        }
+      }
     })
+
+    // Store external services info for Nuxt module
+    if (nitro.options.framework?.name === 'nuxt' && nitro.options.graphql?.externalServices?.length) {
+      // Add external services to Nuxt context so the Nuxt module can access them
+      nitro.hooks.hook('build:before', () => {
+        const nuxtOptions = (nitro as any)._nuxt?.options
+        if (nuxtOptions) {
+          nuxtOptions.nitroGraphqlExternalServices = nitro.options.graphql?.externalServices || []
+        }
+      })
+    }
 
     if (!existsSync(join(nitro.options.rootDir, 'graphql.config.ts'))) {
       const schemaPath = relativeWithDot(nitro.options.rootDir, resolve(nitro.graphql.buildDir, 'schema.graphql'))

@@ -14,13 +14,14 @@ catalog:
   '@graphql-codegen/typescript-operations': ^4.6.1
   '@graphql-codegen/typescript-resolvers': ^4.5.1
   '@graphql-tools/graphql-file-loader': ^8.0.21
+  '@graphql-tools/url-loader': ^8.0.33
   '@graphql-tools/load': ^8.1.1
   '@graphql-tools/load-files': ^7.0.1
   '@graphql-tools/merge': ^9.1.0
   '@graphql-tools/schema': ^10.0.24
   '@graphql-tools/utils': ^10.9.0
-  '@nuxt/kit': 4.0.0-rc.0
-  '@nuxt/schema': 4.0.0-rc.0
+  '@nuxt/kit': ^4.0.3
+  '@nuxt/schema': ^4.0.3
   '@nuxtjs/tailwindcss': 7.0.0-beta.0
   '@types/node': ^20.19.9
   bumpp: ^10.2.0
@@ -37,7 +38,7 @@ catalog:
   h3: 1.15.3
   knitwork: ^1.2.0
   nitropack: ^2.12.3
-  nuxt: 4.0.0-rc.0
+  nuxt: ^4.0.3
   ohash: ^2.0.11
   oxc-parser: ^0.77.2
   pathe: ^2.0.3
