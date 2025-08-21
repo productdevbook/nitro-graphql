@@ -16,6 +16,7 @@ export default defineNuxtConfig({
           name: 'countries',
           schema: 'https://countries.trevorblades.com',
           endpoint: 'https://countries.trevorblades.com',
+          downloadSchema: true,
           documents: ['app/graphql/external/countries/**/*.graphql'],
         },
       ],

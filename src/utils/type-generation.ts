@@ -7,7 +7,7 @@ import { printSchemaWithDirectives } from '@graphql-tools/utils'
 import consola from 'consola'
 import { buildASTSchema, buildSchema } from 'graphql'
 import { dirname, join, resolve } from 'pathe'
-import { generateClientTypes, generateExternalClientTypes, loadExternalSchema, loadGraphQLDocuments } from './client-codegen'
+import { downloadAndSaveSchema, generateClientTypes, generateExternalClientTypes, loadExternalSchema, loadGraphQLDocuments } from './client-codegen'
 import { generateTypes } from './server-codegen'
 
 function generateGraphQLIndexFile(clientDir: string, externalServices: any[] = []) {
@@ -241,8 +241,11 @@ async function generateExternalServicesTypes(nitro: Nitro) {
     try {
       consola.info(`[graphql:${service.name}] Processing external service`)
 
-      // Load external schema
-      const schema = await loadExternalSchema(service)
+      // Download and save schema if enabled
+      await downloadAndSaveSchema(service, nitro.options.buildDir)
+
+      // Load external schema (will use downloaded schema if available)
+      const schema = await loadExternalSchema(service, nitro.options.buildDir)
       if (!schema) {
         consola.warn(`[graphql:${service.name}] Failed to load schema, skipping`)
         continue

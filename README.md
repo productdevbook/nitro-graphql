@@ -1155,6 +1155,57 @@ export default defineNuxtConfig({
 })
 ```
 
+### Schema Download & Caching (Optional)
+
+For better performance and offline development, you can download and cache external schemas locally:
+
+```typescript
+// nuxt.config.ts
+export default defineNuxtConfig({
+  nitro: {
+    graphql: {
+      framework: 'graphql-yoga',
+      externalServices: [
+        {
+          name: 'github',
+          schema: 'https://docs.github.com/public/schema.docs.graphql',
+          endpoint: 'https://api.github.com/graphql',
+          downloadSchema: 'once', // Download mode (see options below)
+          downloadPath: './schemas/github.graphql', // Optional: custom download path
+          headers: () => ({
+            'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`
+          })
+        }
+      ]
+    }
+  }
+})
+```
+
+**Download Modes:**
+
+| Mode | Behavior | Use Case |
+|------|----------|----------|
+| `true` or `'once'` | Download only if file doesn't exist | **Offline-friendly development** |
+| `'always'` | Check for updates on every build | **Always stay up-to-date** |
+| `'manual'` | Never download automatically | **Full manual control** |
+| `false` | Disable schema downloading | **Always use remote** |
+
+**Benefits:**
+- **Offline Development**: Work without internet connection after initial download
+- **Faster Builds**: No remote fetching on each build when using 'once' mode
+- **Version Control**: Commit downloaded schemas to track API changes
+- **Network Reliability**: Fallback to cached schema if remote is unavailable
+
+**How it works:**
+- **'once' mode (recommended)**: Downloads schema only if file doesn't exist, then uses cached version
+- **'always' mode**: Checks for schema changes on every build using hash comparison
+- **'manual' mode**: User manages schema files manually, no automatic downloading
+
+**File locations:**
+- Default: `.nitro/graphql/schemas/[serviceName].graphql`
+- Custom: Use `downloadPath` option to specify your preferred location
+
 ### Usage
 
 #### 1. Create External Service Queries
