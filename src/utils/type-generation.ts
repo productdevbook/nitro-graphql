@@ -233,7 +233,7 @@ async function generateMainClientTypes(nitro: Nitro) {
   if (nitro.options.framework?.name === 'nuxt') {
     // Always generate default service ofetch client (only if it doesn't exist)
     generateNuxtOfetchClient(nitro.graphql.clientDir, 'default')
-    
+
     const externalServices = nitro.options.graphql?.externalServices || []
     generateGraphQLIndexFile(nitro.graphql.clientDir, externalServices)
   }
