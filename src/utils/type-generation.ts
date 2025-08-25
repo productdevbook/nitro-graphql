@@ -231,13 +231,9 @@ async function generateMainClientTypes(nitro: Nitro) {
 
   // Generate ofetch client for Nuxt framework
   if (nitro.options.framework?.name === 'nuxt') {
-    // Check if user has their own app/graphql setup
-    const appGraphqlDir = resolve(nitro.options.rootDir, 'app/graphql')
-    const hasUserGraphqlSetup = existsSync(appGraphqlDir)
-
-    if (!hasUserGraphqlSetup) {
-      generateNuxtOfetchClient(nitro.graphql.clientDir, 'default')
-    }
+    // Always generate default service ofetch client (only if it doesn't exist)
+    generateNuxtOfetchClient(nitro.graphql.clientDir, 'default')
+    
     const externalServices = nitro.options.graphql?.externalServices || []
     generateGraphQLIndexFile(nitro.graphql.clientDir, externalServices)
   }
@@ -267,9 +263,14 @@ async function generateExternalServicesTypes(nitro: Nitro) {
       if (documentPatterns.length > 0) {
         try {
           loadDocs = await loadGraphQLDocuments(documentPatterns)
+          if (!loadDocs || loadDocs.length === 0) {
+            consola.warn(`[graphql:${service.name}] No GraphQL documents found, skipping service generation`)
+            continue
+          }
         }
         catch (error) {
-          consola.warn(`[graphql:${service.name}] No documents found:`, error)
+          consola.warn(`[graphql:${service.name}] No documents found, skipping service generation:`, error)
+          continue
         }
       }
 
