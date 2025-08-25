@@ -4,8 +4,39 @@ scalar JSON
 type Query {
   hello: String!
   greeting(name: String!): String!
+  # Protected field that requires authentication
+  profile: User @auth
+  # Admin-only field
+  adminData: String @auth(requires: "ADMIN")
+  
+  # Permission-based fields with arrays
+  moderatorPanel: String @permission(roles: ["ADMIN", "MODERATOR"])
+  userManagement: String @permission(roles: ["ADMIN"], scopes: ["read:users", "write:users"])
+  superAdminPanel: String @permission(requireAll: true, roles: ["ADMIN", "SUPER_ADMIN"])
+  
+  # Cached fields
+  expensiveData: String @cache(ttl: 300)
+  userSpecificData: String @cache(ttl: 60, scope: "PRIVATE")
+  
+  # Deprecated field
+  oldEndpoint: String @deprecatedField(reason: "Use newEndpoint instead", removeAt: "2024-12-31")
+  
+  # Array operations
+  topUsers: [User!]! @list(max: 10, sort: "createdAt", sortDesc: true)
+  activeUsers: [User!]! @list(filter: "isActive", unique: "email")
+  recentPosts: [Post!]! @list(max: 5, sort: "publishedAt", sortDesc: true)
 }
 
+
 type Mutation {
-  _empty: String
+  createUser(
+    name: String! @validate(minLength: 2, maxLength: 50)
+    email: String! @validate(pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
+    age: Int! @validate(min: 18, max: 100)
+  ): User
+  
+  updateBio(
+    userId: ID!
+    bio: String! @validate(maxLength: 500) @transform(trim: true)
+  ): User
 }

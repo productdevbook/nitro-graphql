@@ -25,7 +25,7 @@ export type CodegenClientConfig = TypeScriptPluginConfig & TypeScriptDocumentsPl
 interface IESMImport {
   name: string
   as?: string
-  type: 'resolver' | 'query' | 'mutation' | 'type' | 'subscription'
+  type: 'resolver' | 'query' | 'mutation' | 'type' | 'subscription' | 'directive'
 }
 
 export interface GenImport {
@@ -39,6 +39,7 @@ declare module 'nitropack/types' {
     scanSchemas: string[]
     scanDocuments: string[]
     scanResolvers: GenImport[]
+    scanDirectives: GenImport[]
     graphql: {
       buildDir: string
       watchDirs: string[]

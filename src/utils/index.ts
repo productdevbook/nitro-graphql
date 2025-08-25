@@ -7,6 +7,9 @@ import { join, relative } from 'pathe'
 import { glob } from 'tinyglobby'
 
 export const GLOB_SCAN_PATTERN = '**/*.{graphql,gql,js,mjs,cjs,ts,mts,cts,tsx,jsx}'
+
+// Re-export directive parser utilities
+export { directiveParser, generateDirectiveSchema, generateDirectiveSchemas } from './directive-parser'
 interface FileInfo { path: string, fullPath: string }
 
 export function getImportId(p: string, lazy?: boolean) {
@@ -96,6 +99,14 @@ export async function scanResolvers(nitro: Nitro) {
                   as: `_${hash(decl.id.name + file.path).replace(/-/g, '').slice(0, 6)}`,
                 })
               }
+
+              if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineDirective') {
+                exports.imports.push({
+                  name: decl.id.name,
+                  type: 'directive',
+                  as: `_${hash(decl.id.name + file.path).replace(/-/g, '').slice(0, 6)}`,
+                })
+              }
             }
           }
         }
@@ -111,7 +122,43 @@ export async function scanResolvers(nitro: Nitro) {
 
 export async function scanDirectives(nitro: Nitro) {
   const files = await scanFiles(nitro, 'graphql', '**/*.directive.{ts,js}')
-  return files.map(f => f.fullPath)
+
+  const exportName: GenImport[] = []
+  for (const file of files) {
+    const fileContent = await readFile(file.fullPath, 'utf-8')
+    const parsed = await parseAsync(file.fullPath, fileContent)
+
+    const exports: GenImport = {
+      imports: [],
+      specifier: file.fullPath,
+    }
+    for (const node of parsed.program.body) {
+      if (
+        node.type === 'ExportNamedDeclaration'
+        && node.declaration
+        && node.declaration.type === 'VariableDeclaration'
+      ) {
+        for (const decl of node.declaration.declarations) {
+          if (decl.type === 'VariableDeclarator' && decl.init && decl.id.type === 'Identifier') {
+            if (decl.init && decl.init.type === 'CallExpression') {
+              if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineDirective') {
+                exports.imports.push({
+                  name: decl.id.name,
+                  type: 'directive',
+                  as: `_${hash(decl.id.name + file.path).replace(/-/g, '').slice(0, 6)}`,
+                })
+              }
+            }
+          }
+        }
+      }
+    }
+    if (exports.imports.length > 0) {
+      exportName.push(exports)
+    }
+  }
+
+  return exportName
 }
 
 export async function scanTypeDefs(nitro: Nitro) {

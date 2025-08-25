@@ -2,10 +2,18 @@ import { generateId, users } from '../data'
 
 export const createUserMutation = defineResolver({
   Mutation: {
-    createUser: (_parent, { input }) => {
+    createUser: (_parent, args) => {
+      // Note: Directives will validate these before they reach here
+      const { name, email, age } = args
+
       const newUser = {
         id: generateId(),
-        ...input,
+        name,
+        email,
+        age,
+        bio: null,
+        phone: null,
+        role: 'USER',
         createdAt: new Date(),
       }
 
@@ -52,6 +60,24 @@ export const deleteUserMutation = defineResolver({
       console.log('[GraphQL] User deleted:', id)
 
       return true
+    },
+  },
+})
+
+export const updateBioMutation = defineResolver({
+  Mutation: {
+    updateBio: (_parent, { userId, bio }) => {
+      const user = users.find(u => u.id === userId)
+
+      if (!user) {
+        throw new Error(`User with id ${userId} not found`)
+      }
+
+      // Note: bio is already validated and transformed by directives
+      user.bio = bio
+      console.log('[GraphQL] User bio updated:', { userId, bio })
+
+      return user
     },
   },
 })

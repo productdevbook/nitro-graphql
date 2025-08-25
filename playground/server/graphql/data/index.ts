@@ -16,9 +16,6 @@ export const users: User[] = [
   { id: '3', name: 'Bob Johnson', email: 'bob@example.com', createdAt: new Date('2024-01-03') },
 ]
 
-console.log('[Data] Users array initialized with', users.length, 'users')
-console.log('[Data] Users:', users)
-
 // Utility functions
 export const generateId = () => Date.now().toString()
 

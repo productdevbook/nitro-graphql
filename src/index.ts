@@ -9,7 +9,7 @@ import defu from 'defu'
 import { defineNitroModule } from 'nitropack/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { rollupConfig } from './rollup'
-import { relativeWithDot, scanDocs, scanResolvers, scanSchemas, validateExternalServices } from './utils'
+import { generateDirectiveSchemas, relativeWithDot, scanDirectives, scanDocs, scanResolvers, scanSchemas, validateExternalServices } from './utils'
 import { clientTypeGeneration, serverTypeGeneration } from './utils/type-generation'
 
 export type * from './types'
@@ -114,7 +114,10 @@ export default defineNitroModule({
     const watcher = watch(watchDirs, {
       persistent: true,
       ignoreInitial: true,
-      ignored: nitro.options.ignore,
+      ignored: [
+        ...nitro.options.ignore,
+        '**/server/graphql/_directives.graphql', // Ignore auto-generated directives file
+      ],
     }).on('all', async (event, path) => {
       if (path.endsWith('.graphql') || path.endsWith('.gql')) {
         await clientTypeGeneration(nitro)
@@ -141,12 +144,24 @@ export default defineNitroModule({
     const resolvers = await scanResolvers(nitro)
     nitro.scanResolvers = resolvers
 
+    const directives = await scanDirectives(nitro)
+    nitro.scanDirectives = directives
+
+    // Generate directive schemas file using clean parser
+    await generateDirectiveSchemas(nitro, directives)
+
     nitro.hooks.hook('dev:start', async () => {
       const schemas = await scanSchemas(nitro)
       nitro.scanSchemas = schemas
 
       const resolvers = await scanResolvers(nitro)
       nitro.scanResolvers = resolvers
+
+      const directives = await scanDirectives(nitro)
+      nitro.scanDirectives = directives
+
+      // Regenerate directive schemas using clean parser
+      await generateDirectiveSchemas(nitro, directives)
 
       const docs = await scanDocs(nitro)
       nitro.scanDocuments = docs
@@ -212,6 +227,7 @@ export default defineNitroModule({
           'defineType',
           'defineGraphQLConfig',
           'defineSchema',
+          'defineDirective',
         ],
       })
     }

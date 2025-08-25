@@ -10,6 +10,7 @@ import { clientTypeGeneration, serverTypeGeneration } from './utils/type-generat
 export async function rollupConfig(app: Nitro) {
   virtualSchemas(app)
   virtualResolvers(app)
+  virtualDirectives(app)
   getGraphQLConfig(app)
   app.hooks.hook('rollup:before', (nitro, rollupConfig) => {
     rollupConfig.plugins = rollupConfig.plugins || []
@@ -143,6 +144,46 @@ export function virtualResolvers(app: Nitro) {
 
     const content = [
       'export const resolvers = [',
+      data,
+      ']',
+      '',
+    ]
+
+    content.unshift(...importsContent)
+
+    const code = content.join('\n')
+
+    return code
+  }
+}
+
+export function virtualDirectives(app: Nitro) {
+  const getDirectives = () => {
+    const directives = [
+      ...(app.scanDirectives || []),
+    ]
+
+    return directives
+  }
+
+  app.options.virtual ??= {}
+  app.options.virtual['#nitro-internal-virtual/server-directives'] = () => {
+    const imports = getDirectives()
+    const importsContent = [
+      ...imports.map(({ specifier, imports, options }) => {
+        return genImport(specifier, imports, options)
+      }),
+    ]
+
+    const data = imports
+      .map(({ imports }) =>
+        imports.map(i => `{ directive: ${i.as} }`).join(',\n'),
+      )
+      .filter(Boolean)
+      .join(',\n')
+
+    const content = [
+      'export const directives = [',
       data,
       ']',
       '',
