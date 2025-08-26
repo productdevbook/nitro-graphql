@@ -67,13 +67,13 @@ yarn add nitro-graphql graphql-yoga graphql
 **For Apollo Server:**
 ```bash
 # npm
-npm install nitro-graphql @apollo/server graphql
+npm install nitro-graphql @apollo/server @apollo/utils.withrequired @as-integrations/h3 graphql
 
 # pnpm (recommended)
-pnpm add nitro-graphql @apollo/server graphql
+pnpm add nitro-graphql @apollo/server @apollo/utils.withrequired @as-integrations/h3 graphql
 
 # yarn
-yarn add nitro-graphql @apollo/server graphql
+yarn add nitro-graphql @apollo/server @apollo/utils.withrequired @as-integrations/h3 graphql
 ```
 
 ### Step 2: Setup Your Project
