@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsdown'
 import packageJson from './package.json' with { type: 'json' }
 
-const { dependencies } = packageJson
+const { dependencies, peerDependencies, devDependencies } = packageJson
 
 const playground = './playground'
 const playgroundNuxt = './playground-nuxt'
@@ -12,15 +12,15 @@ const playgroundNuxtPath = new URL(playgroundNuxt, thisPath).pathname
 
 export default defineConfig({
   entry: [
-    'src/graphql/',
+    'src/graphql/**',
     'src/index.ts',
     'src/codegen.ts',
     'src/client-watcher.ts',
     'src/context.ts',
-    'src/utils/',
-    'src/routes',
+    'src/utils/**',
+    'src/routes/**',
     'src/graphql.d.ts',
-    'src/ecosystem',
+    'src/ecosystem/**',
   ],
   format: ['esm'],
   dts: true,
@@ -45,6 +45,7 @@ export default defineConfig({
     '@apollo/server/plugin/landingPage/default',
     '#graphql/server',
     ...Object.keys(dependencies || {}),
+    ...Object.keys(peerDependencies || {}),
   ],
   ignoreWatch: [
     playgroundPath,
