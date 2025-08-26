@@ -5,7 +5,7 @@ import { loadFilesSync } from '@graphql-tools/load-files'
 import { mergeTypeDefs } from '@graphql-tools/merge'
 import { printSchemaWithDirectives } from '@graphql-tools/utils'
 import consola from 'consola'
-import { buildASTSchema, buildSchema } from 'graphql'
+import { buildSchema } from 'graphql'
 import { dirname, join, resolve } from 'pathe'
 import { downloadAndSaveSchema, generateClientTypes, generateExternalClientTypes, loadExternalSchema, loadGraphQLDocuments } from './client-codegen'
 import { generateTypes } from './server-codegen'
@@ -122,12 +122,19 @@ export async function serverTypeGeneration(app: Nitro) {
     }
 
     const loadSchemas = loadFilesSync(schemas)
-    const mergedSchemas = mergeTypeDefs(loadSchemas)
-
-    const schema = buildASTSchema(mergedSchemas, {
-      assumeValidSDL: true,
-      assumeValid: true,
+    // Convert to string format similar to route handlers
+    const schemaStrings = loadSchemas.map(schema => 
+      typeof schema === 'string' ? schema : schema.loc?.source?.body || ''
+    ).filter(Boolean)
+    
+    const mergedSchemasString = schemaStrings.join('\n\n')
+    const mergedSchemas = mergeTypeDefs([mergedSchemasString], {
+      throwOnConflict: true,
+      commentDescriptions: true,
+      sort: true,
     })
+
+    const schema = buildSchema(mergedSchemas)
 
     const data = await generateTypes(app.options.graphql?.framework || 'graphql-yoga', schema, app.options.graphql?.codegen?.server ?? {})
 
