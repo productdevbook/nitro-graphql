@@ -12,12 +12,6 @@ catalogs:
     '@apollo/server':
       specifier: ^5.0.0
       version: 5.0.0
-    '@apollo/utils.withrequired':
-      specifier: ^3.0.0
-      version: 3.0.0
-    '@as-integrations/h3':
-      specifier: ^2.0.0
-      version: 2.0.0
     '@graphql-codegen/core':
       specifier: ^4.0.2
       version: 4.0.2
@@ -152,11 +146,14 @@ importers:
 
   .:
     dependencies:
+      '@apollo/server':
+        specifier: ^5.0.0
+        version: 5.0.0(graphql@16.11.0)
       '@apollo/utils.withrequired':
-        specifier: 'catalog:'
+        specifier: ^3.0.0
         version: 3.0.0
       '@as-integrations/h3':
-        specifier: 'catalog:'
+        specifier: ^2.0.0
         version: 2.0.0(@apollo/server@5.0.0(graphql@16.11.0))(crossws@0.3.5)(graphql-ws@6.0.6(crossws@0.3.5)(graphql@16.11.0)(ws@8.18.3))(graphql@16.11.0)(h3@1.15.3)
       '@graphql-codegen/core':
         specifier: 'catalog:'
@@ -228,9 +225,6 @@ importers:
       '@antfu/eslint-config':
         specifier: 'catalog:'
         version: 4.17.0(@vue/compiler-sfc@3.5.19)(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.3)
-      '@apollo/server':
-        specifier: 'catalog:'
-        version: 5.0.0(graphql@16.11.0)
       '@graphql-codegen/import-types-preset':
         specifier: 'catalog:'
         version: 3.0.1(graphql@16.11.0)
