@@ -173,9 +173,34 @@ export async function scanSchemas(nitro: Nitro) {
 
 export async function scanDocs(nitro: Nitro) {
   const files = await scanDir(nitro, nitro.options.rootDir, nitro.graphql.dir.client, '**/*.graphql')
-  // Filter out files in the external directory
+
+  // Get external service document patterns to filter out
+  const externalServices = nitro.options.graphql?.externalServices || []
+  const externalPatterns = externalServices.flatMap(service => service.documents || [])
+
+  // Filter out files in the external directory and files matching external service patterns
   return files
     .filter(f => !f.path.startsWith('external/'))
+    .filter((f) => {
+      // Check if this file matches any external service document patterns
+      const relativePath = f.path
+
+      for (const pattern of externalPatterns) {
+        // Remove the leading 'app/graphql/' from patterns to match relative paths
+        const cleanPattern = pattern.replace(/^app\/graphql\//, '')
+
+        // Extract directory name from pattern for matching
+        const patternDir = cleanPattern.split('/')[0]
+        const fileDir = relativePath.split('/')[0]
+
+        // If the file is in a directory that's part of an external service pattern, exclude it
+        if (patternDir === fileDir) {
+          return false
+        }
+      }
+
+      return true
+    })
     .map(f => f.fullPath)
 }
 
