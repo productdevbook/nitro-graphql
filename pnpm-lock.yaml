@@ -158,6 +158,9 @@ importers:
       '@graphql-codegen/core':
         specifier: 'catalog:'
         version: 4.0.2(graphql@16.11.0)
+      '@graphql-codegen/import-types-preset':
+        specifier: 'catalog:'
+        version: 3.0.1(graphql@16.11.0)
       '@graphql-codegen/typescript':
         specifier: 'catalog:'
         version: 4.1.6(graphql@16.11.0)
@@ -225,9 +228,6 @@ importers:
       '@antfu/eslint-config':
         specifier: 'catalog:'
         version: 5.2.1(@vue/compiler-sfc@3.5.20)(eslint@9.34.0(jiti@2.5.1))(typescript@5.9.2)
-      '@graphql-codegen/import-types-preset':
-        specifier: 'catalog:'
-        version: 3.0.1(graphql@16.11.0)
       '@nuxt/kit':
         specifier: 'catalog:'
         version: 4.0.3(magicast@0.3.5)
