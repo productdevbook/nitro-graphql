@@ -3,7 +3,7 @@ packages:
   - playground-nuxt
 
 catalog:
-  '@antfu/eslint-config': ^4.17.0
+  '@antfu/eslint-config': ^5.2.1
   '@apollo/server': ^5.0.0
   '@apollo/utils.withrequired': ^3.0.0
   '@as-integrations/h3': ^2.0.0
@@ -13,39 +13,39 @@ catalog:
   '@graphql-codegen/typescript-generic-sdk': ^4.0.2
   '@graphql-codegen/typescript-operations': ^4.6.1
   '@graphql-codegen/typescript-resolvers': ^4.5.1
-  '@graphql-tools/graphql-file-loader': ^8.0.21
-  '@graphql-tools/load': ^8.1.1
+  '@graphql-tools/graphql-file-loader': ^8.1.0
+  '@graphql-tools/load': ^8.1.2
   '@graphql-tools/load-files': ^7.0.1
-  '@graphql-tools/merge': ^9.1.0
-  '@graphql-tools/schema': ^10.0.24
+  '@graphql-tools/merge': ^9.1.1
+  '@graphql-tools/schema': ^10.0.25
   '@graphql-tools/url-loader': ^8.0.33
-  '@graphql-tools/utils': ^10.9.0
+  '@graphql-tools/utils': ^10.9.1
   '@nuxt/kit': ^4.0.3
   '@nuxt/schema': ^4.0.3
   '@nuxtjs/tailwindcss': 7.0.0-beta.0
-  '@types/node': ^20.19.9
-  bumpp: ^10.2.0
+  '@types/node': ^22.18.0
+  bumpp: ^10.2.3
   changelogen: ^0.6.2
   chokidar: ^4.0.3
   consola: ^3.4.2
   crossws: 0.3.5
   defu: ^6.1.4
-  eslint: ^9.31.0
+  eslint: ^9.34.0
   graphql: ^16.11.0
   graphql-config: ^5.1.5
   graphql-scalars: ^1.24.2
   graphql-yoga: ^5.15.1
   h3: 1.15.3
   knitwork: ^1.2.0
-  nitropack: ^2.12.3
+  nitropack: ^2.12.4
   nuxt: ^4.0.3
   ohash: ^2.0.11
-  oxc-parser: ^0.77.2
+  oxc-parser: ^0.82.3
   pathe: ^2.0.3
-  tailwindcss: ^4.1.11
+  tailwindcss: ^4.1.12
   tinyglobby: ^0.2.14
-  tsdown: ^0.12.9
-  typescript: ^5.8.3
-  vue: ^3.5.17
+  tsdown: ^0.14.2
+  typescript: ^5.9.2
+  vue: ^3.5.20
   vue-router: ^4.5.1
-  zod: ^4.0.5
+  zod: ^4.1.3
