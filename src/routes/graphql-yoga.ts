@@ -42,7 +42,11 @@ new window.EmbeddedSandbox({
 function createMergedSchema() {
   try {
     const mergedSchemas = schemas.map(schema => schema.def).join('\n\n')
-    const typeDefs = mergeTypeDefs([mergedSchemas])
+    const typeDefs = mergeTypeDefs([mergedSchemas], {
+      throwOnConflict: true,
+      commentDescriptions: true,
+      sort: true,
+    })
     const mergedResolvers = mergeResolvers(resolvers.map(r => r.resolver))
 
     let schema = makeExecutableSchema({

@@ -86,6 +86,7 @@
   },
   "dependencies": {
     "@graphql-codegen/core": "catalog:",
+    "@graphql-codegen/import-types-preset": "catalog:",
     "@graphql-codegen/typescript": "catalog:",
     "@graphql-codegen/typescript-generic-sdk": "catalog:",
     "@graphql-codegen/typescript-operations": "catalog:",
@@ -110,7 +111,7 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "catalog:",
-    "@graphql-codegen/import-types-preset": "catalog:",
+
     "@nuxt/kit": "catalog:",
     "@nuxt/schema": "catalog:",
     "@types/node": "catalog:",
