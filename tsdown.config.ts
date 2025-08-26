@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsdown'
 import packageJson from './package.json' with { type: 'json' }
 
-const { dependencies, peerDependencies, devDependencies } = packageJson
+const { dependencies, peerDependencies } = packageJson
 
 const playground = './playground'
 const playgroundNuxt = './playground-nuxt'

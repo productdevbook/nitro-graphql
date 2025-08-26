@@ -123,10 +123,10 @@ export async function serverTypeGeneration(app: Nitro) {
 
     const loadSchemas = loadFilesSync(schemas)
     // Convert to string format similar to route handlers
-    const schemaStrings = loadSchemas.map(schema => 
-      typeof schema === 'string' ? schema : schema.loc?.source?.body || ''
+    const schemaStrings = loadSchemas.map(schema =>
+      typeof schema === 'string' ? schema : schema.loc?.source?.body || '',
     ).filter(Boolean)
-    
+
     const mergedSchemasString = schemaStrings.join('\n\n')
     const mergedSchemas = mergeTypeDefs([mergedSchemasString], {
       throwOnConflict: true,
