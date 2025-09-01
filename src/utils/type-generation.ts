@@ -280,7 +280,7 @@ export async function serverTypeGeneration(app: Nitro) {
     const mergedSchemasString = schemaStrings.join('\n\n')
 
     // Add Federation directives for buildSchema if federation is enabled
-    const federationEnabled = process.env.NITRO_GRAPHQL_FEDERATION === 'true'
+    const federationEnabled = app.options.graphql?.federation?.enabled === true
     let schemaWithDirectives = mergedSchemasString
 
     if (federationEnabled) {

@@ -56,7 +56,7 @@ export async function generateTypes(
     inputMaybeValue: 'T | undefined',
     declarationKind: 'interface',
     enumsAsTypes: true,
-    ...(config.federation && { federation: true }),
+    ...(config.federation?.enabled && { federation: true }),
   }
 
   const mergedConfig = defu(defaultConfig, config.codegen?.server)

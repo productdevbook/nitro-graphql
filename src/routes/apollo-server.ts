@@ -1,5 +1,6 @@
 import type { BaseContext } from '@apollo/server'
 import { importedConfig } from '#nitro-internal-virtual/graphql-config'
+import { moduleConfig } from '#nitro-internal-virtual/module-config'
 import { directives } from '#nitro-internal-virtual/server-directives'
 import { resolvers } from '#nitro-internal-virtual/server-resolvers'
 import { schemas } from '#nitro-internal-virtual/server-schemas'
@@ -44,8 +45,8 @@ async function createMergedSchema() {
     })
     const mergedResolvers = mergeResolvers(resolvers.map(r => r.resolver))
 
-    // Check if federation is enabled via runtime config
-    const federationEnabled = process.env.NITRO_GRAPHQL_FEDERATION === 'true'
+    // Check if federation is enabled via config
+    const federationEnabled = moduleConfig.federation?.enabled
 
     let schema
 

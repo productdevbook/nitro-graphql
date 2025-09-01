@@ -12,6 +12,7 @@ export async function rollupConfig(app: Nitro) {
   virtualResolvers(app)
   virtualDirectives(app)
   getGraphQLConfig(app)
+  virtualModuleConfig(app)
   app.hooks.hook('rollup:before', (nitro, rollupConfig) => {
     rollupConfig.plugins = rollupConfig.plugins || []
     const {
@@ -206,5 +207,14 @@ export function getGraphQLConfig(app: Nitro) {
 const importedConfig = config
 export { importedConfig }
 `
+  }
+}
+
+export function virtualModuleConfig(app: Nitro) {
+  app.options.virtual ??= {}
+  app.options.virtual['#nitro-internal-virtual/module-config'] = () => {
+    const moduleConfig = app.options.graphql || {}
+
+    return `export const moduleConfig = ${JSON.stringify(moduleConfig, null, 2)};`
   }
 }

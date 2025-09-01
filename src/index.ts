@@ -75,18 +75,8 @@ export default defineNitroModule({
       playground: true,
     } as NitroGraphQLOptions)
 
-    // Set federation environment variables if federation is enabled
+    // Log federation status if enabled
     if (nitro.options.graphql?.federation?.enabled) {
-      process.env.NITRO_GRAPHQL_FEDERATION = 'true'
-      if (nitro.options.graphql.federation.serviceName) {
-        process.env.NITRO_GRAPHQL_FEDERATION_SERVICE_NAME = nitro.options.graphql.federation.serviceName
-      }
-      if (nitro.options.graphql.federation.serviceVersion) {
-        process.env.NITRO_GRAPHQL_FEDERATION_SERVICE_VERSION = nitro.options.graphql.federation.serviceVersion
-      }
-      if (nitro.options.graphql.federation.serviceUrl) {
-        process.env.NITRO_GRAPHQL_FEDERATION_SERVICE_URL = nitro.options.graphql.federation.serviceUrl
-      }
       consola.info(`Apollo Federation enabled for service: ${nitro.options.graphql.federation.serviceName || 'unnamed'}`)
     }
 
