@@ -1,0 +1,24 @@
+{
+  "name": "nitro-graphql-federation-playground",
+  "type": "module",
+  "private": true,
+  "packageManager": "pnpm@10.15.0",
+  "scripts": {
+    "build": "nitro build",
+    "build:apollo": "nitro build --config nitro.config.apollo.ts",
+    "build:yoga": "nitro build --config nitro.config.yoga.ts",
+    "dev": "nitro dev",
+    "dev:apollo": "nitro dev --config nitro.config.apollo.ts",
+    "dev:yoga": "nitro dev --config nitro.config.yoga.ts",
+    "preview": "node .output/server/index.mjs"
+  },
+  "dependencies": {
+    "@apollo/server": "catalog:",
+    "@apollo/subgraph": "^2.11.2",
+    "@as-integrations/h3": "catalog:",
+    "graphql": "catalog:",
+    "h3": "catalog:",
+    "nitro-graphql": "link:../",
+    "nitropack": "catalog:"
+  }
+}

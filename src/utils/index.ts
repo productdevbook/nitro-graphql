@@ -107,6 +107,23 @@ export async function scanResolvers(nitro: Nitro) {
                   as: `_${hash(decl.id.name + file.path).replace(/-/g, '').slice(0, 6)}`,
                 })
               }
+
+              // Federation define functions
+              if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineReference') {
+                exports.imports.push({
+                  name: decl.id.name,
+                  type: 'resolver',
+                  as: `_${hash(decl.id.name + file.path).replace(/-/g, '').slice(0, 6)}`,
+                })
+              }
+
+              if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineEntity') {
+                exports.imports.push({
+                  name: decl.id.name,
+                  type: 'type',
+                  as: `_${hash(decl.id.name + file.path).replace(/-/g, '').slice(0, 6)}`,
+                })
+              }
             }
           }
         }
