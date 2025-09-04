@@ -233,9 +233,6 @@ export default defineNitroModule({
           'defineGraphQLConfig',
           'defineSchema',
           'defineDirective',
-          'defineReference',
-          'defineEntity',
-          'defineSubgraph',
         ],
       })
     }

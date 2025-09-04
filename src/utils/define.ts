@@ -238,37 +238,3 @@ export function defineDirective(config: DefineDirectiveConfig): DirectiveDefinit
     locations: [...config.locations], // Convert readonly array to mutable
   }
 }
-
-// Federation utility functions
-
-/**
- * Define a reference resolver for Apollo Federation entities
- * Used to resolve entity references from other subgraphs
- */
-export function defineReference(
-  resolvers: Record<string, any>,
-): Resolvers {
-  return resolvers
-}
-
-/**
- * Define an entity type with federation @key directives
- * Marks types as federated entities that can be extended by other subgraphs
- */
-export function defineEntity(
-  resolvers: Resolvers,
-): Resolvers {
-  return resolvers
-}
-
-/**
- * Configure subgraph settings for Apollo Federation
- * Provides metadata and configuration for the federated subgraph
- */
-export function defineSubgraph(config: {
-  serviceName?: string
-  serviceVersion?: string
-  serviceUrl?: string
-}): typeof config {
-  return config
-}
