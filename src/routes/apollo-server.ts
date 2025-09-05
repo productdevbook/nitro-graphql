@@ -5,10 +5,9 @@ import { resolvers } from '#nitro-internal-virtual/server-resolvers'
 import { schemas } from '#nitro-internal-virtual/server-schemas'
 import { ApolloServer } from '@apollo/server'
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default'
-// TODO: fix bug
-// import { startServerAndCreateH3Handler } from '@as-integrations/h3'
 import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge'
 import { makeExecutableSchema } from '@graphql-tools/schema'
+import { consola } from 'consola'
 import defu from 'defu'
 import { startServerAndCreateH3Handler } from '../utils/apollo'
 
@@ -39,7 +38,7 @@ function createMergedSchema() {
     return schema
   }
   catch (error) {
-    console.error('Schema merge error:', error)
+    consola.error('Schema merge error:', error)
     throw error
   }
 }

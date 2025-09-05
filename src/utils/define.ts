@@ -20,7 +20,7 @@ export function defineResolver(
   return resolvers
 }
 
-// Kullanım için utility type
+// Utility type for resolver usage
 export type ResolverQuery = Resolvers extends { Query: infer Q }
   ? Q
   : never

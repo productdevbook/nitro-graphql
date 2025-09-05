@@ -1,0 +1,30 @@
+# Client queries from layer
+query GetPosts {
+  posts {
+    id
+    title
+    content
+    author
+    createdAt
+  }
+}
+
+query GetPost($id: ID!) {
+  post(id: $id) {
+    id
+    title
+    content
+    author
+    createdAt
+  }
+}
+
+mutation CreatePost($input: CreatePostInput!) {
+  createPost(input: $input) {
+    id
+    title
+    content
+    author
+    createdAt
+  }
+}

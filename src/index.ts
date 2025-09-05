@@ -9,7 +9,18 @@ import defu from 'defu'
 import { defineNitroModule } from 'nitropack/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { rollupConfig } from './rollup'
-import { generateDirectiveSchemas, relativeWithDot, scanDirectives, scanDocs, scanResolvers, scanSchemas, validateExternalServices } from './utils'
+import {
+  generateDirectiveSchemas,
+  generateLayerIgnorePatterns,
+  getLayerAppDirectories,
+  getLayerServerDirectories,
+  relativeWithDot,
+  scanDirectives,
+  scanDocs,
+  scanResolvers,
+  scanSchemas,
+  validateExternalServices,
+} from './utils'
 import { clientTypeGeneration, serverTypeGeneration } from './utils/type-generation'
 
 export type * from './types'
@@ -46,7 +57,7 @@ export default defineNitroModule({
       },
     }
 
-    nitro.hooks.hook('rollup:before', (nitro, rollupConfig) => {
+    nitro.hooks.hook('rollup:before', (_, rollupConfig) => {
       rollupConfig.external = rollupConfig.external || []
       const codegenExternals = [
         'oxc-parser',
@@ -81,11 +92,26 @@ export default defineNitroModule({
     const watchDirs: string[] = []
 
     switch (nitro.options.framework.name) {
-      case 'nuxt':
+      case 'nuxt': {
         watchDirs.push(join(nitro.options.rootDir, 'app', 'graphql'))
         nitro.graphql.clientDir = resolve(nitro.options.rootDir, 'app', 'graphql')
         nitro.graphql.dir.client = 'app/graphql'
+
+        // Add layer directories to watch list
+        const layerServerDirs = getLayerServerDirectories(nitro)
+        const layerAppDirs = getLayerAppDirectories(nitro)
+
+        // Add server GraphQL directories from layers
+        for (const layerServerDir of layerServerDirs) {
+          watchDirs.push(join(layerServerDir, 'graphql'))
+        }
+
+        // Add client GraphQL directories from layers (using app directories)
+        for (const layerAppDir of layerAppDirs) {
+          watchDirs.push(join(layerAppDir, 'graphql'))
+        }
         break
+      }
       case 'nitro':
         nitro.graphql.clientDir = resolve(nitro.options.rootDir, 'graphql')
         nitro.graphql.dir.client = 'graphql'
@@ -116,9 +142,9 @@ export default defineNitroModule({
       ignoreInitial: true,
       ignored: [
         ...nitro.options.ignore,
-        '**/server/graphql/_directives.graphql', // Ignore auto-generated directives file
+        ...generateLayerIgnorePatterns(nitro), // Ignore auto-generated files in all layers
       ],
-    }).on('all', async (event, path) => {
+    }).on('all', async (_, path) => {
       if (path.endsWith('.graphql') || path.endsWith('.gql')) {
         await clientTypeGeneration(nitro)
       }
@@ -216,8 +242,6 @@ export default defineNitroModule({
     if (nitro.options.imports) {
       nitro.options.imports.presets ??= []
       nitro.options.imports.presets.push({
-        // TODO: this bugs: nitro-graphql v0.0.16
-        // from: 'nitro-graphql/utils/define',
         from: fileURLToPath(new URL('utils/define', import.meta.url)),
         imports: [
           'defineResolver',
@@ -233,7 +257,7 @@ export default defineNitroModule({
     }
 
     // Access the internal rollup config and add our prefix
-    nitro.hooks.hook('rollup:before', (nitro, rollupConfig) => {
+    nitro.hooks.hook('rollup:before', (_, rollupConfig) => {
       const manualChunks = rollupConfig.output?.manualChunks
       const chunkFiles = rollupConfig.output?.chunkFileNames
 
@@ -257,7 +281,7 @@ export default defineNitroModule({
       }
 
       rollupConfig.output.chunkFileNames = (chunkInfo) => {
-        // GraphQL dosyalarını kontrol et
+        // Check for GraphQL files
         if (chunkInfo.moduleIds && chunkInfo.moduleIds.some(id =>
           id.endsWith('.graphql') || id.endsWith('.resolver.ts') || id.endsWith('.gql'),
         )) {
@@ -321,7 +345,7 @@ export default defineNitroModule({
     if (nitro.options.framework?.name === 'nuxt' && nitro.options.graphql?.externalServices?.length) {
       // Add external services to Nuxt context so the Nuxt module can access them
       nitro.hooks.hook('build:before', () => {
-        const nuxtOptions = (nitro as any)._nuxt?.options
+        const nuxtOptions = (nitro as { _nuxt?: { options?: any } })._nuxt?.options
         if (nuxtOptions) {
           nuxtOptions.nitroGraphqlExternalServices = nitro.options.graphql?.externalServices || []
         }
