@@ -130,4 +130,10 @@ export interface NitroGraphQLOptions {
   externalServices?: ExternalGraphQLService[]
   /** Apollo Federation configuration */
   federation?: FederationConfig
+  /** Server GraphQL directory path */
+  serverDir?: string
+  /** Layer directories (populated by Nuxt module) */
+  layerDirectories?: string[]
+  layerServerDirs?: string[]
+  layerAppDirs?: string[]
 }

@@ -42,10 +42,11 @@ export async function rollupConfig(app: Nitro) {
             return `export default ${JSON.stringify(content)}`
           }
           catch (error) {
-            if ((error as any).code === 'ENOENT') {
+            if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') {
               return null
             }
-            this.error(`Failed to read GraphQL file ${id}: ${(error as any).message}`)
+            const message = error instanceof Error ? error.message : String(error)
+            this.error(`Failed to read GraphQL file ${id}: ${message}`)
           }
         },
       })
@@ -65,7 +66,7 @@ export async function rollupConfig(app: Nitro) {
           // }
 
           // 2. Directory watching (partial çalışır)
-          this.addWatchFile('server/graphql/')
+          this.addWatchFile(app.graphql.serverDir)
 
           // 3. Client GraphQL files
           // if (app.options.framework.name === 'nuxt') {

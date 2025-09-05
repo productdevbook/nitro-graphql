@@ -11,8 +11,8 @@
         </p>
       </div>
 
-      <!-- Quick Stats -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <!-- Navigation Links -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div class="bg-white rounded-lg shadow p-6">
           <div class="flex items-center">
             <div class="flex-shrink-0">
@@ -32,6 +32,24 @@
         <div class="bg-white rounded-lg shadow p-6">
           <div class="flex items-center">
             <div class="flex-shrink-0">
+              <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                </svg>
+              </div>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-gray-500">Layer Posts</p>
+              <p class="text-sm text-gray-900">
+                <NuxtLink to="/posts" class="text-purple-600 hover:text-purple-800">View Posts</NuxtLink>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
               <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -41,7 +59,7 @@
             <div class="ml-3">
               <p class="text-sm font-medium text-gray-500">GraphQL Playground</p>
               <p class="text-sm text-gray-900">
-                <a href="/api/graphql" target="_blank" class="text-blue-600 hover:text-blue-800">Open Playground</a>
+                <a href="/api/graphql" target="_blank" class="text-green-600 hover:text-green-800">Open Playground</a>
               </p>
             </div>
           </div>

@@ -1,19 +1,17 @@
 import type { YogaServerInstance } from 'graphql-yoga'
 import { importedConfig } from '#nitro-internal-virtual/graphql-config'
 import { moduleConfig } from '#nitro-internal-virtual/module-config'
-
 import { directives } from '#nitro-internal-virtual/server-directives'
 import { resolvers } from '#nitro-internal-virtual/server-resolvers'
 import { schemas } from '#nitro-internal-virtual/server-schemas'
 
 import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge'
 import { makeExecutableSchema } from '@graphql-tools/schema'
+import { consola } from 'consola'
 import defu from 'defu'
 import { parse } from 'graphql'
 import { createYoga } from 'graphql-yoga'
 import { defineEventHandler, toWebRequest } from 'h3'
-// TODO: https://github.com/nitrojs/nitro/issues/3403 if used import this error.
-// import { createMergedSchema } from 'nitro-graphql/internal'
 
 // Conditional imports for federation support - use dynamic import inside function
 let buildSubgraphSchema: any = null
@@ -54,13 +52,6 @@ new window.EmbeddedSandbox({
 </body>
 </html>`
 
-// function setApolloSandboxCacheHeaders(event) {
-//   setHeader(event, 'Cache-Control', 'public, max-age=604800, s-maxage=604800')
-//   setHeader(event, 'Expires', new Date(Date.now() + 604800000).toUTCString())
-//   setHeader(event, 'ETag', `"apollo-sandbox-${Date.now()}"`)
-// }
-
-// Schema ve yoga instance'ını build time'da oluştur
 async function createMergedSchema() {
   try {
     const mergedSchemas = schemas.map(schema => schema.def).join('\n\n')
@@ -118,7 +109,7 @@ async function createMergedSchema() {
     return schema
   }
   catch (error) {
-    console.error('Schema merge error:', error)
+    consola.error('Schema merge error:', error)
     throw error
   }
 }
@@ -137,7 +128,7 @@ export default defineEventHandler(async (event) => {
     }, importedConfig))
   }
   const request = toWebRequest(event)
-  const response = await yoga.handleRequest(request, event as any)
+  const response = await yoga.handleRequest(request, event)
 
   return new Response(response.body, response)
 })

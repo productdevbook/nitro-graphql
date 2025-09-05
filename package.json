@@ -2,7 +2,7 @@
   "name": "nitro-graphql",
   "type": "module",
   "version": "1.3.0",
-  "packageManager": "pnpm@10.15.0",
+  "packageManager": "pnpm@10.15.1",
   "description": "GraphQL integration for Nitro",
   "license": "MIT",
   "sideEffects": false,
