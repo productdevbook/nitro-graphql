@@ -461,10 +461,11 @@ export default defineGraphQLConfig({
 
 Try out the examples:
 
-- **Standalone Nitro**: [`playground/`](playground/)
-- **Nuxt.js Integration**: [`playground-nuxt/`](playground-nuxt/)
+- **Standalone Nitro**: [`playgrounds/nitro/`](playgrounds/nitro/)
+- **Nuxt.js Integration**: [`playgrounds/nuxt/`](playgrounds/nuxt/)
+- **Apollo Federation**: [`playgrounds/federation/`](playgrounds/federation/)
 
-Both examples include working GraphQL schemas, resolvers, and demonstrate the module's capabilities.
+All examples include working GraphQL schemas, resolvers, and demonstrate the module's capabilities.
 
 ## 🔧 API Reference
 
@@ -1203,7 +1204,9 @@ const client = createGraphQLClient({
 - `pnpm build` - Build the module
 - `pnpm dev` - Watch mode with automatic rebuilding
 - `pnpm lint` - ESLint with auto-fix
-- `pnpm playground` - Run the Nitro playground example
+- `pnpm playground:nitro` - Run the Nitro playground example
+- `pnpm playground:nuxt` - Run the Nuxt playground example
+- `pnpm playground:federation` - Run the Apollo Federation playground
 - `pnpm release` - Build, version bump, and publish
 
 ### Requirements

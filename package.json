@@ -61,7 +61,9 @@
     "dev": "tsdown --watch",
     "bumpp": "bumpp package.json",
     "release": "pnpm build && pnpm bumpp && pnpm publish --no-git-checks --access public",
-    "playground": "cd playground && pnpm install && pnpm dev",
+    "playground:nitro": "cd playgrounds/nitro && pnpm install && pnpm dev",
+    "playground:nuxt": "cd playgrounds/nuxt && pnpm install && pnpm dev",
+    "playground:federation": "cd playgrounds/federation && pnpm install && pnpm dev",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
