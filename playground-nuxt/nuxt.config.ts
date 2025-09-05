@@ -1,6 +1,8 @@
 export default defineNuxtConfig({
   compatibilityDate: '2024-07-01',
   devtools: { enabled: true },
+  // Extend from the example layer to test layer support
+  extends: ['./layers/example-layer'],
   modules: [
     'nitro-graphql/nuxt',
     '@nuxtjs/tailwindcss',

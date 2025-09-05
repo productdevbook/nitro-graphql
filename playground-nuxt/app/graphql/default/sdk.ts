@@ -52,6 +52,39 @@ export const GetUserDocument = /*#__PURE__*/ `
   }
 }
     `;
+export const GetPostsDocument = /*#__PURE__*/ `
+    query GetPosts {
+  posts {
+    id
+    title
+    content
+    author
+    createdAt
+  }
+}
+    `;
+export const GetPostDocument = /*#__PURE__*/ `
+    query GetPost($id: ID!) {
+  post(id: $id) {
+    id
+    title
+    content
+    author
+    createdAt
+  }
+}
+    `;
+export const CreatePostDocument = /*#__PURE__*/ `
+    mutation CreatePost($input: CreatePostInput!) {
+  createPost(input: $input) {
+    id
+    title
+    content
+    author
+    createdAt
+  }
+}
+    `;
 export type Requester<C = {}, E = unknown> = <R, V>(doc: string, vars?: V, options?: C) => Promise<ExecutionResult<R, E>> | AsyncIterable<ExecutionResult<R, E>>
 export function getSdk<C, E>(requester: Requester<C, E>) {
   return {
@@ -69,6 +102,15 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
     },
     GetUser(variables: Types.GetUserQueryVariables, options?: C): Promise<ExecutionResult<Types.GetUserQuery, E>> {
       return requester<Types.GetUserQuery, Types.GetUserQueryVariables>(GetUserDocument, variables, options) as Promise<ExecutionResult<Types.GetUserQuery, E>>;
+    },
+    GetPosts(variables?: Types.GetPostsQueryVariables, options?: C): Promise<ExecutionResult<Types.GetPostsQuery, E>> {
+      return requester<Types.GetPostsQuery, Types.GetPostsQueryVariables>(GetPostsDocument, variables, options) as Promise<ExecutionResult<Types.GetPostsQuery, E>>;
+    },
+    GetPost(variables: Types.GetPostQueryVariables, options?: C): Promise<ExecutionResult<Types.GetPostQuery, E>> {
+      return requester<Types.GetPostQuery, Types.GetPostQueryVariables>(GetPostDocument, variables, options) as Promise<ExecutionResult<Types.GetPostQuery, E>>;
+    },
+    CreatePost(variables: Types.CreatePostMutationVariables, options?: C): Promise<ExecutionResult<Types.CreatePostMutation, E>> {
+      return requester<Types.CreatePostMutation, Types.CreatePostMutationVariables>(CreatePostDocument, variables, options) as Promise<ExecutionResult<Types.CreatePostMutation, E>>;
     }
   };
 }

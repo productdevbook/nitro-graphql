@@ -117,4 +117,10 @@ export interface NitroGraphQLOptions {
   }
   /** External GraphQL services to generate types and SDKs for */
   externalServices?: ExternalGraphQLService[]
+  /** Server GraphQL directory path */
+  serverDir?: string
+  /** Layer directories (populated by Nuxt module) */
+  layerDirectories?: string[]
+  layerServerDirs?: string[]
+  layerAppDirs?: string[]
 }
