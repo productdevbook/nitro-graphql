@@ -2,4 +2,6 @@
 # Do not modify this file directly. It will be overwritten.
 # To define custom directives, create .directive.ts files using defineDirective()
 
-directive @layerTest on FIELD_DEFINITION
+directive @auth on FIELD_DEFINITION
+
+directive @hasRole(role: String!) on FIELD_DEFINITION

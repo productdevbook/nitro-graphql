@@ -273,9 +273,9 @@ export async function generateDirectiveSchemas(nitro: any, directives: any[]) {
   if (directives.length === 0)
     return
 
-  const { existsSync, readFileSync, writeFileSync } = await import('node:fs')
+  const { existsSync, readFileSync, writeFileSync, mkdirSync } = await import('node:fs')
   const { readFile } = await import('node:fs/promises')
-  const { resolve } = await import('pathe')
+  const { resolve, dirname } = await import('pathe')
 
   const directiveSchemas: string[] = []
   const seenDirectives = new Set<string>()
@@ -306,6 +306,12 @@ export async function generateDirectiveSchemas(nitro: any, directives: any[]) {
 # To define custom directives, create .directive.ts files using defineDirective()
 
 ${directiveSchemas.join('\n\n')}`
+
+    // Ensure the target directory exists
+    const targetDir = dirname(directivesPath)
+    if (!existsSync(targetDir)) {
+      mkdirSync(targetDir, { recursive: true })
+    }
 
     // Only write if content has changed
     let shouldWrite = true

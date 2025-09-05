@@ -98,9 +98,17 @@ export default defineNitroModule({
 
     switch (nitro.options.framework.name) {
       case 'nuxt': {
-        watchDirs.push(join(nitro.options.rootDir, 'app', 'graphql'))
-        nitro.graphql.clientDir = resolve(nitro.options.rootDir, 'app', 'graphql')
-        nitro.graphql.dir.client = 'app/graphql'
+        // For Nuxt, set clientDir to app/graphql if not already configured
+        if (!nitro.graphql.clientDir) {
+          nitro.graphql.clientDir = resolve(nitro.options.rootDir, 'app', 'graphql')
+          nitro.graphql.dir.client = 'app/graphql'
+        }
+
+        // For Nuxt, ensure serverDir points to server/graphql if using default srcDir
+        if (!nitro.options.graphql?.serverDir) {
+          nitro.graphql.serverDir = resolve(nitro.options.rootDir, 'server', 'graphql')
+        }
+        watchDirs.push(nitro.graphql.clientDir)
 
         // Add layer directories to watch list
         const layerServerDirs = getLayerServerDirectories(nitro)

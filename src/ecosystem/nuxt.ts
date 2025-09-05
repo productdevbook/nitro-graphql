@@ -90,7 +90,7 @@ export default defineNuxtModule<ModuleOptions>({
       nitroConfig.graphql!.layerServerDirs = layerServerDirs
       nitroConfig.graphql!.layerAppDirs = layerAppDirs
 
-      // Check if app/graphql directory exists
+      // Check if app/graphql directory exists - use default app directory
       const appGraphqlDir = resolve(nuxt.options.rootDir, 'app/graphql')
       const hasAppGraphqlDir = existsSync(appGraphqlDir)
 
