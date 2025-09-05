@@ -1,5 +1,5 @@
 import type { GraphQLSchema } from 'graphql'
-import type { CodegenServerConfig } from '../types'
+import type { CodegenServerConfig, NitroGraphQLOptions } from '../types'
 import { codegen } from '@graphql-codegen/core'
 import * as typescriptPlugin from '@graphql-codegen/typescript'
 import * as typescriptResolversPlugin from '@graphql-codegen/typescript-resolvers'
@@ -32,7 +32,7 @@ function pluginContent(_schema: any, _documents: any, _config: any, _info: any) 
 export async function generateTypes(
   selectFremework: string,
   schema: GraphQLSchema,
-  config: CodegenServerConfig = {},
+  config: Partial<NitroGraphQLOptions> = {},
   outputPath?: string,
 ) {
   const defaultConfig: CodegenServerConfig = {
@@ -56,9 +56,10 @@ export async function generateTypes(
     inputMaybeValue: 'T | undefined',
     declarationKind: 'interface',
     enumsAsTypes: true,
+    ...(config.federation?.enabled && { federation: true }),
   }
 
-  const mergedConfig = defu(defaultConfig, config)
+  const mergedConfig = defu(defaultConfig, config.codegen?.server)
 
   const output = await codegen({
     filename: outputPath || 'types.generated.ts',

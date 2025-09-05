@@ -96,6 +96,17 @@ export interface ExternalGraphQLService {
   }
 }
 
+export interface FederationConfig {
+  /** Enable Apollo Federation subgraph support */
+  enabled: boolean
+  /** Service name for federation (used in subgraph config) */
+  serviceName?: string
+  /** Service version for federation */
+  serviceVersion?: string
+  /** Service URL for federation gateway */
+  serviceUrl?: string
+}
+
 export interface NitroGraphQLOptions {
   framework: 'graphql-yoga' | 'apollo-server'
   endpoint?: {
@@ -117,6 +128,8 @@ export interface NitroGraphQLOptions {
   }
   /** External GraphQL services to generate types and SDKs for */
   externalServices?: ExternalGraphQLService[]
+  /** Apollo Federation configuration */
+  federation?: FederationConfig
   /** Server GraphQL directory path */
   serverDir?: string
   /** Layer directories (populated by Nuxt module) */

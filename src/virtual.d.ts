@@ -29,3 +29,9 @@ declare module '#nitro-internal-virtual/server-scalars' {
 declare module '#nitro-internal-virtual/client-schema' {
   export const schema: string
 }
+
+declare module '#nitro-internal-virtual/module-config' {
+  import type { NitroGraphQLOptions } from '../types'
+
+  export const moduleConfig: Partial<NitroGraphQLOptions>
+}

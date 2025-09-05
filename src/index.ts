@@ -86,6 +86,11 @@ export default defineNitroModule({
       playground: true,
     } as NitroGraphQLOptions)
 
+    // Log federation status if enabled
+    if (nitro.options.graphql?.federation?.enabled) {
+      consola.info(`Apollo Federation enabled for service: ${nitro.options.graphql.federation.serviceName || 'unnamed'}`)
+    }
+
     const graphqlBuildDir = resolve(nitro.options.buildDir, 'graphql')
     nitro.graphql.buildDir = graphqlBuildDir
 

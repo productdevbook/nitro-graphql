@@ -1,5 +1,6 @@
 import type { YogaServerInstance } from 'graphql-yoga'
 import { importedConfig } from '#nitro-internal-virtual/graphql-config'
+import { moduleConfig } from '#nitro-internal-virtual/module-config'
 import { directives } from '#nitro-internal-virtual/server-directives'
 import { resolvers } from '#nitro-internal-virtual/server-resolvers'
 import { schemas } from '#nitro-internal-virtual/server-schemas'
@@ -8,8 +9,29 @@ import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge'
 import { makeExecutableSchema } from '@graphql-tools/schema'
 import { consola } from 'consola'
 import defu from 'defu'
+import { parse } from 'graphql'
 import { createYoga } from 'graphql-yoga'
 import { defineEventHandler, toWebRequest } from 'h3'
+
+// Conditional imports for federation support - use dynamic import inside function
+let buildSubgraphSchema: any = null
+
+async function loadFederationSupport() {
+  if (buildSubgraphSchema !== null)
+    return buildSubgraphSchema
+
+  try {
+    // Try to import @apollo/subgraph for federation support
+    const apolloSubgraph = await import('@apollo/subgraph')
+    buildSubgraphSchema = apolloSubgraph.buildSubgraphSchema
+  }
+  catch {
+    // @apollo/subgraph is optional, continue without federation
+    buildSubgraphSchema = false
+  }
+
+  return buildSubgraphSchema
+}
 
 // Apollo Sandbox HTML with 1 week cache
 const apolloSandboxHtml = `<!DOCTYPE html>
@@ -30,7 +52,7 @@ new window.EmbeddedSandbox({
 </body>
 </html>`
 
-function createMergedSchema() {
+async function createMergedSchema() {
   try {
     const mergedSchemas = schemas.map(schema => schema.def).join('\n\n')
     const typeDefs = mergeTypeDefs([mergedSchemas], {
@@ -40,10 +62,40 @@ function createMergedSchema() {
     })
     const mergedResolvers = mergeResolvers(resolvers.map(r => r.resolver))
 
-    let schema = makeExecutableSchema({
-      typeDefs,
-      resolvers: mergedResolvers,
-    })
+    // Check if federation is enabled via config
+    const federationEnabled = moduleConfig.federation?.enabled
+
+    let schema
+
+    if (federationEnabled) {
+      // Load federation support dynamically
+      const buildSubgraph = await loadFederationSupport()
+
+      if (buildSubgraph) {
+        // Use Apollo Federation buildSubgraphSchema
+        // buildSubgraphSchema requires DocumentNode, convert string if needed
+        const typeDefsDoc = typeof typeDefs === 'string' ? parse(typeDefs) : typeDefs
+
+        schema = buildSubgraph({
+          typeDefs: typeDefsDoc,
+          resolvers: mergedResolvers,
+        })
+      }
+      else {
+        console.warn('Federation enabled but @apollo/subgraph not available, falling back to regular schema')
+        schema = makeExecutableSchema({
+          typeDefs,
+          resolvers: mergedResolvers,
+        })
+      }
+    }
+    else {
+      // Use regular schema builder
+      schema = makeExecutableSchema({
+        typeDefs,
+        resolvers: mergedResolvers,
+      })
+    }
 
     // Apply directives if any
     if (directives && directives.length > 0) {
@@ -66,7 +118,7 @@ let yoga: YogaServerInstance<object, object>
 
 export default defineEventHandler(async (event) => {
   if (!yoga) {
-    const schema = createMergedSchema()
+    const schema = await createMergedSchema()
     // Yoga instance'ı henüz oluşturulmadıysa, oluştur
     yoga = createYoga(defu({
       schema,

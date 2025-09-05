@@ -278,7 +278,35 @@ export async function serverTypeGeneration(app: Nitro) {
     }
 
     const mergedSchemasString = schemaStrings.join('\n\n')
-    const mergedSchemas = mergeTypeDefs([mergedSchemasString], {
+
+    // Add Federation directives for buildSchema if federation is enabled
+    const federationEnabled = app.options.graphql?.federation?.enabled === true
+    let schemaWithDirectives = mergedSchemasString
+
+    if (federationEnabled) {
+      // Add Federation 2 directives definitions for buildSchema
+      const federationDirectives = `
+        directive @key(fields: String!) on OBJECT | INTERFACE
+        directive @requires(fields: String!) on FIELD_DEFINITION
+        directive @provides(fields: String!) on FIELD_DEFINITION
+        directive @external on FIELD_DEFINITION | OBJECT
+        directive @tag(name: String!) on FIELD_DEFINITION | OBJECT | INTERFACE | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+        directive @extends on OBJECT | INTERFACE
+        directive @shareable on FIELD_DEFINITION | OBJECT
+        directive @inaccessible on FIELD_DEFINITION | OBJECT | INTERFACE | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
+        directive @override(from: String!) on FIELD_DEFINITION
+        directive @composeDirective(name: String!) on SCHEMA
+        directive @link(url: String!, as: String, for: Purpose, import: [String!]) on SCHEMA
+        
+        enum Purpose {
+          SECURITY
+          EXECUTION
+        }
+      `
+      schemaWithDirectives = `${federationDirectives}\n\n${mergedSchemasString}`
+    }
+
+    const mergedSchemas = mergeTypeDefs([schemaWithDirectives], {
       throwOnConflict: true,
       commentDescriptions: true,
       sort: true,
@@ -286,7 +314,7 @@ export async function serverTypeGeneration(app: Nitro) {
 
     const schema = buildSchema(mergedSchemas)
 
-    const data = await generateTypes(app.options.graphql?.framework || 'graphql-yoga', schema, app.options.graphql?.codegen?.server ?? {})
+    const data = await generateTypes(app.options.graphql?.framework || 'graphql-yoga', schema, app.options.graphql ?? {})
 
     const printSchema = printSchemaWithDirectives(schema)
 

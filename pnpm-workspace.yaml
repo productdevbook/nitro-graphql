@@ -1,10 +1,12 @@
 packages:
   - playground
   - playground-nuxt
+  - playground-federation
 
 catalog:
   '@antfu/eslint-config': ^5.2.2
   '@apollo/server': ^5.0.0
+  '@apollo/subgraph': ^2.11.2
   '@apollo/utils.withrequired': ^3.0.0
   '@as-integrations/h3': ^2.0.0
   '@graphql-codegen/core': ^4.0.2
