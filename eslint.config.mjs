@@ -24,8 +24,7 @@ export default antfu({
   },
 }, {
   files: [
-    'playground/**/*.{ts,js,mjs,cjs}',
-    'playground-nuxt/**/*.{ts,js,mjs,cjs}',
+    'playgrounds/**/*.{ts,js,mjs,cjs}',
   ],
   rules: {
     'no-console': 'off',

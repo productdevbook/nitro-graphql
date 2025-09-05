@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@apollo/server": "catalog:",
-    "@apollo/subgraph": "^2.11.2",
+    "@apollo/subgraph": "catalog:",
     "@as-integrations/h3": "catalog:",
     "graphql": "catalog:",
     "h3": "catalog:",
