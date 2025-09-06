@@ -1,6 +1,7 @@
 import type { Nitro } from 'nitropack'
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { buildSubgraphSchema } from '@apollo/subgraph'
 import { loadFilesSync } from '@graphql-tools/load-files'
 import { mergeTypeDefs } from '@graphql-tools/merge'
 import { printSchemaWithDirectives } from '@graphql-tools/utils'
@@ -277,42 +278,20 @@ export async function serverTypeGeneration(app: Nitro) {
       return // Exit early if duplicates found
     }
 
-    const mergedSchemasString = schemaStrings.join('\n\n')
-
     // Add Federation directives for buildSchema if federation is enabled
     const federationEnabled = app.options.graphql?.federation?.enabled === true
-    let schemaWithDirectives = mergedSchemasString
 
-    if (federationEnabled) {
-      // Add Federation 2 directives definitions for buildSchema
-      const federationDirectives = `
-        directive @key(fields: String!) on OBJECT | INTERFACE
-        directive @requires(fields: String!) on FIELD_DEFINITION
-        directive @provides(fields: String!) on FIELD_DEFINITION
-        directive @external on FIELD_DEFINITION | OBJECT
-        directive @tag(name: String!) on FIELD_DEFINITION | OBJECT | INTERFACE | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
-        directive @extends on OBJECT | INTERFACE
-        directive @shareable on FIELD_DEFINITION | OBJECT
-        directive @inaccessible on FIELD_DEFINITION | OBJECT | INTERFACE | UNION | ARGUMENT_DEFINITION | SCALAR | ENUM | ENUM_VALUE | INPUT_OBJECT | INPUT_FIELD_DEFINITION
-        directive @override(from: String!) on FIELD_DEFINITION
-        directive @composeDirective(name: String!) on SCHEMA
-        directive @link(url: String!, as: String, for: Purpose, import: [String!]) on SCHEMA
-        
-        enum Purpose {
-          SECURITY
-          EXECUTION
-        }
-      `
-      schemaWithDirectives = `${federationDirectives}\n\n${mergedSchemasString}`
-    }
-
-    const mergedSchemas = mergeTypeDefs([schemaWithDirectives], {
+    const mergedSchemas = mergeTypeDefs([schemaStrings.join('\n\n')], {
       throwOnConflict: true,
       commentDescriptions: true,
       sort: true,
     })
 
-    const schema = buildSchema(mergedSchemas)
+    const schema = federationEnabled
+      ? buildSubgraphSchema([{
+          typeDefs: parse(mergedSchemas),
+        }])
+      : buildSchema(mergedSchemas)
 
     const data = await generateTypes(app.options.graphql?.framework || 'graphql-yoga', schema, app.options.graphql ?? {})
 
@@ -398,7 +377,12 @@ async function generateMainClientTypes(nitro: Nitro) {
   }
 
   const graphqlString = readFileSync(schemaFilePath, 'utf-8')
-  const schema = buildSchema(graphqlString)
+  const federationEnabled = nitro.options.graphql?.federation?.enabled === true
+  const schema = federationEnabled
+    ? buildSubgraphSchema([{
+        typeDefs: parse(graphqlString),
+      }])
+    : buildSchema(graphqlString)
 
   const types = await generateClientTypes(schema, loadDocs, nitro.options.graphql?.codegen?.client ?? {}, nitro.options.graphql?.codegen?.clientSDK ?? {})
   if (types === false) {
