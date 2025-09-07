@@ -3,12 +3,10 @@ import packageJson from './package.json' with { type: 'json' }
 
 const { dependencies, peerDependencies } = packageJson
 
-const playground = './playground'
-const playgroundNuxt = './playground-nuxt'
+const playgrounds = './playgrounds'
 
 const thisPath = import.meta.url
-const playgroundPath = new URL(playground, thisPath).pathname
-const playgroundNuxtPath = new URL(playgroundNuxt, thisPath).pathname
+const playgroundPath = new URL(playgrounds, thisPath).pathname
 
 export default defineConfig({
   entry: [
@@ -50,6 +48,5 @@ export default defineConfig({
   ],
   ignoreWatch: [
     playgroundPath,
-    playgroundNuxtPath,
   ],
 })
