@@ -63,7 +63,7 @@ export function startServerAndCreateH3Handler<TContext extends BaseContext>(
   return eventHandler({
     handler: async (event) => {
       const apolloServer = typeof server === 'function' ? server() : server
-      
+
       // Only call start if the server hasn't already been started
       if (!options?.serverAlreadyStarted) {
         apolloServer.startInBackgroundHandlingStartupErrorsByLoggingAndFailingAllRequests()
