@@ -1,0 +1,20 @@
+{
+  "name": "nitro-graphql-apollo",
+  "private": true,
+  "scripts": {
+    "dev": "nitro dev",
+    "build": "nitro build",
+    "preview": "node .output/server/index.mjs"
+  },
+  "dependencies": {
+    "@apollo/server": "catalog:",
+    "@apollo/utils.withrequired": "catalog:",
+    "@as-integrations/h3": "catalog:",
+    "graphql": "catalog:",
+    "nitro-graphql": "link:../../",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "nitropack": "catalog:"
+  }
+}
