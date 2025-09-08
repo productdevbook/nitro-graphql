@@ -42,6 +42,7 @@ export default defineConfig({
     '@nuxt/schema',
     '@apollo/server',
     '@apollo/server/plugin/landingPage/default',
+    'nitro-graphql/utils/apollo',
     '#graphql/server',
     ...Object.keys(dependencies || {}),
     ...Object.keys(peerDependencies || {}),

@@ -35,6 +35,7 @@ export interface H3ContextFunctionArgument {
 export interface H3HandlerOptions<TContext extends BaseContext> {
   context?: ContextFunction<[H3ContextFunctionArgument], TContext>
   websocket?: Partial<Hooks>
+  serverAlreadyStarted?: boolean
 }
 
 export function startServerAndCreateH3Handler(
@@ -62,7 +63,11 @@ export function startServerAndCreateH3Handler<TContext extends BaseContext>(
   return eventHandler({
     handler: async (event) => {
       const apolloServer = typeof server === 'function' ? server() : server
-      apolloServer.startInBackgroundHandlingStartupErrorsByLoggingAndFailingAllRequests()
+
+      // Only call start if the server hasn't already been started
+      if (!options?.serverAlreadyStarted) {
+        apolloServer.startInBackgroundHandlingStartupErrorsByLoggingAndFailingAllRequests()
+      }
 
       // Apollo-server doesn't handle OPTIONS calls, so we have to do this on our own
       // https://github.com/apollographql/apollo-server/blob/fa82c1d5299c4803f9ef8ae7fa2e367eadd8c0e6/packages/server/src/runHttpQuery.ts#L182-L192

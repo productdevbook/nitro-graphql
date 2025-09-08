@@ -12,7 +12,7 @@ import { consola } from 'consola'
 import defu from 'defu'
 import { parse } from 'graphql'
 import { defineEventHandler } from 'h3'
-import { startServerAndCreateH3Handler } from '../utils/apollo'
+import { startServerAndCreateH3Handler } from 'nitro-graphql/utils/apollo'
 
 // Conditional imports for federation support - use dynamic import inside function
 let buildSubgraphSchema: any = null
@@ -97,6 +97,7 @@ async function createMergedSchema() {
 }
 
 let apolloServer: ApolloServer<BaseContext> | null = null
+let serverStarted = false
 
 async function createApolloServer() {
   if (!apolloServer) {
@@ -109,6 +110,12 @@ async function createApolloServer() {
         ApolloServerPluginLandingPageLocalDefault({ embed: true }),
       ],
     }, importedConfig))
+
+    // Start the server only once after creation
+    if (!serverStarted) {
+      await apolloServer.start()
+      serverStarted = true
+    }
   }
   return apolloServer
 }
@@ -124,6 +131,7 @@ export default defineEventHandler(async (event) => {
   const server = await serverPromise
   const h3Handler = startServerAndCreateH3Handler(server, {
     context: async () => ({ event }),
+    serverAlreadyStarted: true,
   })
 
   return h3Handler(event)

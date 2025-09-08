@@ -1,11 +1,12 @@
 packages:
   - playgrounds/*
+
 catalog:
   '@antfu/eslint-config': ^5.2.2
-  '@apollo/server': ^5.0.0
+  '@apollo/server': 5.0.0
   '@apollo/subgraph': ^2.11.2
   '@apollo/utils.withrequired': ^3.0.0
-  '@as-integrations/h3': ^2.0.0
+  '@as-integrations/h3': 2.0.0
   '@graphql-codegen/core': ^4.0.2
   '@graphql-codegen/import-types-preset': ^3.0.1
   '@graphql-codegen/typescript': ^4.1.6
@@ -30,7 +31,7 @@ catalog:
   crossws: 0.3.5
   defu: ^6.1.4
   eslint: ^9.34.0
-  graphql: ^16.11.0
+  graphql: 16.11.0
   graphql-config: ^5.1.5
   graphql-scalars: ^1.24.2
   graphql-yoga: ^5.15.1
