@@ -2,50 +2,50 @@ packages:
   - playgrounds/*
 
 catalog:
-  '@antfu/eslint-config': ^5.2.2
+  '@antfu/eslint-config': ^5.4.1
   '@apollo/server': 5.0.0
   '@apollo/subgraph': ^2.11.2
   '@apollo/utils.withrequired': ^3.0.0
   '@as-integrations/h3': 2.0.0
-  '@graphql-codegen/core': ^4.0.2
+  '@graphql-codegen/core': ^5.0.0
   '@graphql-codegen/import-types-preset': ^3.0.1
-  '@graphql-codegen/typescript': ^4.1.6
+  '@graphql-codegen/typescript': ^5.0.1
   '@graphql-codegen/typescript-generic-sdk': ^4.0.2
-  '@graphql-codegen/typescript-operations': ^4.6.1
-  '@graphql-codegen/typescript-resolvers': ^4.5.2
-  '@graphql-tools/graphql-file-loader': ^8.1.0
+  '@graphql-codegen/typescript-operations': ^5.0.1
+  '@graphql-codegen/typescript-resolvers': ^5.0.1
+  '@graphql-tools/graphql-file-loader': ^8.1.2
   '@graphql-tools/load': ^8.1.2
   '@graphql-tools/load-files': ^7.0.1
   '@graphql-tools/merge': ^9.1.1
   '@graphql-tools/schema': ^10.0.25
-  '@graphql-tools/url-loader': ^8.0.33
+  '@graphql-tools/url-loader': ^9.0.0
   '@graphql-tools/utils': ^10.9.1
-  '@nuxt/kit': ^4.1.0
-  '@nuxt/schema': ^4.1.0
+  '@nuxt/kit': ^4.1.2
+  '@nuxt/schema': ^4.1.2
   '@nuxtjs/tailwindcss': 7.0.0-beta.0
-  '@types/node': ^22.18.1
+  '@types/node': ^24.6.2
   bumpp: ^10.2.3
   changelogen: ^0.6.2
   chokidar: ^4.0.3
   consola: ^3.4.2
   crossws: 0.3.5
   defu: ^6.1.4
-  eslint: ^9.34.0
+  eslint: ^9.37.0
   graphql: 16.11.0
   graphql-config: ^5.1.5
   graphql-scalars: ^1.24.2
-  graphql-yoga: ^5.15.1
+  graphql-yoga: ^5.16.0
   h3: 1.15.3
   knitwork: ^1.2.0
-  nitropack: ^2.12.5
-  nuxt: ^4.1.0
+  nitropack: ^2.12.6
+  nuxt: ^4.1.2
   ohash: ^2.0.11
-  oxc-parser: ^0.86.0
+  oxc-parser: ^0.93.0
   pathe: ^2.0.3
-  tailwindcss: ^4.1.13
-  tinyglobby: ^0.2.14
-  tsdown: ^0.14.2
-  typescript: ^5.9.2
-  vue: ^3.5.21
+  tailwindcss: ^4.1.14
+  tinyglobby: ^0.2.15
+  tsdown: ^0.15.6
+  typescript: ^5.9.3
+  vue: ^3.5.22
   vue-router: ^4.5.1
-  zod: ^4.1.5
+  zod: ^4.1.11
