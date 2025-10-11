@@ -35,9 +35,9 @@ catalog:
   graphql-config: ^5.1.5
   graphql-scalars: ^1.24.2
   graphql-yoga: ^5.16.0
-  h3: 1.15.3
+  h3: ^2.0.1-rc.2
   knitwork: ^1.2.0
-  nitropack: ^2.12.6
+  nitro: ^3.0.1-alpha.0
   nuxt: ^4.1.2
   ohash: ^2.0.11
   oxc-parser: ^0.93.0

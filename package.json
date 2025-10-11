@@ -76,8 +76,8 @@
     "@apollo/utils.withrequired": "^3.0.0",
     "@as-integrations/h3": "^2.0.0",
     "graphql": "^16.11.0",
-    "h3": "^1.15.3",
-    "nitropack": "^2.11.13"
+    "h3": "^2.0.1-rc.2",
+    "nitro": "^3.0.1-alpha.0"
   },
   "peerDependenciesMeta": {
     "@apollo/server": {
@@ -128,7 +128,7 @@
     "graphql": "catalog:",
     "graphql-yoga": "catalog:",
     "h3": "catalog:",
-    "nitropack": "catalog:",
+    "nitro": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"
   },
