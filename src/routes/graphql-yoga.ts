@@ -11,7 +11,7 @@ import { consola } from 'consola'
 import defu from 'defu'
 import { parse } from 'graphql'
 import { createYoga } from 'graphql-yoga'
-import { defineEventHandler, toWebRequest } from 'h3'
+import { defineEventHandler } from 'h3'
 
 // Conditional imports for federation support - use dynamic import inside function
 let buildSubgraphSchema: any = null
@@ -127,8 +127,7 @@ export default defineEventHandler(async (event) => {
       renderGraphiQL: () => apolloSandboxHtml,
     }, importedConfig))
   }
-  const request = toWebRequest(event)
-  const response = await yoga.handleRequest(request, event)
+  const response = await yoga.handleRequest(event.req, event.context)
 
   return new Response(response.body, response)
 })

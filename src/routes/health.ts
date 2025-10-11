@@ -1,11 +1,12 @@
-import { defineEventHandler, setResponseStatus } from 'h3'
-import { useRuntimeConfig } from 'nitropack/runtime'
+import { defineEventHandler } from 'h3'
+import { useRuntimeConfig } from 'nitro/runtime'
 
 export default defineEventHandler(async (event) => {
   const runtime = useRuntimeConfig()
 
   if (!runtime.graphql || !runtime.graphql.endpoint?.graphql) {
-    setResponseStatus(event, 404)
+    event.res.status = 404
+    event.res.statusText = 'Not Found'
     return {
       status: 'error',
       message: 'GraphQL health check endpoint is not configured',
@@ -37,7 +38,8 @@ export default defineEventHandler(async (event) => {
     throw new Error('Invalid response from GraphQL server')
   }
   catch (error) {
-    setResponseStatus(event, 503)
+    event.res.status = 503
+    event.res.statusText = 'Service Unavailable'
     return {
       status: 'unhealthy',
       message: (error instanceof Error ? error.message : 'GraphQL server is not responding'),
