@@ -1,5 +1,6 @@
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils'
 import { defaultFieldResolver } from 'graphql'
+import { defineDirective } from 'nitro-graphql/utils/define'
 
 /**
  * @format directive - Apply multiple formatting operations

@@ -1,5 +1,6 @@
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils'
 import { defaultFieldResolver, GraphQLError } from 'graphql'
+import { defineDirective } from 'nitro-graphql/utils/define'
 
 // Simple in-memory rate limiter
 const rateLimitStore = new Map<string, { count: number, resetAt: number }>()

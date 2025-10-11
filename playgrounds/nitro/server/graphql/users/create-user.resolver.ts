@@ -1,3 +1,4 @@
+import { defineResolver } from 'nitro-graphql/utils/define'
 import { generateId, users } from '../data'
 
 export const createUserMutation = defineResolver({
