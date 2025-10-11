@@ -1,4 +1,4 @@
-import type { Nitro } from 'nitropack'
+import type { Nitro } from 'nitro/types'
 
 import { readFile } from 'node:fs/promises'
 import { parse } from 'graphql'

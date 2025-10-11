@@ -34,7 +34,7 @@ export interface GenImport {
   options?: ESMCodeGenOptions
 }
 
-declare module 'nitropack/types' {
+declare module 'nitro/types' {
   interface Nitro {
     scanSchemas: string[]
     scanDocuments: string[]
@@ -54,7 +54,7 @@ declare module 'nitropack/types' {
   }
 }
 
-declare module 'nitropack' {
+declare module 'nitro/types' {
   interface NitroOptions {
     graphql?: NitroGraphQLOptions
   }

@@ -1,4 +1,4 @@
-import type { Nitro } from 'nitropack'
+import type { Nitro } from 'nitro/types'
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { buildSubgraphSchema } from '@apollo/subgraph'

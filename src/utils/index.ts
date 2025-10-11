@@ -1,4 +1,4 @@
-import type { Nitro } from 'nitropack'
+import type { Nitro } from 'nitro/types'
 import type { GenImport } from '../types'
 import { readFile } from 'node:fs/promises'
 import { hash } from 'ohash'
@@ -10,6 +10,7 @@ export const GLOB_SCAN_PATTERN = '**/*.{graphql,gql,js,mjs,cjs,ts,mts,cts,tsx,js
 
 // Re-export directive parser utilities
 export { directiveParser, generateDirectiveSchema, generateDirectiveSchemas } from './directive-parser'
+
 interface FileInfo { path: string, fullPath: string }
 
 /**

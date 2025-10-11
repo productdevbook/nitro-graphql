@@ -27,9 +27,8 @@ export default defineConfig({
   unbundle: true,
   external: [
     'nitro-graphql',
-    'nitropack',
-    'nitropack/types',
-    'nitropack/kit',
+    'nitro',
+    'nitro/types',
     'graphql',
     'graphql-yoga',
     'h3',

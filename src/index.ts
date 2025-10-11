@@ -1,4 +1,4 @@
-import type { Nitro } from 'nitropack/types'
+import type { Nitro } from 'nitro/types'
 import type { NitroGraphQLOptions } from './types'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -6,7 +6,6 @@ import { watch } from 'chokidar'
 
 import consola from 'consola'
 import defu from 'defu'
-import { defineNitroModule } from 'nitropack/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { rollupConfig } from './rollup'
 import {
@@ -221,7 +220,7 @@ export default defineNitroModule({
       new URL('routes', import.meta.url),
     )
     // Main GraphQL endpoint
-    const methods = ['get', 'post', 'options'] as const
+    const methods = ['GET', 'POST', 'OPTIONS'] as const
     if (nitro.options.graphql?.framework === 'graphql-yoga') {
       // Register the GraphQL Yoga handler for all methods
       for (const method of methods) {
@@ -248,7 +247,7 @@ export default defineNitroModule({
     nitro.options.handlers.push({
       route: nitro.options.runtimeConfig.graphql?.endpoint?.healthCheck || '/api/graphql/health',
       handler: join(runtime, 'health'),
-      method: 'get',
+      method: 'GET',
     })
 
     // Auto-import utilities
