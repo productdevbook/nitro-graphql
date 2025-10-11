@@ -1,6 +1,8 @@
 // Example context definition - please change it to your needs
 // import type { Database } from '../utils/useDb'
 
+import type { H3Event } from 'h3'
+
 declare module 'h3' {
   interface H3EventContext {
     event: H3Event

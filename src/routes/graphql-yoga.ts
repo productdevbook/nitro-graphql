@@ -127,7 +127,7 @@ export default defineEventHandler(async (event) => {
       renderGraphiQL: () => apolloSandboxHtml,
     }, importedConfig))
   }
-  const response = await yoga.handleRequest(event.req, event.context)
+  const response = await yoga.handleRequest(event.req, event as any)
 
   return new Response(response.body, response)
 })
