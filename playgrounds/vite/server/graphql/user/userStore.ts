@@ -1,9 +1,9 @@
 // Mock user database - replace with actual database
 export const mockUsers: Array<{
-  id: string;
-  email: string;
-  name?: string;
-  createdAt: string;
+  id: string
+  email: string
+  name?: string
+  createdAt: string
 }> = [
   {
     id: '1',
@@ -17,4 +17,4 @@ export const mockUsers: Array<{
     name: 'Jane Smith',
     createdAt: new Date().toISOString(),
   },
-];
+]

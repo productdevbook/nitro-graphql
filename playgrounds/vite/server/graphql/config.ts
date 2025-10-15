@@ -2,7 +2,7 @@
 // import * as tables from '../drizzle/schema/index'
 // import { useDatabase } from '../utils/useDb'
 
-import { defineGraphQLConfig } from "nitro-graphql/utils/define";
+import { defineGraphQLConfig } from 'nitro-graphql/utils/define'
 
 export default defineGraphQLConfig({
 // graphql-yoga example config
