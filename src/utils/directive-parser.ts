@@ -32,14 +32,12 @@ export class DirectiveParser {
       })
 
       if (result.errors.length > 0) {
-        console.warn(`Parse errors in ${filePath}:`, result.errors.map((e: any) => e.message))
         return []
       }
 
       return this.extractDirectiveDefinitions(result.program)
     }
-    catch (error) {
-      console.warn(`Failed to parse ${filePath} with oxc:`, error)
+    catch {
       return []
     }
   }

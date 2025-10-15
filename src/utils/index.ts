@@ -40,7 +40,7 @@ export function getLayerAppDirectories(nitro: Nitro): string[] {
 /**
  * Generate layer-aware ignore patterns for auto-generated files
  */
-export function generateLayerIgnorePatterns(nitro: Nitro): string[] {
+export function generateLayerIgnorePatterns(): string[] {
   const patterns: string[] = []
 
   // _directives.graphql is now written to buildDir, so no longer needs to be ignored
@@ -69,7 +69,7 @@ export async function scanGraphql(nitro: Nitro) {
   const layerServerDirs = getLayerServerDirectories(nitro)
   const layerFiles = await Promise.all(
     layerServerDirs.map(layerServerDir =>
-      scanDir(nitro, layerServerDir, 'graphql', '**/*.{graphql,gql}')
+      scanDir(nitro, layerServerDir, 'graphql', '**/*.{graphql,gql}'),
     ),
   ).then(r => r.flat())
 
@@ -78,7 +78,8 @@ export async function scanGraphql(nitro: Nitro) {
   const seenPaths = new Set<string>()
   return allFiles
     .filter((file) => {
-      if (seenPaths.has(file.fullPath)) return false
+      if (seenPaths.has(file.fullPath))
+        return false
       seenPaths.add(file.fullPath)
       return true
     })
@@ -94,7 +95,7 @@ export async function scanResolvers(nitro: Nitro) {
   const layerServerDirs = getLayerServerDirectories(nitro)
   const layerFiles = await Promise.all(
     layerServerDirs.map(layerServerDir =>
-      scanDir(nitro, layerServerDir, 'graphql', '**/*.resolver.{ts,js}')
+      scanDir(nitro, layerServerDir, 'graphql', '**/*.resolver.{ts,js}'),
     ),
   ).then(r => r.flat())
 
@@ -102,7 +103,8 @@ export async function scanResolvers(nitro: Nitro) {
   const allFiles = [...regularFiles, ...layerFiles]
   const seenPaths = new Set<string>()
   const files = allFiles.filter((file) => {
-    if (seenPaths.has(file.fullPath)) return false
+    if (seenPaths.has(file.fullPath))
+      return false
     seenPaths.add(file.fullPath)
     return true
   })
@@ -122,7 +124,6 @@ export async function scanResolvers(nitro: Nitro) {
         && node.declaration
         && node.declaration.type === 'VariableDeclaration'
       ) {
-        // TODO: if there is no cost, there is a mistake
         for (const decl of node.declaration.declarations) {
           if (decl.type === 'VariableDeclarator' && decl.init && decl.id.type === 'Identifier') {
             if (decl.init && decl.init.type === 'CallExpression') {
@@ -195,7 +196,7 @@ export async function scanDirectives(nitro: Nitro) {
   const layerServerDirs = getLayerServerDirectories(nitro)
   const layerFiles = await Promise.all(
     layerServerDirs.map(layerServerDir =>
-      scanDir(nitro, layerServerDir, 'graphql', '**/*.directive.{ts,js}')
+      scanDir(nitro, layerServerDir, 'graphql', '**/*.directive.{ts,js}'),
     ),
   ).then(r => r.flat())
 
@@ -203,7 +204,8 @@ export async function scanDirectives(nitro: Nitro) {
   const allFiles = [...regularFiles, ...layerFiles]
   const seenPaths = new Set<string>()
   const files = allFiles.filter((file) => {
-    if (seenPaths.has(file.fullPath)) return false
+    if (seenPaths.has(file.fullPath))
+      return false
     seenPaths.add(file.fullPath)
     return true
   })
@@ -246,11 +248,6 @@ export async function scanDirectives(nitro: Nitro) {
   return exportName
 }
 
-export async function scanTypeDefs(nitro: Nitro) {
-  const files = await scanFiles(nitro, 'graphql', '**/*.typedef.{ts,js}')
-  return files.map(f => f.fullPath)
-}
-
 export async function scanSchemas(nitro: Nitro) {
   // Scan from serverDir
   const serverDirRelative = relative(nitro.options.rootDir, nitro.graphql.serverDir)
@@ -260,7 +257,7 @@ export async function scanSchemas(nitro: Nitro) {
   const layerServerDirs = getLayerServerDirectories(nitro)
   const layerFiles = await Promise.all(
     layerServerDirs.map(layerServerDir =>
-      scanDir(nitro, layerServerDir, 'graphql', '**/*.graphql')
+      scanDir(nitro, layerServerDir, 'graphql', '**/*.graphql'),
     ),
   ).then(r => r.flat())
 
@@ -269,7 +266,8 @@ export async function scanSchemas(nitro: Nitro) {
   const seenPaths = new Set<string>()
   return allFiles
     .filter((file) => {
-      if (seenPaths.has(file.fullPath)) return false
+      if (seenPaths.has(file.fullPath))
+        return false
       seenPaths.add(file.fullPath)
       return true
     })
@@ -409,30 +407,6 @@ export function validateExternalServices(services: unknown[]): string[] {
   }
 
   return errors
-}
-
-async function scanFiles(nitro: Nitro, name: string, globPattern = GLOB_SCAN_PATTERN): Promise<FileInfo[]> {
-  // Scan regular directories
-  const regularFiles = await Promise.all(
-    nitro.options.scanDirs.map(dir => scanDir(nitro, dir, name, globPattern)),
-  ).then(r => r.flat())
-
-  // Scan layer directories for Nuxt projects
-  const layerDirectories = getLayerDirectories(nitro)
-  const layerFiles = await Promise.all(
-    layerDirectories.map(layerDir => scanDir(nitro, layerDir, `server/${name}`, globPattern)),
-  ).then(r => r.flat())
-
-  // Remove duplicates based on fullPath
-  const allFiles = [...regularFiles, ...layerFiles]
-  const seenPaths = new Set<string>()
-  return allFiles.filter((file) => {
-    if (seenPaths.has(file.fullPath)) {
-      return false
-    }
-    seenPaths.add(file.fullPath)
-    return true
-  })
 }
 
 async function scanDir(

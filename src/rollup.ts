@@ -73,30 +73,23 @@ export async function rollupConfig(app: Nitro) {
 }
 
 export function virtualSchemas(app: Nitro) {
-  const getSchemas = () => {
-    const schemas: string[] = [
-      ...app.scanSchemas,
-      ...(app.options.graphql?.typedefs ?? []),
-    ]
-
-    return schemas
-  }
+  const getSchemas = () => [
+    ...app.scanSchemas,
+    ...(app.options.graphql?.typedefs ?? []),
+  ]
 
   app.options.virtual ??= {}
   app.options.virtual['#nitro-internal-virtual/server-schemas'] = () => {
     const imports = getSchemas()
 
-    const code = /* js */`
+    const code = `
 ${imports
   .map(handler => `import ${getImportId(handler)} from '${handler}';`)
   .join('\n')}
 
 export const schemas = [
 ${imports
-  .map(
-    h =>
-      /* js */ `{ def: ${getImportId(h)} }`,
-  )
+  .map(h => `{ def: ${getImportId(h)} }`)
   .join(',\n')}
 ];
     `
@@ -106,25 +99,14 @@ ${imports
 }
 
 export function virtualResolvers(app: Nitro) {
-  const getResolvers = () => {
-    const resolvers = [
-      ...app.scanResolvers,
-      // ...(app.options.graphql?.resolvers ?? []),
-    ]
-
-    return resolvers
-  }
+  const getResolvers = () => [...app.scanResolvers]
 
   app.options.virtual ??= {}
   app.options.virtual['#nitro-internal-virtual/server-resolvers'] = () => {
     const imports = getResolvers()
-    //     const code = /* js */`
-    const importsContent = [
-      ...imports.map(({ specifier, imports, options }) => {
-        // https://github.com/unjs/knitwork/pull/113 extendiso support (silgi.options.typescript.removeFileExtension)
-        return genImport(specifier, imports, options)
-      }),
-    ]
+    const importsContent = imports.map(({ specifier, imports, options }) =>
+      genImport(specifier, imports, options),
+    )
 
     const data = imports
       .map(({ imports }) =>
@@ -134,37 +116,26 @@ export function virtualResolvers(app: Nitro) {
       .join(',\n')
 
     const content = [
+      ...importsContent,
       'export const resolvers = [',
       data,
       ']',
       '',
     ]
 
-    content.unshift(...importsContent)
-
-    const code = content.join('\n')
-
-    return code
+    return content.join('\n')
   }
 }
 
 export function virtualDirectives(app: Nitro) {
-  const getDirectives = () => {
-    const directives = [
-      ...(app.scanDirectives || []),
-    ]
-
-    return directives
-  }
+  const getDirectives = () => app.scanDirectives || []
 
   app.options.virtual ??= {}
   app.options.virtual['#nitro-internal-virtual/server-directives'] = () => {
     const imports = getDirectives()
-    const importsContent = [
-      ...imports.map(({ specifier, imports, options }) => {
-        return genImport(specifier, imports, options)
-      }),
-    ]
+    const importsContent = imports.map(({ specifier, imports, options }) =>
+      genImport(specifier, imports, options),
+    )
 
     const data = imports
       .map(({ imports }) =>
@@ -174,17 +145,14 @@ export function virtualDirectives(app: Nitro) {
       .join(',\n')
 
     const content = [
+      ...importsContent,
       'export const directives = [',
       data,
       ']',
       '',
     ]
 
-    content.unshift(...importsContent)
-
-    const code = content.join('\n')
-
-    return code
+    return content.join('\n')
   }
 }
 

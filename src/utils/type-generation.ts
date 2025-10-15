@@ -36,23 +36,34 @@ export * from './default/ofetch'
   }
 }
 
-function generateNuxtOfetchClient(clientDir: string, serviceName: string = 'default') {
+function generateOfetchClient(
+  clientDir: string,
+  serviceName: string,
+  endpoint: string,
+  isDefault = false,
+) {
   const serviceDir = resolve(clientDir, serviceName)
   const ofetchPath = resolve(serviceDir, 'ofetch.ts')
 
-  // Create service directory if it doesn't exist
   if (!existsSync(serviceDir)) {
     mkdirSync(serviceDir, { recursive: true })
   }
 
-  // Only create ofetch.ts if it doesn't exist
-  if (!existsSync(ofetchPath)) {
-    const ofetchContent = `// This file is auto-generated once by nitro-graphql for quick start
+  if (existsSync(ofetchPath)) {
+    return // Don't overwrite existing files
+  }
+
+  const capitalizedServiceName = serviceName.charAt(0).toUpperCase() + serviceName.slice(1)
+  const functionName = isDefault ? 'createGraphQLClient' : `create${capitalizedServiceName}GraphQLClient`
+  const exportName = isDefault ? '$sdk' : `$${serviceName}Sdk`
+  const typeImports = isDefault ? 'Requester' : 'Sdk, Requester'
+
+  const ofetchContent = `// This file is auto-generated once by nitro-graphql for quick start
 // You can modify this file according to your needs
-import type { Requester } from './sdk'
+import type { ${typeImports} } from './sdk'
 import { getSdk } from './sdk'
 
-export function createGraphQLClient(endpoint: string): Requester {
+export function ${functionName}(endpoint: string${isDefault ? '' : ` = '${endpoint}'`}): Requester {
   return async <R>(doc: string, vars?: any): Promise<R> => {
     const headers = import.meta.server ? useRequestHeaders() : undefined
 
@@ -69,48 +80,9 @@ export function createGraphQLClient(endpoint: string): Requester {
   }
 }
 
-export const $sdk = getSdk(createGraphQLClient('/api/graphql'))`
-    writeFileSync(ofetchPath, ofetchContent, 'utf-8')
-  }
-}
+export const ${exportName}${isDefault ? '' : ': Sdk'} = getSdk(${functionName}(${isDefault ? '\'/api/graphql\'' : ''}))`
 
-function generateExternalOfetchClient(clientDir: string, serviceName: string, endpoint: string) {
-  const serviceDir = resolve(clientDir, serviceName)
-  const ofetchPath = resolve(serviceDir, 'ofetch.ts')
-
-  // Create service directory if it doesn't exist
-  if (!existsSync(serviceDir)) {
-    mkdirSync(serviceDir, { recursive: true })
-  }
-
-  // Only create ofetch file if it doesn't exist
-  if (!existsSync(ofetchPath)) {
-    const capitalizedServiceName = serviceName.charAt(0).toUpperCase() + serviceName.slice(1)
-    const ofetchContent = `// This file is auto-generated once by nitro-graphql for quick start
-// You can modify this file according to your needs
-import type { Sdk, Requester } from './sdk'
-import { getSdk } from './sdk'
-
-export function create${capitalizedServiceName}GraphQLClient(endpoint: string = '${endpoint}'): Requester {
-  return async <R>(doc: string, vars?: any): Promise<R> => {
-    const headers = import.meta.server ? useRequestHeaders() : undefined
-
-    const result = await $fetch(endpoint, {
-      method: 'POST',
-      body: { query: doc, variables: vars },
-      headers: {
-        'Content-Type': 'application/json',
-        ...headers,
-      },
-    })
-
-    return result as R
-  }
-}
-
-export const $${serviceName}Sdk: Sdk = getSdk(create${capitalizedServiceName}GraphQLClient())`
-    writeFileSync(ofetchPath, ofetchContent, 'utf-8')
-  }
+  writeFileSync(ofetchPath, ofetchContent, 'utf-8')
 }
 
 /**
@@ -393,7 +365,7 @@ async function generateMainClientTypes(nitro: Nitro) {
   const defaultServiceDir = resolve(nitro.graphql.clientDir, 'default')
   const sdkTypesPath = resolve(defaultServiceDir, 'sdk.ts')
 
-  mkdirSync(dirname(clientTypesPath), { recursive: true})
+  mkdirSync(dirname(clientTypesPath), { recursive: true })
   writeFileSync(clientTypesPath, types.types, 'utf-8')
   mkdirSync(defaultServiceDir, { recursive: true })
 
@@ -409,8 +381,7 @@ async function generateMainClientTypes(nitro: Nitro) {
 
   // Generate ofetch client for Nuxt framework
   if (nitro.options.framework?.name === 'nuxt') {
-    // Always generate default service ofetch client (only if it doesn't exist)
-    generateNuxtOfetchClient(nitro.graphql.clientDir, 'default')
+    generateOfetchClient(nitro.graphql.clientDir, 'default', '/api/graphql', true)
 
     const externalServices = nitro.options.graphql?.externalServices || []
     generateGraphQLIndexFile(nitro.graphql.clientDir, externalServices)
@@ -480,7 +451,7 @@ async function generateExternalServicesTypes(nitro: Nitro) {
 
       // Generate ofetch client for Nuxt framework
       if (nitro.options.framework?.name === 'nuxt') {
-        generateExternalOfetchClient(nitro.graphql.clientDir, service.name, service.endpoint)
+        generateOfetchClient(nitro.graphql.clientDir, service.name, service.endpoint, false)
       }
 
       consola.success(`[graphql:${service.name}] External service types generated successfully`)

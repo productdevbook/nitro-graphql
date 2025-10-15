@@ -6,7 +6,7 @@ import { watch } from 'chokidar'
 import consola from 'consola'
 
 import defu from 'defu'
-import { dirname, join, normalize, relative, resolve } from 'pathe'
+import { dirname, join, relative, resolve } from 'pathe'
 import { rollupConfig } from './rollup'
 import {
   generateDirectiveSchemas,
