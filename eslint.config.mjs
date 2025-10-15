@@ -13,6 +13,7 @@ const nitro = {
     '**/vfs',
     'README.md',
     'CONTRIBUTING.md',
+    'CLAUDE.md',
   ],
 }
 export default antfu({

@@ -16,7 +16,7 @@ export async function rollupConfig(app: Nitro) {
   app.hooks.hook('rollup:before', (nitro, rollupConfig) => {
     rollupConfig.plugins = rollupConfig.plugins || []
     const {
-      include = /\.(graphql|gql)$/i,
+      include = /\.(?:graphql|gql)$/i,
       exclude,
       validate = false,
     } = app.options.graphql?.loader || {}
@@ -24,11 +24,10 @@ export async function rollupConfig(app: Nitro) {
     if (Array.isArray(rollupConfig.plugins)) {
       rollupConfig.plugins.push({
         name: 'nitro-graphql',
-        enforce: 'pre', // Run before other plugins to prevent Vite from transforming GraphQL files
 
         resolveId(id) {
           // Mark GraphQL files as external to prevent Vite SSR transformation
-          if (/\.(graphql|gql)$/i.test(id)) {
+          if (/\.(?:graphql|gql)$/i.test(id)) {
             return null // Let this plugin handle it
           }
         },
@@ -61,7 +60,6 @@ export async function rollupConfig(app: Nitro) {
 
       rollupConfig.plugins.push({
         name: 'nitro-graphql-watcher',
-        enforce: 'pre', // Run early to ensure file watching is set up correctly
         async buildStart() {
           const graphqlFiles = await scanGraphql(nitro)
 
