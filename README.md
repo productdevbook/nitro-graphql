@@ -65,6 +65,33 @@ export default defineNitroConfig({
 </details>
 
 <details>
+<summary>⚡ <strong>Vite + Nitro Project</strong></summary>
+
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite'
+import { nitro } from 'nitro/vite'
+import { graphql } from 'nitro-graphql/vite'
+
+export default defineConfig({
+  plugins: [
+    graphql(), // ⚠️ Must be before nitro()
+    nitro(),
+  ],
+  nitro: {
+    modules: ['nitro-graphql'],
+    graphql: {
+      framework: 'graphql-yoga',
+    },
+  },
+})
+```
+
+> **⚠️ Important**: The `graphql()` plugin must be placed **before** `nitro()` to prevent Vite from trying to parse GraphQL files as JavaScript.
+
+</details>
+
+<details>
 <summary>🟢 <strong>Nuxt Project</strong></summary>
 
 ```ts
@@ -125,6 +152,7 @@ Try these working examples:
 | Example | Description | Demo |
 |---------|-------------|------|
 | [**Nitro Basic**](./playgrounds/nitro/) | Standalone Nitro with GraphQL | `pnpm playground:nitro` |
+| [**Vite + Nitro**](./playgrounds/vite/) | Vite with Nitro GraphQL integration | `cd playgrounds/vite && pnpm dev` |
 | [**Nuxt Integration**](./playgrounds/nuxt/) | Full Nuxt app with client types | `pnpm playground:nuxt` |
 | [**Apollo Federation**](./playgrounds/federation/) | Federated GraphQL services | `pnpm playground:federation` |
 
@@ -356,6 +384,21 @@ server/
 **Import errors**
 - ✅ Use correct path: `nitro-graphql/utils/define`
 - ✅ Use named exports in resolvers
+
+**Vite: "Parse failure: Expected ';', '}' or <eof>" on GraphQL files**
+- ✅ Add `graphql()` plugin from `nitro-graphql/vite`
+- ✅ Ensure `graphql()` is placed **before** `nitro()` in plugins array
+- ✅ Example:
+  ```ts
+  import { graphql } from 'nitro-graphql/vite'
+
+  export default defineConfig({
+    plugins: [
+      graphql(), // ← Must be first
+      nitro(),
+    ]
+  })
+  ```
 
 </details>
 
