@@ -55,23 +55,12 @@ export async function rollupConfig(app: Nitro) {
         name: 'nitro-graphql-watcher',
         async buildStart() {
           const graphqlFiles = await scanGraphql(nitro)
-          // const clientGraphqlFiles = await scanClient(nitro)
 
           for (const file of graphqlFiles) {
             this.addWatchFile(file)
           }
 
-          // for (const file of clientGraphqlFiles) {
-          //   this.addWatchFile(file)
-          // }
-
-          // 2. Directory watching (partial çalışır)
-          this.addWatchFile(app.graphql.serverDir)
-
-          // 3. Client GraphQL files
-          // if (app.options.framework.name === 'nuxt') {
-          //   this.addWatchFile('app/graphql/')
-          // }
+          // Individual file watching is sufficient, no need to watch entire directories
         },
       })
     }

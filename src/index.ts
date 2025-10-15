@@ -48,7 +48,7 @@ export default defineNitroModule({
       buildDir: '',
       watchDirs: [],
       clientDir: '',
-      serverDir: resolve(nitro.options.srcDir, 'graphql'),
+      serverDir: resolve(nitro.options.rootDir, 'server', 'graphql'),
       dir: {
         build: relative(nitro.options.rootDir, nitro.options.buildDir),
         client: 'graphql',
@@ -125,10 +125,15 @@ export default defineNitroModule({
         break
       }
       case 'nitro':
-
+        // For Nitro, ensure serverDir points to server/graphql if using default
+        if (!nitro.options.graphql?.serverDir) {
+          nitro.graphql.serverDir = resolve(nitro.options.rootDir, 'server', 'graphql')
+        }
         nitro.graphql.clientDir = resolve(nitro.options.rootDir, 'graphql')
         nitro.graphql.dir.client = 'graphql'
-
+        // Watch both client and server directories
+        watchDirs.push(nitro.graphql.clientDir)
+        watchDirs.push(nitro.graphql.serverDir)
         break
       default:
     }
@@ -160,7 +165,22 @@ export default defineNitroModule({
       ],
     }).on('all', async (_, path) => {
       if (path.endsWith('.graphql') || path.endsWith('.gql')) {
-        await clientTypeGeneration(nitro)
+        // Determine if this is a server or client file
+        const isServerFile = path.includes(nitro.graphql.serverDir)
+          || path.includes('server/graphql')
+          || path.includes('server\\graphql')
+
+        if (isServerFile) {
+          // Server GraphQL file changed - regenerate server types and update client types
+          await serverTypeGeneration(nitro)
+          await clientTypeGeneration(nitro)
+          // Trigger Nitro reload to pick up changes
+          await nitro.hooks.callHook('dev:reload')
+        }
+        else {
+          // Client GraphQL file changed - only regenerate client types
+          await clientTypeGeneration(nitro)
+        }
       }
     })
 

@@ -393,10 +393,19 @@ async function generateMainClientTypes(nitro: Nitro) {
   const defaultServiceDir = resolve(nitro.graphql.clientDir, 'default')
   const sdkTypesPath = resolve(defaultServiceDir, 'sdk.ts')
 
-  mkdirSync(dirname(clientTypesPath), { recursive: true })
+  mkdirSync(dirname(clientTypesPath), { recursive: true})
   writeFileSync(clientTypesPath, types.types, 'utf-8')
   mkdirSync(defaultServiceDir, { recursive: true })
-  writeFileSync(sdkTypesPath, types.sdk, 'utf-8')
+
+  // Only write SDK if content has changed to prevent rebuild loops
+  let shouldWriteSdk = true
+  if (existsSync(sdkTypesPath)) {
+    const existingContent = readFileSync(sdkTypesPath, 'utf-8')
+    shouldWriteSdk = existingContent !== types.sdk
+  }
+  if (shouldWriteSdk) {
+    writeFileSync(sdkTypesPath, types.sdk, 'utf-8')
+  }
 
   // Generate ofetch client for Nuxt framework
   if (nitro.options.framework?.name === 'nuxt') {
@@ -458,7 +467,16 @@ async function generateExternalServicesTypes(nitro: Nitro) {
       mkdirSync(dirname(serviceTypesPath), { recursive: true })
       writeFileSync(serviceTypesPath, types.types, 'utf-8')
       mkdirSync(serviceDir, { recursive: true })
-      writeFileSync(serviceSdkPath, types.sdk, 'utf-8')
+
+      // Only write SDK if content has changed to prevent rebuild loops
+      let shouldWriteServiceSdk = true
+      if (existsSync(serviceSdkPath)) {
+        const existingContent = readFileSync(serviceSdkPath, 'utf-8')
+        shouldWriteServiceSdk = existingContent !== types.sdk
+      }
+      if (shouldWriteServiceSdk) {
+        writeFileSync(serviceSdkPath, types.sdk, 'utf-8')
+      }
 
       // Generate ofetch client for Nuxt framework
       if (nitro.options.framework?.name === 'nuxt') {

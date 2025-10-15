@@ -43,15 +43,8 @@ export function getLayerAppDirectories(nitro: Nitro): string[] {
 export function generateLayerIgnorePatterns(nitro: Nitro): string[] {
   const patterns: string[] = []
 
-  // Main project pattern - use relative path from serverDir to _directives.graphql
-  patterns.push(`${nitro.graphql.serverDir}/_directives.graphql`)
-
-  // Layer-specific patterns using actual server directories
-  const layerServerDirs = nitro.options.graphql?.layerServerDirs || []
-  for (const layerServerDir of layerServerDirs) {
-    // Add each layer's generated files to ignore list using actual server path
-    patterns.push(`${layerServerDir}/graphql/_directives.graphql`)
-  }
+  // _directives.graphql is now written to buildDir, so no longer needs to be ignored
+  // buildDir is already ignored by Nitro by default
 
   return patterns
 }
@@ -68,12 +61,51 @@ export function relativeWithDot(from: string, to: string) {
 }
 
 export async function scanGraphql(nitro: Nitro) {
-  const files = await scanFiles(nitro, 'graphql')
-  return files.map(f => f.fullPath)
+  // Scan from serverDir (same logic as scanSchemas)
+  const serverDirRelative = relative(nitro.options.rootDir, nitro.graphql.serverDir)
+  const files = await scanDir(nitro, nitro.options.rootDir, serverDirRelative, '**/*.{graphql,gql}')
+
+  // Also scan layer directories for Nuxt projects
+  const layerServerDirs = getLayerServerDirectories(nitro)
+  const layerFiles = await Promise.all(
+    layerServerDirs.map(layerServerDir =>
+      scanDir(nitro, layerServerDir, 'graphql', '**/*.{graphql,gql}')
+    ),
+  ).then(r => r.flat())
+
+  // Combine and deduplicate
+  const allFiles = [...files, ...layerFiles]
+  const seenPaths = new Set<string>()
+  return allFiles
+    .filter((file) => {
+      if (seenPaths.has(file.fullPath)) return false
+      seenPaths.add(file.fullPath)
+      return true
+    })
+    .map(f => f.fullPath)
 }
 
 export async function scanResolvers(nitro: Nitro) {
-  const files = await scanFiles(nitro, 'graphql', '**/*.resolver.{ts,js}')
+  // Scan from serverDir
+  const serverDirRelative = relative(nitro.options.rootDir, nitro.graphql.serverDir)
+  const regularFiles = await scanDir(nitro, nitro.options.rootDir, serverDirRelative, '**/*.resolver.{ts,js}')
+
+  // Also scan layer directories for Nuxt projects
+  const layerServerDirs = getLayerServerDirectories(nitro)
+  const layerFiles = await Promise.all(
+    layerServerDirs.map(layerServerDir =>
+      scanDir(nitro, layerServerDir, 'graphql', '**/*.resolver.{ts,js}')
+    ),
+  ).then(r => r.flat())
+
+  // Combine and deduplicate
+  const allFiles = [...regularFiles, ...layerFiles]
+  const seenPaths = new Set<string>()
+  const files = allFiles.filter((file) => {
+    if (seenPaths.has(file.fullPath)) return false
+    seenPaths.add(file.fullPath)
+    return true
+  })
 
   const exportName: GenImport[] = []
   for (const file of files) {
@@ -155,7 +187,26 @@ export async function scanResolvers(nitro: Nitro) {
 }
 
 export async function scanDirectives(nitro: Nitro) {
-  const files = await scanFiles(nitro, 'graphql', '**/*.directive.{ts,js}')
+  // Scan from serverDir
+  const serverDirRelative = relative(nitro.options.rootDir, nitro.graphql.serverDir)
+  const regularFiles = await scanDir(nitro, nitro.options.rootDir, serverDirRelative, '**/*.directive.{ts,js}')
+
+  // Also scan layer directories for Nuxt projects
+  const layerServerDirs = getLayerServerDirectories(nitro)
+  const layerFiles = await Promise.all(
+    layerServerDirs.map(layerServerDir =>
+      scanDir(nitro, layerServerDir, 'graphql', '**/*.directive.{ts,js}')
+    ),
+  ).then(r => r.flat())
+
+  // Combine and deduplicate
+  const allFiles = [...regularFiles, ...layerFiles]
+  const seenPaths = new Set<string>()
+  const files = allFiles.filter((file) => {
+    if (seenPaths.has(file.fullPath)) return false
+    seenPaths.add(file.fullPath)
+    return true
+  })
 
   const exportName: GenImport[] = []
   for (const file of files) {
@@ -201,8 +252,28 @@ export async function scanTypeDefs(nitro: Nitro) {
 }
 
 export async function scanSchemas(nitro: Nitro) {
-  const files = await scanFiles(nitro, 'graphql', '**/*.graphql')
-  return files.map(f => f.fullPath)
+  // Scan from serverDir
+  const serverDirRelative = relative(nitro.options.rootDir, nitro.graphql.serverDir)
+  const files = await scanDir(nitro, nitro.options.rootDir, serverDirRelative, '**/*.graphql')
+
+  // Also scan layer directories for Nuxt projects
+  const layerServerDirs = getLayerServerDirectories(nitro)
+  const layerFiles = await Promise.all(
+    layerServerDirs.map(layerServerDir =>
+      scanDir(nitro, layerServerDir, 'graphql', '**/*.graphql')
+    ),
+  ).then(r => r.flat())
+
+  // Combine and deduplicate
+  const allFiles = [...files, ...layerFiles]
+  const seenPaths = new Set<string>()
+  return allFiles
+    .filter((file) => {
+      if (seenPaths.has(file.fullPath)) return false
+      seenPaths.add(file.fullPath)
+      return true
+    })
+    .map(f => f.fullPath)
 }
 
 export async function scanDocs(nitro: Nitro) {
