@@ -3,10 +3,10 @@ import type { NitroGraphQLOptions } from './types'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { watch } from 'chokidar'
-
 import consola from 'consola'
+
 import defu from 'defu'
-import { dirname, join, relative, resolve } from 'pathe'
+import { dirname, join, normalize, relative, resolve } from 'pathe'
 import { rollupConfig } from './rollup'
 import {
   generateDirectiveSchemas,
@@ -125,8 +125,10 @@ export default defineNitroModule({
         break
       }
       case 'nitro':
+
         nitro.graphql.clientDir = resolve(nitro.options.rootDir, 'graphql')
         nitro.graphql.dir.client = 'graphql'
+
         break
       default:
     }
@@ -390,7 +392,10 @@ export default <IGraphQLConfig> {
     }
 
     if (!existsSync(join(nitro.graphql.serverDir, 'schema.ts'))) {
-      writeFileSync(join(nitro.graphql.serverDir, 'schema.ts'), `export default defineSchema({
+      writeFileSync(join(nitro.graphql.serverDir, 'schema.ts'), `
+import { defineSchema } from 'nitro-graphql/utils/define'      
+      
+export default defineSchema({
 
 })
 `, 'utf-8')
@@ -400,6 +405,7 @@ export default <IGraphQLConfig> {
       writeFileSync(join(nitro.graphql.serverDir, 'config.ts'), `// Example GraphQL config file please change it to your needs
 // import * as tables from '../drizzle/schema/index'
 // import { useDatabase } from '../utils/useDb'
+import { defineGraphQLConfig } from 'nitro-graphql/utils/define'
 
 export default defineGraphQLConfig({
 // graphql-yoga example config
