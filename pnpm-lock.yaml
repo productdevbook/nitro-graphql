@@ -290,7 +290,7 @@ importers:
         version: 3.0.0
       '@as-integrations/h3':
         specifier: 'catalog:'
-        version: 2.0.0(@apollo/server@5.0.0(graphql@16.11.0))(crossws@0.4.1(srvx@0.8.16))(graphql-ws@6.0.6(crossws@0.4.1(srvx@0.8.16))(graphql@16.11.0)(ws@8.18.3))(graphql@16.11.0)(h3@2.0.1-rc.2(crossws@0.4.1(srvx@0.8.16)))
+        version: 2.0.0(@apollo/server@5.0.0(graphql@16.11.0))(crossws@0.3.5)(graphql-ws@6.0.6(crossws@0.3.5)(graphql@16.11.0)(ws@8.18.3))(graphql@16.11.0)(h3@2.0.1-rc.2(crossws@0.3.5))
       graphql:
         specifier: 'catalog:'
         version: 16.11.0
@@ -6559,16 +6559,6 @@ snapshots:
     optionalDependencies:
       graphql-ws: 6.0.6(crossws@0.3.5)(graphql@16.11.0)(ws@8.18.3)
 
-  '@as-integrations/h3@2.0.0(@apollo/server@5.0.0(graphql@16.11.0))(crossws@0.4.1(srvx@0.8.16))(graphql-ws@6.0.6(crossws@0.4.1(srvx@0.8.16))(graphql@16.11.0)(ws@8.18.3))(graphql@16.11.0)(h3@2.0.1-rc.2(crossws@0.4.1(srvx@0.8.16)))':
-    dependencies:
-      '@apollo/server': 5.0.0(graphql@16.11.0)
-      '@apollo/utils.withrequired': 3.0.0
-      crossws: 0.4.1(srvx@0.8.16)
-      graphql: 16.11.0
-      h3: 2.0.1-rc.2(crossws@0.4.1(srvx@0.8.16))
-    optionalDependencies:
-      graphql-ws: 6.0.6(crossws@0.4.1(srvx@0.8.16))(graphql@16.11.0)(ws@8.18.3)
-
   '@babel/code-frame@7.27.1':
     dependencies:
       '@babel/helper-validator-identifier': 7.27.1
@@ -10262,14 +10252,6 @@ snapshots:
     optionalDependencies:
       crossws: 0.3.5
       ws: 8.18.3
-
-  graphql-ws@6.0.6(crossws@0.4.1(srvx@0.8.16))(graphql@16.11.0)(ws@8.18.3):
-    dependencies:
-      graphql: 16.11.0
-    optionalDependencies:
-      crossws: 0.4.1(srvx@0.8.16)
-      ws: 8.18.3
-    optional: true
 
   graphql-yoga@5.16.0(graphql@16.11.0):
     dependencies:

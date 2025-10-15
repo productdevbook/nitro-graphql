@@ -52,6 +52,10 @@
     "./nuxt": {
       "types": "./dist/ecosystem/nuxt.d.ts",
       "import": "./dist/ecosystem/nuxt.js"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.js"
     }
   },
   "module": "./dist/index.js",
