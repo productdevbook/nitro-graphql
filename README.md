@@ -52,7 +52,7 @@ pnpm add nitro-graphql @apollo/server @apollo/utils.withrequired @as-integration
 
 ```ts
 // nitro.config.ts
-import { defineNitroConfig } from 'nitropack/config'
+import { defineNitroConfig } from 'nitro/config'
 
 export default defineNitroConfig({
   modules: ['nitro-graphql'],
