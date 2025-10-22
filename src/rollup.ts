@@ -13,6 +13,7 @@ export async function rollupConfig(app: Nitro) {
   virtualDirectives(app)
   getGraphQLConfig(app)
   virtualModuleConfig(app)
+  virtualDebugInfo(app)
   app.hooks.hook('rollup:before', (nitro, rollupConfig) => {
     rollupConfig.plugins = rollupConfig.plugins || []
     const {
@@ -95,24 +96,38 @@ export function virtualSchemas(app: Nitro) {
 
   app.options.virtual ??= {}
   app.options.virtual['#nitro-internal-virtual/server-schemas'] = () => {
-    const imports = getSchemas()
+    try {
+      const imports = getSchemas()
 
-    const code = /* js */`
-${imports
-  .map(handler => `import ${getImportId(handler)} from '${handler}';`)
-  .join('\n')}
+      if (imports.length === 0) {
+        if (app.options.dev) {
+          app.logger.warn('[nitro-graphql] No schemas found. Virtual module will export empty array.')
+        }
+        return 'export const schemas = []'
+      }
+
+      const importStatements = imports.map(handler => `import ${getImportId(handler)} from '${handler}';`)
+      const schemaArray = imports.map(h => `{ def: ${getImportId(h)} }`)
+
+      const code = /* js */`
+${importStatements.join('\n')}
 
 export const schemas = [
-${imports
-  .map(
-    h =>
-      /* js */ `{ def: ${getImportId(h)} }`,
-  )
-  .join(',\n')}
+${schemaArray.join(',\n')}
 ];
     `
 
-    return code
+      // Log virtual module generation in dev mode
+      if (app.options.dev) {
+        app.logger.success(`[nitro-graphql] Generated virtual schema module: ${imports.length} schema(s)`)
+      }
+
+      return code
+    }
+    catch (error) {
+      app.logger.error('[nitro-graphql] Failed to generate virtual schema module:', error)
+      return 'export const schemas = []'
+    }
   }
 }
 
@@ -128,34 +143,79 @@ export function virtualResolvers(app: Nitro) {
 
   app.options.virtual ??= {}
   app.options.virtual['#nitro-internal-virtual/server-resolvers'] = () => {
-    const imports = getResolvers()
-    //     const code = /* js */`
-    const importsContent = [
-      ...imports.map(({ specifier, imports, options }) => {
-        // https://github.com/unjs/knitwork/pull/113 extendiso support (silgi.options.typescript.removeFileExtension)
-        return genImport(specifier, imports, options)
-      }),
-    ]
+    try {
+      const imports = getResolvers()
 
-    const data = imports
-      .map(({ imports }) =>
-        imports.map(i => `{ resolver: ${i.as} }`).join(',\n'),
-      )
-      .filter(Boolean)
-      .join(',\n')
+      if (imports.length === 0) {
+        if (app.options.dev) {
+          app.logger.warn('[nitro-graphql] No resolvers found. Virtual module will export empty array.')
+        }
+        return 'export const resolvers = []'
+      }
 
-    const content = [
-      'export const resolvers = [',
-      data,
-      ']',
-      '',
-    ]
+      const importsContent: string[] = []
+      const invalidImports: string[] = []
 
-    content.unshift(...importsContent)
+      for (const { specifier, imports: importList, options } of imports) {
+        try {
+          // Validate import structure
+          if (!importList || importList.length === 0) {
+            invalidImports.push(`${specifier}: No exports found`)
+            continue
+          }
 
-    const code = content.join('\n')
+          // Generate import statement
+          const importCode = genImport(specifier, importList, options)
+          importsContent.push(importCode)
+        }
+        catch (error) {
+          const message = error instanceof Error ? error.message : String(error)
+          invalidImports.push(`${specifier}: ${message}`)
+          if (app.options.dev) {
+            app.logger.error(`[nitro-graphql] Failed to generate import for ${specifier}:`, error)
+          }
+        }
+      }
 
-    return code
+      // Show warnings for invalid imports
+      if (invalidImports.length > 0 && app.options.dev) {
+        app.logger.warn('[nitro-graphql] Some resolver imports could not be generated:')
+        for (const msg of invalidImports) {
+          app.logger.warn(`  - ${msg}`)
+        }
+      }
+
+      const data = imports
+        .map(({ imports: importList }) =>
+          importList.map(i => `{ resolver: ${i.as} }`).join(',\n'),
+        )
+        .filter(Boolean)
+        .join(',\n')
+
+      const content = [
+        ...importsContent,
+        '',
+        'export const resolvers = [',
+        data,
+        ']',
+        '',
+      ]
+
+      const code = content.join('\n')
+
+      // Log virtual module generation in dev mode
+      if (app.options.dev) {
+        const totalExports = imports.reduce((sum, r) => sum + r.imports.length, 0)
+        app.logger.success(`[nitro-graphql] Generated virtual resolver module: ${totalExports} export(s) from ${imports.length} file(s)`)
+      }
+
+      return code
+    }
+    catch (error) {
+      app.logger.error('[nitro-graphql] Failed to generate virtual resolver module:', error)
+      // Return empty module to prevent build failure
+      return 'export const resolvers = []'
+    }
   }
 }
 
@@ -170,32 +230,72 @@ export function virtualDirectives(app: Nitro) {
 
   app.options.virtual ??= {}
   app.options.virtual['#nitro-internal-virtual/server-directives'] = () => {
-    const imports = getDirectives()
-    const importsContent = [
-      ...imports.map(({ specifier, imports, options }) => {
-        return genImport(specifier, imports, options)
-      }),
-    ]
+    try {
+      const imports = getDirectives()
 
-    const data = imports
-      .map(({ imports }) =>
-        imports.map(i => `{ directive: ${i.as} }`).join(',\n'),
-      )
-      .filter(Boolean)
-      .join(',\n')
+      if (imports.length === 0) {
+        // Directives are optional, no warning needed
+        return 'export const directives = []'
+      }
 
-    const content = [
-      'export const directives = [',
-      data,
-      ']',
-      '',
-    ]
+      const importsContent: string[] = []
+      const invalidImports: string[] = []
 
-    content.unshift(...importsContent)
+      for (const { specifier, imports: importList, options } of imports) {
+        try {
+          if (!importList || importList.length === 0) {
+            invalidImports.push(`${specifier}: No exports found`)
+            continue
+          }
 
-    const code = content.join('\n')
+          const importCode = genImport(specifier, importList, options)
+          importsContent.push(importCode)
+        }
+        catch (error) {
+          const message = error instanceof Error ? error.message : String(error)
+          invalidImports.push(`${specifier}: ${message}`)
+          if (app.options.dev) {
+            app.logger.error(`[nitro-graphql] Failed to generate import for directive ${specifier}:`, error)
+          }
+        }
+      }
 
-    return code
+      if (invalidImports.length > 0 && app.options.dev) {
+        app.logger.warn('[nitro-graphql] Some directive imports could not be generated:')
+        for (const msg of invalidImports) {
+          app.logger.warn(`  - ${msg}`)
+        }
+      }
+
+      const data = imports
+        .map(({ imports: importList }) =>
+          importList.map(i => `{ directive: ${i.as} }`).join(',\n'),
+        )
+        .filter(Boolean)
+        .join(',\n')
+
+      const content = [
+        ...importsContent,
+        '',
+        'export const directives = [',
+        data,
+        ']',
+        '',
+      ]
+
+      const code = content.join('\n')
+
+      if (app.options.dev) {
+        const totalExports = imports.reduce((sum, d) => sum + d.imports.length, 0)
+        app.logger.success(`[nitro-graphql] Generated virtual directive module: ${totalExports} directive(s) from ${imports.length} file(s)`)
+      }
+
+      return code
+    }
+    catch (error) {
+      app.logger.error('[nitro-graphql] Failed to generate virtual directive module:', error)
+      return 'export const directives = []'
+    }
   }
 }
 
@@ -217,5 +317,29 @@ export function virtualModuleConfig(app: Nitro) {
     const moduleConfig = app.options.graphql || {}
 
     return `export const moduleConfig = ${JSON.stringify(moduleConfig, null, 2)};`
+  }
+}
+
+export function virtualDebugInfo(app: Nitro) {
+  app.options.virtual ??= {}
+  app.options.virtual['#nitro-internal-virtual/debug-info'] = () => {
+    const debugInfo = {
+      isDev: app.options.dev,
+      framework: app.options.framework.name,
+      graphqlFramework: app.options.graphql?.framework,
+      federation: app.options.graphql?.federation,
+      scanned: {
+        schemas: app.scanSchemas?.length || 0,
+        schemaFiles: app.scanSchemas || [],
+        resolvers: app.scanResolvers?.length || 0,
+        resolverFiles: app.scanResolvers || [],
+        directives: app.scanDirectives?.length || 0,
+        directiveFiles: app.scanDirectives || [],
+        documents: app.scanDocuments?.length || 0,
+        documentFiles: app.scanDocuments || [],
+      },
+    }
+
+    return `export const debugInfo = ${JSON.stringify(debugInfo, null, 2)};`
   }
 }

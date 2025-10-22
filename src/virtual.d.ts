@@ -35,3 +35,24 @@ declare module '#nitro-internal-virtual/module-config' {
 
   export const moduleConfig: Partial<NitroGraphQLOptions>
 }
+
+declare module '#nitro-internal-virtual/debug-info' {
+  import type { GenImport } from '../types'
+
+  export const debugInfo: {
+    isDev: boolean
+    framework: string
+    graphqlFramework?: string
+    federation?: any
+    scanned: {
+      schemas: number
+      schemaFiles: string[]
+      resolvers: number
+      resolverFiles: GenImport[]
+      directives: number
+      directiveFiles: GenImport[]
+      documents: number
+      documentFiles: string[]
+    }
+  }
+}
