@@ -87,7 +87,8 @@ export default defineEventHandler(async (event) => {
       loadedSchemas: schemas.length,
       loadedDirectives: directives.length,
     },
-    virtualModules: {
+    virtualModules: debugInfo.virtualModules || {},
+    virtualModuleSamples: {
       'server-resolvers': {
         resolverCount: resolvers.length,
         sample: resolvers.slice(0, 3).map(r => ({
@@ -257,12 +258,12 @@ function generateHtmlDashboard(debugInfo: any): string {
           <span class="text-[#E535AB]">●</span> Resolver Exports
         </h2>
         ${debugInfo.scanned.resolverFiles.length > 0
-          ? `<span class="text-xs text-slate-500 bg-slate-800/50 px-2 py-1 rounded">${debugInfo.scanned.resolverFiles.length} files</span>`
-          : ''
+            ? `<span class="text-xs text-slate-500 bg-slate-800/50 px-2 py-1 rounded">${debugInfo.scanned.resolverFiles.length} files</span>`
+            : ''
         }
       </div>
       ${debugInfo.scanned.resolverFiles.length > 0
-        ? `
+          ? `
         <div class="max-h-96 overflow-y-auto space-y-2 pr-2">
           ${debugInfo.scanned.resolverFiles.map((r: any) => {
             const totalExports = r.exports.length
@@ -282,43 +283,43 @@ function generateHtmlDashboard(debugInfo: any): string {
                         text: 'text-blue-400',
                         border: 'border-blue-500/30',
                         symbol: '◆',
-                        label: 'query'
+                        label: 'query',
                       },
                       mutation: {
                         bg: 'bg-[#E535AB]/10',
                         text: 'text-[#E535AB]',
                         border: 'border-[#E535AB]/30',
                         symbol: '●',
-                        label: 'mutation'
+                        label: 'mutation',
                       },
                       type: {
                         bg: 'bg-purple-500/10',
                         text: 'text-purple-400',
                         border: 'border-purple-500/30',
                         symbol: '▲',
-                        label: 'type'
+                        label: 'type',
                       },
                       directive: {
                         bg: 'bg-amber-500/10',
                         text: 'text-amber-400',
                         border: 'border-amber-500/30',
                         symbol: '@',
-                        label: 'directive'
+                        label: 'directive',
                       },
                       resolver: {
                         bg: 'bg-emerald-500/10',
                         text: 'text-emerald-400',
                         border: 'border-emerald-500/30',
                         symbol: '◉',
-                        label: 'resolver'
+                        label: 'resolver',
                       },
                       subscription: {
                         bg: 'bg-teal-500/10',
                         text: 'text-teal-400',
                         border: 'border-teal-500/30',
                         symbol: '↻',
-                        label: 'subscription'
-                      }
+                        label: 'subscription',
+                      },
                     }
                     const config = typeConfig[e.type as keyof typeof typeConfig] || typeConfig.resolver
                     return `<span class="px-2.5 py-1 rounded border text-[11px] font-mono ${config.bg} ${config.text} ${config.border} hover:scale-105 transition-transform inline-flex items-center gap-1.5">
@@ -333,7 +334,7 @@ function generateHtmlDashboard(debugInfo: any): string {
           }).join('')}
         </div>
       `
-        : '<p class="text-slate-500 text-sm">No resolvers found</p>'
+          : '<p class="text-slate-500 text-sm">No resolvers found</p>'
       }
     </div>
 
@@ -401,19 +402,19 @@ function generateHtmlDashboard(debugInfo: any): string {
             <span class="text-[#E535AB]">●</span> Schema Files
           </h2>
           ${debugInfo.scanned.schemaFiles.length > 0
-            ? `<span class="text-xs text-slate-500 bg-slate-800/50 px-2 py-1 rounded">${debugInfo.scanned.schemaFiles.length} file${debugInfo.scanned.schemaFiles.length !== 1 ? 's' : ''}</span>`
-            : ''
+              ? `<span class="text-xs text-slate-500 bg-slate-800/50 px-2 py-1 rounded">${debugInfo.scanned.schemaFiles.length} file${debugInfo.scanned.schemaFiles.length !== 1 ? 's' : ''}</span>`
+              : ''
           }
         </div>
         <ul class="space-y-2 max-h-64 overflow-y-auto pr-2">
           ${debugInfo.scanned.schemaFiles.length > 0
-            ? debugInfo.scanned.schemaFiles.map((f: string) =>
-                `<li class="text-slate-400 font-mono text-xs flex items-start gap-2 py-1.5 px-2 rounded hover:bg-slate-800/50 transition-colors group">
+              ? debugInfo.scanned.schemaFiles.map((f: string) =>
+                  `<li class="text-slate-400 font-mono text-xs flex items-start gap-2 py-1.5 px-2 rounded hover:bg-slate-800/50 transition-colors group">
                   <span class="text-[#E535AB] text-[10px] mt-0.5 group-hover:scale-110 transition-transform">▸</span>
                   <span class="truncate group-hover:text-slate-300">${f}</span>
                 </li>`,
-              ).join('')
-            : '<li class="text-slate-500 text-sm">No schemas found</li>'
+                ).join('')
+              : '<li class="text-slate-500 text-sm">No schemas found</li>'
           }
         </ul>
       </div>
@@ -425,19 +426,19 @@ function generateHtmlDashboard(debugInfo: any): string {
             <span class="text-[#E535AB]">●</span> Document Files
           </h2>
           ${debugInfo.scanned.documentFiles.length > 0
-            ? `<span class="text-xs text-slate-500 bg-slate-800/50 px-2 py-1 rounded">${debugInfo.scanned.documentFiles.length} file${debugInfo.scanned.documentFiles.length !== 1 ? 's' : ''}</span>`
-            : ''
+              ? `<span class="text-xs text-slate-500 bg-slate-800/50 px-2 py-1 rounded">${debugInfo.scanned.documentFiles.length} file${debugInfo.scanned.documentFiles.length !== 1 ? 's' : ''}</span>`
+              : ''
           }
         </div>
         <ul class="space-y-2 max-h-64 overflow-y-auto pr-2">
           ${debugInfo.scanned.documentFiles.length > 0
-            ? debugInfo.scanned.documentFiles.map((f: string) =>
-                `<li class="text-slate-400 font-mono text-xs flex items-start gap-2 py-1.5 px-2 rounded hover:bg-slate-800/50 transition-colors group">
+              ? debugInfo.scanned.documentFiles.map((f: string) =>
+                  `<li class="text-slate-400 font-mono text-xs flex items-start gap-2 py-1.5 px-2 rounded hover:bg-slate-800/50 transition-colors group">
                   <span class="text-[#E535AB] text-[10px] mt-0.5 group-hover:scale-110 transition-transform">▸</span>
                   <span class="truncate group-hover:text-slate-300">${f}</span>
                 </li>`,
-              ).join('')
-            : '<li class="text-slate-500 text-sm">No documents found</li>'
+                ).join('')
+              : '<li class="text-slate-500 text-sm">No documents found</li>'
           }
         </ul>
       </div>
