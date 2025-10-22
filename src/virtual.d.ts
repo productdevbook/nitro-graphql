@@ -54,5 +54,6 @@ declare module '#nitro-internal-virtual/debug-info' {
       documents: number
       documentFiles: string[]
     }
+    virtualModules: Record<string, string>
   }
 }

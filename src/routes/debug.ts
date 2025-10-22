@@ -337,13 +337,58 @@ function generateHtmlDashboard(debugInfo: any): string {
       }
     </div>
 
-    <!-- Virtual Modules Info -->
+    <!-- Generated Virtual Modules -->
     <div class="bg-slate-900/50 border border-slate-700/50 rounded-lg p-6">
-      <h2 class="text-xl font-semibold mb-4 text-slate-200 flex items-center gap-2">
-        <span class="text-[#E535AB]">●</span> Virtual Module Samples
-      </h2>
-      <div class="bg-slate-950/50 border border-slate-700/30 rounded-lg p-4 overflow-x-auto">
-        <pre class="text-xs font-mono text-slate-400 leading-relaxed">${escapeHtml(JSON.stringify(debugInfo.virtualModules, null, 2))}</pre>
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold text-slate-200 flex items-center gap-2">
+          <span class="text-[#E535AB]">●</span> Generated Virtual Modules
+        </h2>
+        <span class="text-xs text-slate-500 bg-slate-800/50 px-2 py-1 rounded">
+          ${Object.keys(debugInfo.virtualModules).length} modules
+        </span>
+      </div>
+      <div class="space-y-3">
+        ${Object.entries(debugInfo.virtualModules).map(([moduleName, codeContent]) => {
+          const code = String(codeContent)
+          const moduleColors = {
+            'server-schemas': { bg: 'bg-blue-500/5', border: 'border-blue-500/20', text: 'text-blue-400' },
+            'server-resolvers': { bg: 'bg-[#E535AB]/5', border: 'border-[#E535AB]/20', text: 'text-[#E535AB]' },
+            'server-directives': { bg: 'bg-amber-500/5', border: 'border-amber-500/20', text: 'text-amber-400' },
+            'module-config': { bg: 'bg-purple-500/5', border: 'border-purple-500/20', text: 'text-purple-400' },
+            'graphql-config': { bg: 'bg-emerald-500/5', border: 'border-emerald-500/20', text: 'text-emerald-400' },
+          }
+          const colorConfig = moduleColors[moduleName as keyof typeof moduleColors] || moduleColors['module-config']
+          const lineCount = code.split('\\n').length
+          const byteSize = new TextEncoder().encode(code).length
+
+          return `
+            <details class="border ${colorConfig.border} ${colorConfig.bg} rounded-lg overflow-hidden group">
+              <summary class="cursor-pointer p-4 hover:bg-slate-800/30 transition-all flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                  <span class="${colorConfig.text} text-lg">▸</span>
+                  <div>
+                    <span class="font-mono text-sm ${colorConfig.text} font-semibold">#nitro-internal-virtual/${moduleName}</span>
+                    <div class="text-[10px] text-slate-500 mt-0.5">
+                      ${lineCount} lines · ${(byteSize / 1024).toFixed(2)} KB
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onclick="event.stopPropagation(); navigator.clipboard.writeText(this.getAttribute('data-code')); this.textContent = '✓ Copied!'; setTimeout(() => this.textContent = 'Copy', 1000)"
+                  data-code="${escapeHtml(code).replace(/"/g, '&quot;')}"
+                  class="text-xs px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-600/50 transition-colors"
+                >
+                  Copy
+                </button>
+              </summary>
+              <div class="border-t ${colorConfig.border}">
+                <div class="bg-slate-950/80 p-4 max-h-96 overflow-auto">
+                  <pre class="text-xs font-mono text-slate-300 leading-relaxed"><code>${escapeHtml(code)}</code></pre>
+                </div>
+              </div>
+            </details>
+          `
+        }).join('')}
       </div>
     </div>
 

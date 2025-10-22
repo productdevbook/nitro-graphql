@@ -323,6 +323,59 @@ export function virtualModuleConfig(app: Nitro) {
 export function virtualDebugInfo(app: Nitro) {
   app.options.virtual ??= {}
   app.options.virtual['#nitro-internal-virtual/debug-info'] = () => {
+    // Generate virtual module codes by calling their generator functions
+    const virtualModuleCodes: Record<string, string> = {}
+
+    try {
+      // Get schemas virtual module code
+      const schemasGenerator = app.options.virtual['#nitro-internal-virtual/server-schemas']
+      if (schemasGenerator && typeof schemasGenerator === 'function') {
+        virtualModuleCodes['server-schemas'] = schemasGenerator()
+      }
+    } catch (error) {
+      virtualModuleCodes['server-schemas'] = `// Error generating: ${error instanceof Error ? error.message : String(error)}`
+    }
+
+    try {
+      // Get resolvers virtual module code
+      const resolversGenerator = app.options.virtual['#nitro-internal-virtual/server-resolvers']
+      if (resolversGenerator && typeof resolversGenerator === 'function') {
+        virtualModuleCodes['server-resolvers'] = resolversGenerator()
+      }
+    } catch (error) {
+      virtualModuleCodes['server-resolvers'] = `// Error generating: ${error instanceof Error ? error.message : String(error)}`
+    }
+
+    try {
+      // Get directives virtual module code
+      const directivesGenerator = app.options.virtual['#nitro-internal-virtual/server-directives']
+      if (directivesGenerator && typeof directivesGenerator === 'function') {
+        virtualModuleCodes['server-directives'] = directivesGenerator()
+      }
+    } catch (error) {
+      virtualModuleCodes['server-directives'] = `// Error generating: ${error instanceof Error ? error.message : String(error)}`
+    }
+
+    try {
+      // Get module config virtual module code
+      const moduleConfigGenerator = app.options.virtual['#nitro-internal-virtual/module-config']
+      if (moduleConfigGenerator && typeof moduleConfigGenerator === 'function') {
+        virtualModuleCodes['module-config'] = moduleConfigGenerator()
+      }
+    } catch (error) {
+      virtualModuleCodes['module-config'] = `// Error generating: ${error instanceof Error ? error.message : String(error)}`
+    }
+
+    try {
+      // Get graphql config virtual module code
+      const graphqlConfigGenerator = app.options.virtual['#nitro-internal-virtual/graphql-config']
+      if (graphqlConfigGenerator && typeof graphqlConfigGenerator === 'function') {
+        virtualModuleCodes['graphql-config'] = graphqlConfigGenerator()
+      }
+    } catch (error) {
+      virtualModuleCodes['graphql-config'] = `// Error generating: ${error instanceof Error ? error.message : String(error)}`
+    }
+
     const debugInfo = {
       isDev: app.options.dev,
       framework: app.options.framework.name,
@@ -338,6 +391,7 @@ export function virtualDebugInfo(app: Nitro) {
         documents: app.scanDocuments?.length || 0,
         documentFiles: app.scanDocuments || [],
       },
+      virtualModules: virtualModuleCodes,
     }
 
     return `export const debugInfo = ${JSON.stringify(debugInfo, null, 2)};`
