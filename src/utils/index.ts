@@ -75,78 +75,118 @@ export async function scanResolvers(nitro: Nitro) {
   const files = await scanFiles(nitro, 'graphql', '**/*.resolver.{ts,js}')
 
   const exportName: GenImport[] = []
+  const VALID_DEFINE_FUNCTIONS = ['defineResolver', 'defineQuery', 'defineMutation', 'defineType', 'defineSubscription', 'defineDirective']
+
   for (const file of files) {
-    const fileContent = await readFile(file.fullPath, 'utf-8')
-    const parsed = await parseAsync(file.fullPath, fileContent)
+    try {
+      const fileContent = await readFile(file.fullPath, 'utf-8')
+      const parsed = await parseAsync(file.fullPath, fileContent)
 
-    const exports: GenImport = {
-      imports: [],
-      specifier: file.fullPath,
-    }
-    for (const node of parsed.program.body) {
-      if (
-        node.type === 'ExportNamedDeclaration'
-        && node.declaration
-        && node.declaration.type === 'VariableDeclaration'
-      ) {
-        // TODO: if there is no cost, there is a mistake
-        for (const decl of node.declaration.declarations) {
-          if (decl.type === 'VariableDeclarator' && decl.init && decl.id.type === 'Identifier') {
-            if (decl.init && decl.init.type === 'CallExpression') {
-              if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineResolver') {
-                exports.imports.push({
-                  name: decl.id.name,
-                  type: 'resolver',
-                  as: `_${hash(decl.id.name + file.fullPath).replace(/-/g, '').slice(0, 6)}`,
-                })
-              }
+      const exports: GenImport = {
+        imports: [],
+        specifier: file.fullPath,
+      }
 
-              if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineQuery') {
-                exports.imports.push({
-                  name: decl.id.name,
-                  type: 'query',
-                  as: `_${hash(decl.id.name + file.fullPath).replace(/-/g, '').slice(0, 6)}`,
-                })
-              }
+      let hasDefaultExport = false
+      let hasNamedExport = false
+      const namedExports: string[] = []
 
-              if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineMutation') {
-                exports.imports.push({
-                  name: decl.id.name,
-                  type: 'mutation',
-                  as: `_${hash(decl.id.name + file.fullPath).replace(/-/g, '').slice(0, 6)}`,
-                })
-              }
+      for (const node of parsed.program.body) {
+        // Check for default exports (for warning)
+        if (node.type === 'ExportDefaultDeclaration') {
+          hasDefaultExport = true
+        }
 
-              if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineType') {
-                exports.imports.push({
-                  name: decl.id.name,
-                  type: 'type',
-                  as: `_${hash(decl.id.name + file.fullPath).replace(/-/g, '').slice(0, 6)}`,
-                })
-              }
+        if (
+          node.type === 'ExportNamedDeclaration'
+          && node.declaration
+          && node.declaration.type === 'VariableDeclaration'
+        ) {
+          for (const decl of node.declaration.declarations) {
+            if (decl.type === 'VariableDeclarator' && decl.init && decl.id.type === 'Identifier') {
+              hasNamedExport = true
+              namedExports.push(decl.id.name)
 
-              if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineSubscription') {
-                exports.imports.push({
-                  name: decl.id.name,
-                  type: 'subscription',
-                  as: `_${hash(decl.id.name + file.fullPath).replace(/-/g, '').slice(0, 6)}`,
-                })
-              }
+              if (decl.init && decl.init.type === 'CallExpression') {
+                if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineResolver') {
+                  exports.imports.push({
+                    name: decl.id.name,
+                    type: 'resolver',
+                    as: `_${hash(decl.id.name + file.fullPath).replace(/-/g, '').slice(0, 6)}`,
+                  })
+                }
 
-              if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineDirective') {
-                exports.imports.push({
-                  name: decl.id.name,
-                  type: 'directive',
-                  as: `_${hash(decl.id.name + file.fullPath).replace(/-/g, '').slice(0, 6)}`,
-                })
+                if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineQuery') {
+                  exports.imports.push({
+                    name: decl.id.name,
+                    type: 'query',
+                    as: `_${hash(decl.id.name + file.fullPath).replace(/-/g, '').slice(0, 6)}`,
+                  })
+                }
+
+                if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineMutation') {
+                  exports.imports.push({
+                    name: decl.id.name,
+                    type: 'mutation',
+                    as: `_${hash(decl.id.name + file.fullPath).replace(/-/g, '').slice(0, 6)}`,
+                  })
+                }
+
+                if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineType') {
+                  exports.imports.push({
+                    name: decl.id.name,
+                    type: 'type',
+                    as: `_${hash(decl.id.name + file.fullPath).replace(/-/g, '').slice(0, 6)}`,
+                  })
+                }
+
+                if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineSubscription') {
+                  exports.imports.push({
+                    name: decl.id.name,
+                    type: 'subscription',
+                    as: `_${hash(decl.id.name + file.fullPath).replace(/-/g, '').slice(0, 6)}`,
+                  })
+                }
+
+                if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineDirective') {
+                  exports.imports.push({
+                    name: decl.id.name,
+                    type: 'directive',
+                    as: `_${hash(decl.id.name + file.fullPath).replace(/-/g, '').slice(0, 6)}`,
+                  })
+                }
               }
             }
           }
         }
       }
+
+      // Emit warnings for common issues (only in development)
+      if (nitro.options.dev) {
+        const relPath = relative(nitro.options.rootDir, file.fullPath)
+
+        if (hasDefaultExport && !hasNamedExport) {
+          nitro.logger.warn(`[nitro-graphql] ${relPath}: Using default export instead of named export. Resolvers must use named exports like "export const myResolver = defineQuery(...)". Default exports are not detected.`)
+        }
+
+        if (exports.imports.length === 0 && hasNamedExport) {
+          const validFunctions = VALID_DEFINE_FUNCTIONS.join(', ')
+          nitro.logger.warn(`[nitro-graphql] ${relPath}: File has named exports [${namedExports.join(', ')}] but none use the required define functions (${validFunctions}). Exports will not be registered.`)
+        }
+
+        if (!hasDefaultExport && !hasNamedExport) {
+          nitro.logger.warn(`[nitro-graphql] ${relPath}: No exports found. Resolver files must export resolvers using defineResolver, defineQuery, defineMutation, etc.`)
+        }
+      }
+
+      if (exports.imports.length > 0) {
+        exportName.push(exports)
+      }
     }
-    if (exports.imports.length > 0) {
-      exportName.push(exports)
+    catch (error) {
+      const relPath = relative(nitro.options.rootDir, file.fullPath)
+      nitro.logger.error(`[nitro-graphql] Failed to parse resolver file ${relPath}:`, error)
+      // Continue processing other files
     }
   }
 

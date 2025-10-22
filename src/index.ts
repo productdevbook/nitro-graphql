@@ -204,6 +204,47 @@ export default defineNitroModule({
 
       const docs = await scanDocs(nitro)
       nitro.scanDocuments = docs
+
+      // Validate resolver setup and provide helpful diagnostics (only in dev)
+      if (nitro.options.dev && resolvers.length > 0) {
+        const totalExports = resolvers.reduce((sum, r) => sum + r.imports.length, 0)
+        consola.success(`[nitro-graphql] Found ${totalExports} resolver export(s) from ${resolvers.length} file(s)`)
+
+        // Show breakdown by type for better visibility
+        const typeCount = {
+          query: 0,
+          mutation: 0,
+          resolver: 0,
+          type: 0,
+          subscription: 0,
+          directive: 0,
+        }
+        for (const resolver of resolvers) {
+          for (const imp of resolver.imports) {
+            if (imp.type in typeCount) {
+              typeCount[imp.type as keyof typeof typeCount]++
+            }
+          }
+        }
+
+        const breakdown: string[] = []
+        if (typeCount.query > 0)
+          breakdown.push(`${typeCount.query} query`)
+        if (typeCount.mutation > 0)
+          breakdown.push(`${typeCount.mutation} mutation`)
+        if (typeCount.resolver > 0)
+          breakdown.push(`${typeCount.resolver} resolver`)
+        if (typeCount.type > 0)
+          breakdown.push(`${typeCount.type} type`)
+        if (typeCount.subscription > 0)
+          breakdown.push(`${typeCount.subscription} subscription`)
+        if (typeCount.directive > 0)
+          breakdown.push(`${typeCount.directive} directive`)
+
+        if (breakdown.length > 0) {
+          consola.info(`[nitro-graphql] Resolver breakdown: ${breakdown.join(', ')}`)
+        }
+      }
     })
 
     await rollupConfig(nitro)
