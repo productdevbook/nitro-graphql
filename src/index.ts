@@ -206,43 +206,64 @@ export default defineNitroModule({
       nitro.scanDocuments = docs
 
       // Validate resolver setup and provide helpful diagnostics (only in dev)
-      if (nitro.options.dev && resolvers.length > 0) {
-        const totalExports = resolvers.reduce((sum, r) => sum + r.imports.length, 0)
-        consola.success(`[nitro-graphql] Found ${totalExports} resolver export(s) from ${resolvers.length} file(s)`)
+      if (nitro.options.dev) {
+        consola.box({
+          title: 'Nitro GraphQL',
+          message: [
+            `Framework: ${nitro.options.graphql?.framework || 'Not configured'}`,
+            `Schemas: ${schemas.length}`,
+            `Resolvers: ${resolvers.length}`,
+            `Directives: ${directives.length}`,
+            `Documents: ${docs.length}`,
+            '',
+            'Debug Dashboard: /_nitro/graphql/debug',
+          ].join('\n'),
+          style: {
+            borderColor: 'cyan',
+            borderStyle: 'rounded',
+          },
+        })
 
-        // Show breakdown by type for better visibility
-        const typeCount = {
-          query: 0,
-          mutation: 0,
-          resolver: 0,
-          type: 0,
-          subscription: 0,
-          directive: 0,
-        }
-        for (const resolver of resolvers) {
-          for (const imp of resolver.imports) {
-            if (imp.type in typeCount) {
-              typeCount[imp.type as keyof typeof typeCount]++
+        if (resolvers.length > 0) {
+          const totalExports = resolvers.reduce((sum, r) => sum + r.imports.length, 0)
+
+          // Show breakdown by type for better visibility
+          const typeCount = {
+            query: 0,
+            mutation: 0,
+            resolver: 0,
+            type: 0,
+            subscription: 0,
+            directive: 0,
+          }
+          for (const resolver of resolvers) {
+            for (const imp of resolver.imports) {
+              if (imp.type in typeCount) {
+                typeCount[imp.type as keyof typeof typeCount]++
+              }
             }
           }
+
+          const breakdown: string[] = []
+          if (typeCount.query > 0)
+            breakdown.push(`${typeCount.query} query`)
+          if (typeCount.mutation > 0)
+            breakdown.push(`${typeCount.mutation} mutation`)
+          if (typeCount.resolver > 0)
+            breakdown.push(`${typeCount.resolver} resolver`)
+          if (typeCount.type > 0)
+            breakdown.push(`${typeCount.type} type`)
+          if (typeCount.subscription > 0)
+            breakdown.push(`${typeCount.subscription} subscription`)
+          if (typeCount.directive > 0)
+            breakdown.push(`${typeCount.directive} directive`)
+
+          if (breakdown.length > 0) {
+            consola.success(`[nitro-graphql] ${totalExports} resolver export(s): ${breakdown.join(', ')}`)
+          }
         }
-
-        const breakdown: string[] = []
-        if (typeCount.query > 0)
-          breakdown.push(`${typeCount.query} query`)
-        if (typeCount.mutation > 0)
-          breakdown.push(`${typeCount.mutation} mutation`)
-        if (typeCount.resolver > 0)
-          breakdown.push(`${typeCount.resolver} resolver`)
-        if (typeCount.type > 0)
-          breakdown.push(`${typeCount.type} type`)
-        if (typeCount.subscription > 0)
-          breakdown.push(`${typeCount.subscription} subscription`)
-        if (typeCount.directive > 0)
-          breakdown.push(`${typeCount.directive} directive`)
-
-        if (breakdown.length > 0) {
-          consola.info(`[nitro-graphql] Resolver breakdown: ${breakdown.join(', ')}`)
+        else {
+          consola.warn('[nitro-graphql] No resolvers found. Check /_nitro/graphql/debug for details.')
         }
       }
     })
@@ -291,6 +312,16 @@ export default defineNitroModule({
       handler: join(runtime, 'health'),
       method: 'get',
     })
+
+    // Debug endpoint (development only)
+    if (nitro.options.dev) {
+      nitro.options.handlers.push({
+        route: '/_nitro/graphql/debug',
+        handler: join(runtime, 'debug'),
+        method: 'get',
+      })
+      consola.info('[nitro-graphql] Debug dashboard available at: /_nitro/graphql/debug')
+    }
 
     // Auto-import utilities
     if (nitro.options.imports) {
