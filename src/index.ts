@@ -21,6 +21,13 @@ import {
   scanSchemas,
   validateExternalServices,
 } from './utils'
+import { writeFileIfNotExists } from './utils/file-generator'
+import {
+  getDefaultPaths,
+  getScaffoldConfig,
+  resolveFilePath,
+  shouldGenerateScaffold,
+} from './utils/path-resolver'
 import { clientTypeGeneration, serverTypeGeneration } from './utils/type-generation'
 
 export type * from './types'
@@ -437,11 +444,28 @@ export default defineNitroModule({
       })
     }
 
-    if (!existsSync(join(nitro.options.rootDir, 'graphql.config.ts'))) {
-      const schemaPath = relativeWithDot(nitro.options.rootDir, resolve(nitro.graphql.buildDir, 'schema.graphql'))
-      const documentsPath = relativeWithDot(nitro.options.rootDir, resolve(nitro.graphql.clientDir, '**/*.{graphql,js,ts,jsx,tsx}'))
+    // ==================== SCAFFOLD FILE GENERATION ====================
+    // Generate scaffold files based on configuration
+    // Can be disabled via: scaffold: false or scaffold.enabled: false
 
-      writeFileSync(join(nitro.options.rootDir, 'graphql.config.ts'), `
+    if (shouldGenerateScaffold(nitro)) {
+      const placeholders = getDefaultPaths(nitro)
+      const scaffoldConfig = getScaffoldConfig(nitro)
+
+      // 1. graphql.config.ts - GraphQL Config for IDE tooling
+      const graphqlConfigPath = resolveFilePath(
+        scaffoldConfig.graphqlConfig,
+        scaffoldConfig.enabled,
+        true,
+        'graphql.config.ts',
+        placeholders,
+      )
+
+      if (graphqlConfigPath) {
+        const schemaPath = relativeWithDot(nitro.options.rootDir, resolve(nitro.graphql.buildDir, 'schema.graphql'))
+        const documentsPath = relativeWithDot(nitro.options.rootDir, resolve(nitro.graphql.clientDir, '**/*.{graphql,js,ts,jsx,tsx}'))
+
+        writeFileIfNotExists(graphqlConfigPath, `
 import type { IGraphQLConfig } from 'graphql-config'
 
 export default <IGraphQLConfig> {
@@ -455,22 +479,50 @@ export default <IGraphQLConfig> {
         ],
       },
     },
-}`, 'utf-8')
-    }
+}`, 'graphql.config.ts')
+      }
 
-    if (!existsSync(nitro.graphql.serverDir)) {
-      mkdirSync(nitro.graphql.serverDir, { recursive: true })
-    }
+      // Ensure server GraphQL directory exists if any server files will be generated
+      const serverSchemaPath = resolveFilePath(
+        scaffoldConfig.serverSchema,
+        scaffoldConfig.enabled,
+        true,
+        '{serverGraphql}/schema.ts',
+        placeholders,
+      )
+      const serverConfigPath = resolveFilePath(
+        scaffoldConfig.serverConfig,
+        scaffoldConfig.enabled,
+        true,
+        '{serverGraphql}/config.ts',
+        placeholders,
+      )
+      const serverContextPath = resolveFilePath(
+        scaffoldConfig.serverContext,
+        scaffoldConfig.enabled,
+        true,
+        '{serverGraphql}/context.ts',
+        placeholders,
+      )
 
-    if (!existsSync(join(nitro.graphql.serverDir, 'schema.ts'))) {
-      writeFileSync(join(nitro.graphql.serverDir, 'schema.ts'), `export default defineSchema({
+      // Create server directory if any server scaffold files will be generated
+      if (serverSchemaPath || serverConfigPath || serverContextPath) {
+        if (!existsSync(nitro.graphql.serverDir)) {
+          mkdirSync(nitro.graphql.serverDir, { recursive: true })
+        }
+      }
+
+      // 2. server/graphql/schema.ts - Schema definition file
+      if (serverSchemaPath) {
+        writeFileIfNotExists(serverSchemaPath, `export default defineSchema({
 
 })
-`, 'utf-8')
-    }
+`, 'server schema.ts')
+      }
 
-    if (!existsSync(join(nitro.graphql.serverDir, 'config.ts'))) {
-      writeFileSync(join(nitro.graphql.serverDir, 'config.ts'), `// Example GraphQL config file please change it to your needs
+      // 3. server/graphql/config.ts - GraphQL server configuration
+      if (serverConfigPath) {
+        writeFileIfNotExists(serverConfigPath, `// Example GraphQL config file please change it to your needs
 // import * as tables from '../drizzle/schema/index'
 // import { useDatabase } from '../utils/useDb'
 
@@ -485,11 +537,12 @@ export default defineGraphQLConfig({
 //   }
 // },
 })
-`, 'utf-8')
-    }
+`, 'server config.ts')
+      }
 
-    if (!existsSync(join(nitro.graphql.serverDir, 'context.ts'))) {
-      writeFileSync(join(nitro.graphql.serverDir, 'context.ts'), `// Example context definition - please change it to your needs
+      // 4. server/graphql/context.ts - H3 context augmentation
+      if (serverContextPath) {
+        writeFileIfNotExists(serverContextPath, `// Example context definition - please change it to your needs
 // import type { Database } from '../utils/useDb'
 
 declare module 'h3' {
@@ -504,13 +557,17 @@ declare module 'h3' {
     //   }
     // }
   }
-}`, 'utf-8')
-    }
+}`, 'server context.ts')
+      }
 
-    // Check for old context.d.ts file and warn users to migrate
-    if (existsSync(join(nitro.graphql.serverDir, 'context.d.ts'))) {
-      consola.warn('nitro-graphql: Found context.d.ts file. Please rename it to context.ts for the new structure.')
-      consola.info('The context file should now be context.ts instead of context.d.ts')
+      // Check for old context.d.ts file and warn users to migrate
+      if (existsSync(join(nitro.graphql.serverDir, 'context.d.ts'))) {
+        consola.warn('nitro-graphql: Found context.d.ts file. Please rename it to context.ts for the new structure.')
+        consola.info('The context file should now be context.ts instead of context.d.ts')
+      }
+    }
+    else {
+      consola.info('[nitro-graphql] Scaffold file generation is disabled (library mode)')
     }
   },
 })

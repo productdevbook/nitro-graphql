@@ -68,6 +68,19 @@ declare module 'nitropack' {
   }
 }
 
+/**
+ * Service-specific path overrides for external GraphQL services
+ * These paths override global config for this specific service
+ */
+export interface ExternalServicePaths {
+  /** SDK file path (overrides global sdk.external config) */
+  sdk?: FileGenerationConfig
+  /** Type definitions file path (overrides global types.external config) */
+  types?: FileGenerationConfig
+  /** ofetch client wrapper path (overrides global clientUtils.ofetch config) */
+  ofetch?: FileGenerationConfig
+}
+
 export interface ExternalGraphQLService {
   /** Unique name for this service (used for file naming and type generation) */
   name: string
@@ -94,6 +107,12 @@ export interface ExternalGraphQLService {
     client?: CodegenClientConfig
     clientSDK?: GenericSdkConfig
   }
+  /**
+   * Optional: Service-specific path overrides
+   * These paths take precedence over global config (sdk, types, clientUtils)
+   * Supports placeholders: {serviceName}, {buildDir}, {rootDir}, {framework}, {typesDir}, {clientGraphql}
+   */
+  paths?: ExternalServicePaths
 }
 
 export interface FederationConfig {
@@ -105,6 +124,87 @@ export interface FederationConfig {
   serviceVersion?: string
   /** Service URL for federation gateway */
   serviceUrl?: string
+}
+
+/**
+ * File generation control:
+ * - false: Do not generate this file
+ * - true: Generate at default location
+ * - string: Generate at custom path (supports placeholders: {serviceName}, {buildDir}, {rootDir}, {framework})
+ */
+export type FileGenerationConfig = boolean | string
+
+/**
+ * Scaffold files configuration
+ * Control auto-generation of scaffold/boilerplate files
+ */
+export interface ScaffoldConfig {
+  /** Enable/disable all scaffold files */
+  enabled?: boolean
+  /** graphql.config.ts - GraphQL Config file for IDE tooling */
+  graphqlConfig?: FileGenerationConfig
+  /** server/graphql/schema.ts - Schema definition file */
+  serverSchema?: FileGenerationConfig
+  /** server/graphql/config.ts - GraphQL server configuration */
+  serverConfig?: FileGenerationConfig
+  /** server/graphql/context.ts - H3 context augmentation */
+  serverContext?: FileGenerationConfig
+}
+
+/**
+ * Client utilities configuration
+ * Control auto-generation of client-side utility files (Nuxt only)
+ */
+export interface ClientUtilsConfig {
+  /** Enable/disable all client utilities */
+  enabled?: boolean
+  /** app/graphql/index.ts - Main exports file */
+  index?: FileGenerationConfig
+  /** app/graphql/{serviceName}/ofetch.ts - ofetch client wrapper */
+  ofetch?: FileGenerationConfig
+}
+
+/**
+ * SDK files configuration
+ * Control auto-generation of GraphQL SDK files
+ */
+export interface SdkConfig {
+  /** Enable/disable all SDK files */
+  enabled?: boolean
+  /** app/graphql/default/sdk.ts - Main service SDK */
+  main?: FileGenerationConfig
+  /** app/graphql/{serviceName}/sdk.ts - External service SDKs */
+  external?: FileGenerationConfig
+}
+
+/**
+ * Type files configuration
+ * Control auto-generation of TypeScript type definition files
+ */
+export interface TypesConfig {
+  /** Enable/disable all type files */
+  enabled?: boolean
+  /** .nitro/types/nitro-graphql-server.d.ts - Server-side types */
+  server?: FileGenerationConfig
+  /** .nitro/types/nitro-graphql-client.d.ts - Client-side types */
+  client?: FileGenerationConfig
+  /** .nitro/types/nitro-graphql-client-{serviceName}.d.ts - External service types */
+  external?: FileGenerationConfig
+}
+
+/**
+ * Global path overrides
+ * Set base directories for file generation
+ */
+export interface PathsConfig {
+  /** Server GraphQL directory (default: 'server/graphql') */
+  serverGraphql?: string
+  /** Client GraphQL directory (default: 'app/graphql' for Nuxt, 'graphql' for Nitro) */
+  clientGraphql?: string
+  /** Build directory (default: '.nitro' or '.nuxt') */
+  buildDir?: string
+  /** Types directory (default: '{buildDir}/types') */
+  typesDir?: string
 }
 
 export interface NitroGraphQLOptions {
@@ -136,4 +236,29 @@ export interface NitroGraphQLOptions {
   layerDirectories?: string[]
   layerServerDirs?: string[]
   layerAppDirs?: string[]
+  /**
+   * Scaffold files configuration
+   * Set to false to disable all scaffold file generation (library mode)
+   */
+  scaffold?: false | ScaffoldConfig
+  /**
+   * Client utilities configuration
+   * Set to false to disable all client utility generation
+   */
+  clientUtils?: false | ClientUtilsConfig
+  /**
+   * SDK files configuration
+   * Set to false to disable all SDK generation
+   */
+  sdk?: false | SdkConfig
+  /**
+   * Type files configuration
+   * Set to false to disable all type generation
+   */
+  types?: false | TypesConfig
+  /**
+   * Global path overrides
+   * Customize base directories for file generation
+   */
+  paths?: PathsConfig
 }
