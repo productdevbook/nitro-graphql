@@ -27,13 +27,13 @@ export interface PathPlaceholders {
  */
 export function replacePlaceholders(path: string, placeholders: PathPlaceholders): string {
   return path
-    .replace(/{serviceName}/g, placeholders.serviceName || 'default')
-    .replace(/{buildDir}/g, placeholders.buildDir)
-    .replace(/{rootDir}/g, placeholders.rootDir)
-    .replace(/{framework}/g, placeholders.framework)
-    .replace(/{typesDir}/g, placeholders.typesDir)
-    .replace(/{serverGraphql}/g, placeholders.serverGraphql)
-    .replace(/{clientGraphql}/g, placeholders.clientGraphql)
+    .replace(/\{serviceName\}/g, placeholders.serviceName || 'default')
+    .replace(/\{buildDir\}/g, placeholders.buildDir)
+    .replace(/\{rootDir\}/g, placeholders.rootDir)
+    .replace(/\{framework\}/g, placeholders.framework)
+    .replace(/\{typesDir\}/g, placeholders.typesDir)
+    .replace(/\{serverGraphql\}/g, placeholders.serverGraphql)
+    .replace(/\{clientGraphql\}/g, placeholders.clientGraphql)
 }
 
 /**

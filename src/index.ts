@@ -1,6 +1,6 @@
 import type { Nitro } from 'nitropack/types'
 import type { NitroGraphQLOptions } from './types'
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { watch } from 'chokidar'
 

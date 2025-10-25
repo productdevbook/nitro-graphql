@@ -17,7 +17,6 @@ import {
   getTypesConfig,
   resolveFilePath,
   shouldGenerateClientUtils,
-  shouldGenerateSDK,
   shouldGenerateTypes,
 } from './path-resolver'
 import { generateTypes } from './server-codegen'
