@@ -8,12 +8,13 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![bundle][bundle-src]][bundle-href]
 [![License][license-src]][license-href]
+[![Documentation][docs-src]][docs-href]
 
 **The easiest way to add GraphQL to any Nitro application**
 
 🚀 **Auto-discovery** • 📝 **Type Generation** • 🎮 **Apollo Sandbox** • 🔧 **Zero Config**
 
-[Quick Start](#-quick-start) • [Examples](#-examples) • [Documentation](#-documentation) • [Community](#-community)
+[📚 Documentation](https://nitro-graphql.pages.dev) • [Quick Start](#-quick-start) • [Examples](#-examples) • [Community](#-community)
 
 </div>
 
@@ -1218,3 +1219,5 @@ pnpm lint
 [bundle-href]: https://deno.bundlejs.com/badge?q=nitro-graphql@0.0.4
 [license-src]: https://img.shields.io/github/license/productdevbook/nitro-graphql.svg?style=flat&colorA=080f12&colorB=1fa669
 [license-href]: https://github.com/productdevbook/nitro-graphql/blob/main/LICENSE
+[docs-src]: https://img.shields.io/badge/docs-read-blue?style=flat&colorA=080f12&colorB=1fa669
+[docs-href]: https://nitro-graphql.pages.dev
