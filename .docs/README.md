@@ -193,12 +193,33 @@ pnpm build
 
 This creates a `.vitepress/dist` directory with static files ready for deployment.
 
-### Deploy Options
+### Cloudflare Pages
+
+#### Configuration
+
+1. **Production branch**: `docs`
+2. **Framework preset**: VitePress
+3. **Build command**: `cd .docs && pnpm install && pnpm build`
+4. **Build output directory**: `.docs/.vitepress/dist`
+5. **Root directory**: (leave empty)
+6. **Node version**: `20.x` or higher
+
+#### Alternative: Root Scripts
+
+You can also use npm scripts from root:
+
+- **Build command**: `pnpm docs:build`
+- **Build output directory**: `.docs/.vitepress/dist`
+
+#### Environment Variables
+
+No environment variables required.
+
+### Other Deploy Options
 
 - **Vercel**: Auto-deploy from GitHub
 - **Netlify**: Drop the `dist` folder
 - **GitHub Pages**: Use GitHub Actions
-- **Cloudflare Pages**: Connect repository
 
 ## 📊 Documentation Statistics
 

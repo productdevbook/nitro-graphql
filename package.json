@@ -68,6 +68,9 @@
     "playground:nitro": "cd playgrounds/nitro && pnpm install && pnpm dev",
     "playground:nuxt": "cd playgrounds/nuxt && pnpm install && pnpm dev",
     "playground:federation": "cd playgrounds/federation && pnpm install && pnpm dev",
+    "docs:dev": "cd .docs && pnpm install && pnpm dev",
+    "docs:build": "cd .docs && pnpm install && pnpm build",
+    "docs:preview": "cd .docs && pnpm preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
