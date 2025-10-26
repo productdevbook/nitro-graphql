@@ -211,6 +211,246 @@ query {
 ## 🚀 Advanced Features
 
 <details>
+<summary><strong>🎛️ Custom File Generation & Paths</strong></summary>
+
+Control which files are auto-generated and customize their output paths. Perfect for library development, monorepos, or custom project structures.
+
+### Library Mode
+
+Disable all scaffold files for library/module development:
+
+```ts
+// nitro.config.ts
+export default defineNitroConfig({
+  graphql: {
+    framework: 'graphql-yoga',
+    scaffold: false,        // Disable all scaffold files
+    clientUtils: false,     // Disable client utilities
+  }
+})
+```
+
+### Fine-Grained Control
+
+Control each file individually:
+
+```ts
+export default defineNitroConfig({
+  graphql: {
+    framework: 'graphql-yoga',
+
+    // Scaffold files
+    scaffold: {
+      graphqlConfig: false,     // Don't generate graphql.config.ts
+      serverSchema: true,       // Generate server/graphql/schema.ts
+      serverConfig: true,       // Generate server/graphql/config.ts
+      serverContext: false,     // Don't generate server/graphql/context.ts
+    },
+
+    // Client utilities (Nuxt only)
+    clientUtils: {
+      index: true,              // Generate app/graphql/index.ts
+      ofetch: false,            // Don't generate ofetch wrappers
+    },
+
+    // SDK files
+    sdk: {
+      main: true,               // Generate default SDK
+      external: true,           // Generate external service SDKs
+    },
+
+    // Type files
+    types: {
+      server: true,             // Generate server types
+      client: true,             // Generate client types
+      external: true,           // Generate external service types
+    }
+  }
+})
+```
+
+### Custom Paths
+
+Customize where files are generated:
+
+```ts
+export default defineNitroConfig({
+  graphql: {
+    framework: 'graphql-yoga',
+
+    // Method 1: Global paths (affects all files)
+    paths: {
+      serverGraphql: 'src/server/graphql',
+      clientGraphql: 'src/client/graphql',
+      buildDir: '.build',
+      typesDir: '.build/types',
+    },
+
+    // Method 2: Specific file paths
+    scaffold: {
+      serverSchema: 'lib/graphql/schema.ts',
+      serverConfig: 'lib/graphql/config.ts',
+    },
+
+    sdk: {
+      main: 'app/graphql/organization/sdk.ts',
+      external: 'app/graphql/{serviceName}/client-sdk.ts',
+    },
+
+    types: {
+      server: 'types/graphql-server.d.ts',
+      client: 'types/graphql-client.d.ts',
+    }
+  }
+})
+```
+
+### Path Placeholders
+
+Use placeholders in custom paths:
+
+| Placeholder | Description | Example |
+|------------|-------------|---------|
+| `{serviceName}` | External service name | `github`, `stripe` |
+| `{buildDir}` | Build directory | `.nitro` or `.nuxt` |
+| `{rootDir}` | Root directory | `/Users/you/project` |
+| `{framework}` | Framework name | `nuxt` or `nitro` |
+| `{typesDir}` | Types directory | `.nitro/types` |
+| `{serverGraphql}` | Server GraphQL dir | `server/graphql` |
+| `{clientGraphql}` | Client GraphQL dir | `app/graphql` |
+
+Example:
+```ts
+sdk: {
+  external: '{clientGraphql}/{serviceName}/sdk.ts'
+}
+// → app/graphql/github/sdk.ts
+// → app/graphql/stripe/sdk.ts
+```
+
+### Service-Specific Paths
+
+Customize paths for individual external services:
+
+```ts
+export default defineNuxtConfig({
+  nitro: {
+    graphql: {
+      framework: 'graphql-yoga',
+
+      // Global default for all external services
+      sdk: {
+        external: 'app/graphql/{serviceName}/sdk.ts'
+      },
+
+      externalServices: [
+        {
+          name: 'github',
+          endpoint: 'https://api.github.com/graphql',
+          schema: 'https://api.github.com/graphql',
+
+          // GitHub-specific paths (override global config)
+          paths: {
+            sdk: 'app/graphql/organization/github-sdk.ts',
+            types: 'types/github.d.ts',
+            ofetch: 'app/graphql/organization/github-client.ts'
+          }
+        },
+        {
+          name: 'stripe',
+          endpoint: 'https://api.stripe.com/graphql',
+          schema: 'https://api.stripe.com/graphql',
+
+          // Stripe-specific paths
+          paths: {
+            sdk: 'app/graphql/payments/stripe-sdk.ts',
+            types: 'types/payments/stripe.d.ts',
+            // ofetch uses global config
+          }
+        },
+        {
+          name: 'shopify',
+          endpoint: 'https://api.shopify.com/graphql',
+          // No paths → uses global config
+          // → app/graphql/shopify/sdk.ts
+        }
+      ]
+    }
+  }
+})
+```
+
+### Path Resolution Priority
+
+When resolving file paths, the system follows this priority order:
+
+1. **Service-specific path** (for external services): `service.paths.sdk`
+2. **Category config**: `sdk.external` or `sdk.main`
+3. **Global paths**: `paths.clientGraphql`
+4. **Framework defaults**: Nuxt vs Nitro defaults
+
+Example:
+```ts
+// Given this config:
+{
+  paths: { clientGraphql: 'custom/graphql' },
+  sdk: { external: '{clientGraphql}/{serviceName}/sdk.ts' },
+  externalServices: [
+    {
+      name: 'github',
+      paths: { sdk: 'app/org/github-sdk.ts' }  // ← Wins (priority 1)
+    },
+    {
+      name: 'stripe',
+      // Uses sdk.external (priority 2)
+      // → custom/graphql/stripe/sdk.ts
+    }
+  ]
+}
+```
+
+### Use Cases
+
+**Monorepo structure:**
+```ts
+paths: {
+  serverGraphql: 'packages/api/src/graphql',
+  clientGraphql: 'packages/web/src/graphql',
+  typesDir: 'packages/types/src/generated',
+}
+```
+
+**Multiple external service organizations:**
+```ts
+externalServices: [
+  {
+    name: 'github',
+    paths: { sdk: 'app/graphql/vcs/github-sdk.ts' }
+  },
+  {
+    name: 'gitlab',
+    paths: { sdk: 'app/graphql/vcs/gitlab-sdk.ts' }
+  },
+  {
+    name: 'stripe',
+    paths: { sdk: 'app/graphql/billing/stripe-sdk.ts' }
+  }
+]
+```
+
+**Library development (no scaffolding):**
+```ts
+{
+  scaffold: false,
+  clientUtils: false,
+  sdk: { enabled: true },    // Only generate SDKs
+  types: { enabled: true },  // Only generate types
+}
+```
+
+</details>
+
+<details>
 <summary><strong>🎭 Custom Directives</strong></summary>
 
 Create reusable GraphQL directives:
