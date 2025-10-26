@@ -3,3 +3,4 @@ dist
 .output
 .nitro
 *.log
+*/.vitepress/cache
