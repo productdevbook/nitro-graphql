@@ -8,6 +8,7 @@ export default defineConfig({
   lang: 'en-US',
   cleanUrls: true,
   lastUpdated: true,
+  ignoreDeadLinks: true,
 
   vite: {
     plugins: [llmstxt()],
