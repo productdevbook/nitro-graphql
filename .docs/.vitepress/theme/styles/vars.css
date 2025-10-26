@@ -1,0 +1,106 @@
+/**
+ * Custom CSS Variables
+ * Brand colors inspired by GraphQL and Nitro
+ */
+
+:root {
+  /* Brand Colors */
+  --vp-c-brand-1: #E10098;
+  --vp-c-brand-2: #C5008A;
+  --vp-c-brand-3: #A0007A;
+  --vp-c-brand-soft: rgba(225, 0, 152, 0.14);
+
+  /* Accent Colors */
+  --vp-c-accent-1: #00DC82;
+  --vp-c-accent-2: #00C174;
+  --vp-c-accent-3: #00A665;
+
+  /* Purple Gradient */
+  --vp-c-purple-1: #8B5CF6;
+  --vp-c-purple-2: #7C3AED;
+  --vp-c-purple-3: #6D28D9;
+
+  /* Typography */
+  --vp-font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+  --vp-font-family-mono: 'Fira Code', 'Courier New', monospace;
+
+  /* Hero Colors */
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(135deg, var(--vp-c-brand-1) 0%, var(--vp-c-purple-1) 100%);
+
+  /* Custom Shadow */
+  --vp-shadow-1: 0 1px 2px rgba(225, 0, 152, 0.04);
+  --vp-shadow-2: 0 3px 12px rgba(225, 0, 152, 0.07);
+  --vp-shadow-3: 0 12px 32px rgba(225, 0, 152, 0.1);
+  --vp-shadow-4: 0 14px 44px rgba(225, 0, 152, 0.12);
+  --vp-shadow-5: 0 18px 56px rgba(225, 0, 152, 0.16);
+}
+
+.dark {
+  --vp-c-brand-1: #E10098;
+  --vp-c-brand-2: #FF33B8;
+  --vp-c-brand-3: #FF66CC;
+  --vp-c-brand-soft: rgba(225, 0, 152, 0.16);
+
+  --vp-c-accent-1: #00DC82;
+  --vp-c-accent-2: #00F596;
+  --vp-c-accent-3: #33FFB0;
+}
+
+/**
+ * Component: Button
+ * -------------------------------------------------------------------------- */
+
+:root {
+  --vp-button-brand-border: transparent;
+  --vp-button-brand-text: var(--vp-c-white);
+  --vp-button-brand-bg: var(--vp-c-brand-1);
+  --vp-button-brand-hover-border: transparent;
+  --vp-button-brand-hover-text: var(--vp-c-white);
+  --vp-button-brand-hover-bg: var(--vp-c-brand-2);
+  --vp-button-brand-active-border: transparent;
+  --vp-button-brand-active-text: var(--vp-c-white);
+  --vp-button-brand-active-bg: var(--vp-c-brand-3);
+}
+
+/**
+ * Component: Home
+ * -------------------------------------------------------------------------- */
+
+:root {
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(135deg, #E10098 0%, #8B5CF6 100%);
+  --vp-home-hero-image-background-image: linear-gradient(135deg, rgba(225, 0, 152, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+  --vp-home-hero-image-filter: blur(44px);
+}
+
+@media (min-width: 640px) {
+  :root {
+    --vp-home-hero-image-filter: blur(56px);
+  }
+}
+
+@media (min-width: 960px) {
+  :root {
+    --vp-home-hero-image-filter: blur(68px);
+  }
+}
+
+/**
+ * Component: Custom Block
+ * -------------------------------------------------------------------------- */
+
+:root {
+  --vp-custom-block-tip-border: transparent;
+  --vp-custom-block-tip-text: var(--vp-c-text-1);
+  --vp-custom-block-tip-bg: var(--vp-c-brand-soft);
+  --vp-custom-block-tip-code-bg: var(--vp-c-brand-soft);
+}
+
+/**
+ * Component: Algolia
+ * -------------------------------------------------------------------------- */
+
+.DocSearch {
+  --docsearch-primary-color: var(--vp-c-brand-1) !important;
+}

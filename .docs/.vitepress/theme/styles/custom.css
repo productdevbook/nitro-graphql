@@ -1,0 +1,262 @@
+/**
+ * Custom Styles for Nitro GraphQL Documentation
+ */
+
+/* Enhanced Code Blocks */
+.vp-doc div[class*='language-'] {
+  position: relative;
+  margin: 16px 0;
+  border-radius: 8px;
+  background-color: var(--vp-code-block-bg);
+  overflow-x: auto;
+  transition: background-color 0.5s;
+}
+
+.vp-doc div[class*='language-']:hover {
+  background-color: var(--vp-code-block-hover-bg, var(--vp-code-block-bg));
+}
+
+/* Copy Button Enhancement */
+.vp-doc div[class*='language-'] button.copy {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.vp-doc div[class*='language-']:hover button.copy {
+  opacity: 1;
+}
+
+/* Custom Badges */
+.custom-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.custom-badge.new {
+  background-color: var(--vp-c-accent-soft);
+  color: var(--vp-c-accent-1);
+}
+
+.custom-badge.beta {
+  background-color: var(--vp-c-purple-soft, rgba(139, 92, 246, 0.14));
+  color: var(--vp-c-purple-1);
+}
+
+.custom-badge.deprecated {
+  background-color: var(--vp-c-warning-soft);
+  color: var(--vp-c-warning-1);
+}
+
+/* Feature Grid Enhancements */
+.VPFeatures.VPHomeFeatures {
+  padding-top: 48px;
+  padding-bottom: 48px;
+}
+
+.VPFeature {
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.VPFeature:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--vp-shadow-3);
+}
+
+/* Hero Section Enhancement */
+.VPHero .name {
+  background: var(--vp-home-hero-name-background);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Custom Table Styles */
+.vp-doc table {
+  display: block;
+  border-collapse: collapse;
+  margin: 20px 0;
+  overflow-x: auto;
+}
+
+.vp-doc th {
+  background-color: var(--vp-c-bg-soft);
+  font-weight: 600;
+}
+
+.vp-doc tr:hover {
+  background-color: var(--vp-c-bg-soft);
+}
+
+/* Info Boxes */
+.info-box {
+  padding: 16px;
+  border-left: 4px solid var(--vp-c-brand-1);
+  background-color: var(--vp-c-brand-soft);
+  border-radius: 4px;
+  margin: 16px 0;
+}
+
+.info-box.tip {
+  border-left-color: var(--vp-c-tip-1);
+  background-color: var(--vp-c-tip-soft);
+}
+
+.info-box.warning {
+  border-left-color: var(--vp-c-warning-1);
+  background-color: var(--vp-c-warning-soft);
+}
+
+.info-box.danger {
+  border-left-color: var(--vp-c-danger-1);
+  background-color: var(--vp-c-danger-soft);
+}
+
+/* Code Group Tabs */
+.vp-code-group .tabs {
+  display: flex;
+  gap: 4px;
+  padding: 12px 12px 0;
+  background-color: var(--vp-code-block-bg);
+  border-radius: 8px 8px 0 0;
+}
+
+.vp-code-group .tabs label {
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: 4px 4px 0 0;
+  transition: background-color 0.3s;
+}
+
+.vp-code-group .tabs label:hover {
+  background-color: var(--vp-c-bg-soft);
+}
+
+.vp-code-group .tabs input:checked + label {
+  background-color: var(--vp-c-brand-soft);
+  color: var(--vp-c-brand-1);
+}
+
+/* Inline Code Enhancement */
+.vp-doc :not(pre) > code {
+  background-color: var(--vp-c-mute);
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.vp-doc :not(pre) > code:hover {
+  background-color: var(--vp-c-mute-dark, var(--vp-c-mute));
+}
+
+/* Navigation Enhancement */
+.VPNavBarTitle .title {
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--vp-c-brand-1) 0%, var(--vp-c-purple-1) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Nav Menu Items */
+.VPNavBarMenu .VPLink {
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.25s ease;
+}
+
+.VPNavBarMenu .VPLink:hover {
+  background-color: var(--vp-c-bg-soft);
+  color: var(--vp-c-brand-1);
+}
+
+.VPNavBarMenu .VPLink.active {
+  color: var(--vp-c-brand-1);
+  font-weight: 600;
+}
+
+/* Dropdown Menu */
+.VPNavBarMenuGroup .button {
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.25s ease;
+}
+
+.VPNavBarMenuGroup .button:hover {
+  background-color: var(--vp-c-bg-soft);
+  color: var(--vp-c-brand-1);
+}
+
+/* Sidebar Enhancement */
+.VPSidebarItem.level-0.is-active > .item > .indicator {
+  background-color: var(--vp-c-brand-1);
+}
+
+.VPSidebarItem.is-link:hover .link {
+  color: var(--vp-c-brand-1);
+}
+
+/* Custom Animations */
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animated-gradient {
+  background: linear-gradient(270deg, var(--vp-c-brand-1), var(--vp-c-purple-1), var(--vp-c-accent-1));
+  background-size: 600% 600%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+/* Responsive Images */
+.vp-doc img {
+  border-radius: 8px;
+  box-shadow: var(--vp-shadow-2);
+}
+
+/* Footer Enhancement */
+.VPFooter {
+  border-top: 1px solid var(--vp-c-divider);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--vp-c-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--vp-c-brand-soft);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--vp-c-brand-1);
+}
+
+/* Print Styles */
+@media print {
+  .VPNav,
+  .VPSidebar,
+  .VPFooter {
+    display: none;
+  }
+}
