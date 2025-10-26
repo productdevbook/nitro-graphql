@@ -6,6 +6,7 @@ import FeatureGrid from './components/FeatureGrid.vue'
 import VideoEmbed from './components/VideoEmbed.vue'
 import './styles/vars.css'
 import './styles/custom.css'
+import './styles/landing.css'
 
 export default {
   extends: DefaultTheme,
