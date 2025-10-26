@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitepress'
-import { llmsPlugin } from 'vitepress-plugin-llms'
+import llmstxt from 'vitepress-plugin-llms'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -8,6 +8,10 @@ export default defineConfig({
   lang: 'en-US',
   cleanUrls: true,
   lastUpdated: true,
+
+  vite: {
+    plugins: [llmstxt()],
+  },
 
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }],
@@ -207,9 +211,6 @@ export default defineConfig({
     theme: {
       light: 'github-light',
       dark: 'github-dark',
-    },
-    config(md) {
-      md.use(llmsPlugin)
     },
     codeTransformers: [
       {
