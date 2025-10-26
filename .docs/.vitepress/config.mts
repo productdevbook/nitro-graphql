@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress'
+import { llmsPlugin } from 'vitepress-plugin-llms'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -207,11 +208,14 @@ export default defineConfig({
       light: 'github-light',
       dark: 'github-dark',
     },
+    config(md) {
+      md.use(llmsPlugin)
+    },
     codeTransformers: [
       {
         // Code group support
         name: 'code-group-transformer',
-        preprocess(code, options) {
+        preprocess(code) {
           return code
         },
       },
