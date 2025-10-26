@@ -49,10 +49,11 @@
   --vp-c-default-3: var(--vp-c-gray-3);
   --vp-c-default-soft: var(--vp-c-gray-soft);
 
-  --vp-c-brand-1: var(--vp-c-indigo-1);
-  --vp-c-brand-2: var(--vp-c-indigo-2);
-  --vp-c-brand-3: var(--vp-c-indigo-3);
-  --vp-c-brand-soft: var(--vp-c-indigo-soft);
+  /* GraphQL themed colors */
+  --vp-c-brand-1: #E10098;
+  --vp-c-brand-2: #C6008B;
+  --vp-c-brand-3: #A3007A;
+  --vp-c-brand-soft: rgba(225, 0, 152, 0.14);
 
   --vp-c-tip-1: var(--vp-c-brand-1);
   --vp-c-tip-2: var(--vp-c-brand-2);
@@ -94,14 +95,14 @@
   --vp-home-hero-name-color: transparent;
   --vp-home-hero-name-background: -webkit-linear-gradient(
     120deg,
-    #bd34fe 30%,
-    #41d1ff
+    #E10098 30%,
+    #5934fe
   );
 
   --vp-home-hero-image-background-image: linear-gradient(
     -45deg,
-    #bd34fe 50%,
-    #47caff 50%
+    #E10098 50%,
+    #5934fe 50%
   );
   --vp-home-hero-image-filter: blur(44px);
 }

@@ -37,14 +37,28 @@
 }
 
 .dark {
-  --vp-c-brand-1: #E10098;
-  --vp-c-brand-2: #FF33B8;
-  --vp-c-brand-3: #FF66CC;
-  --vp-c-brand-soft: rgba(225, 0, 152, 0.16);
+  /* Brighter colors for dark mode */
+  --vp-c-brand-1: #FF4DB8;
+  --vp-c-brand-2: #FF66C4;
+  --vp-c-brand-3: #FF80D0;
+  --vp-c-brand-soft: rgba(255, 77, 184, 0.16);
 
-  --vp-c-accent-1: #00DC82;
-  --vp-c-accent-2: #00F596;
-  --vp-c-accent-3: #33FFB0;
+  --vp-c-accent-1: #00F596;
+  --vp-c-accent-2: #33FFB0;
+  --vp-c-accent-3: #66FFC4;
+
+  /* Purple colors for dark mode */
+  --vp-c-purple-1: #A78BFA;
+  --vp-c-purple-2: #C4B5FD;
+  --vp-c-purple-3: #DDD6FE;
+  --vp-c-purple-soft: rgba(167, 139, 250, 0.16);
+
+  /* Enhanced shadows for dark mode */
+  --vp-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --vp-shadow-2: 0 3px 12px rgba(0, 0, 0, 0.4);
+  --vp-shadow-3: 0 12px 32px rgba(0, 0, 0, 0.5);
+  --vp-shadow-4: 0 14px 44px rgba(0, 0, 0, 0.6);
+  --vp-shadow-5: 0 18px 56px rgba(0, 0, 0, 0.7);
 }
 
 /**
@@ -72,6 +86,11 @@
   --vp-home-hero-name-background: linear-gradient(135deg, #E10098 0%, #8B5CF6 100%);
   --vp-home-hero-image-background-image: linear-gradient(135deg, rgba(225, 0, 152, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
   --vp-home-hero-image-filter: blur(44px);
+}
+
+.dark {
+  --vp-home-hero-name-background: linear-gradient(135deg, #FF4DB8 0%, #A78BFA 100%);
+  --vp-home-hero-image-background-image: linear-gradient(135deg, rgba(255, 77, 184, 0.15) 0%, rgba(167, 139, 250, 0.15) 100%);
 }
 
 @media (min-width: 640px) {

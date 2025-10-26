@@ -4,26 +4,18 @@
 
 /* Enhanced Code Blocks */
 .vp-doc div[class*='language-'] {
-  position: relative;
-  margin: 16px 0;
   border-radius: 8px;
-  background-color: var(--vp-code-block-bg);
-  overflow-x: auto;
-  transition: background-color 0.5s;
-}
-
-.vp-doc div[class*='language-']:hover {
-  background-color: var(--vp-code-block-hover-bg, var(--vp-code-block-bg));
+  transition: background-color 0.3s ease;
 }
 
 /* Copy Button Enhancement */
 .vp-doc div[class*='language-'] button.copy {
-  opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity 0.3s ease;
 }
 
-.vp-doc div[class*='language-']:hover button.copy {
-  opacity: 1;
+/* Dark mode code block border */
+.dark .vp-doc div[class*='language-'] {
+  border: 1px solid var(--vp-c-divider);
 }
 
 /* Custom Badges */
@@ -34,6 +26,7 @@
   font-size: 12px;
   font-weight: 600;
   line-height: 1.5;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .custom-badge.new {
@@ -51,19 +44,43 @@
   color: var(--vp-c-warning-1);
 }
 
-/* Feature Grid Enhancements */
-.VPFeatures.VPHomeFeatures {
-  padding-top: 48px;
-  padding-bottom: 48px;
+/* Dark mode badges */
+.dark .custom-badge {
+  border: 1px solid currentColor;
 }
 
+.dark .custom-badge.new {
+  background-color: rgba(0, 245, 150, 0.15);
+  border-color: var(--vp-c-accent-1);
+}
+
+.dark .custom-badge.beta {
+  background-color: rgba(167, 139, 250, 0.15);
+  border-color: var(--vp-c-purple-1);
+}
+
+.dark .custom-badge.deprecated {
+  background-color: rgba(234, 179, 8, 0.15);
+  border-color: var(--vp-c-warning-1);
+}
+
+/* Feature Grid Enhancements */
 .VPFeature {
-  transition: transform 0.3s, box-shadow 0.3s;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .VPFeature:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--vp-shadow-3);
+  transform: translateY(-2px);
+}
+
+/* Dark mode feature cards */
+.dark .VPFeature {
+  border: 1px solid var(--vp-c-divider);
+}
+
+.dark .VPFeature:hover {
+  border-color: var(--vp-c-brand-1);
+  box-shadow: 0 8px 24px rgba(225, 0, 152, 0.15);
 }
 
 /* Hero Section Enhancement */
@@ -76,19 +93,30 @@
 
 /* Custom Table Styles */
 .vp-doc table {
-  display: block;
-  border-collapse: collapse;
-  margin: 20px 0;
+  width: 100%;
   overflow-x: auto;
 }
 
-.vp-doc th {
-  background-color: var(--vp-c-bg-soft);
-  font-weight: 600;
+.vp-doc tr {
+  transition: background-color 0.2s ease;
 }
 
 .vp-doc tr:hover {
   background-color: var(--vp-c-bg-soft);
+}
+
+/* Dark mode table enhancements */
+.dark .vp-doc table {
+  border-color: var(--vp-c-divider);
+}
+
+.dark .vp-doc th {
+  background-color: var(--vp-c-bg-soft);
+  border-color: var(--vp-c-divider);
+}
+
+.dark .vp-doc td {
+  border-color: var(--vp-c-divider);
 }
 
 /* Info Boxes */
@@ -96,8 +124,9 @@
   padding: 16px;
   border-left: 4px solid var(--vp-c-brand-1);
   background-color: var(--vp-c-brand-soft);
-  border-radius: 4px;
+  border-radius: 8px;
   margin: 16px 0;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .info-box.tip {
@@ -115,93 +144,24 @@
   background-color: var(--vp-c-danger-soft);
 }
 
-/* Code Group Tabs */
-.vp-code-group .tabs {
-  display: flex;
-  gap: 4px;
-  padding: 12px 12px 0;
-  background-color: var(--vp-code-block-bg);
-  border-radius: 8px 8px 0 0;
+/* Dark mode enhancements for info boxes */
+.dark .info-box {
+  border-left-width: 3px;
 }
 
-.vp-code-group .tabs label {
-  padding: 6px 12px;
-  cursor: pointer;
-  border-radius: 4px 4px 0 0;
-  transition: background-color 0.3s;
-}
-
-.vp-code-group .tabs label:hover {
-  background-color: var(--vp-c-bg-soft);
-}
-
-.vp-code-group .tabs input:checked + label {
-  background-color: var(--vp-c-brand-soft);
-  color: var(--vp-c-brand-1);
-}
+/* Code Group Tabs - Let VitePress handle these */
 
 /* Inline Code Enhancement */
 .vp-doc :not(pre) > code {
-  background-color: var(--vp-c-mute);
-  padding: 3px 6px;
-  border-radius: 4px;
-  font-size: 0.9em;
   font-weight: 500;
-  transition: background-color 0.3s;
-}
-
-.vp-doc :not(pre) > code:hover {
-  background-color: var(--vp-c-mute-dark, var(--vp-c-mute));
 }
 
 /* Navigation Enhancement */
 .VPNavBarTitle .title {
   font-weight: 700;
-  background: linear-gradient(135deg, var(--vp-c-brand-1) 0%, var(--vp-c-purple-1) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
-/* Nav Menu Items */
-.VPNavBarMenu .VPLink {
-  font-weight: 500;
-  padding: 8px 12px;
-  border-radius: 6px;
-  transition: all 0.25s ease;
-}
-
-.VPNavBarMenu .VPLink:hover {
-  background-color: var(--vp-c-bg-soft);
-  color: var(--vp-c-brand-1);
-}
-
-.VPNavBarMenu .VPLink.active {
-  color: var(--vp-c-brand-1);
-  font-weight: 600;
-}
-
-/* Dropdown Menu */
-.VPNavBarMenuGroup .button {
-  font-weight: 500;
-  padding: 8px 12px;
-  border-radius: 6px;
-  transition: all 0.25s ease;
-}
-
-.VPNavBarMenuGroup .button:hover {
-  background-color: var(--vp-c-bg-soft);
-  color: var(--vp-c-brand-1);
-}
-
-/* Sidebar Enhancement */
-.VPSidebarItem.level-0.is-active > .item > .indicator {
-  background-color: var(--vp-c-brand-1);
-}
-
-.VPSidebarItem.is-link:hover .link {
-  color: var(--vp-c-brand-1);
-}
+/* Sidebar Enhancement - Let VitePress handle these */
 
 /* Custom Animations */
 @keyframes gradient-shift {
@@ -225,31 +185,64 @@
 /* Responsive Images */
 .vp-doc img {
   border-radius: 8px;
-  box-shadow: var(--vp-shadow-2);
+  max-width: 100%;
+  height: auto;
+  transition: opacity 0.3s ease;
 }
 
-/* Footer Enhancement */
-.VPFooter {
-  border-top: 1px solid var(--vp-c-divider);
+/* Dark mode image adjustments */
+.dark .vp-doc img {
+  opacity: 0.9;
+}
+
+.dark .vp-doc img:hover {
+  opacity: 1;
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--vp-c-bg);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--vp-c-brand-soft);
-  border-radius: 5px;
+  background: var(--vp-c-divider);
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
+  background: var(--vp-c-text-3);
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--vp-c-divider);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
   background: var(--vp-c-brand-1);
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 768px) {
+  .vp-doc table {
+    font-size: 14px;
+  }
+
+  .info-box {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .vp-doc :not(pre) > code {
+    font-size: 0.875em;
+  }
 }
 
 /* Print Styles */
@@ -258,5 +251,9 @@
   .VPSidebar,
   .VPFooter {
     display: none;
+  }
+
+  .vp-doc {
+    max-width: 100%;
   }
 }

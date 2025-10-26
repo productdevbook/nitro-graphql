@@ -44,6 +44,31 @@ features:
 
 <div class="home-page">
 
+## Quick Stats
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-number">⚡</div>
+    <div class="stat-label">Auto-Discovery</div>
+    <div class="stat-desc">Zero config setup</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">📦</div>
+    <div class="stat-label">Type-Safe</div>
+    <div class="stat-desc">Full TypeScript support</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">🚀</div>
+    <div class="stat-label">Production Ready</div>
+    <div class="stat-desc">Battle-tested</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">🔌</div>
+    <div class="stat-label">Flexible</div>
+    <div class="stat-desc">Yoga & Apollo support</div>
+  </div>
+</div>
+
 ## Get Started in 3 Steps
 
 <div class="steps">
@@ -210,10 +235,62 @@ export default defineNitroConfig({
 }
 
 .home-page h2 {
-  font-size: 32px;
-  font-weight: 700;
-  margin: 80px 0 40px;
+  font-size: 28px;
+  font-weight: 600;
+  margin: 60px 0 32px;
   text-align: center;
+  color: var(--vp-c-text-1);
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 60px;
+}
+
+.stat-card {
+  text-align: center;
+  padding: 24px 16px;
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+}
+
+.stat-number {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+  margin-bottom: 4px;
+}
+
+.stat-desc {
+  font-size: 13px;
+  color: var(--vp-c-text-2);
+}
+
+/* Dark mode stats */
+.dark .stat-card {
+  background: var(--vp-c-bg-soft);
+  border-color: var(--vp-c-divider);
+}
+
+@media (max-width: 960px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Steps */
@@ -225,24 +302,24 @@ export default defineNitroConfig({
 
 .step {
   display: flex;
-  gap: 20px;
-  padding: 32px;
+  gap: 16px;
+  padding: 24px;
   background: var(--vp-c-bg-soft);
   border: 1px solid var(--vp-c-divider);
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 .step-number {
   flex-shrink: 0;
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--vp-c-brand-1);
   color: white;
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 600;
   border-radius: 50%;
 }
 
@@ -252,9 +329,10 @@ export default defineNitroConfig({
 }
 
 .step-content h3 {
-  margin: 0 0 16px 0;
-  font-size: 20px;
+  margin: 0 0 12px 0;
+  font-size: 16px;
   font-weight: 600;
+  color: var(--vp-c-text-1);
 }
 
 .step-content .language-bash,
@@ -263,11 +341,17 @@ export default defineNitroConfig({
   margin: 0;
 }
 
+/* Dark mode steps */
+.dark .step {
+  background: var(--vp-c-bg-soft);
+  border-color: var(--vp-c-divider);
+}
+
 /* Highlight Box */
 .highlight-box {
   text-align: center;
   padding: 24px;
-  background: linear-gradient(135deg, var(--vp-c-brand-soft) 0%, var(--vp-c-purple-soft, rgba(139, 92, 246, 0.14)) 100%);
+  background: var(--vp-c-brand-soft);
   border: 1px solid var(--vp-c-brand-1);
   border-radius: 12px;
   margin: 40px 0;
@@ -277,6 +361,7 @@ export default defineNitroConfig({
   margin: 0;
   font-size: 18px;
   font-weight: 500;
+  color: var(--vp-c-text-1);
 }
 
 .highlight-box code {
@@ -285,6 +370,12 @@ export default defineNitroConfig({
   padding: 4px 12px;
   border-radius: 6px;
   font-weight: 600;
+}
+
+/* Dark mode highlight box */
+.dark .highlight-box {
+  background: rgba(255, 77, 184, 0.08);
+  border-color: rgba(255, 77, 184, 0.3);
 }
 
 /* Benefits */
@@ -296,28 +387,30 @@ export default defineNitroConfig({
 }
 
 .benefit {
-  padding: 32px;
+  padding: 24px;
   background: var(--vp-c-bg-soft);
   border: 1px solid var(--vp-c-divider);
-  border-radius: 12px;
-  transition: all 0.3s ease;
-}
-
-.benefit:hover {
-  border-color: var(--vp-c-brand-1);
-  transform: translateY(-2px);
+  border-radius: 8px;
 }
 
 .benefit h3 {
-  margin: 0 0 12px 0;
-  font-size: 18px;
+  margin: 0 0 8px 0;
+  font-size: 16px;
   font-weight: 600;
+  color: var(--vp-c-text-1);
 }
 
 .benefit p {
   margin: 0;
+  font-size: 14px;
   color: var(--vp-c-text-2);
-  line-height: 1.6;
+  line-height: 1.5;
+}
+
+/* Dark mode benefits */
+.dark .benefit {
+  background: var(--vp-c-bg-soft);
+  border-color: var(--vp-c-divider);
 }
 
 /* Resources */
@@ -331,35 +424,44 @@ export default defineNitroConfig({
 .resource-link {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 24px;
+  gap: 12px;
+  padding: 20px;
   background: var(--vp-c-bg-soft);
   border: 1px solid var(--vp-c-divider);
-  border-radius: 12px;
+  border-radius: 8px;
   text-decoration: none;
-  transition: all 0.3s ease;
 }
 
 .resource-link:hover {
   border-color: var(--vp-c-brand-1);
-  transform: translateY(-2px);
+}
+
+/* Dark mode resources */
+.dark .resource-link {
+  background: var(--vp-c-bg-soft);
+  border-color: var(--vp-c-divider);
+}
+
+.dark .resource-link:hover {
+  border-color: var(--vp-c-brand-1);
 }
 
 .resource-icon {
-  font-size: 32px;
+  font-size: 24px;
   flex-shrink: 0;
 }
 
 .resource-link strong {
   display: block;
-  margin-bottom: 4px;
-  font-size: 16px;
+  margin-bottom: 2px;
+  font-size: 15px;
+  font-weight: 600;
   color: var(--vp-c-text-1);
 }
 
 .resource-link p {
   margin: 0;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--vp-c-text-2);
 }
 

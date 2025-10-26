@@ -35,7 +35,7 @@ export default defineConfig({
       { text: 'Recipes', link: '/recipes/crud-operations', activeMatch: '/recipes/' },
       { text: 'Examples', link: '/examples/nitro-basic', activeMatch: '/examples/' },
       {
-        text: 'v2.0.0',
+        text: 'v1.5.1',
         items: [
           { text: 'Changelog', link: 'https://github.com/productdevbook/nitro-graphql/releases' },
           { text: 'Contributing', link: '/contributing/development-setup' },
