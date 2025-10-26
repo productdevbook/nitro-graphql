@@ -8,19 +8,19 @@
     </linearGradient>
 
     <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#E10098;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#8B5CF6;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#FF6418;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#630ABB;stop-opacity:1" />
       <stop offset="100%" style="stop-color:#00DC82;stop-opacity:1" />
     </linearGradient>
 
     <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#E10098;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#FF6418;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#630ABB;stop-opacity:1" />
     </linearGradient>
 
     <radialGradient id="glowGradient" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" style="stop-color:#E10098;stop-opacity:0.3" />
-      <stop offset="100%" style="stop-color:#E10098;stop-opacity:0" />
+      <stop offset="0%" style="stop-color:#FF6418;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#FF6418;stop-opacity:0" />
     </radialGradient>
 
     <!-- Pattern for background -->
@@ -37,33 +37,13 @@
   <ellipse cx="300" cy="315" rx="400" ry="400" fill="url(#glowGradient)"/>
   <ellipse cx="900" cy="315" rx="400" ry="400" fill="url(#glowGradient)" opacity="0.5"/>
 
-  <!-- Logo (larger GraphQL diamond with Nitro bolt) -->
-  <g transform="translate(200, 315)">
-    <!-- Diamond -->
-    <path d="M 0,-80 L 60,-30 L 60,30 L 0,80 L -60,30 L -60,-30 Z"
-          fill="#E10098"
-          opacity="0.9"/>
-    <path d="M 0,-70 L 52,-26 L 52,26 L 0,70 L -52,26 L -52,-26 Z"
-          fill="none"
-          stroke="#fff"
-          stroke-width="2"
-          opacity="0.4"/>
+  <!-- Logo - "N" with lightning bolt (larger size) -->
+  <g transform="translate(150, 315) scale(1.8)">
+    <!-- Main N shape -->
+    <path fill="url(#accentGradient)" d="M30 30 L30 98 L38 98 L38 48 L90 98 L98 98 L98 30 L90 30 L90 80 L38 30 Z"/>
 
-    <!-- Connection dots -->
-    <circle cx="0" cy="-80" r="8" fill="#fff"/>
-    <circle cx="60" cy="-30" r="8" fill="#fff"/>
-    <circle cx="60" cy="30" r="8" fill="#fff"/>
-    <circle cx="0" cy="80" r="8" fill="#fff"/>
-    <circle cx="-60" cy="30" r="8" fill="#fff"/>
-    <circle cx="-60" cy="-30" r="8" fill="#fff"/>
-    <circle cx="0" cy="0" r="10" fill="#fff" opacity="0.8"/>
-
-    <!-- Lightning bolt -->
-    <path d="M -20,-48 L 0,-20 L -10,-20 L 10,20 L 20,48 L 0,20 L 10,20 Z"
-          fill="#00DC82"
-          opacity="0.95"
-          stroke="#fff"
-          stroke-width="1"/>
+    <!-- Lightning bolt accent -->
+    <path fill="#00DC82" opacity="0.9" d="M64 45 L58 60 L66 60 L60 75 L72 58 L64 58 L70 45 Z"/>
   </g>
 
   <!-- Main Title -->
@@ -88,7 +68,7 @@
 
     <!-- Feature 2 -->
     <g transform="translate(220, 0)">
-      <circle cx="8" cy="-4" r="6" fill="#8B5CF6"/>
+      <circle cx="8" cy="-4" r="6" fill="#630ABB"/>
       <text x="25" y="0" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="500" fill="#ffffff" opacity="0.9">
         Type Generation
       </text>
@@ -96,7 +76,7 @@
 
     <!-- Feature 3 -->
     <g transform="translate(460, 0)">
-      <circle cx="8" cy="-4" r="6" fill="#E10098"/>
+      <circle cx="8" cy="-4" r="6" fill="#FF6418"/>
       <text x="25" y="0" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="500" fill="#ffffff" opacity="0.9">
         Zero Config
       </text>
@@ -108,8 +88,8 @@
 
   <!-- Version badge -->
   <g transform="translate(380, 560)">
-    <rect width="100" height="32" rx="16" fill="#E10098" opacity="0.2" stroke="#E10098" stroke-width="1"/>
-    <text x="50" y="21" font-family="monospace" font-size="14" font-weight="600" fill="#E10098" text-anchor="middle">
+    <rect width="100" height="32" rx="16" fill="#FF6418" opacity="0.2" stroke="#FF6418" stroke-width="1"/>
+    <text x="50" y="21" font-family="monospace" font-size="14" font-weight="600" fill="#FF6418" text-anchor="middle">
       v2.0.0
     </text>
   </g>
@@ -120,9 +100,9 @@
   </text>
 
   <!-- Decorative elements -->
-  <circle cx="1050" cy="150" r="4" fill="#E10098" opacity="0.6"/>
-  <circle cx="1100" cy="200" r="3" fill="#8B5CF6" opacity="0.6"/>
+  <circle cx="1050" cy="150" r="4" fill="#FF6418" opacity="0.6"/>
+  <circle cx="1100" cy="200" r="3" fill="#630ABB" opacity="0.6"/>
   <circle cx="1080" cy="250" r="5" fill="#00DC82" opacity="0.6"/>
-  <circle cx="1120" cy="450" r="4" fill="#E10098" opacity="0.4"/>
-  <circle cx="1060" cy="500" r="3" fill="#8B5CF6" opacity="0.4"/>
+  <circle cx="1120" cy="450" r="4" fill="#FF6418" opacity="0.4"/>
+  <circle cx="1060" cy="500" r="3" fill="#630ABB" opacity="0.4"/>
 </svg>
