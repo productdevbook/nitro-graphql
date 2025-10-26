@@ -1,17 +1,18 @@
-// https://vitepress.dev/guide/custom-theme
-import { h } from 'vue'
-import type { Theme } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
-import './style.css'
+import type { Theme } from 'vitepress'
+import CodePlayground from './components/CodePlayground.vue'
+import ComparisonTable from './components/ComparisonTable.vue'
+import VideoEmbed from './components/VideoEmbed.vue'
+import FeatureGrid from './components/FeatureGrid.vue'
+import './styles/vars.css'
+import './styles/custom.css'
 
 export default {
   extends: DefaultTheme,
-  Layout: () => {
-    return h(DefaultTheme.Layout, null, {
-      // https://vitepress.dev/guide/extending-default-theme#layout-slots
-    })
+  enhanceApp({ app }) {
+    app.component('CodePlayground', CodePlayground)
+    app.component('ComparisonTable', ComparisonTable)
+    app.component('VideoEmbed', VideoEmbed)
+    app.component('FeatureGrid', FeatureGrid)
   },
-  enhanceApp({ app, router, siteData }) {
-    // ...
-  }
 } satisfies Theme

@@ -1,0 +1,108 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="pinkGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E10098"/>
+      <stop offset="100%" stop-color="#C5008A"/>
+    </linearGradient>
+
+    <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00DC82"/>
+      <stop offset="100%" stop-color="#00C174"/>
+    </linearGradient>
+
+    <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#7C3AED"/>
+    </linearGradient>
+
+    <linearGradient id="combinedGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E10098"/>
+      <stop offset="50%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#00DC82"/>
+    </linearGradient>
+
+    <!-- Glow Filter -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Shadow -->
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background Circle with subtle gradient -->
+  <circle cx="64" cy="64" r="62" fill="url(#combinedGradient)" opacity="0.05"/>
+
+  <!-- Main Design: Hexagonal GraphQL shape with Nitro speed lines -->
+
+  <!-- Outer Hexagon (GraphQL inspired) -->
+  <g filter="url(#shadow)">
+    <path d="M 64 20 L 90 36 L 90 68 L 64 84 L 38 68 L 38 36 Z"
+          fill="none"
+          stroke="url(#pinkGradient)"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+  </g>
+
+  <!-- Connection nodes at hexagon corners -->
+  <circle cx="64" cy="20" r="5" fill="url(#pinkGradient)" filter="url(#glow)"/>
+  <circle cx="90" cy="36" r="5" fill="url(#purpleGradient)" filter="url(#glow)"/>
+  <circle cx="90" cy="68" r="5" fill="url(#greenGradient)" filter="url(#glow)"/>
+  <circle cx="64" cy="84" r="5" fill="url(#greenGradient)" filter="url(#glow)"/>
+  <circle cx="38" cy="68" r="5" fill="url(#purpleGradient)" filter="url(#glow)"/>
+  <circle cx="38" cy="36" r="5" fill="url(#pinkGradient)" filter="url(#glow)"/>
+
+  <!-- Inner hexagon for depth -->
+  <path d="M 64 30 L 82 42 L 82 62 L 64 74 L 46 62 L 46 42 Z"
+        fill="url(#combinedGradient)"
+        opacity="0.1"
+        stroke="url(#purpleGradient)"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+
+  <!-- Nitro Lightning Bolt - Central element -->
+  <g filter="url(#glow)">
+    <!-- Main lightning bolt -->
+    <path d="M 64 38 L 58 52 L 66 52 L 60 66 L 72 50 L 64 50 L 70 38 Z"
+          fill="url(#greenGradient)"
+          stroke="#ffffff"
+          stroke-width="1"
+          stroke-linejoin="round"/>
+  </g>
+
+  <!-- Speed lines (Nitro theme) - subtle -->
+  <g opacity="0.6">
+    <line x1="50" y1="48" x2="42" y2="48" stroke="url(#greenGradient)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="52" y1="54" x2="44" y2="54" stroke="url(#greenGradient)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="50" y1="60" x2="40" y2="60" stroke="url(#greenGradient)" stroke-width="2" stroke-linecap="round"/>
+  </g>
+
+  <!-- GraphQL connection lines (subtle) -->
+  <g opacity="0.15" stroke="url(#pinkGradient)" stroke-width="1">
+    <line x1="64" y1="20" x2="90" y2="36"/>
+    <line x1="90" y1="36" x2="90" y2="68"/>
+    <line x1="90" y1="68" x2="64" y2="84"/>
+    <line x1="64" y1="84" x2="38" y2="68"/>
+    <line x1="38" y1="68" x2="38" y2="36"/>
+    <line x1="38" y1="36" x2="64" y2="20"/>
+  </g>
+
+  <!-- Center glow effect -->
+  <circle cx="64" cy="52" r="18" fill="url(#purpleGradient)" opacity="0.15" filter="url(#glow)"/>
+
+  <!-- Outer ring for polish -->
+  <circle cx="64" cy="64" r="60"
+          fill="none"
+          stroke="url(#combinedGradient)"
+          stroke-width="1"
+          opacity="0.2"/>
+</svg>
