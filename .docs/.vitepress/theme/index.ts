@@ -1,9 +1,9 @@
-import DefaultTheme from 'vitepress/theme'
 import type { Theme } from 'vitepress'
+import DefaultTheme from 'vitepress/theme'
 import CodePlayground from './components/CodePlayground.vue'
 import ComparisonTable from './components/ComparisonTable.vue'
-import VideoEmbed from './components/VideoEmbed.vue'
 import FeatureGrid from './components/FeatureGrid.vue'
+import VideoEmbed from './components/VideoEmbed.vue'
 import './styles/vars.css'
 import './styles/custom.css'
 

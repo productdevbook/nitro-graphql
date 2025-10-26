@@ -766,8 +766,8 @@ TypeScript types are auto-generated in `.nuxt/types/`:
 ```typescript
 // Import client types
 import type {
-  GetUsersQuery,
   CreateUserInput,
+  GetUsersQuery,
   UpdateUserInput
 } from '#graphql/client'
 

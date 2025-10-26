@@ -42,7 +42,7 @@ pnpm add dataloader
 // server/graphql/loaders/user.loader.ts
 import DataLoader from 'dataloader'
 
-export const createUserLoader = () => {
+export function createUserLoader() {
   return new DataLoader(async (ids: readonly string[]) => {
     const users = await db.user.findMany({
       where: { id: { in: [...ids] } }
@@ -128,7 +128,7 @@ export default defineGraphQLConfig({
       ttl: 60_000, // 1 minute
       ttlPerType: {
         User: 300_000, // 5 minutes for users
-        Post: 60_000   // 1 minute for posts
+        Post: 60_000 // 1 minute for posts
       }
     })
   ]
@@ -399,10 +399,10 @@ pnpm build
 
 4. **Optimize Dependencies:**
 ```typescript
+// Instead of:
+import { defineMutation, defineQuery, defineType } from 'nitro-graphql'
 // Only import what you need
 import { defineQuery } from 'nitro-graphql/utils/define'
-// Instead of:
-import { defineQuery, defineMutation, defineType } from 'nitro-graphql'
 ```
 
 5. **Parallel Processing:**
@@ -648,15 +648,15 @@ useResponseCache({
 
   // Per-type TTL
   ttlPerType: {
-    User: 300_000,     // 5 minutes
-    Post: 60_000,      // 1 minute
-    Comment: 30_000    // 30 seconds
+    User: 300_000, // 5 minutes
+    Post: 60_000, // 1 minute
+    Comment: 30_000 // 30 seconds
   },
 
   // Per-schema coordinate
   ttlPerSchemaCoordinate: {
-    'Query.user': 600_000,      // 10 minutes
-    'Query.posts': 120_000      // 2 minutes
+    'Query.user': 600_000, // 10 minutes
+    'Query.posts': 120_000 // 2 minutes
   }
 })
 ```

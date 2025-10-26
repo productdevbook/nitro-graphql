@@ -131,7 +131,8 @@ export function decodeCursor(cursor: string): string {
       throw new Error('Invalid cursor format')
     }
     return decoded.slice(7) // Remove 'cursor:' prefix
-  } catch (error) {
+  }
+  catch (error) {
     throw new GraphQLError('Invalid cursor', {
       extensions: { code: 'BAD_REQUEST' },
     })
@@ -201,7 +202,7 @@ export function createConnection<T extends { id: string }>(
   const nodes = hasMore ? items.slice(0, limit) : items
 
   // Create edges
-  const edges: Edge<T>[] = nodes.map((node) => ({
+  const edges: Edge<T>[] = nodes.map(node => ({
     node,
     cursor: encodeCursor(node.id),
   }))
@@ -228,7 +229,7 @@ export function createConnection<T extends { id: string }>(
 Create `server/graphql/posts/connection.resolver.ts`:
 
 ```typescript
-import { validateConnectionArgs, createConnection, decodeCursor } from '../../utils/pagination'
+import { createConnection, decodeCursor, validateConnectionArgs } from '../../utils/pagination'
 
 export const postConnectionResolvers = defineResolver({
   Query: {
@@ -249,7 +250,8 @@ export const postConnectionResolvers = defineResolver({
       // Add cursor condition
       if (after) {
         where.id = { gt: after }
-      } else if (before) {
+      }
+      else if (before) {
         where.id = { lt: before }
       }
 
@@ -288,10 +290,10 @@ export const postConnectionResolvers = defineResolver({
 Create `server/graphql/posts/drizzle-connection.resolver.ts`:
 
 ```typescript
-import { db } from '../../utils/drizzle'
+import { and, asc, desc, eq, gt, lt } from 'drizzle-orm'
 import { posts, users } from '../../database/schema'
-import { desc, asc, gt, lt, and, eq } from 'drizzle-orm'
-import { validateConnectionArgs, createConnection } from '../../utils/pagination'
+import { db } from '../../utils/drizzle'
+import { createConnection, validateConnectionArgs } from '../../utils/pagination'
 
 export const drizzlePostConnectionResolvers = defineResolver({
   Query: {
@@ -311,7 +313,8 @@ export const drizzlePostConnectionResolvers = defineResolver({
 
       if (after) {
         conditions.push(gt(posts.id, after))
-      } else if (before) {
+      }
+      else if (before) {
         conditions.push(lt(posts.id, before))
       }
 
@@ -488,8 +491,8 @@ Create `server/graphql/posts/offset.resolver.ts`:
 
 ```typescript
 import {
-  validateOffsetPagination,
   createOffsetPagination,
+  validateOffsetPagination,
 } from '../../utils/pagination'
 
 export const offsetPostResolvers = defineResolver({
@@ -613,7 +616,8 @@ export function useInfiniteScroll() {
         hasNextPage.value = data.posts.pageInfo.hasNextPage
         endCursor.value = data.posts.pageInfo.endCursor
       }
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -712,17 +716,19 @@ export const keysetPostResolvers = defineResolver({
   Query: {
     posts: async (_parent, { lastId, lastCreatedAt, limit = 20 }, context) => {
       const posts = await context.db.post.findMany({
-        where: lastCreatedAt ? {
-          OR: [
-            { createdAt: { lt: lastCreatedAt } },
-            {
-              AND: [
-                { createdAt: lastCreatedAt },
-                { id: { lt: lastId } },
+        where: lastCreatedAt
+          ? {
+              OR: [
+                { createdAt: { lt: lastCreatedAt } },
+                {
+                  AND: [
+                    { createdAt: lastCreatedAt },
+                    { id: { lt: lastId } },
+                  ],
+                },
               ],
-            },
-          ],
-        } : undefined,
+            }
+          : undefined,
         take: limit + 1,
         orderBy: [
           { createdAt: 'desc' },
@@ -766,10 +772,10 @@ return createConnection(items, args) // No totalCount
 Create `server/graphql/__tests__/pagination.test.ts`:
 
 ```typescript
-import { describe, it, expect, beforeEach } from 'vitest'
 import { execute, parse } from 'graphql'
-import { schema } from '../schema'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { db } from '../../utils/database'
+import { schema } from '../schema'
 
 describe('Pagination', () => {
   beforeEach(async () => {

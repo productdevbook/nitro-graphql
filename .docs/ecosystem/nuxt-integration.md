@@ -99,14 +99,14 @@ async function addUser() {
 The module automatically configures TypeScript path aliases for seamless imports:
 
 ```ts
-// Server types - use in resolvers
-import type { Resolvers, User } from '#graphql/server'
-
 // Client types - use in components
-import type { GetUsersQuery, CreateUserMutation } from '#graphql/client'
+import type { CreateUserMutation, GetUsersQuery } from '#graphql/client'
 
 // External service types
 import type { GetRepositoryQuery } from '#graphql/client/github'
+
+// Server types - use in resolvers
+import type { Resolvers, User } from '#graphql/server'
 ```
 
 These aliases are configured in `.nuxt/tsconfig.json` and work with your IDE's intellisense.
@@ -338,8 +338,8 @@ export default defineNuxtConfig({
   nitro: {
     graphql: {
       framework: 'graphql-yoga',
-      clientUtils: false,  // Disable client utils generation
-      sdk: false,          // Disable SDK generation
+      clientUtils: false, // Disable client utils generation
+      sdk: false, // Disable SDK generation
     },
   },
 })

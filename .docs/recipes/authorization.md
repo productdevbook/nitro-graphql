@@ -315,8 +315,8 @@ directive @isOwner(ownerField: String = "userId") on FIELD_DEFINITION
 Create `server/utils/authorization.ts`:
 
 ```typescript
-import { GraphQLError } from 'graphql'
 import type { User } from '@prisma/client'
+import { GraphQLError } from 'graphql'
 
 export const Roles = {
   USER: 'USER',
@@ -498,8 +498,8 @@ Create `server/graphql/users/admin.resolver.ts`:
 ```typescript
 import {
   requireAuth,
-  requireRole,
   requireOwnershipOrAdmin,
+  requireRole,
   Roles,
 } from '../../utils/authorization'
 
@@ -720,9 +720,9 @@ export const postResolvers = defineResolver({
       }
 
       // Only owner or moderator+ can delete
-      const canDelete =
-        context.user.id === post.authorId ||
-        hasRole(context.user.role, Roles.MODERATOR)
+      const canDelete
+        = context.user.id === post.authorId
+          || hasRole(context.user.role, Roles.MODERATOR)
 
       if (!canDelete) {
         throw new GraphQLError('Cannot delete this post', {
@@ -742,11 +742,11 @@ export const postResolvers = defineResolver({
 Create `server/graphql/__tests__/authorization.test.ts`:
 
 ```typescript
-import { describe, it, expect, beforeEach } from 'vitest'
 import { execute, parse } from 'graphql'
-import { schema } from '../schema'
-import { db } from '../../utils/database'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { Roles } from '../../utils/authorization'
+import { db } from '../../utils/database'
+import { schema } from '../schema'
 
 describe('Authorization', () => {
   let adminUser: any

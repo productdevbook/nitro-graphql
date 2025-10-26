@@ -38,7 +38,7 @@ export const myResolvers: Resolvers = defineResolver({
 
 **Type Definition:**
 ```typescript
-type Resolvers<ContextType = H3Event, ParentType = ResolversParentTypes> = {
+interface Resolvers<ContextType = H3Event, ParentType = ResolversParentTypes> {
   Query?: QueryResolvers<ContextType>
   Mutation?: MutationResolvers<ContextType>
   Subscription?: SubscriptionResolvers<ContextType>
@@ -67,7 +67,7 @@ export const queries: QueryResolvers = defineQuery({
 
 **Type Definition:**
 ```typescript
-type QueryResolvers<ContextType = H3Event, ParentType = {}> = {
+interface QueryResolvers<ContextType = H3Event, ParentType = {}> {
   [fieldName: string]: Resolver<ReturnType, ParentType, ContextType, Args>
 }
 ```
@@ -125,7 +125,7 @@ type UsersQueryResult = ResolversTypes['UsersResult']
 
 **Generated Structure:**
 ```typescript
-type ResolversTypes = {
+interface ResolversTypes {
   String: string
   Int: number
   Float: number
@@ -160,11 +160,11 @@ type PostParent = ResolversParentTypes['Post']
 For each GraphQL type in your schema, a specific resolver type is generated:
 
 ```typescript
-import type { UserResolvers, PostResolvers } from '#graphql/server'
+import type { PostResolvers, UserResolvers } from '#graphql/server'
 
 export const userTypeResolvers: UserResolvers = defineType({
   User: {
-    fullName: (parent) => `${parent.firstName} ${parent.lastName}`,
+    fullName: parent => `${parent.firstName} ${parent.lastName}`,
     posts: async (parent, _args, context) => {
       return await context.db.posts.findByUserId(parent.id)
     }
@@ -188,24 +188,24 @@ For each field with arguments, specific argument types are generated:
 
 ```typescript
 import type {
+  MutationCreateUserArgs,
   QueryUserArgs,
-  QueryUsersArgs,
-  MutationCreateUserArgs
+  QueryUsersArgs
 } from '#graphql/server'
 
 // Field: Query.user(id: ID!): User
-type QueryUserArgs = {
+interface QueryUserArgs {
   id: string
 }
 
 // Field: Query.users(filter: UserFilter, limit: Int): [User!]!
-type QueryUsersArgs = {
+interface QueryUsersArgs {
   filter?: UserFilter
   limit?: number
 }
 
 // Field: Mutation.createUser(input: CreateUserInput!): User!
-type MutationCreateUserArgs = {
+interface MutationCreateUserArgs {
   input: CreateUserInput
 }
 ```
@@ -230,7 +230,7 @@ import type {
 //   age: Int
 // }
 
-type CreateUserInput = {
+interface CreateUserInput {
   name: string
   email: string
   age?: number | null
@@ -243,7 +243,7 @@ type CreateUserInput = {
 //   isActive: Boolean
 // }
 
-type UserFilter = {
+interface UserFilter {
   search?: string | null
   role?: UserRole | null
   isActive?: boolean | null
@@ -257,7 +257,7 @@ type UserFilter = {
 All GraphQL enums are generated as TypeScript enums:
 
 ```typescript
-import type { UserRole, PostStatus } from '#graphql/server'
+import type { PostStatus, UserRole } from '#graphql/server'
 
 // GraphQL:
 // enum UserRole {
@@ -295,15 +295,15 @@ Custom scalars are mapped to TypeScript types:
 ```typescript
 import type { Scalars } from '#graphql/server'
 
-type Scalars = {
+interface Scalars {
   ID: string
   String: string
   Int: number
   Float: number
   Boolean: boolean
-  DateTime: Date      // Custom scalar
-  JSON: any           // Custom scalar
-  Upload: File        // Custom scalar
+  DateTime: Date // Custom scalar
+  JSON: any // Custom scalar
+  Upload: File // Custom scalar
 }
 ```
 
@@ -429,14 +429,14 @@ Generated types:
 
 ```typescript
 import type {
-  GetUserQuery,
-  GetUserQueryVariables,
   CreateUserMutation,
-  CreateUserMutationVariables
+  CreateUserMutationVariables,
+  GetUserQuery,
+  GetUserQueryVariables
 } from '#graphql/client'
 
 // Query result type
-type GetUserQuery = {
+interface GetUserQuery {
   user: {
     id: string
     name: string
@@ -449,12 +449,12 @@ type GetUserQuery = {
 }
 
 // Query variables type
-type GetUserQueryVariables = {
+interface GetUserQueryVariables {
   id: string
 }
 
 // Mutation result type
-type CreateUserMutation = {
+interface CreateUserMutation {
   createUser: {
     id: string
     name: string
@@ -463,7 +463,7 @@ type CreateUserMutation = {
 }
 
 // Mutation variables type
-type CreateUserMutationVariables = {
+interface CreateUserMutationVariables {
   input: CreateUserInput
 }
 ```
@@ -492,16 +492,16 @@ query GetUsers {
 Generated:
 
 ```typescript
-import type { UserFieldsFragment, GetUsersQuery } from '#graphql/client'
+import type { GetUsersQuery, UserFieldsFragment } from '#graphql/client'
 
-type UserFieldsFragment = {
+interface UserFieldsFragment {
   id: string
   name: string
   email: string
   createdAt: string
 }
 
-type GetUsersQuery = {
+interface GetUsersQuery {
   users: Array<UserFieldsFragment>
 }
 ```
@@ -537,17 +537,17 @@ Client input types match server types but use client-side scalar mappings:
 ```typescript
 import type { CreateUserInput } from '#graphql/client'
 
-type CreateUserInput = {
+interface CreateUserInput {
   name: string
   email: string
   age?: number | null
 }
 
 // Note: DateTime scalars might be strings on client
-type CreatePostInput = {
+interface CreatePostInput {
   title: string
   content: string
-  publishedAt?: string | null  // DateTime as string
+  publishedAt?: string | null // DateTime as string
 }
 ```
 
@@ -560,7 +560,7 @@ export default defineNitroConfig({
     codegen: {
       client: {
         scalars: {
-          DateTime: 'string',  // ISO string on client
+          DateTime: 'string', // ISO string on client
           JSON: 'any'
         }
       }
@@ -620,7 +620,7 @@ import type {
   GetViewerQueryVariables
 } from '#graphql/client/github'
 
-type GetViewerQuery = {
+interface GetViewerQuery {
   viewer: {
     login: string
     name: string | null
@@ -634,7 +634,7 @@ type GetViewerQuery = {
   }
 }
 
-type GetViewerQueryVariables = {}
+interface GetViewerQueryVariables {}
 ```
 
 With SDK:
@@ -703,8 +703,8 @@ namespace StandardSchemaV1 {
 Usage with validators:
 
 ```typescript
-import * as v from 'valibot'
 import type { StandardSchemaV1 } from 'nitro-graphql'
+import * as v from 'valibot'
 
 const userSchema = v.object({
   name: v.string(),
@@ -728,9 +728,9 @@ type UserInput = StandardSchemaV1.InferInput<typeof userSchema>
 ### Resolver Function Type
 
 ```typescript
-type Resolver<TReturn, TParent = {}, TContext = H3Event, TArgs = {}> =
-  | ResolverFn<TReturn, TParent, TContext, TArgs>
-  | ResolverWithResolve<TReturn, TParent, TContext, TArgs>
+type Resolver<TReturn, TParent = {}, TContext = H3Event, TArgs = {}>
+  = | ResolverFn<TReturn, TParent, TContext, TArgs>
+    | ResolverWithResolve<TReturn, TParent, TContext, TArgs>
 
 type ResolverFn<TReturn, TParent, TContext, TArgs> = (
   parent: TParent,
@@ -786,9 +786,9 @@ type SubscriptionSubscribeFn<TReturn, TParent, TContext, TArgs> = (
 Always use the virtual module imports for generated types:
 
 ```typescript
-// ✅ Correct
-import type { Resolvers, QueryResolvers } from '#graphql/server'
 import type { GetUserQuery } from '#graphql/client'
+// ✅ Correct
+import type { QueryResolvers, Resolvers } from '#graphql/server'
 
 // ❌ Wrong
 import type { Resolvers } from '.nitro/types/nitro-graphql-server'
@@ -799,7 +799,7 @@ import type { Resolvers } from '.nitro/types/nitro-graphql-server'
 Explicitly type your resolvers for better IDE support:
 
 ```typescript
-import type { QueryResolvers, MutationResolvers } from '#graphql/server'
+import type { MutationResolvers, QueryResolvers } from '#graphql/server'
 
 export const queries: QueryResolvers = defineQuery({
   // Fully typed!
@@ -848,8 +848,8 @@ function formatUser(user: UserFieldsFragment) {
 ### 5. Type-Safe Error Handling
 
 ```typescript
-import { GraphQLError } from 'graphql'
 import type { QueryResolvers } from '#graphql/server'
+import { GraphQLError } from 'graphql'
 
 export const queries: QueryResolvers = defineQuery({
   user: async (_parent, { id }, context) => {

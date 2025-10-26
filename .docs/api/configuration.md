@@ -73,8 +73,8 @@ export default defineNitroConfig({
   graphql: {
     framework: 'graphql-yoga',
     endpoint: {
-      graphql: '/graphql',        // Custom GraphQL endpoint
-      healthCheck: '/health'      // Custom health check endpoint
+      graphql: '/graphql', // Custom GraphQL endpoint
+      healthCheck: '/health' // Custom health check endpoint
     }
   }
 })
@@ -89,7 +89,7 @@ export default defineNitroConfig({
 export default defineNitroConfig({
   graphql: {
     framework: 'graphql-yoga',
-    playground: false  // Disable playground in production
+    playground: false // Disable playground in production
   }
 })
 ```
@@ -103,7 +103,7 @@ export default defineNitroConfig({
 export default defineNitroConfig({
   graphql: {
     framework: 'graphql-yoga',
-    serverDir: 'server/api/graphql'  // Custom server directory
+    serverDir: 'server/api/graphql' // Custom server directory
   }
 })
 ```
@@ -196,10 +196,10 @@ export default defineNitroConfig({
   graphql: {
     framework: 'graphql-yoga',
     scaffold: {
-      graphqlConfig: false,              // Don't generate
-      serverSchema: 'lib/schema.ts',     // Custom path
-      serverConfig: true,                // Default location
-      serverContext: false               // Don't generate
+      graphqlConfig: false, // Don't generate
+      serverSchema: 'lib/schema.ts', // Custom path
+      serverConfig: true, // Default location
+      serverContext: false // Don't generate
     }
   }
 })
@@ -526,7 +526,7 @@ export default defineNitroConfig({
           Authorization: `Bearer ${process.env.GITHUB_TOKEN}`
         }),
         documents: ['app/graphql/github/**/*.graphql'],
-        downloadSchema: 'once',  // Cache schema locally
+        downloadSchema: 'once', // Cache schema locally
         paths: {
           sdk: 'app/lib/github-sdk.ts',
           types: 'types/github.d.ts'

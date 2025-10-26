@@ -315,8 +315,10 @@ export const nodeResolver = defineQuery({
 export const nodeTypes = defineType({
   Node: {
     __resolveType(obj) {
-      if ('email' in obj) return 'User'
-      if ('content' in obj) return 'Post'
+      if ('email' in obj)
+        return 'User'
+      if ('content' in obj)
+        return 'Post'
       return null
     },
   },
@@ -341,9 +343,12 @@ Resolver:
 export const searchTypes = defineType({
   SearchResult: {
     __resolveType(obj) {
-      if ('email' in obj) return 'User'
-      if ('content' in obj) return 'Post'
-      if ('postId' in obj) return 'Comment'
+      if ('email' in obj)
+        return 'User'
+      if ('content' in obj)
+        return 'Post'
+      if ('postId' in obj)
+        return 'Comment'
       return null
     },
   },
@@ -640,8 +645,8 @@ export default defineNitroConfig({
   graphql: {
     framework: 'graphql-yoga',
     scaffold: {
-      graphqlConfig: false,  // Don't generate graphql.config.ts
-      serverSchema: false,   // Don't generate schema.ts
+      graphqlConfig: false, // Don't generate graphql.config.ts
+      serverSchema: false, // Don't generate schema.ts
     }
   }
 })

@@ -54,8 +54,8 @@ extend type Mutation {
 Create `server/graphql/users/queries.resolver.ts`:
 
 ```typescript
-import { db } from '../utils/database'
 import { GraphQLError } from 'graphql'
+import { db } from '../utils/database'
 
 export const userQueries = defineResolver({
   Query: {
@@ -87,9 +87,9 @@ export const userQueries = defineResolver({
 Create `server/graphql/users/mutations.resolver.ts`:
 
 ```typescript
-import { db } from '../utils/database'
 import { GraphQLError } from 'graphql'
 import { z } from 'zod'
+import { db } from '../utils/database'
 
 // Validation schemas
 const emailSchema = z.string().email()
@@ -102,7 +102,8 @@ export const userMutations = defineResolver({
       try {
         emailSchema.parse(input.email)
         nameSchema.parse(input.name)
-      } catch (error) {
+      }
+      catch (error) {
         throw new GraphQLError('Invalid input data', {
           extensions: {
             code: 'BAD_USER_INPUT',
@@ -139,7 +140,8 @@ export const userMutations = defineResolver({
       if (input.email) {
         try {
           emailSchema.parse(input.email)
-        } catch (error) {
+        }
+        catch (error) {
           throw new GraphQLError('Invalid email', {
             extensions: { code: 'BAD_USER_INPUT' },
           })
@@ -149,7 +151,8 @@ export const userMutations = defineResolver({
       if (input.name) {
         try {
           nameSchema.parse(input.name)
-        } catch (error) {
+        }
+        catch (error) {
           throw new GraphQLError('Invalid name', {
             extensions: { code: 'BAD_USER_INPUT' },
           })
@@ -198,7 +201,8 @@ export const userMutations = defineResolver({
           where: { id },
         })
         return true
-      } catch (error) {
+      }
+      catch (error) {
         throw new GraphQLError(`User with id ${id} not found`, {
           extensions: { code: 'NOT_FOUND' },
         })
@@ -342,8 +346,8 @@ extend type Mutation {
 Create `server/graphql/posts/resolvers.resolver.ts`:
 
 ```typescript
-import { db } from '../../utils/database'
 import { GraphQLError } from 'graphql'
+import { db } from '../../utils/database'
 
 export const postResolvers = defineResolver({
   Query: {
@@ -413,7 +417,8 @@ export const postResolvers = defineResolver({
           where: { id },
         })
         return true
-      } catch (error) {
+      }
+      catch (error) {
         throw new GraphQLError(`Post with id ${id} not found`, {
           extensions: { code: 'NOT_FOUND' },
         })
@@ -481,8 +486,8 @@ export default {
 Create `server/database/schema.ts`:
 
 ```typescript
-import { pgTable, text, timestamp, boolean, index } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
+import { boolean, index, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 
 export const users = pgTable('users', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -490,7 +495,7 @@ export const users = pgTable('users', {
   email: text('email').notNull().unique(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
-}, (table) => ({
+}, table => ({
   emailIdx: index('email_idx').on(table.email),
 }))
 
@@ -502,7 +507,7 @@ export const posts = pgTable('posts', {
   authorId: text('author_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
-}, (table) => ({
+}, table => ({
   authorIdx: index('author_idx').on(table.authorId),
 }))
 
@@ -555,10 +560,10 @@ npx drizzle-kit migrate
 Create `server/graphql/users/drizzle.resolver.ts`:
 
 ```typescript
-import { db } from '../../utils/drizzle'
-import { users } from '../../database/schema'
 import { eq } from 'drizzle-orm'
 import { GraphQLError } from 'graphql'
+import { users } from '../../database/schema'
+import { db } from '../../utils/drizzle'
 
 export const userResolvers = defineResolver({
   Query: {
@@ -669,7 +674,7 @@ export const userQueries = defineResolver({
 Create `server/graphql/__tests__/users.test.ts`:
 
 ```typescript
-import { describe, it, expect, beforeEach, afterAll } from 'vitest'
+import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 import { db } from '../../utils/database'
 
 describe('User CRUD Operations', () => {
@@ -775,8 +780,8 @@ describe('User CRUD Operations', () => {
 Create `server/graphql/__tests__/integration.test.ts`:
 
 ```typescript
-import { describe, it, expect } from 'vitest'
 import { execute, parse } from 'graphql'
+import { describe, expect, it } from 'vitest'
 import { schema } from '../schema'
 
 describe('User GraphQL Integration', () => {

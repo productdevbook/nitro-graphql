@@ -43,8 +43,8 @@ enum RateLimitScope {
 Create `server/utils/rate-limiter.ts`:
 
 ```typescript
-import redis from './redis'
 import { GraphQLError } from 'graphql'
+import redis from './redis'
 
 export interface RateLimitConfig {
   limit: number
@@ -92,7 +92,8 @@ export async function checkRateLimit(
       remaining,
       resetAt,
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Rate limit check error:', error)
     // Fail open - allow request if Redis is down
     return {
@@ -144,7 +145,8 @@ export async function checkSlidingWindowRateLimit(
       remaining,
       resetAt,
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Rate limit check error:', error)
     return {
       allowed: true,
@@ -167,11 +169,12 @@ export class TokenBucket {
 
     try {
       const data = await redis.get(key)
-      let bucket: { tokens: number; lastRefill: number }
+      let bucket: { tokens: number, lastRefill: number }
 
       if (data) {
         bucket = JSON.parse(data)
-      } else {
+      }
+      else {
         bucket = {
           tokens: this.capacity,
           lastRefill: now,
@@ -192,7 +195,8 @@ export class TokenBucket {
       }
 
       return false
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Token bucket error:', error)
       return true // Fail open
     }
@@ -254,9 +258,9 @@ export const rateLimitDirective = defineDirective({
                 break
 
               case 'IP':
-                identifier = context.event.node.req.headers['x-forwarded-for'] as string ||
-                  context.event.node.req.socket.remoteAddress ||
-                  'unknown'
+                identifier = context.event.node.req.headers['x-forwarded-for'] as string
+                  || context.event.node.req.socket.remoteAddress
+                  || 'unknown'
                 break
 
               case 'GLOBAL':
@@ -355,8 +359,8 @@ type Query {
 Create `server/utils/query-cost.ts`:
 
 ```typescript
-import { getComplexity, simpleEstimator, fieldExtensionsEstimator } from 'graphql-query-complexity'
-import type { GraphQLSchema, DocumentNode } from 'graphql'
+import type { DocumentNode, GraphQLSchema } from 'graphql'
+import { fieldExtensionsEstimator, getComplexity, simpleEstimator } from 'graphql-query-complexity'
 
 export function calculateQueryCost(
   schema: GraphQLSchema,
@@ -385,7 +389,7 @@ export async function checkCostRateLimit(
 
   try {
     const current = await redis.get(key)
-    const currentCost = current ? parseInt(current) : 0
+    const currentCost = current ? Number.parseInt(current) : 0
 
     if (currentCost + cost > maxCost) {
       return false
@@ -395,7 +399,8 @@ export async function checkCostRateLimit(
     await redis.setex(key, window, newCost.toString())
 
     return true
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Cost rate limit error:', error)
     return true
   }
@@ -415,9 +420,9 @@ export default defineGraphQLConfig({
           args.variableValues
         )
 
-        const identifier = args.contextValue.user?.id ||
-          args.contextValue.event.node.req.socket.remoteAddress ||
-          'unknown'
+        const identifier = args.contextValue.user?.id
+          || args.contextValue.event.node.req.socket.remoteAddress
+          || 'unknown'
 
         const allowed = await checkCostRateLimit(identifier, cost, 1000, 3600)
 
@@ -490,7 +495,7 @@ function getRateLimitForUser(user: any): RateLimitConfig {
   }
 }
 
-export const dynamicRateLimitResolver = async (_parent, _args, context) => {
+export async function dynamicRateLimitResolver(_parent, _args, context) {
   const config = getRateLimitForUser(context.user)
   const result = await checkRateLimit(
     context.user.id,
@@ -556,7 +561,8 @@ export async function graphqlRequest(query: string, variables?: any) {
     }
 
     return await response.json()
-  } catch (error) {
+  }
+  catch (error) {
     console.error('GraphQL request failed:', error)
     throw error
   }
@@ -574,15 +580,17 @@ export async function graphqlRequestWithRetry(
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       return await graphqlRequest(query, variables)
-    } catch (error: any) {
+    }
+    catch (error: any) {
       if (error.message.includes('Rate limited') && attempt < maxRetries - 1) {
         // Extract retry after time
         const match = error.message.match(/Retry after (\d+)/)
-        const retryAfter = match ? parseInt(match[1]) : Math.pow(2, attempt)
+        const retryAfter = match ? Number.parseInt(match[1]) : 2 ** attempt
 
         console.log(`Rate limited. Retrying after ${retryAfter}s...`)
         await new Promise(resolve => setTimeout(resolve, retryAfter * 1000))
-      } else {
+      }
+      else {
         throw error
       }
     }
@@ -641,7 +649,7 @@ export async function getRateLimitStats() {
 ## Testing Rate Limits
 
 ```typescript
-import { describe, it, expect, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { checkRateLimit } from '../rate-limiter'
 import redis from '../redis'
 

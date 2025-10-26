@@ -21,7 +21,7 @@ Generated at:
 ### Import Path
 
 ```ts
-import type { User, Post, Query, Mutation, Resolvers } from '#graphql/server'
+import type { Mutation, Post, Query, Resolvers, User } from '#graphql/server'
 ```
 
 ### Generated Types
@@ -105,7 +105,7 @@ export interface Resolvers {
 In resolvers:
 
 ```ts
-import type { User, CreateUserInput } from '#graphql/server'
+import type { CreateUserInput, User } from '#graphql/server'
 
 export const userMutations = defineMutation({
   createUser: async (
@@ -146,7 +146,7 @@ Generated at:
 ### Import Path
 
 ```ts
-import type { GetUsersQuery, CreateUserMutation } from '#graphql/client'
+import type { CreateUserMutation, GetUsersQuery } from '#graphql/client'
 ```
 
 ### How It Works
@@ -382,8 +382,8 @@ export default defineNitroConfig({
   graphql: {
     framework: 'graphql-yoga',
     types: {
-      server: false,   // Don't generate server types
-      client: false,   // Don't generate client types
+      server: false, // Don't generate server types
+      client: false, // Don't generate client types
       external: false, // Don't generate external service types
     },
   },
@@ -471,7 +471,7 @@ export const userQueries = defineQuery({
 For field resolvers, use partial parent types:
 
 ```ts
-import type { User, Post } from '#graphql/server'
+import type { Post, User } from '#graphql/server'
 
 export const postTypes = defineType({
   Post: {

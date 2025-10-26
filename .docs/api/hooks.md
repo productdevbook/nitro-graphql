@@ -120,8 +120,8 @@ nitro.hooks.hook('build:before', () => {
   if (nitro.options.framework?.name === 'nuxt') {
     const nuxtOptions = nitro._nuxt?.options
     if (nuxtOptions) {
-      nuxtOptions.nitroGraphqlExternalServices =
-        nitro.options.graphql?.externalServices || []
+      nuxtOptions.nitroGraphqlExternalServices
+        = nitro.options.graphql?.externalServices || []
     }
   }
 })
@@ -431,7 +431,8 @@ export default defineNitroConfig({
           const content = await readFile(file, 'utf-8')
           buildSchema(content)
           console.log(`✓ ${file}`)
-        } catch (error) {
+        }
+        catch (error) {
           console.error(`✗ ${file}:`, error.message)
         }
       }
@@ -482,7 +483,7 @@ export default defineNitroPlugin((nitroApp) => {
 
 ```typescript
 // nitro.config.ts
-import { writeFile } from 'fs/promises'
+import { writeFile } from 'node:fs/promises'
 
 export default defineNitroConfig({
   graphql: {

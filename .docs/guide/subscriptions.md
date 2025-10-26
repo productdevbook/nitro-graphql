@@ -25,7 +25,7 @@ export const messageSubscriptions = defineSubscription({
     subscribe: (_, { channelId }, context) => {
       return context.pubsub.asyncIterator([`MESSAGE_${channelId}`])
     },
-    resolve: (payload) => payload,
+    resolve: payload => payload,
   },
 
   userTyping: {

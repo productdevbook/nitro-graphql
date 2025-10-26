@@ -401,7 +401,7 @@ extend type Subscription {
 ### server/graphql/data/index.ts
 
 ```typescript
-import type { User, Post, Comment, Like, Follow, Notification } from '#graphql/server'
+import type { Comment, Follow, Like, Notification, Post, User } from '#graphql/server'
 
 // Mock data stores
 export const users: User[] = [
@@ -450,19 +450,18 @@ export const notifications: Notification[] = []
 // Utility functions
 export const generateId = () => Date.now().toString()
 
-export const findById = <T extends { id: string }>(
-  items: T[],
-  id: string
-): T | undefined => items.find(item => item.id === id)
+export function findById<T extends { id: string }>(items: T[], id: string): T | undefined {
+  return items.find(item => item.id === id)
+}
 
-export const extractHashtags = (content: string): string[] => {
-  const regex = /#[\w]+/g
+export function extractHashtags(content: string): string[] {
+  const regex = /#\w+/g
   const matches = content.match(regex)
   return matches ? matches.map(tag => tag.slice(1)) : []
 }
 
-export const extractMentions = (content: string): string[] => {
-  const regex = /@[\w]+/g
+export function extractMentions(content: string): string[] {
+  const regex = /@\w+/g
   const matches = content.match(regex)
   return matches ? matches.map(mention => mention.slice(1)) : []
 }
@@ -494,16 +493,16 @@ export const pubsub = {
 
 ```typescript
 import {
-  posts,
-  users,
   comments,
-  likes,
-  follows,
-  generateId,
-  findById,
   extractHashtags,
   extractMentions,
+  findById,
+  follows,
+  generateId,
+  likes,
+  posts,
   pubsub,
+  users,
 } from '../data'
 
 export const postQueries = defineQuery({
@@ -545,9 +544,9 @@ export const postQueries = defineQuery({
     return posts
       .filter(
         p =>
-          p.author.id === currentUserId ||
-          (followingIds.includes(p.author.id) &&
-            (p.visibility === 'PUBLIC' || p.visibility === 'FOLLOWERS'))
+          p.author.id === currentUserId
+          || (followingIds.includes(p.author.id)
+            && (p.visibility === 'PUBLIC' || p.visibility === 'FOLLOWERS'))
       )
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(offset, offset + limit)
@@ -656,12 +655,12 @@ export const postMutations = defineMutation({
     post.author.postCount--
 
     // Delete associated comments and likes
-    comments.filter(c => c.post.id === id).forEach(c => {
+    comments.filter(c => c.post.id === id).forEach((c) => {
       const idx = comments.indexOf(c)
       comments.splice(idx, 1)
     })
 
-    likes.filter(l => l.targetId === id).forEach(l => {
+    likes.filter(l => l.targetId === id).forEach((l) => {
       const idx = likes.indexOf(l)
       likes.splice(idx, 1)
     })
@@ -716,7 +715,8 @@ export const postMutations = defineMutation({
 export const postTypeResolver = defineType({
   Post: {
     isLiked: (post, _, context) => {
-      if (!context.user) return false
+      if (!context.user)
+        return false
       return likes.some(
         l => l.targetId === post.id && l.user.id === context.user!.id
       )
@@ -748,7 +748,7 @@ export const postSubscriptions = {
 ### server/graphql/comments/comment.resolver.ts
 
 ```typescript
-import { comments, posts, findById, generateId, pubsub } from '../data'
+import { comments, findById, generateId, posts, pubsub } from '../data'
 
 export const commentQueries = defineQuery({
   comment: (_, { id }) => {
@@ -867,7 +867,7 @@ export const commentSubscriptions = {
 ### server/graphql/likes/like.resolver.ts
 
 ```typescript
-import { likes, posts, comments, findById, generateId, pubsub } from '../data'
+import { comments, findById, generateId, likes, posts, pubsub } from '../data'
 
 export const likeMutations = defineMutation({
   likePost: (_, { postId }, context) => {
@@ -990,7 +990,7 @@ export const likeMutations = defineMutation({
 export const likeSubscriptions = {
   likeAdded: {
     subscribe: (_, { postId }) => {
-      return pubsub.subscribe('LIKE_ADDED', payload => {
+      return pubsub.subscribe('LIKE_ADDED', (payload) => {
         if (!postId || payload.likeAdded.targetId === postId) {
           return payload
         }
@@ -1003,7 +1003,7 @@ export const likeSubscriptions = {
 ### server/graphql/follows/follow.resolver.ts
 
 ```typescript
-import { follows, users, notifications, findById, generateId, pubsub } from '../data'
+import { findById, follows, generateId, notifications, pubsub, users } from '../data'
 
 export const followMutations = defineMutation({
   followUser: (_, { userId }, context) => {

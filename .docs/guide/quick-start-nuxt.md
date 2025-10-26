@@ -268,8 +268,7 @@ export function useUsers() {
   const { GetUsers, CreateUser, UpdateUser, DeleteUser } = useGraphql()
 
   const { data: users, refresh, pending } = useAsyncData('users', () =>
-    GetUsers()
-  )
+    GetUsers())
 
   async function create(name: string, email: string) {
     await CreateUser({

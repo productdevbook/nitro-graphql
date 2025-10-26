@@ -37,8 +37,8 @@ export const httpClient = ofetch.create({
 export const githubClient = ofetch.create({
   baseURL: 'https://api.github.com',
   headers: {
-    'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`,
-    'Accept': 'application/vnd.github.v3+json',
+    Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+    Accept: 'application/vnd.github.v3+json',
   },
 })
 
@@ -96,8 +96,8 @@ extend type Query {
 Create `server/graphql/github/github.resolver.ts`:
 
 ```typescript
-import { githubClient } from '../../utils/http-client'
 import { GraphQLError } from 'graphql'
+import { githubClient } from '../../utils/http-client'
 
 interface GitHubUserResponse {
   login: string
@@ -142,7 +142,8 @@ export const githubResolvers = defineResolver({
           following: data.following,
           createdAt: new Date(data.created_at),
         }
-      } catch (error: any) {
+      }
+      catch (error: any) {
         if (error.response?.status === 404) {
           throw new GraphQLError(`GitHub user '${username}' not found`, {
             extensions: { code: 'NOT_FOUND' },
@@ -182,7 +183,8 @@ export const githubResolvers = defineResolver({
           createdAt: new Date(repo.created_at),
           updatedAt: new Date(repo.updated_at),
         }))
-      } catch (error: any) {
+      }
+      catch (error: any) {
         throw new GraphQLError('Failed to fetch GitHub repositories', {
           extensions: {
             code: 'EXTERNAL_API_ERROR',
@@ -219,7 +221,8 @@ export const githubResolvers = defineResolver({
           createdAt: new Date(repo.created_at),
           updatedAt: new Date(repo.updated_at),
         }))
-      } catch (error: any) {
+      }
+      catch (error: any) {
         throw new GraphQLError('Failed to search GitHub repositories', {
           extensions: {
             code: 'EXTERNAL_API_ERROR',
@@ -260,8 +263,8 @@ extend type Query {
 Create `server/graphql/weather/weather.resolver.ts`:
 
 ```typescript
-import { weatherClient } from '../../utils/http-client'
 import { GraphQLError } from 'graphql'
+import { weatherClient } from '../../utils/http-client'
 
 interface WeatherResponse {
   name: string
@@ -296,7 +299,8 @@ export const weatherResolvers = defineResolver({
           windSpeed: data.wind.speed,
           icon: data.weather[0].icon,
         }
-      } catch (error: any) {
+      }
+      catch (error: any) {
         if (error.response?.status === 404) {
           throw new GraphQLError(`City '${city}' not found`, {
             extensions: { code: 'NOT_FOUND' },
@@ -420,12 +424,13 @@ export async function retryWithBackoff<T>(
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       return await fn()
-    } catch (error) {
+    }
+    catch (error) {
       if (attempt === maxRetries - 1) {
         throw error
       }
 
-      const delay = baseDelay * Math.pow(2, attempt)
+      const delay = baseDelay * 2 ** attempt
       await new Promise(resolve => setTimeout(resolve, delay))
     }
   }
@@ -463,7 +468,8 @@ export class CircuitBreaker {
     if (this.state === 'OPEN') {
       if (Date.now() - this.lastFailureTime > this.timeout) {
         this.state = 'HALF_OPEN'
-      } else {
+      }
+      else {
         throw new Error('Circuit breaker is OPEN')
       }
     }
@@ -472,7 +478,8 @@ export class CircuitBreaker {
       const result = await fn()
       this.onSuccess()
       return result
-    } catch (error) {
+    }
+    catch (error) {
       this.onFailure()
       throw error
     }
@@ -544,8 +551,9 @@ export class BatchLoader<K, V> {
       queue.forEach((item, index) => {
         item.resolve(results[index])
       })
-    } catch (error) {
-      queue.forEach(item => {
+    }
+    catch (error) {
+      queue.forEach((item) => {
         item.reject(error as Error)
       })
     }
@@ -649,9 +657,11 @@ function handleAPIError(error: any): GraphQLError {
 
   if (error.response?.status === 404) {
     apiError.code = 'NOT_FOUND'
-  } else if (error.response?.status === 429) {
+  }
+  else if (error.response?.status === 429) {
     apiError.code = 'RATE_LIMIT_EXCEEDED'
-  } else if (error.response?.status === 401) {
+  }
+  else if (error.response?.status === 401) {
     apiError.code = 'UNAUTHORIZED'
   }
 
@@ -667,10 +677,11 @@ function handleAPIError(error: any): GraphQLError {
 ### 2. Graceful Degradation
 
 ```typescript
-const githubRepos = async (_parent, { username }) => {
+async function githubRepos(_parent, { username }) {
   try {
     return await fetchGitHubRepos(username)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('GitHub API error:', error)
 
     // Return cached data or empty array
@@ -699,7 +710,7 @@ export const rateLimitedGithubClient = githubLimiter.wrap(githubClient)
 ## Testing External API Integration
 
 ```typescript
-import { describe, it, expect, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { githubResolvers } from '../github.resolver'
 
 // Mock the HTTP client
@@ -767,10 +778,11 @@ async function trackAPICall<T>(fn: () => Promise<T>): Promise<T> {
 
   try {
     const result = await fn()
-    apiMetrics.avgResponseTime =
-      (apiMetrics.avgResponseTime + (Date.now() - start)) / 2
+    apiMetrics.avgResponseTime
+      = (apiMetrics.avgResponseTime + (Date.now() - start)) / 2
     return result
-  } catch (error) {
+  }
+  catch (error) {
     apiMetrics.errors++
     throw error
   }

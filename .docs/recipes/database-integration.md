@@ -183,7 +183,8 @@ export async function connectWithRetry(maxRetries = 5, delayMs = 1000) {
       await db.$connect()
       console.log('✅ Database connected')
       return
-    } catch (error) {
+    }
+    catch (error) {
       console.error(`❌ Database connection attempt ${i + 1} failed:`, error)
       if (i < maxRetries - 1) {
         await new Promise(resolve => setTimeout(resolve, delayMs))
@@ -341,17 +342,17 @@ export default {
 Create `server/database/schema.ts`:
 
 ```typescript
+import { relations } from 'drizzle-orm'
 import {
+  boolean,
+  index,
+  integer,
+  pgEnum,
   pgTable,
   text,
   timestamp,
-  boolean,
-  integer,
-  pgEnum,
-  index,
   uniqueIndex,
 } from 'drizzle-orm/pg-core'
-import { relations } from 'drizzle-orm'
 
 // Enums
 export const roleEnum = pgEnum('role', ['USER', 'MODERATOR', 'ADMIN', 'SUPER_ADMIN'])
@@ -365,7 +366,7 @@ export const users = pgTable('users', {
   role: roleEnum('role').notNull().default('USER'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow().$onUpdate(() => new Date()),
-}, (table) => ({
+}, table => ({
   emailIdx: uniqueIndex('email_idx').on(table.email),
   roleIdx: index('role_idx').on(table.role),
 }))
@@ -380,7 +381,7 @@ export const posts = pgTable('posts', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   publishedAt: timestamp('published_at'),
-}, (table) => ({
+}, table => ({
   authorIdx: index('author_idx').on(table.authorId),
   publishedIdx: index('published_idx').on(table.published),
   createdAtIdx: index('created_at_idx').on(table.createdAt),
@@ -484,9 +485,9 @@ npx drizzle-kit studio
 Create `server/graphql/users/drizzle.resolver.ts`:
 
 ```typescript
+import { and, desc, eq, like, or } from 'drizzle-orm'
+import { posts, users } from '../../database/schema'
 import { db } from '../../utils/drizzle'
-import { users, posts } from '../../database/schema'
-import { eq, and, desc, like, or } from 'drizzle-orm'
 
 export const drizzleUserResolvers = defineResolver({
   Query: {
@@ -602,7 +603,8 @@ export async function connectMongoDB() {
       console.warn('MongoDB disconnected')
       isConnected = false
     })
-  } catch (error) {
+  }
+  catch (error) {
     console.error('❌ MongoDB connection failed:', error)
     throw error
   }
@@ -620,7 +622,7 @@ process.on('SIGINT', async () => {
 Create `server/models/User.ts`:
 
 ```typescript
-import mongoose, { Schema, Document } from 'mongoose'
+import mongoose, { Document, Schema } from 'mongoose'
 
 export interface IUser extends Document {
   email: string
@@ -679,7 +681,7 @@ export const User = mongoose.model<IUser>('User', UserSchema)
 Create `server/models/Post.ts`:
 
 ```typescript
-import mongoose, { Schema, Document, Types } from 'mongoose'
+import mongoose, { Document, Schema, Types } from 'mongoose'
 
 export interface IPost extends Document {
   title: string
@@ -732,8 +734,8 @@ export const Post = mongoose.model<IPost>('Post', PostSchema)
 Create `server/graphql/users/mongoose.resolver.ts`:
 
 ```typescript
-import { User } from '../../models/User'
 import { Post } from '../../models/Post'
+import { User } from '../../models/User'
 import { connectMongoDB } from '../../utils/mongoose'
 
 export const mongooseUserResolvers = defineResolver({
@@ -788,8 +790,8 @@ export const mongooseUserResolvers = defineResolver({
 Create `server/database/seed.ts`:
 
 ```typescript
-import { db } from '../utils/database'
 import { hashPassword } from '../utils/auth'
+import { db } from '../utils/database'
 
 async function seed() {
   console.log('🌱 Seeding database...')
@@ -941,7 +943,7 @@ See [Caching Strategies recipe](./caching-strategies.md) for detailed caching pa
 Create `server/graphql/__tests__/setup.ts`:
 
 ```typescript
-import { beforeAll, afterAll, beforeEach } from 'vitest'
+import { afterAll, beforeAll, beforeEach } from 'vitest'
 import { db } from '../utils/database'
 
 beforeAll(async () => {
@@ -978,7 +980,8 @@ await db.$transaction(async (tx) => {
 ```typescript
 try {
   await db.$connect()
-} catch (error) {
+}
+catch (error) {
   console.error('Database connection failed:', error)
   // Implement retry logic or graceful degradation
 }

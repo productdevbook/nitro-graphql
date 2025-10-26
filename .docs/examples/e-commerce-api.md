@@ -403,7 +403,7 @@ extend type Mutation {
 ### server/graphql/data/index.ts
 
 ```typescript
-import type { Product, Category, Cart, Order, Customer } from '#graphql/server'
+import type { Cart, Category, Customer, Order, Product } from '#graphql/server'
 
 // Mock data store
 export const categories: Category[] = [
@@ -525,21 +525,22 @@ export const customers: Customer[] = []
 // Utility functions
 export const generateId = () => Date.now().toString()
 
-export const findById = <T extends { id: string }>(
-  items: T[],
-  id: string
-): T | undefined => items.find(item => item.id === id)
+export function findById<T extends { id: string }>(items: T[], id: string): T | undefined {
+  return items.find(item => item.id === id)
+}
 
-export const formatMoney = (amount: number, currency = 'USD') => ({
-  amount,
-  currency,
-  formatted: new Intl.NumberFormat('en-US', {
-    style: 'currency',
+export function formatMoney(amount: number, currency = 'USD') {
+  return {
+    amount,
     currency,
-  }).format(amount),
-})
+    formatted: new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency,
+    }).format(amount),
+  }
+}
 
-export const calculateCartTotal = (cart: Cart) => {
+export function calculateCartTotal(cart: Cart) {
   const subtotal = cart.items.reduce((sum, item) => sum + item.subtotal.amount, 0)
   const tax = subtotal * 0.08 // 8% tax
   const shipping = subtotal > 50 ? 0 : 10 // Free shipping over $50
@@ -559,7 +560,7 @@ export const calculateCartTotal = (cart: Cart) => {
 ### server/graphql/products/product-queries.resolver.ts
 
 ```typescript
-import { products, categories } from '../data'
+import { categories, products } from '../data'
 
 export const productQueries = defineQuery({
   products: (_, { filter, sort, limit = 20, offset = 0 }) => {
@@ -588,8 +589,8 @@ export const productQueries = defineQuery({
         const search = filter.search.toLowerCase()
         filtered = filtered.filter(
           p =>
-            p.name.toLowerCase().includes(search) ||
-            p.description.toLowerCase().includes(search)
+            p.name.toLowerCase().includes(search)
+            || p.description.toLowerCase().includes(search)
         )
       }
     }
@@ -642,9 +643,9 @@ export const productQueries = defineQuery({
     return products
       .filter(
         p =>
-          p.name.toLowerCase().includes(search) ||
-          p.description.toLowerCase().includes(search) ||
-          p.tags.some(tag => tag.toLowerCase().includes(search))
+          p.name.toLowerCase().includes(search)
+          || p.description.toLowerCase().includes(search)
+          || p.tags.some(tag => tag.toLowerCase().includes(search))
       )
       .slice(0, limit)
   },
@@ -667,7 +668,7 @@ export const productTypeResolver = defineType({
 ### server/graphql/cart/cart.resolver.ts
 
 ```typescript
-import { carts, products, findById, generateId, calculateCartTotal, formatMoney } from '../data'
+import { calculateCartTotal, carts, findById, formatMoney, generateId, products } from '../data'
 
 export const cartQueries = defineQuery({
   cart: (_, { id }) => {
@@ -677,7 +678,8 @@ export const cartQueries = defineQuery({
   myCart: (_, __, context) => {
     // Get cart for current customer/session
     const customerId = context.user?.id
-    if (!customerId) return null
+    if (!customerId)
+      return null
 
     return carts.find(c => c.customerId === customerId) || null
   },
@@ -717,8 +719,8 @@ export const cartMutations = defineMutation({
     // Check if item already exists
     const existingItem = cart.items.find(
       item =>
-        item.product.id === input.productId &&
-        item.variant?.id === input.variantId
+        item.product.id === input.productId
+        && item.variant?.id === input.variantId
     )
 
     if (existingItem) {
@@ -727,7 +729,8 @@ export const cartMutations = defineMutation({
       existingItem.subtotal = formatMoney(
         existingItem.price.amount * existingItem.quantity
       )
-    } else {
+    }
+    else {
       // Add new item
       const variant = input.variantId
         ? product.variants.find(v => v.id === input.variantId)
@@ -824,7 +827,8 @@ export const cartMutations = defineMutation({
         0
       )
       cart.discount = formatMoney(subtotal * 0.1)
-    } else {
+    }
+    else {
       throw new Error('Invalid coupon code')
     }
 
@@ -840,7 +844,7 @@ export const cartMutations = defineMutation({
 ### server/graphql/orders/order.resolver.ts
 
 ```typescript
-import { orders, carts, customers, findById, generateId, formatMoney } from '../data'
+import { carts, customers, findById, formatMoney, generateId, orders } from '../data'
 
 export const orderQueries = defineQuery({
   order: (_, { id, orderNumber }) => {
@@ -855,7 +859,8 @@ export const orderQueries = defineQuery({
 
   myOrders: (_, { limit = 10, offset = 0 }, context) => {
     const customerId = context.user?.id
-    if (!customerId) return []
+    if (!customerId)
+      return []
 
     return orders
       .filter(o => o.customerId === customerId)

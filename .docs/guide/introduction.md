@@ -29,13 +29,13 @@ import { makeExecutableSchema } from '@graphql-tools/schema'
 import { createYoga } from 'graphql-yoga'
 import { defineEventHandler } from 'h3'
 
-// Import schemas manually
-import userSchema from './schemas/user'
-import postSchema from './schemas/post'
-
+import postResolvers from './resolvers/post'
 // Import resolvers manually
 import userResolvers from './resolvers/user'
-import postResolvers from './resolvers/post'
+
+import postSchema from './schemas/post'
+// Import schemas manually
+import userSchema from './schemas/user'
 
 // Merge everything
 const schema = makeExecutableSchema({
@@ -91,7 +91,7 @@ Generate TypeScript types automatically:
 
 ```typescript
 // Automatically generated types available via virtual imports
-import type { Query, User, Post } from '#graphql/server'
+import type { Post, Query, User } from '#graphql/server'
 
 export const userQueries = defineQuery({
   // ✅ Fully typed arguments and return values

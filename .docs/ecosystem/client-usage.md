@@ -165,7 +165,7 @@ export function useUsers() {
     () => GetUsers(),
     {
       // Cache for 5 minutes
-      getCachedData: (key) => useNuxtApp().payload.data[key] || useNuxtApp().static.data[key]
+      getCachedData: key => useNuxtApp().payload.data[key] || useNuxtApp().static.data[key]
     }
   )
 
@@ -180,7 +180,8 @@ export function useUsers() {
       })
       await refresh()
       return result.createUser
-    } catch (err) {
+    }
+    catch (err) {
       console.error('Failed to create user:', err)
       throw err
     }
@@ -195,7 +196,8 @@ export function useUsers() {
       })
       await refresh()
       return result.updateUser
-    } catch (err) {
+    }
+    catch (err) {
       console.error('Failed to update user:', err)
       throw err
     }
@@ -206,7 +208,8 @@ export function useUsers() {
     try {
       await DeleteUser({ id })
       await refresh()
-    } catch (err) {
+    }
+    catch (err) {
       console.error('Failed to delete user:', err)
       throw err
     }
@@ -421,7 +424,8 @@ export default defineNuxtPlugin(() => {
       }
 
       return response
-    } catch (err) {
+    }
+    catch (err) {
       if (err instanceof Error) {
         toast.error(err.message)
       }
@@ -466,7 +470,8 @@ export function useOptimisticUsers() {
           data.value.users[index] = result.createUser
         }
       }
-    } catch (err) {
+    }
+    catch (err) {
       // Rollback on error
       if (data.value?.users) {
         data.value.users = data.value.users.filter(u => u.id !== tempId)
@@ -492,7 +497,8 @@ export function useInfiniteUsers(pageSize: number = 20) {
   const loading = ref(false)
 
   async function loadMore() {
-    if (loading.value || !hasMore.value) return
+    if (loading.value || !hasMore.value)
+      return
 
     loading.value = true
 
@@ -505,12 +511,15 @@ export function useInfiniteUsers(pageSize: number = 20) {
       if (result.usersPaginated.users.length > 0) {
         users.value.push(...result.usersPaginated.users)
         currentPage.value++
-      } else {
+      }
+      else {
         hasMore.value = false
       }
-    } catch (err) {
+    }
+    catch (err) {
       console.error('Failed to load more:', err)
-    } finally {
+    }
+    finally {
       loading.value = false
     }
   }
@@ -707,9 +716,9 @@ const { data } = await useCachedGraphQL(
 ### Component Testing
 
 ```ts
-// components/UserList.spec.ts
-import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+// components/UserList.spec.ts
+import { describe, expect, it, vi } from 'vitest'
 import UserList from './UserList.vue'
 
 // Mock useGraphql

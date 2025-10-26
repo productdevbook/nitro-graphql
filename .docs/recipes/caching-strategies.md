@@ -52,8 +52,8 @@ export default redis
 Create `server/utils/cache.ts`:
 
 ```typescript
+import { createHash } from 'node:crypto'
 import redis from './redis'
-import { createHash } from 'crypto'
 
 // Generate cache key
 export function generateCacheKey(
@@ -76,7 +76,8 @@ export async function getCache<T>(key: string): Promise<T | null> {
   try {
     const cached = await redis.get(key)
     return cached ? JSON.parse(cached) : null
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Cache get error:', error)
     return null
   }
@@ -90,7 +91,8 @@ export async function setCache(
 ): Promise<void> {
   try {
     await redis.setex(key, ttl, JSON.stringify(value))
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Cache set error:', error)
   }
 }
@@ -99,7 +101,8 @@ export async function setCache(
 export async function deleteCache(key: string): Promise<void> {
   try {
     await redis.del(key)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Cache delete error:', error)
   }
 }
@@ -111,7 +114,8 @@ export async function deleteCachePattern(pattern: string): Promise<void> {
     if (keys.length > 0) {
       await redis.del(...keys)
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Cache pattern delete error:', error)
   }
 }
@@ -230,8 +234,8 @@ pnpm add dataloader
 Create `server/utils/dataloaders.ts`:
 
 ```typescript
-import DataLoader from 'dataloader'
 import type { PrismaClient } from '@prisma/client'
+import DataLoader from 'dataloader'
 
 export function createDataLoaders(db: PrismaClient) {
   // User loader
@@ -287,8 +291,8 @@ export type DataLoaders = ReturnType<typeof createDataLoaders>
 Update `server/graphql/context.ts`:
 
 ```typescript
-import { createDataLoaders } from '../utils/dataloaders'
 import type { DataLoaders } from '../utils/dataloaders'
+import { createDataLoaders } from '../utils/dataloaders'
 
 declare module 'h3' {
   interface H3EventContext {
@@ -443,9 +447,9 @@ export default defineGraphQLConfig({
 ### 2. ETags for Cache Validation
 
 ```typescript
-import { createHash } from 'crypto'
+import { createHash } from 'node:crypto'
 
-export const cacheableQuery = async (_parent, _args, context) => {
+export async function cacheableQuery(_parent, _args, context) {
   const data = await context.db.post.findMany()
 
   // Generate ETag
@@ -587,9 +591,12 @@ export default defineGraphQLConfig({
 
 ```typescript
 function calculateTTL(complexity: number): number {
-  if (complexity < 10) return 300 // 5 minutes
-  if (complexity < 50) return 1800 // 30 minutes
-  if (complexity < 100) return 3600 // 1 hour
+  if (complexity < 10)
+    return 300 // 5 minutes
+  if (complexity < 50)
+    return 1800 // 30 minutes
+  if (complexity < 100)
+    return 3600 // 1 hour
   return 7200 // 2 hours
 }
 ```
@@ -635,7 +642,8 @@ export async function getCacheWithMetrics<T>(key: string): Promise<T | null> {
 
   if (result) {
     cacheMetrics.hits++
-  } else {
+  }
+  else {
     cacheMetrics.misses++
   }
 
@@ -660,8 +668,8 @@ setInterval(() => {
 ## Testing Caching
 
 ```typescript
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { getCache, setCache, deleteCache } from '../cache'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { deleteCache, getCache, setCache } from '../cache'
 
 describe('Caching', () => {
   beforeEach(async () => {
@@ -711,9 +719,9 @@ Don't cache:
 
 ```typescript
 const TTL = {
-  SHORT: 300,      // 5 minutes - frequently changing
-  MEDIUM: 1800,    // 30 minutes - moderately changing
-  LONG: 3600,      // 1 hour - slowly changing
+  SHORT: 300, // 5 minutes - frequently changing
+  MEDIUM: 1800, // 30 minutes - moderately changing
+  LONG: 3600, // 1 hour - slowly changing
   VERY_LONG: 86400 // 24 hours - rarely changing
 }
 ```
@@ -740,8 +748,10 @@ async function warmCache() {
 async function getCacheSafe<T>(key: string, fallback: () => Promise<T>): Promise<T> {
   try {
     const cached = await getCache<T>(key)
-    if (cached) return cached
-  } catch (error) {
+    if (cached)
+      return cached
+  }
+  catch (error) {
     console.error('Cache error:', error)
   }
 

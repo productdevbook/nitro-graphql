@@ -21,7 +21,7 @@ export default defineConfig({
   ],
 
   themeConfig: {
-    logo: '/logo.svg',
+    logo: { src: '/logo.svg', width: 40, height: 40 },
 
     nav: [
       { text: 'Guide', link: '/guide/introduction', activeMatch: '/guide/' },

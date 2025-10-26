@@ -102,14 +102,14 @@ export type TopicName = typeof TOPICS[keyof typeof TOPICS]
 Create `server/graphql/subscriptions/subscriptions.resolver.ts`:
 
 ```typescript
-import { pubsub, TOPICS } from '../../utils/pubsub'
 import { GraphQLError } from 'graphql'
+import { pubsub, TOPICS } from '../../utils/pubsub'
 
 export const subscriptionResolvers = defineResolver({
   Subscription: {
     postCreated: {
       subscribe: () => pubsub.subscribe(TOPICS.POST_CREATED),
-      resolve: (payload) => payload,
+      resolve: payload => payload,
     },
 
     postUpdated: {
@@ -117,14 +117,14 @@ export const subscriptionResolvers = defineResolver({
         // Subscribe to specific post updates
         return pubsub.subscribe(`${TOPICS.POST_UPDATED}:${id}`)
       },
-      resolve: (payload) => payload,
+      resolve: payload => payload,
     },
 
     commentAdded: {
       subscribe: (_parent, { postId }) => {
         return pubsub.subscribe(`${TOPICS.COMMENT_ADDED}:${postId}`)
       },
-      resolve: (payload) => payload,
+      resolve: payload => payload,
     },
 
     notificationReceived: {
@@ -138,19 +138,19 @@ export const subscriptionResolvers = defineResolver({
         // Subscribe to user-specific notifications
         return pubsub.subscribe(`${TOPICS.NOTIFICATION_RECEIVED}:${context.user.id}`)
       },
-      resolve: (payload) => payload,
+      resolve: payload => payload,
     },
 
     userTyping: {
       subscribe: (_parent, { chatId }) => {
         return pubsub.subscribe(`${TOPICS.USER_TYPING}:${chatId}`)
       },
-      resolve: (payload) => payload,
+      resolve: payload => payload,
     },
 
     counterUpdated: {
       subscribe: () => pubsub.subscribe(TOPICS.COUNTER_UPDATED),
-      resolve: (payload) => payload.count,
+      resolve: payload => payload.count,
     },
   },
 })
@@ -265,8 +265,8 @@ pnpm add @graphql-yoga/redis-event-target ioredis
 Update `server/utils/pubsub.ts`:
 
 ```typescript
-import { createPubSub } from '@graphql-yoga/subscription'
 import { createRedisEventTarget } from '@graphql-yoga/redis-event-target'
+import { createPubSub } from '@graphql-yoga/subscription'
 import Redis from 'ioredis'
 
 const publishClient = new Redis({
@@ -372,7 +372,8 @@ export function useSubscription<T>(
           if (message.errors) {
             error.value = new Error(message.errors[0]?.message)
           }
-        } catch (e) {
+        }
+        catch (e) {
           error.value = e as Error
         }
       },
@@ -675,8 +676,8 @@ onUnmounted(() => {
 ## Testing Subscriptions
 
 ```typescript
-import { describe, it, expect } from 'vitest'
-import { execute, subscribe, parse } from 'graphql'
+import { execute, parse, subscribe } from 'graphql'
+import { describe, expect, it } from 'vitest'
 import { schema } from '../schema'
 
 describe('Subscriptions', () => {
@@ -729,8 +730,7 @@ Scope topics to specific resources or users:
 
 ```typescript
 // Good: Scoped
-`POST_UPDATED:${postId}`
-`NOTIFICATIONS:${userId}`
+`POST_UPDATED:${postId}``NOTIFICATIONS:${userId}`
 
 // Bad: Global
 `POST_UPDATED`

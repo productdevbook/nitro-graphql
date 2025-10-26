@@ -28,25 +28,25 @@ Server-side GraphQL types for resolver implementation.
 ```typescript
 // Type imports for resolvers
 import type {
-  Resolvers,
-  QueryResolvers,
   MutationResolvers,
-  SubscriptionResolvers,
+  QueryResolvers,
+  Resolvers,
+  ResolversParentTypes,
   ResolversTypes,
-  ResolversParentTypes
+  SubscriptionResolvers
 } from '#graphql/server'
 
 // Specific type resolvers
 import type {
-  UserResolvers,
+  CommentResolvers,
   PostResolvers,
-  CommentResolvers
+  UserResolvers
 } from '#graphql/server'
 
 // Field argument types
 import type {
-  QueryUserArgs,
   MutationCreateUserArgs,
+  QueryUserArgs,
   QueryUsersArgs
 } from '#graphql/server'
 
@@ -59,8 +59,8 @@ import type {
 
 // Enum types
 import type {
-  UserRole,
-  PostStatus
+  PostStatus,
+  UserRole
 } from '#graphql/server'
 
 // Scalar types
@@ -79,7 +79,7 @@ import type {
 **Typed Resolvers:**
 
 ```typescript
-import type { QueryResolvers, MutationResolvers } from '#graphql/server'
+import type { MutationResolvers, QueryResolvers } from '#graphql/server'
 
 export const queries: QueryResolvers = defineQuery({
   user: async (_parent, { id }, context) => {
@@ -97,11 +97,11 @@ export const mutations: MutationResolvers = defineMutation({
 **Custom Type Resolvers:**
 
 ```typescript
-import type { UserResolvers, PostResolvers } from '#graphql/server'
+import type { PostResolvers, UserResolvers } from '#graphql/server'
 
 export const userTypes: UserResolvers = defineType({
   User: {
-    fullName: (parent) => `${parent.firstName} ${parent.lastName}`,
+    fullName: parent => `${parent.firstName} ${parent.lastName}`,
     posts: async (parent, _args, context) => {
       return await context.db.posts.findByUserId(parent.id)
     }
@@ -137,18 +137,18 @@ Client-side GraphQL types for queries and mutations.
 ```typescript
 // Operation types
 import type {
+  CreateUserMutation,
+  CreateUserMutationVariables,
   GetUserQuery,
   GetUserQueryVariables,
   GetUsersQuery,
-  GetUsersQueryVariables,
-  CreateUserMutation,
-  CreateUserMutationVariables
+  GetUsersQueryVariables
 } from '#graphql/client'
 
 // Fragment types
 import type {
-  UserFieldsFragment,
-  PostFieldsFragment
+  PostFieldsFragment,
+  UserFieldsFragment
 } from '#graphql/client'
 
 // Input types (client-side)
@@ -258,24 +258,24 @@ External service types for specific GraphQL APIs.
 #### Primary Exports
 
 ```typescript
-// Example: GitHub service
-import type {
-  GetViewerQuery,
-  GetViewerQueryVariables,
-  GetRepositoriesQuery,
-  GetRepositoriesQueryVariables
-} from '#graphql/client/github'
-
-// SDK for external service
-import { getSdk } from '#graphql/client/github'
-
 // Example: Contentful service
 import type {
   GetPostQuery,
   GetPostsQuery
 } from '#graphql/client/contentful'
 
+// Example: GitHub service
+import type {
+  GetRepositoriesQuery,
+  GetRepositoriesQueryVariables,
+  GetViewerQuery,
+  GetViewerQueryVariables
+} from '#graphql/client/github'
+
 import { getSdk as getContentfulSdk } from '#graphql/client/contentful'
+
+// SDK for external service
+import { getSdk } from '#graphql/client/github'
 ```
 
 #### Usage Examples
@@ -283,8 +283,8 @@ import { getSdk as getContentfulSdk } from '#graphql/client/contentful'
 **GitHub Service:**
 
 ```typescript
-import { getSdk } from '#graphql/client/github'
 import type { GetViewerQuery } from '#graphql/client/github'
+import { getSdk } from '#graphql/client/github'
 
 const githubSdk = getSdk(async (query, variables) => {
   return await $fetch('https://api.github.com/graphql', {
@@ -304,10 +304,10 @@ async function getGitHubViewer(): Promise<GetViewerQuery> {
 **Multiple External Services:**
 
 ```typescript
-import { getSdk as getGitHubSdk } from '#graphql/client/github'
-import { getSdk as getContentfulSdk } from '#graphql/client/contentful'
-import type { GetViewerQuery } from '#graphql/client/github'
 import type { GetPostsQuery } from '#graphql/client/contentful'
+import type { GetViewerQuery } from '#graphql/client/github'
+import { getSdk as getContentfulSdk } from '#graphql/client/contentful'
+import { getSdk as getGitHubSdk } from '#graphql/client/github'
 
 // GitHub
 const github = getGitHubSdk(githubFetcher)
@@ -374,8 +374,8 @@ import { schemas } from '#nitro-internal-virtual/server-schemas'
 **Structure:**
 ```typescript
 interface SchemaFile {
-  path: string    // Absolute file path
-  def: string     // GraphQL SDL content
+  path: string // Absolute file path
+  def: string // GraphQL SDL content
 }
 ```
 
@@ -396,9 +396,9 @@ import { resolvers } from '#nitro-internal-virtual/server-resolvers'
 **Structure:**
 ```typescript
 interface ResolverModule {
-  path: string           // Absolute file path
-  resolver: IResolvers   // Resolver object
-  exports: string[]      // Named exports from file
+  path: string // Absolute file path
+  resolver: IResolvers // Resolver object
+  exports: string[] // Named exports from file
 }
 ```
 
@@ -419,8 +419,8 @@ import { directives } from '#nitro-internal-virtual/server-directives'
 **Structure:**
 ```typescript
 interface DirectiveModule {
-  path: string                    // Absolute file path
-  directive: DirectiveDefinition  // Directive config
+  path: string // Absolute file path
+  directive: DirectiveDefinition // Directive config
 }
 ```
 
@@ -448,7 +448,7 @@ import defu from 'defu'
 const yoga = createYoga(defu({
   schema,
   graphqlEndpoint: '/api/graphql'
-}, importedConfig))  // Merge user config
+}, importedConfig)) // Merge user config
 ```
 
 ---
@@ -512,7 +512,7 @@ export default defineNitroConfig({
   graphql: {
     framework: 'graphql-yoga',
     paths: {
-      typesDir: 'types/generated'  // Changes output location
+      typesDir: 'types/generated' // Changes output location
     }
   }
 })
@@ -527,9 +527,9 @@ export default defineNitroConfig({
 Use `import type` for type-only imports:
 
 ```typescript
+import type { GetUserQuery } from '#graphql/client'
 // ✅ Correct
 import type { Resolvers } from '#graphql/server'
-import type { GetUserQuery } from '#graphql/client'
 
 // ❌ Avoid (unless you need runtime values)
 import { Resolvers } from '#graphql/server'
@@ -549,12 +549,12 @@ import type { } from '#graphql/server'
 For external services, always use the service-specific import:
 
 ```typescript
-// ✅ Correct - Clear which service
-import type { GetViewerQuery } from '#graphql/client/github'
-import type { GetPostQuery } from '#graphql/client/contentful'
-
 // ❌ Wrong - Types would conflict
 import type { GetViewerQuery as GitHubViewer } from '#graphql/client'
+import type { GetPostQuery } from '#graphql/client/contentful'
+
+// ✅ Correct - Clear which service
+import type { GetViewerQuery } from '#graphql/client/github'
 ```
 
 ### 4. Don't Import Internal Virtuals
@@ -562,11 +562,11 @@ import type { GetViewerQuery as GitHubViewer } from '#graphql/client'
 Avoid importing `#nitro-internal-virtual/*` in application code:
 
 ```typescript
-// ❌ Wrong - Internal use only
-import { schemas } from '#nitro-internal-virtual/server-schemas'
-
 // ✅ Correct - Use public APIs
 import type { Resolvers } from '#graphql/server'
+
+// ❌ Wrong - Internal use only
+import { schemas } from '#nitro-internal-virtual/server-schemas'
 ```
 
 ### 5. Check Virtual File Generation

@@ -221,7 +221,7 @@ export const userQueries = defineQuery({
 
 // App layer (overrides base)
 export const userQueries = defineQuery({
-  users: () => [{ id: '1', name: 'App User' }],  // ← This wins
+  users: () => [{ id: '1', name: 'App User' }], // ← This wins
 })
 ```
 
@@ -230,10 +230,10 @@ export const userQueries = defineQuery({
 Discovered files are exposed via virtual imports (for internal use):
 
 ```ts
+import directives from '#nitro-internal-virtual/server-directives'
+import resolvers from '#nitro-internal-virtual/server-resolvers'
 // Virtual import - DO NOT use directly
 import schemas from '#nitro-internal-virtual/server-schemas'
-import resolvers from '#nitro-internal-virtual/server-resolvers'
-import directives from '#nitro-internal-virtual/server-directives'
 ```
 
 These are used internally by the GraphQL server setup.
@@ -258,22 +258,22 @@ The scanner looks for named exports using these functions:
 ```ts
 // server/graphql/users.resolver.ts
 export const userQueries = defineQuery({
-  users: () => [],  // ← Discovered
+  users: () => [], // ← Discovered
 })
 
 export const userMutations = defineMutation({
-  createUser: () => ({}),  // ← Discovered
+  createUser: () => ({}), // ← Discovered
 })
 
 // This won't be discovered (not using a define function)
-export const someHelper = () => {}
+export function someHelper() {}
 ```
 
 Generated virtual import:
 
 ```ts
 // Virtual: #nitro-internal-virtual/server-resolvers
-import { userQueries, userMutations } from './server/graphql/users.resolver.ts'
+import { userMutations, userQueries } from './server/graphql/users.resolver.ts'
 
 export default [
   userQueries,
@@ -291,8 +291,8 @@ export default defineNitroConfig({
   graphql: {
     framework: 'graphql-yoga',
     paths: {
-      serverGraphql: 'src/server/graphql',  // Custom server path
-      clientGraphql: 'src/client/graphql',  // Custom client path
+      serverGraphql: 'src/server/graphql', // Custom server path
+      clientGraphql: 'src/client/graphql', // Custom client path
     },
   },
 })

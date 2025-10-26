@@ -374,7 +374,8 @@ export const postTypeResolvers = defineType({
     },
 
     isLikedByCurrentUser: async (parent, _args, context) => {
-      if (!context.auth?.userId) return false
+      if (!context.auth?.userId)
+        return false
       return await context.db.likes.exists(parent.id, context.auth.userId)
     }
   }
@@ -595,8 +596,8 @@ function defineGraphQLConfig<T extends NPMConfig = NPMConfig>(
   config: Partial<DefineServerConfig<T>>
 ): Partial<DefineServerConfig<T>>
 
-type DefineServerConfig<T extends NPMConfig = NPMConfig> =
-  T['framework'] extends 'graphql-yoga'
+type DefineServerConfig<T extends NPMConfig = NPMConfig>
+  = T['framework'] extends 'graphql-yoga'
     ? Partial<YogaServerOptions<H3Event, Partial<H3Event>>>
     : T['framework'] extends 'apollo-server'
       ? Partial<ApolloServerOptions<H3Event>>
@@ -611,7 +612,7 @@ type DefineServerConfig<T extends NPMConfig = NPMConfig> =
 // server/graphql/config.ts
 export default defineGraphQLConfig({
   // Context function
-  context: (req) => ({
+  context: req => ({
     auth: req.auth,
     db: useDatabase()
   }),
@@ -834,7 +835,7 @@ export const userQueries = defineQuery({
 Leverage generated types from `#graphql/server`:
 
 ```typescript
-import type { Resolvers, QueryResolvers } from '#graphql/server'
+import type { QueryResolvers, Resolvers } from '#graphql/server'
 
 export const userQueries: QueryResolvers = defineQuery({
   // Fully typed!

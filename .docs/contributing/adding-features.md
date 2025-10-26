@@ -77,13 +77,13 @@ Follow these guidelines:
 **TypeScript:**
 ```typescript
 // ✅ Use explicit types for public APIs
-export function generateTypes(options: GenerateOptions): Promise<void>
-
 // ✅ Use type imports when possible
 import type { NitroConfig } from 'nitropack'
 
+export function generateTypes(options: GenerateOptions): Promise<void>
+
 // ✅ Prefer named exports
-export const myFunction = () => {}
+export function myFunction() {}
 
 // ❌ Avoid default exports (except for route handlers)
 export default myFunction // Don't do this
@@ -99,9 +99,9 @@ export default myFunction // Don't do this
 ```typescript
 // Order your code logically:
 
+import type { NitroConfig } from 'nitropack'
 // 1. Imports
 import { defineNitroModule } from 'nitropack/kit'
-import type { NitroConfig } from 'nitropack'
 
 // 2. Types and interfaces
 export interface FeatureOptions {

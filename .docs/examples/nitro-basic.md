@@ -438,7 +438,7 @@ mutation DeleteUser {
 Once the server is running, TypeScript types will be auto-generated in `.nitro/types/nitro-graphql-server.d.ts`. You can use these types in your resolvers:
 
 ```typescript
-import type { QueryResolvers, MutationResolvers } from '#graphql/server'
+import type { MutationResolvers, QueryResolvers } from '#graphql/server'
 
 export const userQueries: QueryResolvers = {
   users: () => {

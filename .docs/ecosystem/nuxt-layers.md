@@ -167,9 +167,9 @@ You can extend multiple layers:
 // nuxt.config.ts
 export default defineNuxtConfig({
   extends: [
-    './layers/auth-layer',      // Authentication
-    './layers/blog-layer',      // Blog posts
-    './layers/comments-layer',  // Comments
+    './layers/auth-layer', // Authentication
+    './layers/blog-layer', // Blog posts
+    './layers/comments-layer', // Comments
   ],
 
   modules: ['nitro-graphql/nuxt'],

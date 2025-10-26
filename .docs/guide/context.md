@@ -236,7 +236,8 @@ export default defineEventHandler(async (event) => {
         email: payload.email,
         role: payload.role,
       }
-    } catch (error) {
+    }
+    catch (error) {
       // Invalid token - context.auth remains undefined
     }
   }
@@ -355,9 +356,9 @@ Access merged context:
 ```ts
 export const userQueries = defineQuery({
   users: async (_, __, context) => {
-    console.log(context.requestId)  // From GraphQL config
-    console.log(context.db)         // From middleware
-    console.log(context.auth)       // From middleware
+    console.log(context.requestId) // From GraphQL config
+    console.log(context.db) // From middleware
+    console.log(context.auth) // From middleware
   },
 })
 ```
@@ -407,7 +408,7 @@ declare module 'h3' {
 // ✅ Good - Optional auth
 declare module 'h3' {
   interface H3EventContext {
-    auth?: {  // Optional - not all routes need auth
+    auth?: { // Optional - not all routes need auth
       userId: string
     }
   }
@@ -416,7 +417,7 @@ declare module 'h3' {
 // ✅ Good - Required database
 declare module 'h3' {
   interface H3EventContext {
-    db: Database  // Required - always available
+    db: Database // Required - always available
   }
 }
 ```
@@ -501,7 +502,8 @@ export default defineEventHandler(async (event) => {
         email: payload.email,
         role: payload.role,
       }
-    } catch {
+    }
+    catch {
       // Invalid token
     }
   }

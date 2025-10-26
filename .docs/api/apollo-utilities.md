@@ -48,8 +48,8 @@ interface H3ContextFunctionArgument {
   event: H3Event
 }
 
-type ContextFunction<Args extends any[], TContext> =
-  (...args: Args) => TContext | Promise<TContext>
+type ContextFunction<Args extends any[], TContext>
+  = (...args: Args) => TContext | Promise<TContext>
 ```
 
 #### Return Type
@@ -62,8 +62,8 @@ Returns an H3 `EventHandler` that can be used with Nitro routes.
 
 ```typescript
 import { ApolloServer } from '@apollo/server'
-import { startServerAndCreateH3Handler } from 'nitro-graphql/utils/apollo'
 import { defineEventHandler } from 'h3'
+import { startServerAndCreateH3Handler } from 'nitro-graphql/utils/apollo'
 
 const server = new ApolloServer({
   typeDefs,
@@ -105,7 +105,7 @@ import { ApolloServer } from '@apollo/server'
 import { startServerAndCreateH3Handler } from 'nitro-graphql/utils/apollo'
 
 // Factory function for lazy initialization
-const createServer = () => {
+function createServer() {
   return new ApolloServer({
     typeDefs,
     resolvers
@@ -187,8 +187,8 @@ Returns a `GraphQLSchema` configured for Apollo Federation.
 **Basic Subgraph:**
 
 ```typescript
-import { buildSubgraphSchema } from 'nitro-graphql/utils/apollo'
 import { parse } from 'graphql'
+import { buildSubgraphSchema } from 'nitro-graphql/utils/apollo'
 
 const typeDefs = parse(`
   extend schema
@@ -232,8 +232,8 @@ const schema = buildSubgraphSchema({
 **Extending Types from Other Subgraphs:**
 
 ```typescript
-import { buildSubgraphSchema } from 'nitro-graphql/utils/apollo'
 import { parse } from 'graphql'
+import { buildSubgraphSchema } from 'nitro-graphql/utils/apollo'
 
 const typeDefs = parse(`
   extend schema
@@ -341,7 +341,7 @@ export default defineNitroConfig({
 Type definition for reference resolvers:
 
 ```typescript
-type ReferenceResolver<TContext> = {
+interface ReferenceResolver<TContext> {
   __resolveReference: (
     reference: any,
     context: TContext,
@@ -634,7 +634,7 @@ export default defineNitroConfig({
     federation: {
       enabled: true,
       serviceName: 'users-service',
-      serviceVersion: '1.2.0'  // Semantic versioning
+      serviceVersion: '1.2.0' // Semantic versioning
     }
   }
 })

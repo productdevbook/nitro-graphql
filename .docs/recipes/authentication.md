@@ -74,9 +74,9 @@ extend type Mutation {
 Create `server/utils/auth.ts`:
 
 ```typescript
-import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 import { H3Event } from 'h3'
+import jwt from 'jsonwebtoken'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'your-refresh-secret'
@@ -108,7 +108,8 @@ export function generateRefreshToken(payload: JWTPayload): string {
 export function verifyAccessToken(token: string): JWTPayload {
   try {
     return jwt.verify(token, JWT_SECRET) as JWTPayload
-  } catch (error) {
+  }
+  catch (error) {
     throw new Error('Invalid or expired token')
   }
 }
@@ -117,7 +118,8 @@ export function verifyAccessToken(token: string): JWTPayload {
 export function verifyRefreshToken(token: string): JWTPayload {
   try {
     return jwt.verify(token, JWT_REFRESH_SECRET) as JWTPayload
-  } catch (error) {
+  }
+  catch (error) {
     throw new Error('Invalid or expired refresh token')
   }
 }
@@ -166,7 +168,8 @@ export async function getCurrentUser(event: H3Event, db: any) {
     })
 
     return user
-  } catch (error) {
+  }
+  catch (error) {
     return null
   }
 }
@@ -178,8 +181,8 @@ Update `server/graphql/context.ts`:
 
 ```typescript
 import type { PrismaClient, User } from '@prisma/client'
-import { db } from '../utils/database'
 import { getCurrentUser } from '../utils/auth'
+import { db } from '../utils/database'
 
 declare module 'h3' {
   interface H3EventContext {
@@ -208,10 +211,10 @@ Create `server/graphql/auth/auth.resolver.ts`:
 import { GraphQLError } from 'graphql'
 import { z } from 'zod'
 import {
-  hashPassword,
   comparePassword,
   generateAccessToken,
   generateRefreshToken,
+  hashPassword,
   verifyRefreshToken,
 } from '../../utils/auth'
 
@@ -242,7 +245,8 @@ export const authResolvers = defineResolver({
         emailSchema.parse(email)
         passwordSchema.parse(password)
         nameSchema.parse(name)
-      } catch (error) {
+      }
+      catch (error) {
         throw new GraphQLError('Invalid input data', {
           extensions: {
             code: 'BAD_USER_INPUT',
@@ -315,7 +319,8 @@ export const authResolvers = defineResolver({
       try {
         emailSchema.parse(email)
         passwordSchema.parse(password)
-      } catch (error) {
+      }
+      catch (error) {
         throw new GraphQLError('Invalid input data', {
           extensions: { code: 'BAD_USER_INPUT' },
         })
@@ -378,7 +383,8 @@ export const authResolvers = defineResolver({
       let payload
       try {
         payload = verifyRefreshToken(refreshToken)
-      } catch (error) {
+      }
+      catch (error) {
         throw new GraphQLError('Invalid refresh token', {
           extensions: { code: 'INVALID_TOKEN' },
         })
@@ -547,9 +553,9 @@ export default redis
 Create `server/utils/session.ts`:
 
 ```typescript
-import redis from './redis'
+import crypto from 'node:crypto'
 import { H3Event } from 'h3'
-import crypto from 'crypto'
+import redis from './redis'
 
 const SESSION_PREFIX = 'session:'
 const SESSION_EXPIRY = 60 * 60 * 24 * 7 // 7 days
@@ -630,13 +636,13 @@ Create `server/graphql/auth/session.resolver.ts`:
 
 ```typescript
 import { GraphQLError } from 'graphql'
+import { comparePassword, hashPassword } from '../../utils/auth'
 import {
+  clearSessionCookie,
   createSession,
   deleteSession,
   setSessionCookie,
-  clearSessionCookie,
 } from '../../utils/session'
-import { hashPassword, comparePassword } from '../../utils/auth'
 
 export const sessionAuthResolvers = defineResolver({
   Mutation: {
@@ -761,8 +767,8 @@ export async function exchangeGitHubCode(code: string): Promise<string> {
 export async function getGitHubUser(accessToken: string): Promise<GitHubUser> {
   const response = await fetch('https://api.github.com/user', {
     headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'Accept': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+      Accept: 'application/json',
     },
   })
 
@@ -779,14 +785,14 @@ export async function getGitHubUser(accessToken: string): Promise<GitHubUser> {
 Create `server/graphql/auth/oauth.resolver.ts`:
 
 ```typescript
+import crypto from 'node:crypto'
 import { GraphQLError } from 'graphql'
+import { generateAccessToken, generateRefreshToken } from '../../utils/auth'
 import {
-  getGitHubAuthUrl,
   exchangeGitHubCode,
+  getGitHubAuthUrl,
   getGitHubUser,
 } from '../../utils/oauth'
-import { generateAccessToken, generateRefreshToken } from '../../utils/auth'
-import crypto from 'crypto'
 
 export const oauthResolvers = defineResolver({
   Query: {
@@ -844,7 +850,8 @@ export const oauthResolvers = defineResolver({
           accessToken: jwtAccessToken,
           refreshToken,
         }
-      } catch (error) {
+      }
+      catch (error) {
         throw new GraphQLError('GitHub authentication failed', {
           extensions: {
             code: 'OAUTH_ERROR',
@@ -979,7 +986,8 @@ export function useAuth() {
       }
 
       return true
-    } catch (error) {
+    }
+    catch (error) {
       await logout()
       return false
     }
@@ -1033,7 +1041,7 @@ export default defineNuxtPlugin(() => {
 
         if (refreshed) {
           // Retry the request
-          return
+
         }
       }
     },
@@ -1052,11 +1060,11 @@ export default defineNuxtPlugin(() => {
 Create `server/graphql/__tests__/auth.test.ts`:
 
 ```typescript
-import { describe, it, expect, beforeEach } from 'vitest'
 import { execute, parse } from 'graphql'
-import { schema } from '../schema'
-import { db } from '../../utils/database'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { hashPassword } from '../../utils/auth'
+import { db } from '../../utils/database'
+import { schema } from '../schema'
 
 describe('Authentication', () => {
   beforeEach(async () => {
@@ -1180,7 +1188,7 @@ const passwordSchema = z.string()
   .min(8)
   .regex(/[A-Z]/, 'Must contain uppercase')
   .regex(/[a-z]/, 'Must contain lowercase')
-  .regex(/[0-9]/, 'Must contain number')
+  .regex(/\d/, 'Must contain number')
 ```
 
 ### 5. Rate Limiting

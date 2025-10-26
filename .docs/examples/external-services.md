@@ -243,9 +243,9 @@ query GetUser($login: String!) {
 
 ```typescript
 import type {
-  GetViewerQuery,
   GetRepositoryQuery,
   GetRepositoryQueryVariables,
+  GetViewerQuery,
   SearchRepositoriesQuery,
   SearchRepositoriesQueryVariables,
 } from '#graphql/client/github'
@@ -262,10 +262,12 @@ export function useGitHub() {
     try {
       const { data } = await $githubSdk.GetViewer()
       viewer.value = data?.viewer || null
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch viewer'
       console.error('GitHub API error:', err)
-    } finally {
+    }
+    finally {
       isLoading.value = false
     }
   }
@@ -277,10 +279,12 @@ export function useGitHub() {
     try {
       const { data } = await $githubSdk.GetRepository({ owner, name })
       return data?.repository
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch repository'
       throw err
-    } finally {
+    }
+    finally {
       isLoading.value = false
     }
   }
@@ -292,10 +296,12 @@ export function useGitHub() {
     try {
       const { data } = await $githubSdk.SearchRepositories({ query, first })
       return data?.search
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to search repositories'
       throw err
-    } finally {
+    }
+    finally {
       isLoading.value = false
     }
   }
@@ -485,10 +491,12 @@ export function useCountries() {
     try {
       const { data } = await $countriesSdk.GetCountries()
       countries.value = data?.countries || []
-    } catch (err) {
+    }
+    catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch countries'
       console.error('Countries API error:', err)
-    } finally {
+    }
+    finally {
       isLoading.value = false
     }
   }
@@ -497,7 +505,8 @@ export function useCountries() {
     try {
       const { data } = await $countriesSdk.GetCountry({ code })
       return data?.country
-    } catch (err) {
+    }
+    catch (err) {
       console.error('Failed to fetch country:', err)
       throw err
     }
@@ -506,8 +515,8 @@ export function useCountries() {
   const searchCountries = (query: string) => {
     return countries.value.filter(
       country =>
-        country.name.toLowerCase().includes(query.toLowerCase()) ||
-        country.code.toLowerCase().includes(query.toLowerCase())
+        country.name.toLowerCase().includes(query.toLowerCase())
+        || country.code.toLowerCase().includes(query.toLowerCase())
     )
   }
 
@@ -654,9 +663,9 @@ For each external service, nitro-graphql generates:
 ### Using Multiple Services
 
 ```typescript
+import type { GetCountriesQuery } from '#graphql/client/countries'
 // In a Nuxt component or composable
 import type { GetViewerQuery } from '#graphql/client/github'
-import type { GetCountriesQuery } from '#graphql/client/countries'
 import type { GetProductsQuery } from '#graphql/client/shopify'
 
 // Fetch from GitHub
@@ -709,7 +718,7 @@ externalServices: [
 
       // Dynamic headers based on environment
       return {
-        Authorization: `Bearer ${config.apiToken}`,
+        'Authorization': `Bearer ${config.apiToken}`,
         'X-Custom-Header': config.customValue,
       }
     },
@@ -755,7 +764,8 @@ export function useGitHub() {
     try {
       const { data } = await $githubSdk.GetViewer()
       return data?.viewer
-    } catch (err) {
+    }
+    catch (err) {
       const message = handleError(err)
       console.error('GitHub error:', message)
       throw new Error(message)

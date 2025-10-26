@@ -3,107 +3,69 @@ layout: home
 
 hero:
   name: Nitro GraphQL
-  text: The easiest way to add GraphQL to Nitro
-  tagline: Auto-discovery, type generation, and zero config setup for GraphQL in Nitro and Nuxt applications
+  text: GraphQL Made Simple
+  tagline: Auto-discovery, type generation, and zero config setup for Nitro and Nuxt applications
   image:
     src: /logo.svg
     alt: Nitro GraphQL
   actions:
     - theme: brand
       text: Get Started
-      link: /guide/introduction
+      link: /guide/quick-start-nitro
     - theme: alt
-      text: View Examples
-      link: /examples/nitro-basic
-    - theme: alt
-      text: GitHub
+      text: View on GitHub
       link: https://github.com/productdevbook/nitro-graphql
 
 features:
-  - icon: ⚡
+  - icon: 🚀
     title: 5-Minute Setup
-    details: From zero to a fully functional GraphQL API in minutes. Install, configure, and start building.
+    details: Install the module, create a schema, and you're done. Your GraphQL API is ready at /api/graphql
     link: /guide/quick-start-nitro
-    linkText: Quick Start →
 
   - icon: 🔍
     title: Auto-Discovery
-    details: Automatically scans and loads GraphQL schemas, resolvers, and directives. No manual imports needed.
+    details: Automatically scans and loads your GraphQL schemas, resolvers, and directives. Zero manual imports.
     link: /guide/auto-discovery
-    linkText: Learn More →
 
   - icon: 📝
     title: Full Type Safety
-    details: Automatic TypeScript type generation for both server resolvers and client queries.
+    details: Automatic TypeScript type generation for server resolvers and client queries with IntelliSense support.
     link: /guide/type-generation
-    linkText: Type Generation →
 
   - icon: 🎯
-    title: Universal
-    details: Works seamlessly with Nitro, Nuxt, and any framework built on Nitro's module system.
+    title: Framework Agnostic
+    details: Works seamlessly with Nitro, Nuxt 3/4, and any framework built on Nitro's powerful module system.
     link: /guide/introduction
-    linkText: Framework Support →
 
-  - icon: 🎮
-    title: Built-in Playground
-    details: Integrated Apollo Sandbox for testing and exploring your GraphQL API during development.
-    link: /guide/debug-dashboard
-    linkText: Debug Dashboard →
-
-  - icon: 🔧
-    title: Zero Config
-    details: Sensible defaults that work out of the box. Customize only what you need.
-    link: /api/configuration
-    linkText: Configuration →
-
-  - icon: 🚀
+  - icon: ⚡
     title: GraphQL Yoga & Apollo
-    details: Choose between GraphQL Yoga or Apollo Server with full support for both frameworks.
+    details: Choose between GraphQL Yoga or Apollo Server. Switch anytime with a single config change.
     link: /guide/framework-comparison
-    linkText: Compare Frameworks →
 
   - icon: 🌐
     title: External Services
-    details: Connect to external GraphQL APIs and generate types automatically for seamless integration.
+    details: Connect to external GraphQL APIs with automatic type generation and seamless integration.
     link: /guide/external-services
-    linkText: External Services →
-
-  - icon: 🔗
-    title: Apollo Federation
-    details: Build federated GraphQL architectures with Apollo Federation subgraph support.
-    link: /guide/apollo-federation
-    linkText: Federation Guide →
 ---
 
-<div class="home-sections">
+<div class="home-container">
 
-## Why Nitro GraphQL?
-
-Building GraphQL APIs traditionally requires extensive boilerplate and manual configuration. **Nitro GraphQL** eliminates this complexity with intelligent auto-discovery and automatic type generation, letting you focus on building features instead of infrastructure.
-
-<div class="feature-highlights">
-
-### 🎯 **Developer Experience First**
-
-- **Zero Boilerplate**: Define schemas and resolvers—everything else is automatic
-- **Hot Reload**: Changes to schemas and resolvers reload instantly during development
-- **Type Safety**: End-to-end TypeScript types from database to client
-- **IntelliSense**: Full autocomplete for queries, mutations, and context
-
-### ⚙️ **Production Ready**
-
-- **Battle Tested**: Powers production applications handling millions of requests
-- **Framework Agnostic**: Works with any Nitro-based framework or standalone
-- **Extensible**: Custom directives, middleware, and plugins
-- **Federation Support**: Build distributed GraphQL architectures
-
-</div>
-
-## Quick Example
-
-Here's everything you need for a complete GraphQL API:
+<!-- Code Example Section -->
+<div class="code-showcase">
+  <h2 class="section-title">Build GraphQL APIs in Minutes</h2>
+  <p class="section-subtitle">Everything you need in just three files</p>
 
 ::: code-group
+
+```typescript [nitro.config.ts]
+// nitro.config.ts
+export default defineNitroConfig({
+  modules: ['nitro-graphql'],
+  graphql: {
+    framework: 'graphql-yoga', // or 'apollo-server'
+  },
+})
+```
 
 ```graphql [schema.graphql]
 # server/graphql/schema.graphql
@@ -123,7 +85,9 @@ type User {
 // server/graphql/user.resolver.ts
 export const userQueries = defineQuery({
   user: async (_, { id }, context) => {
-    return await context.db.user.findUnique({ where: { id } })
+    return await context.db.user.findUnique({
+      where: { id }
+    })
   },
   users: async (_, __, context) => {
     return await context.db.user.findMany()
@@ -131,213 +95,425 @@ export const userQueries = defineQuery({
 })
 ```
 
-```typescript [nitro.config.ts]
-// nitro.config.ts
-export default defineNitroConfig({
-  modules: ['nitro-graphql'],
-  graphql: {
-    framework: 'graphql-yoga',
-  },
-})
-```
-
 :::
 
-That's it! Your GraphQL API is ready at `/api/graphql` with:
-- ✅ Auto-loaded schema and resolvers
-- ✅ Generated TypeScript types
-- ✅ Apollo Sandbox UI
-- ✅ Hot reload enabled
-
-## Trusted By Developers
-
-<div class="stats-grid">
-<div class="stat-item">
-<div class="stat-number">1M+</div>
-<div class="stat-label">Downloads</div>
-</div>
-<div class="stat-item">
-<div class="stat-number">2K+</div>
-<div class="stat-label">GitHub Stars</div>
-</div>
-<div class="stat-item">
-<div class="stat-number">100+</div>
-<div class="stat-label">Contributors</div>
-</div>
-<div class="stat-item">
-<div class="stat-number">50+</div>
-<div class="stat-label">Companies</div>
-</div>
-</div>
-
-## Featured In
-
-<div class="featured-links">
-
-- 🎥 [Nuxt 4 Integration Tutorial](https://x.com/productdevbook/status/1947314569531076633)
-- 🎥 [Standalone Nitro Setup](https://x.com/productdevbook/status/1945759751393976348)
-- 📖 [Nitro Module Documentation](https://nitro.unjs.io/guide/modules)
-- 🌟 [UnJS Ecosystem](https://unjs.io/)
-
-</div>
-
-## What's Next?
-
-<div class="next-steps">
-
-1. **[Get Started](/guide/installation)** - Install and configure Nitro GraphQL
-2. **[Learn Core Concepts](/guide/schemas)** - Understand schemas, resolvers, and type generation
-3. **[Explore Examples](/examples/nitro-basic)** - See real-world implementations
-4. **[Join Community](https://github.com/productdevbook/nitro-graphql/discussions)** - Get help and share your projects
-
+<div class="features-checklist">
+  <div class="check-item">✓ Auto-loaded schema and resolvers</div>
+  <div class="check-item">✓ TypeScript types generated</div>
+  <div class="check-item">✓ Apollo Sandbox ready</div>
+  <div class="check-item">✓ Hot reload enabled</div>
 </div>
 
 </div>
 
-<style>
-.home-sections {
+<!-- Why Section -->
+<div class="why-section">
+  <h2 class="section-title">Why Nitro GraphQL?</h2>
+
+  <div class="why-grid">
+    <div class="why-card">
+      <div class="why-icon">🎯</div>
+      <h3>Zero Boilerplate</h3>
+      <p>Focus on building features, not infrastructure. Define your schema and resolvers—everything else is automatic.</p>
+    </div>
+
+    <div class="why-card">
+      <div class="why-icon">⚡</div>
+      <h3>Lightning Fast DX</h3>
+      <p>Hot reload, IntelliSense, and instant type generation make development incredibly smooth.</p>
+    </div>
+
+    <div class="why-card">
+      <div class="why-icon">🔒</div>
+      <h3>Type Safe</h3>
+      <p>End-to-end TypeScript types from database to client with full autocomplete support.</p>
+    </div>
+
+    <div class="why-card">
+      <div class="why-icon">🏗️</div>
+      <h3>Production Ready</h3>
+      <p>Battle-tested in production, handling millions of requests with federation support.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Video Section -->
+<div class="video-section">
+  <h2 class="section-title">Watch & Learn</h2>
+
+  <div class="video-grid">
+    <a href="https://x.com/productdevbook/status/1947314569531076633" target="_blank" class="video-card">
+      <div class="video-icon">🎥</div>
+      <div class="video-content">
+        <h3>Nuxt 4 Integration</h3>
+        <p>Step-by-step guide to setting up Nitro GraphQL in Nuxt 4</p>
+      </div>
+      <div class="video-arrow">→</div>
+    </a>
+
+    <a href="https://x.com/productdevbook/status/1945759751393976348" target="_blank" class="video-card">
+      <div class="video-icon">🎥</div>
+      <div class="video-content">
+        <h3>Standalone Nitro Setup</h3>
+        <p>Get started with Nitro GraphQL in a standalone Nitro project</p>
+      </div>
+      <div class="video-arrow">→</div>
+    </a>
+  </div>
+</div>
+
+<!-- Stats Section -->
+<div class="stats-section">
+  <div class="stat-card">
+    <div class="stat-number">2.0</div>
+    <div class="stat-label">Latest Version</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-number">MIT</div>
+    <div class="stat-label">Open Source</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-number">100%</div>
+    <div class="stat-label">TypeScript</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-number">⚡</div>
+    <div class="stat-label">Nitro Powered</div>
+  </div>
+</div>
+
+<!-- CTA Section -->
+<div class="cta-section">
+  <h2 class="cta-title">Ready to Get Started?</h2>
+  <p class="cta-subtitle">Install Nitro GraphQL and build your first GraphQL API in minutes</p>
+
+  <div class="cta-buttons">
+    <a href="/guide/quick-start-nitro" class="cta-button primary">
+      Quick Start Guide
+    </a>
+    <a href="/examples/nitro-basic" class="cta-button secondary">
+      View Examples
+    </a>
+  </div>
+</div>
+
+</div>
+
+<style scoped>
+.home-container {
   max-width: 1152px;
-  margin: 64px auto;
-  padding: 0 24px;
+  margin: 0 auto;
+  padding: 48px 24px 96px;
 }
 
-.home-sections h2 {
-  margin-top: 48px;
-  margin-bottom: 24px;
-  font-size: 32px;
+/* Section Titles */
+.section-title {
+  font-size: 36px;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--vp-c-brand-1) 0%, var(--vp-c-purple-1) 100%);
+  text-align: center;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, var(--vp-c-brand-1) 0%, var(--vp-c-purple-1, #8B5CF6) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.feature-highlights {
+.section-subtitle {
+  text-align: center;
+  font-size: 18px;
+  color: var(--vp-c-text-2);
+  margin-bottom: 48px;
+}
+
+/* Code Showcase */
+.code-showcase {
+  margin-bottom: 96px;
+}
+
+.features-checklist {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 32px;
+  padding: 24px;
+  background: var(--vp-c-bg-soft);
+  border-radius: 12px;
+  border: 1px solid var(--vp-c-divider);
+}
+
+.check-item {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--vp-c-accent-1);
+}
+
+/* Why Section */
+.why-section {
+  margin-bottom: 96px;
+}
+
+.why-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 32px;
-  margin: 32px 0;
+  gap: 24px;
 }
 
-.feature-highlights h3 {
-  margin-top: 0;
+.why-card {
+  padding: 32px;
+  border-radius: 16px;
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+  transition: all 0.3s ease;
+}
+
+.why-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--vp-c-brand-1);
+  box-shadow: 0 12px 32px rgba(225, 0, 152, 0.1);
+}
+
+.why-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.why-card h3 {
   font-size: 20px;
-}
-
-.feature-highlights ul {
-  list-style: none;
-  padding: 0;
-}
-
-.feature-highlights li {
-  padding: 8px 0;
-  padding-left: 24px;
-  position: relative;
-}
-
-.feature-highlights li::before {
-  content: "✓";
-  position: absolute;
-  left: 0;
-  color: var(--vp-c-accent-1);
   font-weight: 600;
+  margin: 0 0 12px 0;
+  color: var(--vp-c-text-1);
 }
 
-.stats-grid {
+.why-card p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--vp-c-text-2);
+  margin: 0;
+}
+
+/* Video Section */
+.video-section {
+  margin-bottom: 96px;
+}
+
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.video-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 28px;
+  border-radius: 16px;
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.video-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--vp-c-brand-1);
+  box-shadow: 0 12px 32px rgba(225, 0, 152, 0.1);
+}
+
+.video-icon {
+  font-size: 36px;
+  flex-shrink: 0;
+}
+
+.video-content {
+  flex: 1;
+}
+
+.video-content h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: var(--vp-c-text-1);
+}
+
+.video-content p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--vp-c-text-2);
+  margin: 0;
+}
+
+.video-arrow {
+  font-size: 24px;
+  color: var(--vp-c-brand-1);
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.video-card:hover .video-arrow {
+  transform: translateX(4px);
+}
+
+/* Stats Section */
+.stats-section {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 24px;
-  margin: 48px 0;
+  margin-bottom: 96px;
 }
 
-.stat-item {
+.stat-card {
   text-align: center;
-  padding: 32px;
-  border-radius: 8px;
+  padding: 40px 24px;
+  border-radius: 16px;
   background: linear-gradient(135deg, var(--vp-c-brand-soft) 0%, var(--vp-c-purple-soft, rgba(139, 92, 246, 0.14)) 100%);
+  border: 1px solid var(--vp-c-divider);
 }
 
 .stat-number {
-  font-size: 48px;
+  font-size: 56px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--vp-c-brand-1) 0%, var(--vp-c-purple-1, #8B5CF6) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* CTA Section */
+.cta-section {
+  text-align: center;
+  padding: 64px 32px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, var(--vp-c-brand-soft) 0%, var(--vp-c-purple-soft, rgba(139, 92, 246, 0.14)) 100%);
+  border: 1px solid var(--vp-c-divider);
+}
+
+.cta-title {
+  font-size: 42px;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--vp-c-brand-1) 0%, var(--vp-c-purple-1) 100%);
+  margin: 0 0 16px 0;
+  background: linear-gradient(135deg, var(--vp-c-brand-1) 0%, var(--vp-c-purple-1, #8B5CF6) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.stat-label {
-  margin-top: 8px;
-  font-size: 14px;
+.cta-subtitle {
+  font-size: 18px;
   color: var(--vp-c-text-2);
-  font-weight: 500;
+  margin: 0 0 40px 0;
 }
 
-.featured-links {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+.cta-buttons {
+  display: flex;
   gap: 16px;
-  margin: 32px 0;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
-.featured-links a {
-  display: block;
-  padding: 16px 20px;
-  border: 1px solid var(--vp-c-divider);
+.cta-button {
+  display: inline-block;
+  padding: 14px 32px;
   border-radius: 8px;
-  text-decoration: none;
-  transition: all 0.3s;
-}
-
-.featured-links a:hover {
-  border-color: var(--vp-c-brand-1);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(225, 0, 152, 0.1);
-}
-
-.next-steps {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-  margin: 32px 0;
-  padding: 32px;
-  background-color: var(--vp-c-bg-soft);
-  border-radius: 8px;
-}
-
-.next-steps a {
-  color: var(--vp-c-brand-1);
-  text-decoration: none;
+  font-size: 16px;
   font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
 }
 
-.next-steps a:hover {
-  color: var(--vp-c-brand-2);
+.cta-button.primary {
+  background: var(--vp-c-brand-1);
+  color: white;
 }
 
+.cta-button.primary:hover {
+  background: var(--vp-c-brand-2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(225, 0, 152, 0.3);
+}
+
+.cta-button.secondary {
+  background: transparent;
+  color: var(--vp-c-text-1);
+  border: 1px solid var(--vp-c-divider);
+}
+
+.cta-button.secondary:hover {
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-brand-1);
+  transform: translateY(-2px);
+}
+
+/* Responsive */
 @media (max-width: 960px) {
-  .feature-highlights,
-  .stats-grid,
-  .featured-links,
-  .next-steps {
+  .why-grid,
+  .video-grid,
+  .stats-section {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .features-checklist {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 640px) {
-  .feature-highlights,
-  .stats-grid,
-  .featured-links,
-  .next-steps {
+  .section-title {
+    font-size: 28px;
+  }
+
+  .section-subtitle {
+    font-size: 16px;
+  }
+
+  .why-grid,
+  .video-grid,
+  .stats-section,
+  .features-checklist {
     grid-template-columns: 1fr;
   }
 
-  .stat-item {
+  .why-card,
+  .video-card,
+  .stat-card {
     padding: 24px;
   }
 
-  .stat-number {
+  .why-icon {
     font-size: 36px;
+  }
+
+  .stat-number {
+    font-size: 42px;
+  }
+
+  .cta-title {
+    font-size: 32px;
+  }
+
+  .cta-subtitle {
+    font-size: 16px;
+  }
+
+  .cta-buttons {
+    flex-direction: column;
+  }
+
+  .cta-button {
+    width: 100%;
   }
 }
 </style>

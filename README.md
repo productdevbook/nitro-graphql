@@ -1,6 +1,8 @@
-# Nitro GraphQL
-
 <div align="center">
+
+<img src="./.docs/public/logo.svg" alt="Nitro GraphQL Logo" width="120" height="120">
+
+# Nitro GraphQL
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]

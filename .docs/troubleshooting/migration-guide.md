@@ -239,10 +239,10 @@ Control which files are auto-generated.
 export default defineNitroConfig({
   graphql: {
     scaffold: {
-      graphqlConfig: false,  // Don't generate graphql.config.ts
-      serverSchema: true,    // Generate server/graphql/schema.ts
-      serverConfig: true,    // Generate server/graphql/config.ts
-      serverContext: false   // Don't generate context.ts
+      graphqlConfig: false, // Don't generate graphql.config.ts
+      serverSchema: true, // Generate server/graphql/schema.ts
+      serverConfig: true, // Generate server/graphql/config.ts
+      serverContext: false // Don't generate context.ts
     }
   }
 })
@@ -270,8 +270,8 @@ Automatic schema and resolver discovery.
 ```typescript
 // Old approach - manual
 import { makeExecutableSchema } from '@graphql-tools/schema'
-import { typeDefs } from './schema'
 import { resolvers } from './resolvers'
+import { typeDefs } from './schema'
 
 const schema = makeExecutableSchema({ typeDefs, resolvers })
 ```
@@ -343,8 +343,8 @@ import { Resolvers } from '../.nitro/types/graphql'
 
 **After:**
 ```typescript
-import type { Resolvers } from '#graphql/server'
 import type { GetUserQuery } from '#graphql/client'
+import type { Resolvers } from '#graphql/server'
 ```
 
 **Migration steps:**

@@ -46,8 +46,8 @@ export default defineNitroConfig({
   graphql: {
     types: {
       enabled: true, // ✅ Should be true or omitted (default: true)
-      server: true,  // Generate server types
-      client: true   // Generate client types
+      server: true, // Generate server types
+      client: true // Generate client types
     }
   }
 })
@@ -142,11 +142,11 @@ Ensure file watching is working:
 
 **Symptoms:**
 ```typescript
-// Error: Cannot find module '#graphql/server'
-import type { Resolvers } from '#graphql/server'
-
 // Error: Cannot find module '#graphql/client'
 import type { GetUserQuery } from '#graphql/client'
+
+// Error: Cannot find module '#graphql/server'
+import type { Resolvers } from '#graphql/server'
 ```
 
 **Common Causes:**
@@ -172,9 +172,9 @@ ls -la .nuxt/types/
 
 2. **Check Import Paths:**
 ```typescript
+import type { GetUserQuery } from '#graphql/client'
 // ✅ Correct - Virtual imports
 import type { Resolvers } from '#graphql/server'
-import type { GetUserQuery } from '#graphql/client'
 
 // ❌ Wrong - Don't use relative paths
 import type { Resolvers } from './.nitro/types/nitro-graphql-server'

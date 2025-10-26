@@ -203,10 +203,10 @@ Access generated TypeScript types:
 
 ```typescript
 import type {
-  Resolvers,
-  QueryResolvers,
+  CreateUserMutationVariables,
   GetUserQuery,
-  CreateUserMutationVariables
+  QueryResolvers,
+  Resolvers
 } from '#graphql/server'
 
 export const queries: QueryResolvers = defineQuery({
@@ -223,14 +223,14 @@ export const queries: QueryResolvers = defineQuery({
 Import types and utilities via virtual modules:
 
 ```typescript
-// Server types
-import type { Resolvers } from '#graphql/server'
-
 // Client types
 import type { GetUserQuery } from '#graphql/client'
 
 // External service types
 import type { GetViewerQuery } from '#graphql/client/github'
+
+// Server types
+import type { Resolvers } from '#graphql/server'
 
 // Schema definition
 import schema from '#graphql/schema'
@@ -245,8 +245,7 @@ import schema from '#graphql/schema'
 Apollo Server and Federation utilities:
 
 ```typescript
-import { buildSubgraphSchema } from 'nitro-graphql/utils/apollo'
-import { startServerAndCreateH3Handler } from 'nitro-graphql/utils/apollo'
+import { buildSubgraphSchema, startServerAndCreateH3Handler } from 'nitro-graphql/utils/apollo'
 
 const schema = buildSubgraphSchema({
   typeDefs,

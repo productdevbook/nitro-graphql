@@ -79,11 +79,11 @@ export default defineGraphQLConfig({
 Create `server/utils/file-storage.ts`:
 
 ```typescript
-import { createWriteStream, promises as fs } from 'fs'
-import { join } from 'path'
-import { pipeline } from 'stream/promises'
-import { randomBytes } from 'crypto'
 import type { FileUpload } from 'graphql-upload'
+import { randomBytes } from 'node:crypto'
+import { createWriteStream, promises as fs } from 'node:fs'
+import { join } from 'node:path'
+import { pipeline } from 'node:stream/promises'
 
 const UPLOAD_DIR = join(process.cwd(), 'uploads')
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -100,7 +100,8 @@ const ALLOWED_MIMETYPES = [
 async function ensureUploadDir() {
   try {
     await fs.access(UPLOAD_DIR)
-  } catch {
+  }
+  catch {
     await fs.mkdir(UPLOAD_DIR, { recursive: true })
   }
 }
@@ -153,11 +154,13 @@ export async function saveFile(
 
   try {
     await pipeline(stream, createWriteStream(filepath))
-  } catch (error) {
+  }
+  catch (error) {
     // Clean up partial file
     try {
       await fs.unlink(filepath)
-    } catch {}
+    }
+    catch {}
     throw error
   }
 
@@ -174,7 +177,8 @@ export async function saveFile(
 export async function deleteFile(filepath: string): Promise<void> {
   try {
     await fs.unlink(filepath)
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Failed to delete file:', error)
   }
 }
@@ -191,9 +195,9 @@ export function getFileUrl(filename: string): string {
 Create `server/graphql/upload/upload.resolver.ts`:
 
 ```typescript
-import { GraphQLError } from 'graphql'
-import { saveFile, deleteFile, getFileUrl } from '../../utils/file-storage'
 import type { FileUpload } from 'graphql-upload'
+import { GraphQLError } from 'graphql'
+import { deleteFile, getFileUrl, saveFile } from '../../utils/file-storage'
 
 export const uploadResolvers = defineResolver({
   Mutation: {
@@ -224,7 +228,8 @@ export const uploadResolvers = defineResolver({
         })
 
         return file
-      } catch (error) {
+      }
+      catch (error) {
         throw new GraphQLError(`Upload failed: ${error.message}`, {
           extensions: { code: 'UPLOAD_ERROR' },
         })
@@ -259,7 +264,8 @@ export const uploadResolvers = defineResolver({
           })
 
           results.push(file)
-        } catch (error) {
+        }
+        catch (error) {
           console.error('File upload failed:', error)
           // Continue with other files
         }
@@ -306,7 +312,8 @@ export const uploadResolvers = defineResolver({
         })
 
         return user
-      } catch (error) {
+      }
+      catch (error) {
         throw new GraphQLError(`Avatar upload failed: ${error.message}`, {
           extensions: { code: 'UPLOAD_ERROR' },
         })
@@ -364,9 +371,9 @@ pnpm add sharp
 Create `server/utils/image-processing.ts`:
 
 ```typescript
+import { promises as fs } from 'node:fs'
+import { join } from 'node:path'
 import sharp from 'sharp'
-import { join } from 'path'
-import { promises as fs } from 'fs'
 
 export interface ImageVariant {
   name: string
@@ -444,14 +451,14 @@ pnpm add @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
 Create `server/utils/s3.ts`:
 
 ```typescript
+import { randomBytes } from 'node:crypto'
 import {
-  S3Client,
-  PutObjectCommand,
   DeleteObjectCommand,
   GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { randomBytes } from 'crypto'
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION || 'us-east-1',
@@ -468,7 +475,7 @@ export async function uploadToS3(
   buffer: Buffer,
   mimetype: string,
   originalFilename: string
-): Promise<{ key: string; url: string }> {
+): Promise<{ key: string, url: string }> {
   const ext = originalFilename.split('.').pop()
   const key = `uploads/${Date.now()}-${randomBytes(8).toString('hex')}.${ext}`
 
@@ -503,7 +510,7 @@ export async function generatePresignedUploadUrl(
   filename: string,
   mimetype: string,
   expiresIn = 3600
-): Promise<{ url: string; key: string }> {
+): Promise<{ url: string, key: string }> {
   const ext = filename.split('.').pop()
   const key = `uploads/${Date.now()}-${randomBytes(8).toString('hex')}.${ext}`
 

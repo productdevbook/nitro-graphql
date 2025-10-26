@@ -97,7 +97,7 @@ export function captureMessage(message: string, level: Sentry.SeverityLevel = 'i
 }
 
 // Set user context
-export function setUserContext(user: { id: string; email?: string; username?: string }) {
+export function setUserContext(user: { id: string, email?: string, username?: string }) {
   Sentry.setUser({
     id: user.id,
     email: user.email,
@@ -140,8 +140,8 @@ export default defineGraphQLConfig({
 Create `server/graphql/plugins/error-handler.ts`:
 
 ```typescript
-import { captureGraphQLError, addBreadcrumb } from '../../utils/sentry'
 import { GraphQLError } from 'graphql'
+import { addBreadcrumb, captureGraphQLError } from '../../utils/sentry'
 
 export const errorHandlerPlugin = {
   onExecute({ args }) {
@@ -287,7 +287,7 @@ export function logDatabaseQuery(
 Create `server/graphql/plugins/logging.ts`:
 
 ```typescript
-import { logGraphQLOperation, logGraphQLError } from '../../utils/logger'
+import { logGraphQLError, logGraphQLOperation } from '../../utils/logger'
 
 export const loggingPlugin = {
   onExecute({ args }) {
@@ -305,7 +305,8 @@ export const loggingPlugin = {
               args.contextValue.user?.id
             )
           }
-        } else {
+        }
+        else {
           logGraphQLOperation(
             args.operationName || 'anonymous',
             duration,
@@ -670,7 +671,8 @@ export async function reportClientError(error: Error, context?: any) {
         context,
       }),
     })
-  } catch (e) {
+  }
+  catch (e) {
     console.error('Failed to report error:', e)
   }
 }
@@ -693,7 +695,7 @@ window.addEventListener('unhandledrejection', (event) => {
 ## Testing Error Handling
 
 ```typescript
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { NotFoundError, ValidationError } from '../errors'
 
 describe('Error Handling', () => {

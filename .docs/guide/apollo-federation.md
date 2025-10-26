@@ -57,7 +57,7 @@ export const userResolver = defineResolver({
     },
   },
   Post: {
-    author: (post) => findUser(post.authorId),
+    author: post => findUser(post.authorId),
   },
 })
 ```

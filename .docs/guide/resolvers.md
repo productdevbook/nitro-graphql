@@ -25,7 +25,7 @@ export const appResolver = defineResolver({
     createUser: (_, { input }) => createUser(input),
   },
   User: {
-    posts: (parent) => findPostsByUser(parent.id),
+    posts: parent => findPostsByUser(parent.id),
   },
 })
 ```
@@ -69,7 +69,8 @@ export const userMutations = defineMutation({
   updateUser: async (_, { id, input }, context) => {
     const users = await context.storage?.getItem('users') || []
     const index = users.findIndex(u => u.id === id)
-    if (index === -1) return null
+    if (index === -1)
+      return null
 
     users[index] = { ...users[index], ...input }
     await context.storage?.setItem('users', users)
@@ -123,7 +124,7 @@ export const messageSubscriptions = defineSubscription({
     subscribe: (_, __, context) => {
       return context.pubsub.asyncIterator(['MESSAGE_ADDED'])
     },
-    resolve: (payload) => payload,
+    resolve: payload => payload,
   },
 
   userTyping: {
@@ -187,13 +188,13 @@ Arguments passed to the field:
 ```ts
 export const userQueries = defineQuery({
   user: (_, args) => {
-    console.log(args.id)  // The id argument
+    console.log(args.id) // The id argument
     return findUser(args.id)
   },
 
   users: (_, args) => {
-    console.log(args.limit)   // 10
-    console.log(args.offset)  // 0
+    console.log(args.limit) // 10
+    console.log(args.offset) // 0
     return findUsers(args)
   },
 })
@@ -243,10 +244,10 @@ Field execution information (rarely used):
 ```ts
 export const userQueries = defineQuery({
   users: (_, __, ___, info) => {
-    console.log(info.fieldName)      // 'users'
-    console.log(info.returnType)     // [User!]!
-    console.log(info.parentType)     // Query
-    console.log(info.path)           // Path to this field
+    console.log(info.fieldName) // 'users'
+    console.log(info.returnType) // [User!]!
+    console.log(info.parentType) // Query
+    console.log(info.path) // Path to this field
 
     // Useful for optimization - check what fields were requested
     const requestedFields = info.fieldNodes[0].selectionSet?.selections
@@ -390,7 +391,7 @@ See the [Error Handling Guide](/guide/error-handling) for patterns and best prac
 Use generated types for full type safety:
 
 ```ts
-import type { User, CreateUserInput, Resolvers } from '#graphql/server'
+import type { CreateUserInput, Resolvers, User } from '#graphql/server'
 
 export const userMutations = defineMutation({
   createUser: async (
@@ -511,7 +512,8 @@ export const userMutations = defineMutation({
 // ❌ Bad - Everything in resolver
 export const userMutations = defineMutation({
   createUser: async (_, { input }) => {
-    if (!isValidEmail(input.email)) throw new Error('Invalid email')
+    if (!isValidEmail(input.email))
+      throw new Error('Invalid email')
     const user = await db.user.create({ data: input })
     await sendWelcomeEmail(user.email)
     return user
@@ -525,7 +527,7 @@ export const userMutations = defineMutation({
 // ✅ Good - Use context
 export const userQueries = defineQuery({
   users: async (_, __, context) => {
-    const db = context.db  // Shared DB connection
+    const db = context.db // Shared DB connection
     return await db.user.findMany()
   },
 })
@@ -546,7 +548,7 @@ export const userQueries = defineQuery({
 export const userQueries = defineQuery({
   user: async (_, { id }, context) => {
     const user = await context.db.user.findUnique({ where: { id } })
-    return user || null  // Explicit null for not found
+    return user || null // Explicit null for not found
   },
 })
 
@@ -564,9 +566,9 @@ export const userQueries = defineQuery({
 Here's a complete example with database, auth, and error handling:
 
 ```ts
+import type { CreatePostInput, Post, UpdatePostInput } from '#graphql/server'
 // server/graphql/posts/post.resolver.ts
 import { GraphQLError } from 'graphql'
-import type { Post, CreatePostInput, UpdatePostInput } from '#graphql/server'
 
 export const postQueries = defineQuery({
   posts: async (_, { limit = 10, offset = 0 }, context) => {
@@ -664,7 +666,8 @@ export const postTypes = defineType({
 
     isLiked: async (parent, _, context) => {
       const userId = context.auth?.userId
-      if (!userId) return false
+      if (!userId)
+        return false
 
       const like = await context.db.like.findFirst({
         where: {

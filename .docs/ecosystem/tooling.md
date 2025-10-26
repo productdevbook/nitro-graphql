@@ -16,7 +16,7 @@ export default <IGraphQLConfig> {
   projects: {
     default: {
       schema: [
-        './.nitro/graphql/schema.graphql',  // or .nuxt for Nuxt
+        './.nitro/graphql/schema.graphql', // or .nuxt for Nuxt
       ],
       documents: [
         './app/graphql/**/*.{graphql,js,ts,jsx,tsx}',
@@ -44,7 +44,7 @@ export default defineNuxtConfig({
     graphql: {
       framework: 'graphql-yoga',
       scaffold: {
-        graphqlConfig: false,  // Disable auto-generation
+        graphqlConfig: false, // Disable auto-generation
       },
     },
   },
@@ -316,7 +316,7 @@ In production or if you prefer to disable it:
 // server/graphql/config.ts
 export default defineGraphQLConfig({
   yoga: {
-    graphiql: false,  // Disable GraphiQL
+    graphiql: false, // Disable GraphiQL
   },
 })
 ```
@@ -329,7 +329,7 @@ export default defineNuxtConfig({
   nitro: {
     runtimeConfig: {
       graphql: {
-        playground: false,  // Disable in production
+        playground: false, // Disable in production
       },
     },
   },
@@ -457,9 +457,9 @@ module.exports = {
 ### GraphQL Request Testing
 
 ```ts
-// test/api/graphql.test.ts
-import { describe, it, expect } from 'vitest'
 import { $fetch } from '@nuxt/test-utils'
+// test/api/graphql.test.ts
+import { describe, expect, it } from 'vitest'
 
 describe('GraphQL API', () => {
   it('fetches users', async () => {
@@ -489,7 +489,7 @@ Create a mock GraphQL server for testing:
 
 ```ts
 // test/mocks/graphql-server.ts
-import { graphql, buildSchema } from 'graphql'
+import { buildSchema, graphql } from 'graphql'
 
 const schema = buildSchema(`
   type User {

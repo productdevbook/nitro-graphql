@@ -34,7 +34,7 @@ const userLoader = new DataLoader(async (ids: readonly string[]) => {
 
 export const postTypes = defineType({
   Post: {
-    author: (parent) => userLoader.load(parent.authorId),
+    author: parent => userLoader.load(parent.authorId),
   },
 })
 ```
@@ -49,7 +49,8 @@ const cache = new Map()
 export const postQueries = defineQuery({
   post: async (_, { id }) => {
     const cached = cache.get(id)
-    if (cached) return cached
+    if (cached)
+      return cached
 
     const post = await db.post.findUnique({ where: { id } })
     cache.set(id, post)
@@ -64,7 +65,8 @@ export const postQueries = defineQuery({
 export const postQueries = defineQuery({
   posts: async (_, __, context) => {
     const cached = await context.redis.get('posts')
-    if (cached) return JSON.parse(cached)
+    if (cached)
+      return JSON.parse(cached)
 
     const posts = await context.db.post.findMany()
     await context.redis.setEx('posts', 300, JSON.stringify(posts))

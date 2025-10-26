@@ -5,7 +5,7 @@ Test your GraphQL resolvers and integration tests.
 ## Unit Testing Resolvers
 
 ```ts
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { userQueries } from './user.resolver'
 
 describe('userQueries', () => {

@@ -74,7 +74,7 @@ Generates TypeScript types from GraphQL schemas:
 
 ```typescript
 // Generated types available as:
-import type { Query, Mutation, User } from '#graphql/server'
+import type { Mutation, Query, User } from '#graphql/server'
 ```
 
 **Process:**
@@ -267,7 +267,7 @@ Apollo-specific utilities:
 export function buildSubgraphSchema(options): GraphQLSchema
 
 // Federation types and utilities
-export type { SubgraphConfig, FederationOptions }
+export type { FederationOptions, SubgraphConfig }
 ```
 
 **Features:**
@@ -281,11 +281,11 @@ export type { SubgraphConfig, FederationOptions }
 Nitro GraphQL uses virtual modules for runtime code injection:
 
 ```typescript
+import config from '#nitro-internal-virtual/graphql-config'
+import directives from '#nitro-internal-virtual/server-directives'
+import resolvers from '#nitro-internal-virtual/server-resolvers'
 // Virtual imports (not actual files)
 import schemas from '#nitro-internal-virtual/server-schemas'
-import resolvers from '#nitro-internal-virtual/server-resolvers'
-import directives from '#nitro-internal-virtual/server-directives'
-import config from '#nitro-internal-virtual/graphql-config'
 ```
 
 **Implementation:**
@@ -393,9 +393,9 @@ export default defineConfig({
     // ... more entry points
   ],
   format: ['esm'],
-  dts: true,           // Generate .d.ts files
-  clean: true,         // Clean dist before build
-  unbundle: true,      // Don't bundle dependencies
+  dts: true, // Generate .d.ts files
+  clean: true, // Clean dist before build
+  unbundle: true, // Don't bundle dependencies
   external: [
     // External dependencies that shouldn't be bundled
     'nitropack',
@@ -434,8 +434,8 @@ The module exports multiple subpaths:
 **Usage:**
 ```typescript
 import nitroGraphQL from 'nitro-graphql'
-import { defineResolver } from 'nitro-graphql/utils/define'
 import { buildSubgraphSchema } from 'nitro-graphql/utils/apollo'
+import { defineResolver } from 'nitro-graphql/utils/define'
 ```
 
 ## Key Concepts
@@ -488,11 +488,11 @@ export const userQueries = defineQuery({
 Type-only imports for generated types:
 
 ```typescript
-// Server types (never bundled, type-only)
-import type { Query, Mutation } from '#graphql/server'
-
 // Client types (never bundled, type-only)
 import type { GetUserQuery } from '#graphql/client'
+
+// Server types (never bundled, type-only)
+import type { Mutation, Query } from '#graphql/server'
 ```
 
 ## Extension Points
