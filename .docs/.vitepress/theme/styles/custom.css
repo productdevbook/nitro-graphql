@@ -163,6 +163,37 @@
   -webkit-text-fill-color: transparent;
 }
 
+/* Nav Menu Items */
+.VPNavBarMenu .VPLink {
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.25s ease;
+}
+
+.VPNavBarMenu .VPLink:hover {
+  background-color: var(--vp-c-bg-soft);
+  color: var(--vp-c-brand-1);
+}
+
+.VPNavBarMenu .VPLink.active {
+  color: var(--vp-c-brand-1);
+  font-weight: 600;
+}
+
+/* Dropdown Menu */
+.VPNavBarMenuGroup .button {
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.25s ease;
+}
+
+.VPNavBarMenuGroup .button:hover {
+  background-color: var(--vp-c-bg-soft);
+  color: var(--vp-c-brand-1);
+}
+
 /* Sidebar Enhancement */
 .VPSidebarItem.level-0.is-active > .item > .indicator {
   background-color: var(--vp-c-brand-1);
