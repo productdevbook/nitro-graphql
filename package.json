@@ -10,6 +10,30 @@
     "#graphql/server": {
       "types": "./dist/graphql/server.d.ts",
       "import": "./dist/graphql/server.js"
+    },
+    "#nitro-internal-virtual/graphql-config": {
+      "types": "./dist/virtual/graphql-config.d.ts",
+      "import": "./dist/virtual/graphql-config.js"
+    },
+    "#nitro-internal-virtual/server-schemas": {
+      "types": "./dist/virtual/server-schemas.d.ts",
+      "import": "./dist/virtual/server-schemas.js"
+    },
+    "#nitro-internal-virtual/server-resolvers": {
+      "types": "./dist/virtual/server-resolvers.d.ts",
+      "import": "./dist/virtual/server-resolvers.js"
+    },
+    "#nitro-internal-virtual/server-directives": {
+      "types": "./dist/virtual/server-directives.d.ts",
+      "import": "./dist/virtual/server-directives.js"
+    },
+    "#nitro-internal-virtual/module-config": {
+      "types": "./dist/virtual/module-config.d.ts",
+      "import": "./dist/virtual/module-config.js"
+    },
+    "#nitro-internal-virtual/debug-info": {
+      "types": "./dist/virtual/debug-info.d.ts",
+      "import": "./dist/virtual/debug-info.js"
     }
   },
   "exports": {

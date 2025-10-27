@@ -18,6 +18,7 @@ export default defineConfig({
     'src/vite.ts',
     'src/utils/**',
     'src/routes/**',
+    'src/virtual/**',
     'src/graphql.d.ts',
     'src/ecosystem/**',
   ],
