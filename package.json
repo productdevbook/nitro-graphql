@@ -2,7 +2,7 @@
   "name": "nitro-graphql",
   "type": "module",
   "version": "2.0.0-beta.4",
-  "packageManager": "pnpm@10.18.3",
+  "packageManager": "pnpm@10.19.0",
   "description": "GraphQL integration for Nitro",
   "license": "MIT",
   "sideEffects": false,
@@ -72,6 +72,9 @@
     "playground:nitro": "cd playgrounds/nitro && pnpm install && pnpm dev",
     "playground:nuxt": "cd playgrounds/nuxt && pnpm install && pnpm dev",
     "playground:federation": "cd playgrounds/federation && pnpm install && pnpm dev",
+    "docs:dev": "cd .docs && pnpm install && pnpm dev",
+    "docs:build": "cd .docs && pnpm install && pnpm build",
+    "docs:preview": "cd .docs && pnpm preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
@@ -134,7 +137,8 @@
     "h3": "catalog:",
     "nitro": "catalog:",
     "tsdown": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitepress-plugin-llms": "^1.8.1"
   },
   "resolutions": {
     "nitro-graphql": "link:."

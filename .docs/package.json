@@ -1,0 +1,23 @@
+{
+  "name": "docs",
+  "version": "1.0.0",
+  "packageManager": "pnpm@10.18.3",
+  "description": "",
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "dependencies": {
+    "gsap": "^3.13.0",
+    "shiki": "^3.14.0"
+  },
+  "devDependencies": {
+    "vitepress": "2.0.0-alpha.12"
+  }
+}

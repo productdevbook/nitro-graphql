@@ -9,16 +9,49 @@ import consola from 'consola'
 import { buildSchema, parse } from 'graphql'
 import { basename, dirname, join, resolve } from 'pathe'
 import { downloadAndSaveSchema, generateClientTypes, generateExternalClientTypes, loadExternalSchema, loadGraphQLDocuments } from './client-codegen'
+import { writeFileIfNotExists } from './file-generator'
+import {
+  getClientUtilsConfig,
+  getDefaultPaths,
+  getSdkConfig,
+  getTypesConfig,
+  resolveFilePath,
+  shouldGenerateClientUtils,
+  shouldGenerateTypes,
+} from './path-resolver'
 import { generateTypes } from './server-codegen'
 
-function generateGraphQLIndexFile(clientDir: string, externalServices: any[] = []) {
-  const indexPath = resolve(clientDir, 'index.ts')
+function generateGraphQLIndexFile(
+  nitro: Nitro,
+  clientDir: string,
+  externalServices: any[] = [],
+) {
+  // Check if client utils generation is enabled
+  if (!shouldGenerateClientUtils(nitro)) {
+    return
+  }
+
+  const placeholders = getDefaultPaths(nitro)
+  const clientUtilsConfig = getClientUtilsConfig(nitro)
+
+  // Resolve index.ts path
+  const indexPath = resolveFilePath(
+    clientUtilsConfig.index,
+    clientUtilsConfig.enabled,
+    true,
+    '{clientGraphql}/index.ts',
+    placeholders,
+  )
+
+  if (!indexPath) {
+    return
+  }
 
   // Only create index.ts if it doesn't exist
   if (!existsSync(indexPath)) {
     let indexContent = `// This file is auto-generated once by nitro-graphql for quick start
 // You can modify this file according to your needs
-// 
+//
 // Export your main GraphQL service (auto-generated)
 export * from './default/ofetch'
 
@@ -32,19 +65,41 @@ export * from './default/ofetch'
       indexContent += `export * from './${service.name}/ofetch'\n`
     }
 
-    writeFileSync(indexPath, indexContent, 'utf-8')
+    writeFileIfNotExists(indexPath, indexContent, 'client index.ts')
   }
 }
 
-function generateOfetchClient(
+function generateNuxtOfetchClient(
+  nitro: Nitro,
   clientDir: string,
-  serviceName: string,
-  endpoint: string,
-  isDefault = false,
+  serviceName: string = 'default',
 ) {
-  const serviceDir = resolve(clientDir, serviceName)
-  const ofetchPath = resolve(serviceDir, 'ofetch.ts')
+  // Check if client utils generation is enabled
+  if (!shouldGenerateClientUtils(nitro)) {
+    return
+  }
 
+  const placeholders = {
+    ...getDefaultPaths(nitro),
+    serviceName,
+  }
+  const clientUtilsConfig = getClientUtilsConfig(nitro)
+
+  // Resolve ofetch.ts path
+  const ofetchPath = resolveFilePath(
+    clientUtilsConfig.ofetch,
+    clientUtilsConfig.enabled,
+    true,
+    '{clientGraphql}/{serviceName}/ofetch.ts',
+    placeholders,
+  )
+
+  if (!ofetchPath) {
+    return
+  }
+
+  // Create service directory if it doesn't exist
+  const serviceDir = dirname(ofetchPath)
   if (!existsSync(serviceDir)) {
     mkdirSync(serviceDir, { recursive: true })
   }
@@ -54,16 +109,12 @@ function generateOfetchClient(
   }
 
   const capitalizedServiceName = serviceName.charAt(0).toUpperCase() + serviceName.slice(1)
-  const functionName = isDefault ? 'createGraphQLClient' : `create${capitalizedServiceName}GraphQLClient`
-  const exportName = isDefault ? '$sdk' : `$${serviceName}Sdk`
-  const typeImports = isDefault ? 'Requester' : 'Sdk, Requester'
-
   const ofetchContent = `// This file is auto-generated once by nitro-graphql for quick start
 // You can modify this file according to your needs
-import type { ${typeImports} } from './sdk'
+import type { Requester } from './sdk'
 import { getSdk } from './sdk'
 
-export function ${functionName}(endpoint: string${isDefault ? '' : ` = '${endpoint}'`}): Requester {
+export function createGraphQLClient(endpoint: string): Requester {
   return async <R>(doc: string, vars?: any): Promise<R> => {
     const headers = import.meta.server ? useRequestHeaders() : undefined
 
@@ -80,9 +131,76 @@ export function ${functionName}(endpoint: string${isDefault ? '' : ` = '${endpoi
   }
 }
 
-export const ${exportName}${isDefault ? '' : ': Sdk'} = getSdk(${functionName}(${isDefault ? '\'/api/graphql\'' : ''}))`
+export const $sdk = getSdk(createGraphQLClient('/api/graphql'))`
+    writeFileIfNotExists(ofetchPath, ofetchContent, `${serviceName} ofetch.ts`)
+  }
+}
 
-  writeFileSync(ofetchPath, ofetchContent, 'utf-8')
+function generateExternalOfetchClient(
+  nitro: Nitro,
+  service: any, // ExternalGraphQLService
+  endpoint: string,
+) {
+  // Check if client utils generation is enabled
+  if (!shouldGenerateClientUtils(nitro)) {
+    return
+  }
+
+  const serviceName = service.name
+  const placeholders = {
+    ...getDefaultPaths(nitro),
+    serviceName,
+  }
+  const clientUtilsConfig = getClientUtilsConfig(nitro)
+
+  // Resolve ofetch.ts path with service-specific override
+  // Priority: service.paths.ofetch > global clientUtils.ofetch > default
+  const ofetchPath = resolveFilePath(
+    service.paths?.ofetch ?? clientUtilsConfig.ofetch, // Service-specific path first
+    clientUtilsConfig.enabled,
+    true,
+    '{clientGraphql}/{serviceName}/ofetch.ts',
+    placeholders,
+  )
+
+  if (!ofetchPath) {
+    return
+  }
+
+  // Create service directory if it doesn't exist
+  const serviceDir = dirname(ofetchPath)
+  if (!existsSync(serviceDir)) {
+    mkdirSync(serviceDir, { recursive: true })
+  }
+
+  // Only create ofetch file if it doesn't exist
+  if (!existsSync(ofetchPath)) {
+    const capitalizedServiceName = serviceName.charAt(0).toUpperCase() + serviceName.slice(1)
+    const ofetchContent = `// This file is auto-generated once by nitro-graphql for quick start
+// You can modify this file according to your needs
+import type { Sdk, Requester } from './sdk'
+import { getSdk } from './sdk'
+
+export function create${capitalizedServiceName}GraphQLClient(endpoint: string = '${endpoint}'): Requester {
+  return async <R>(doc: string, vars?: any): Promise<R> => {
+    const headers = import.meta.server ? useRequestHeaders() : undefined
+
+    const result = await $fetch(endpoint, {
+      method: 'POST',
+      body: { query: doc, variables: vars },
+      headers: {
+        'Content-Type': 'application/json',
+        ...headers,
+      },
+    })
+
+    return result as R
+  }
+}
+
+export const $${serviceName}Sdk: Sdk = getSdk(create${capitalizedServiceName}GraphQLClient())`
+    writeFileIfNotExists(ofetchPath, ofetchContent, `${serviceName} external ofetch.ts`)
+  }
 }
 
 /**
@@ -231,6 +349,12 @@ function validateNoDuplicateTypes(schemas: string[], schemaStrings: string[]): b
 
 export async function serverTypeGeneration(app: Nitro) {
   try {
+    // Check if type generation is enabled
+    if (!shouldGenerateTypes(app)) {
+      consola.debug('[nitro-graphql] Server type generation is disabled')
+      return
+    }
+
     const schemas = app.scanSchemas || []
 
     if (!schemas.length) {
@@ -273,9 +397,23 @@ export async function serverTypeGeneration(app: Nitro) {
     mkdirSync(dirname(schemaPath), { recursive: true })
     writeFileSync(schemaPath, printSchema, 'utf-8')
 
-    const serverTypesPath = resolve(app.options.buildDir, 'types', 'nitro-graphql-server.d.ts')
-    mkdirSync(dirname(serverTypesPath), { recursive: true })
-    writeFileSync(serverTypesPath, data, 'utf-8')
+    // Resolve server types path from config
+    const placeholders = getDefaultPaths(app)
+    const typesConfig = getTypesConfig(app)
+
+    const serverTypesPath = resolveFilePath(
+      typesConfig.server,
+      typesConfig.enabled,
+      true,
+      '{typesDir}/nitro-graphql-server.d.ts',
+      placeholders,
+    )
+
+    if (serverTypesPath) {
+      mkdirSync(dirname(serverTypesPath), { recursive: true })
+      writeFileSync(serverTypesPath, data, 'utf-8')
+      consola.success(`[nitro-graphql] Generated server types at: ${serverTypesPath}`)
+    }
   }
   catch (error) {
     consola.error('Server schema generation error:', error)
@@ -361,30 +499,48 @@ async function generateMainClientTypes(nitro: Nitro) {
     return
   }
 
-  const clientTypesPath = resolve(nitro.options.buildDir, 'types', 'nitro-graphql-client.d.ts')
-  const defaultServiceDir = resolve(nitro.graphql.clientDir, 'default')
-  const sdkTypesPath = resolve(defaultServiceDir, 'sdk.ts')
+  // Resolve client types path from config
+  const placeholders = getDefaultPaths(nitro)
+  const typesConfig = getTypesConfig(nitro)
+  const sdkConfig = getSdkConfig(nitro)
 
-  mkdirSync(dirname(clientTypesPath), { recursive: true })
-  writeFileSync(clientTypesPath, types.types, 'utf-8')
-  mkdirSync(defaultServiceDir, { recursive: true })
+  // 1. Generate client type definitions
+  const clientTypesPath = resolveFilePath(
+    typesConfig.client,
+    typesConfig.enabled,
+    true,
+    '{typesDir}/nitro-graphql-client.d.ts',
+    placeholders,
+  )
 
-  // Only write SDK if content has changed to prevent rebuild loops
-  let shouldWriteSdk = true
-  if (existsSync(sdkTypesPath)) {
-    const existingContent = readFileSync(sdkTypesPath, 'utf-8')
-    shouldWriteSdk = existingContent !== types.sdk
+  if (clientTypesPath) {
+    mkdirSync(dirname(clientTypesPath), { recursive: true })
+    writeFileSync(clientTypesPath, types.types, 'utf-8')
+    consola.success(`[nitro-graphql] Generated client types at: ${clientTypesPath}`)
   }
-  if (shouldWriteSdk) {
-    writeFileSync(sdkTypesPath, types.sdk, 'utf-8')
+
+  // 2. Generate SDK file
+  const sdkPath = resolveFilePath(
+    sdkConfig.main,
+    sdkConfig.enabled,
+    true,
+    '{clientGraphql}/default/sdk.ts',
+    placeholders,
+  )
+
+  if (sdkPath) {
+    mkdirSync(dirname(sdkPath), { recursive: true })
+    writeFileSync(sdkPath, types.sdk, 'utf-8')
+    consola.success(`[nitro-graphql] Generated SDK at: ${sdkPath}`)
   }
 
   // Generate ofetch client for Nuxt framework
   if (nitro.options.framework?.name === 'nuxt') {
-    generateOfetchClient(nitro.graphql.clientDir, 'default', '/api/graphql', true)
+    // Always generate default service ofetch client (only if it doesn't exist)
+    generateNuxtOfetchClient(nitro, nitro.graphql.clientDir, 'default')
 
     const externalServices = nitro.options.graphql?.externalServices || []
-    generateGraphQLIndexFile(nitro.graphql.clientDir, externalServices)
+    generateGraphQLIndexFile(nitro, nitro.graphql.clientDir, externalServices)
   }
 }
 
@@ -430,28 +586,50 @@ async function generateExternalServicesTypes(nitro: Nitro) {
         continue
       }
 
-      // Write service-specific type files
-      const serviceTypesPath = resolve(nitro.options.buildDir, 'types', `nitro-graphql-client-${service.name}.d.ts`)
-      const serviceDir = resolve(nitro.graphql.clientDir, service.name)
-      const serviceSdkPath = resolve(serviceDir, 'sdk.ts')
-
-      mkdirSync(dirname(serviceTypesPath), { recursive: true })
-      writeFileSync(serviceTypesPath, types.types, 'utf-8')
-      mkdirSync(serviceDir, { recursive: true })
-
-      // Only write SDK if content has changed to prevent rebuild loops
-      let shouldWriteServiceSdk = true
-      if (existsSync(serviceSdkPath)) {
-        const existingContent = readFileSync(serviceSdkPath, 'utf-8')
-        shouldWriteServiceSdk = existingContent !== types.sdk
+      // Resolve paths from config with service-specific overrides
+      const placeholders = {
+        ...getDefaultPaths(nitro),
+        serviceName: service.name,
       }
-      if (shouldWriteServiceSdk) {
+      const typesConfig = getTypesConfig(nitro)
+      const sdkConfig = getSdkConfig(nitro)
+
+      // Service-specific paths take precedence over global config
+      // Priority: service.paths.X > global X.external > default
+
+      // 1. Generate external service type definitions
+      const serviceTypesPath = resolveFilePath(
+        service.paths?.types ?? typesConfig.external, // Service-specific path first
+        typesConfig.enabled,
+        true,
+        '{typesDir}/nitro-graphql-client-{serviceName}.d.ts',
+        placeholders,
+      )
+
+      if (serviceTypesPath) {
+        mkdirSync(dirname(serviceTypesPath), { recursive: true })
+        writeFileSync(serviceTypesPath, types.types, 'utf-8')
+        consola.success(`[graphql:${service.name}] Generated types at: ${serviceTypesPath}`)
+      }
+
+      // 2. Generate external service SDK
+      const serviceSdkPath = resolveFilePath(
+        service.paths?.sdk ?? sdkConfig.external, // Service-specific path first
+        sdkConfig.enabled,
+        true,
+        '{clientGraphql}/{serviceName}/sdk.ts',
+        placeholders,
+      )
+
+      if (serviceSdkPath) {
+        mkdirSync(dirname(serviceSdkPath), { recursive: true })
         writeFileSync(serviceSdkPath, types.sdk, 'utf-8')
+        consola.success(`[graphql:${service.name}] Generated SDK at: ${serviceSdkPath}`)
       }
 
       // Generate ofetch client for Nuxt framework
       if (nitro.options.framework?.name === 'nuxt') {
-        generateOfetchClient(nitro.graphql.clientDir, service.name, service.endpoint, false)
+        generateExternalOfetchClient(nitro, service, service.endpoint)
       }
 
       consola.success(`[graphql:${service.name}] External service types generated successfully`)

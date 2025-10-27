@@ -38,6 +38,7 @@ export default defineConfig({
     '#nitro-internal-virtual/server-directives',
     '#nitro-internal-virtual/graphql-config',
     '#nitro-internal-virtual/module-config',
+    '#nitro-internal-virtual/debug-info',
     '@nuxt/kit',
     '@nuxt/schema',
     '@apollo/server',

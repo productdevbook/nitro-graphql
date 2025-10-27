@@ -14,6 +14,8 @@ const nitro = {
     'README.md',
     'CONTRIBUTING.md',
     'CLAUDE.md',
+    '.docs/**/*.md',
+    '.docs/.vitepress/**/*',
   ],
 }
 export default antfu({
