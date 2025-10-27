@@ -108,7 +108,6 @@ function generateNuxtOfetchClient(
     return // Don't overwrite existing files
   }
 
-  const capitalizedServiceName = serviceName.charAt(0).toUpperCase() + serviceName.slice(1)
   const ofetchContent = `// This file is auto-generated once by nitro-graphql for quick start
 // You can modify this file according to your needs
 import type { Requester } from './sdk'
@@ -132,8 +131,7 @@ export function createGraphQLClient(endpoint: string): Requester {
 }
 
 export const $sdk = getSdk(createGraphQLClient('/api/graphql'))`
-    writeFileIfNotExists(ofetchPath, ofetchContent, `${serviceName} ofetch.ts`)
-  }
+  writeFileIfNotExists(ofetchPath, ofetchContent, `${serviceName} ofetch.ts`)
 }
 
 function generateExternalOfetchClient(
