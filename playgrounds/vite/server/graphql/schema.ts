@@ -1,4 +1,3 @@
-import { defineSchema } from 'nitro-graphql/utils/define'
+export default defineSchema({
 
-// Schema definitions are now in .graphql files
-export default defineSchema({})
+})

@@ -4,12 +4,13 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
-    graphql(), // Must be before nitro() to prevent Vite from parsing GraphQL files
+    graphql(),
     nitro(),
   ],
   nitro: {
-    modules: ['nitro-graphql'],
+    dev: true,
     preset: 'standard',
+    modules: ['nitro-graphql'],
     graphql: {
       framework: 'graphql-yoga',
     },
