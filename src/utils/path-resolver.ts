@@ -6,7 +6,7 @@ import type {
   SdkConfig,
   TypesConfig,
 } from '../types'
-import { resolve } from 'pathe'
+import { isAbsolute, resolve } from 'pathe'
 
 /**
  * Placeholder values for path resolution
@@ -107,8 +107,8 @@ export function resolveFilePath(
   // If config is a custom path, use it
   if (typeof config === 'string') {
     const customPath = replacePlaceholders(config, placeholders)
-    // Make it absolute if it's relative
-    return resolve(placeholders.rootDir, customPath)
+    // If already absolute, use as-is; if relative, resolve against rootDir
+    return isAbsolute(customPath) ? customPath : resolve(placeholders.rootDir, customPath)
   }
 
   // Use default path with placeholder support
