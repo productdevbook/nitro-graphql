@@ -25,6 +25,7 @@ import { writeFileIfNotExists } from './utils/file-generator'
 import {
   getDefaultPaths,
   getScaffoldConfig,
+  getTypesConfig,
   resolveFilePath,
   shouldGenerateScaffold,
 } from './utils/path-resolver'
@@ -179,7 +180,6 @@ export default defineNitroModule({
       nitro.options.typescript.tsconfigPath,
     )
     const tsconfigDir = dirname(tsConfigPath)
-    const typesDir = resolve(nitro.options.buildDir, 'types')
 
     const schemas = await scanSchemas(nitro)
     nitro.scanSchemas = schemas
@@ -397,12 +397,40 @@ export default defineNitroModule({
       types.tsConfig ||= {}
       types.tsConfig.compilerOptions ??= {}
       types.tsConfig.compilerOptions.paths ??= {}
-      types.tsConfig.compilerOptions.paths['#graphql/server'] = [
-        relativeWithDot(tsconfigDir, join(typesDir, 'nitro-graphql-server.d.ts')),
-      ]
-      types.tsConfig.compilerOptions.paths['#graphql/client'] = [
-        relativeWithDot(tsconfigDir, join(typesDir, 'nitro-graphql-client.d.ts')),
-      ]
+
+      // Resolve paths using the same logic as type generation
+      const placeholders = getDefaultPaths(nitro)
+      const typesConfig = getTypesConfig(nitro)
+
+      // Resolve server types path
+      const serverTypesPath = resolveFilePath(
+        typesConfig.server,
+        typesConfig.enabled,
+        true,
+        '{typesDir}/nitro-graphql-server.d.ts',
+        placeholders,
+      )
+      if (serverTypesPath) {
+        types.tsConfig.compilerOptions.paths['#graphql/server'] = [
+          relativeWithDot(tsconfigDir, serverTypesPath),
+        ]
+      }
+
+      // Resolve client types path
+      const clientTypesPath = resolveFilePath(
+        typesConfig.client,
+        typesConfig.enabled,
+        true,
+        '{typesDir}/nitro-graphql-client.d.ts',
+        placeholders,
+      )
+      if (clientTypesPath) {
+        types.tsConfig.compilerOptions.paths['#graphql/client'] = [
+          relativeWithDot(tsconfigDir, clientTypesPath),
+        ]
+      }
+
+      // Schema path (always uses serverDir)
       types.tsConfig.compilerOptions.paths['#graphql/schema'] = [
         relativeWithDot(tsconfigDir, join(nitro.graphql.serverDir, 'schema.ts')),
       ]
@@ -410,25 +438,61 @@ export default defineNitroModule({
       // Add path mappings for external services
       if (nitro.options.graphql?.externalServices?.length) {
         for (const service of nitro.options.graphql.externalServices) {
-          types.tsConfig.compilerOptions.paths[`#graphql/client/${service.name}`] = [
-            relativeWithDot(tsconfigDir, join(typesDir, `nitro-graphql-client-${service.name}.d.ts`)),
-          ]
+          const servicePlaceholders = {
+            ...placeholders,
+            serviceName: service.name,
+          }
+
+          // Resolve external service types path with service-specific override
+          const externalTypesPath = resolveFilePath(
+            service.paths?.types ?? typesConfig.external,
+            typesConfig.enabled,
+            true,
+            '{typesDir}/nitro-graphql-client-{serviceName}.d.ts',
+            servicePlaceholders,
+          )
+
+          if (externalTypesPath) {
+            types.tsConfig.compilerOptions.paths[`#graphql/client/${service.name}`] = [
+              relativeWithDot(tsconfigDir, externalTypesPath),
+            ]
+          }
         }
       }
 
       types.tsConfig.include = types.tsConfig.include || []
+
+      // Add resolved type files to include
+      if (serverTypesPath) {
+        types.tsConfig.include.push(relativeWithDot(tsconfigDir, serverTypesPath))
+      }
+      if (clientTypesPath) {
+        types.tsConfig.include.push(relativeWithDot(tsconfigDir, clientTypesPath))
+      }
+      // Always include graphql.d.ts from default location
       types.tsConfig.include.push(
-        relativeWithDot(tsconfigDir, join(typesDir, 'nitro-graphql-server.d.ts')),
-        relativeWithDot(tsconfigDir, join(typesDir, 'nitro-graphql-client.d.ts')),
-        relativeWithDot(tsconfigDir, join(typesDir, 'graphql.d.ts')),
+        relativeWithDot(tsconfigDir, join(placeholders.typesDir, 'graphql.d.ts')),
       )
 
       // Add external service type files to include
       if (nitro.options.graphql?.externalServices?.length) {
         for (const service of nitro.options.graphql.externalServices) {
-          types.tsConfig.include.push(
-            relativeWithDot(tsconfigDir, join(typesDir, `nitro-graphql-client-${service.name}.d.ts`)),
+          const servicePlaceholders = {
+            ...placeholders,
+            serviceName: service.name,
+          }
+
+          const externalTypesPath = resolveFilePath(
+            service.paths?.types ?? typesConfig.external,
+            typesConfig.enabled,
+            true,
+            '{typesDir}/nitro-graphql-client-{serviceName}.d.ts',
+            servicePlaceholders,
           )
+
+          if (externalTypesPath) {
+            types.tsConfig.include.push(relativeWithDot(tsconfigDir, externalTypesPath))
+          }
         }
       }
     })

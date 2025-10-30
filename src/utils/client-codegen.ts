@@ -299,6 +299,7 @@ export async function generateClientTypes(
   sdkConfig: GenericSdkConfig = {},
   outputPath?: string,
   serviceName?: string,
+  virtualTypesPath?: string,
 ) {
   // For external services, allow schema-only generation (no documents required)
   if (docs.length === 0 && !serviceName) {
@@ -405,7 +406,8 @@ export function getSdk(requester: Requester): Sdk {
       },
     })
 
-    const typesPath = serviceName ? `#graphql/client/${serviceName}` : '#graphql/client'
+    // Use provided virtual import path, or fall back to default convention
+    const typesPath = virtualTypesPath || (serviceName ? `#graphql/client/${serviceName}` : '#graphql/client')
     const sdkOutput = await preset.buildGeneratesSection({
       baseOutputDir: outputPath || 'client-types.generated.ts',
       schema: parse(printSchemaWithDirectives(schema)),
@@ -452,9 +454,10 @@ export async function generateExternalClientTypes(
   service: ExternalGraphQLService,
   schema: GraphQLSchema,
   docs: Source[],
+  virtualTypesPath?: string,
 ): Promise<{ types: string, sdk: string } | false> {
   const config = service.codegen?.client || {}
   const sdkConfig = service.codegen?.clientSDK || {}
 
-  return generateClientTypes(schema, docs, config, sdkConfig, undefined, service.name)
+  return generateClientTypes(schema, docs, config, sdkConfig, undefined, service.name, virtualTypesPath)
 }
