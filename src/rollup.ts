@@ -118,21 +118,22 @@ export async function rollupConfig(app: Nitro) {
         },
       })
 
-      rollupConfig.plugins.push({
-        name: 'nitro-graphql-watcher',
-        buildStart: {
-          order: 'pre',
-          async handler() {
-            const graphqlFiles = await scanGraphql(nitro)
+      // Only add watcher in development mode
+      if (app.options.dev) {
+        rollupConfig.plugins.push({
+          name: 'nitro-graphql-watcher',
+          buildStart: {
+            order: 'pre',
+            async handler() {
+              const graphqlFiles = await scanGraphql(nitro)
 
-            for (const file of graphqlFiles) {
-              this.addWatchFile(file)
-            }
-
-            // Individual file watching is sufficient, no need to watch entire directories
+              for (const file of graphqlFiles) {
+                this.addWatchFile(file)
+              }
+            },
           },
-        },
-      })
+        })
+      }
     }
   })
 
