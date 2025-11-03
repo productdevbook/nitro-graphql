@@ -1,3 +1,3 @@
-import { setupApp } from "./app";
+import { setupApp } from './app'
 
-setupApp(document.querySelector<HTMLButtonElement>("#app")!);
+setupApp(document.querySelector<HTMLButtonElement>('#app')!)
