@@ -25,6 +25,7 @@ export async function rollupConfig(app: Nitro) {
     if (Array.isArray(rollupConfig.plugins)) {
       rollupConfig.plugins.push({
         name: 'nitro-graphql',
+        order: 'pre',
 
         resolveId(id) {
           // Mark GraphQL files as external to prevent Vite SSR transformation
@@ -61,6 +62,7 @@ export async function rollupConfig(app: Nitro) {
 
       rollupConfig.plugins.push({
         name: 'nitro-graphql-watcher',
+        order: 'pre',
         async buildStart() {
           const graphqlFiles = await scanGraphql(nitro)
 
