@@ -1,8 +1,8 @@
-import { debugInfo } from '#nitro-internal-virtual/debug-info'
-import { moduleConfig } from '#nitro-internal-virtual/module-config'
-import { directives } from '#nitro-internal-virtual/server-directives'
-import { resolvers } from '#nitro-internal-virtual/server-resolvers'
-import { schemas } from '#nitro-internal-virtual/server-schemas'
+import { debugInfo } from '#nitro-graphql/debug-info'
+import { moduleConfig } from '#nitro-graphql/module-config'
+import { directives } from '#nitro-graphql/server-directives'
+import { resolvers } from '#nitro-graphql/server-resolvers'
+import { schemas } from '#nitro-graphql/server-schemas'
 import { defineEventHandler, getQuery, setResponseHeader } from 'h3'
 
 /**
@@ -368,7 +368,7 @@ function generateHtmlDashboard(debugInfo: any): string {
                 <div class="flex items-center gap-3">
                   <span class="${colorConfig.text} text-lg">▸</span>
                   <div>
-                    <span class="font-mono text-sm ${colorConfig.text} font-semibold">#nitro-internal-virtual/${moduleName}</span>
+                    <span class="font-mono text-sm ${colorConfig.text} font-semibold">#nitro-graphql/${moduleName}</span>
                     <div class="text-[10px] text-slate-500 mt-0.5">
                       ${lineCount} lines · ${(byteSize / 1024).toFixed(2)} KB
                     </div>

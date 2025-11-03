@@ -87,7 +87,7 @@ export function virtualSchemas(app: Nitro) {
   ]
 
   app.options.virtual ??= {}
-  app.options.virtual['#nitro-internal-virtual/server-schemas'] = () => {
+  app.options.virtual['#nitro-graphql/server-schemas'] = () => {
     try {
       const imports = getSchemas()
 
@@ -127,7 +127,7 @@ export function virtualResolvers(app: Nitro) {
   const getResolvers = () => [...app.scanResolvers]
 
   app.options.virtual ??= {}
-  app.options.virtual['#nitro-internal-virtual/server-resolvers'] = () => {
+  app.options.virtual['#nitro-graphql/server-resolvers'] = () => {
     try {
       const imports = getResolvers()
 
@@ -208,7 +208,7 @@ export function virtualDirectives(app: Nitro) {
   const getDirectives = () => app.scanDirectives || []
 
   app.options.virtual ??= {}
-  app.options.virtual['#nitro-internal-virtual/server-directives'] = () => {
+  app.options.virtual['#nitro-graphql/server-directives'] = () => {
     try {
       const imports = getDirectives()
 
@@ -282,7 +282,7 @@ export function getGraphQLConfig(app: Nitro) {
   const configPath = resolve(app.graphql.serverDir, 'config.ts')
 
   app.options.virtual ??= {}
-  app.options.virtual['#nitro-internal-virtual/graphql-config'] = () => {
+  app.options.virtual['#nitro-graphql/graphql-config'] = () => {
     return `import config from '${configPath}'
 const importedConfig = config
 export { importedConfig }
@@ -292,7 +292,7 @@ export { importedConfig }
 
 export function virtualModuleConfig(app: Nitro) {
   app.options.virtual ??= {}
-  app.options.virtual['#nitro-internal-virtual/module-config'] = () => {
+  app.options.virtual['#nitro-graphql/module-config'] = () => {
     const moduleConfig = app.options.graphql || {}
 
     return `export const moduleConfig = ${JSON.stringify(moduleConfig, null, 2)};`
@@ -301,13 +301,13 @@ export function virtualModuleConfig(app: Nitro) {
 
 export function virtualDebugInfo(app: Nitro) {
   app.options.virtual ??= {}
-  app.options.virtual['#nitro-internal-virtual/debug-info'] = () => {
+  app.options.virtual['#nitro-graphql/debug-info'] = () => {
     // Generate virtual module codes by calling their generator functions
     const virtualModuleCodes: Record<string, string> = {}
 
     try {
       // Get schemas virtual module code
-      const schemasGenerator = app.options.virtual['#nitro-internal-virtual/server-schemas']
+      const schemasGenerator = app.options.virtual['#nitro-graphql/server-schemas']
       if (schemasGenerator && typeof schemasGenerator === 'function') {
         virtualModuleCodes['server-schemas'] = schemasGenerator() as string
       }
@@ -318,7 +318,7 @@ export function virtualDebugInfo(app: Nitro) {
 
     try {
       // Get resolvers virtual module code
-      const resolversGenerator = app.options.virtual['#nitro-internal-virtual/server-resolvers']
+      const resolversGenerator = app.options.virtual['#nitro-graphql/server-resolvers']
       if (resolversGenerator && typeof resolversGenerator === 'function') {
         virtualModuleCodes['server-resolvers'] = resolversGenerator() as string
       }
@@ -329,7 +329,7 @@ export function virtualDebugInfo(app: Nitro) {
 
     try {
       // Get directives virtual module code
-      const directivesGenerator = app.options.virtual['#nitro-internal-virtual/server-directives']
+      const directivesGenerator = app.options.virtual['#nitro-graphql/server-directives']
       if (directivesGenerator && typeof directivesGenerator === 'function') {
         virtualModuleCodes['server-directives'] = directivesGenerator() as string
       }
@@ -340,7 +340,7 @@ export function virtualDebugInfo(app: Nitro) {
 
     try {
       // Get module config virtual module code
-      const moduleConfigGenerator = app.options.virtual['#nitro-internal-virtual/module-config']
+      const moduleConfigGenerator = app.options.virtual['#nitro-graphql/module-config']
       if (moduleConfigGenerator && typeof moduleConfigGenerator === 'function') {
         virtualModuleCodes['module-config'] = moduleConfigGenerator() as string
       }
@@ -351,7 +351,7 @@ export function virtualDebugInfo(app: Nitro) {
 
     try {
       // Get graphql config virtual module code
-      const graphqlConfigGenerator = app.options.virtual['#nitro-internal-virtual/graphql-config']
+      const graphqlConfigGenerator = app.options.virtual['#nitro-graphql/graphql-config']
       if (graphqlConfigGenerator && typeof graphqlConfigGenerator === 'function') {
         virtualModuleCodes['graphql-config'] = graphqlConfigGenerator() as string
       }

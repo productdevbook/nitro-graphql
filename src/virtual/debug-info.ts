@@ -1,5 +1,5 @@
 /**
- * Virtual module stub for #nitro-internal-virtual/debug-info
+ * Virtual module stub for #nitro-graphql/debug-info
  * This file is only used during build/bundling to prevent import resolution errors.
  * At runtime, Nitro will override this with the actual virtual module.
  */
