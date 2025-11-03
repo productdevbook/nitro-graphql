@@ -23,6 +23,24 @@ export async function rollupConfig(app: Nitro) {
     } = app.options.graphql?.loader || {}
 
     if (Array.isArray(rollupConfig.plugins)) {
+      // Add resolve plugin for #nitro-graphql virtual modules
+      // This mimics Nitro's nitro:rolldown-resolves plugin for #nitro-internal-virtual
+      rollupConfig.plugins.push({
+        name: 'nitro-graphql:resolves',
+        async resolveId(id, parent, options) {
+          // Handle imports from our virtual modules
+          if (parent?.startsWith('\0virtual:#nitro-graphql')) {
+            const internalRes = await this.resolve(id, import.meta.url, {
+              ...options,
+              custom: { ...options.custom, skipNoExternals: true },
+            })
+            if (internalRes) {
+              return internalRes
+            }
+          }
+        },
+      })
+
       rollupConfig.plugins.push({
         name: 'nitro-graphql',
         order: 'pre',
