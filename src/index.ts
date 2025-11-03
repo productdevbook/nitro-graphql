@@ -51,11 +51,15 @@ export default defineNitroModule({
       consola.info(`Configured ${nitro.options.graphql.externalServices.length} external GraphQL services`)
     }
 
+    // Get default paths from path resolver
+    const { getDefaultPaths } = await import('./utils/path-resolver')
+    const defaultPaths = getDefaultPaths(nitro)
+
     nitro.graphql ||= {
       buildDir: '',
       watchDirs: [],
-      clientDir: '',
-      serverDir: resolve(nitro.options.rootDir, 'server', 'graphql'),
+      clientDir: defaultPaths.clientGraphql,
+      serverDir: defaultPaths.serverGraphql,
       dir: {
         build: relative(nitro.options.rootDir, nitro.options.buildDir),
         client: 'graphql',
@@ -104,16 +108,10 @@ export default defineNitroModule({
 
     switch (nitro.options.framework.name) {
       case 'nuxt': {
-        // For Nuxt, set clientDir to app/graphql if not already configured
-        if (!nitro.graphql.clientDir) {
-          nitro.graphql.clientDir = resolve(nitro.options.rootDir, 'app', 'graphql')
-          nitro.graphql.dir.client = 'app/graphql'
-        }
+        // Update relative dir paths for Nuxt
+        nitro.graphql.dir.client = relative(nitro.options.rootDir, nitro.graphql.clientDir)
+        nitro.graphql.dir.server = relative(nitro.options.rootDir, nitro.graphql.serverDir)
 
-        // For Nuxt, ensure serverDir points to server/graphql if using default srcDir
-        if (!nitro.options.graphql?.serverDir) {
-          nitro.graphql.serverDir = resolve(nitro.options.rootDir, 'server', 'graphql')
-        }
         watchDirs.push(nitro.graphql.clientDir)
 
         // Add layer directories to watch list
@@ -132,12 +130,10 @@ export default defineNitroModule({
         break
       }
       case 'nitro':
-        // For Nitro, ensure serverDir points to server/graphql if using default
-        if (!nitro.options.graphql?.serverDir) {
-          nitro.graphql.serverDir = resolve(nitro.options.rootDir, 'server', 'graphql')
-        }
-        nitro.graphql.clientDir = resolve(nitro.options.rootDir, 'graphql')
-        nitro.graphql.dir.client = 'graphql'
+        // Update relative dir paths for Nitro
+        nitro.graphql.dir.client = relative(nitro.options.rootDir, nitro.graphql.clientDir)
+        nitro.graphql.dir.server = relative(nitro.options.rootDir, nitro.graphql.serverDir)
+
         // Watch both client and server directories
         watchDirs.push(nitro.graphql.clientDir)
         watchDirs.push(nitro.graphql.serverDir)
