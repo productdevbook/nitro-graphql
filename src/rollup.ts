@@ -1,6 +1,7 @@
 import type { Nitro } from 'nitro/types'
 
 import { readFile } from 'node:fs/promises'
+import { fileURLToPath } from 'node:url'
 import { parse } from 'graphql'
 import { genImport } from 'knitwork'
 import { resolve } from 'pathe'
@@ -14,6 +15,7 @@ export async function rollupConfig(app: Nitro) {
   getGraphQLConfig(app)
   virtualModuleConfig(app)
   virtualDebugInfo(app)
+
   app.hooks.hook('rollup:before', (nitro, rollupConfig) => {
     rollupConfig.plugins = rollupConfig.plugins || []
     const {
@@ -24,71 +26,111 @@ export async function rollupConfig(app: Nitro) {
 
     if (Array.isArray(rollupConfig.plugins)) {
       // Add resolve plugin for #nitro-graphql virtual modules
-      // This mimics Nitro's nitro:rolldown-resolves plugin for #nitro-internal-virtual
+      // This mimics Nitro's nitro:resolve-ids plugin for #nitro-internal-virtual
       rollupConfig.plugins.push({
-        name: 'nitro-graphql:resolves',
-        async resolveId(id, parent, options) {
-          // Handle imports from our virtual modules
-          if (parent?.startsWith('\0virtual:#nitro-graphql')) {
-            const internalRes = await this.resolve(id, import.meta.url, {
-              ...options,
-              custom: { ...options.custom, skipNoExternals: true },
-            })
-            if (internalRes) {
-              return internalRes
+        name: 'nitro-graphql:virtual',
+        resolveId: {
+          order: 'pre',
+          async handler(id, parent, options) {
+            // Handle initial imports TO our virtual modules (mark them as virtual)
+            if (id.startsWith('#nitro-graphql/')) {
+              return `\0virtual:${id}`
             }
-          }
+
+            // Handle imports FROM our virtual modules (resolve dependencies)
+            if (parent?.startsWith('\0virtual:#nitro-graphql')) {
+              const runtimeDir = fileURLToPath(new URL('routes', import.meta.url))
+              const internalRes = await this.resolve(id, runtimeDir, {
+                skipSelf: true,
+                ...options,
+              })
+
+              if (internalRes) {
+                return internalRes
+              }
+            }
+          },
+        },
+        load: {
+          order: 'pre',
+          handler(id) {
+            // Handle loading virtual modules
+            if (id.startsWith('\0virtual:#nitro-graphql/')) {
+              const moduleName = id.slice('\0virtual:'.length)
+              const generator = app.options.virtual?.[moduleName]
+
+              if (typeof generator === 'function') {
+                try {
+                  return generator()
+                }
+                catch (error) {
+                  const message = error instanceof Error ? error.message : String(error)
+                  this.error(`Failed to generate virtual module ${moduleName}: ${message}`)
+                }
+              }
+              else {
+                this.error(`No generator function found for virtual module ${moduleName}`)
+              }
+            }
+          },
         },
       })
 
       rollupConfig.plugins.push({
         name: 'nitro-graphql',
-        order: 'pre',
 
-        resolveId(id) {
-          // Mark GraphQL files as external to prevent Vite SSR transformation
-          if (/\.(?:graphql|gql)$/i.test(id)) {
-            return null // Let this plugin handle it
-          }
+        resolveId: {
+          order: 'pre',
+          handler(id) {
+            // Mark GraphQL files as external to prevent Vite SSR transformation
+            if (/\.(?:graphql|gql)$/i.test(id)) {
+              return null // Let this plugin handle it
+            }
+          },
         },
 
-        async load(id) {
-          if (exclude?.test?.(id))
-            return null
-          if (!include.test(id))
-            return null
-
-          try {
-            const content = await readFile(id, 'utf-8')
-
-            // Optional: GraphQL syntax validation
-            if (validate) {
-              parse(content) // Throws an error if invalid
-            }
-
-            return `export default ${JSON.stringify(content)}`
-          }
-          catch (error) {
-            if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') {
+        load: {
+          order: 'pre',
+          async handler(id) {
+            if (exclude?.test?.(id))
               return null
+            if (!include.test(id))
+              return null
+
+            try {
+              const content = await readFile(id, 'utf-8')
+
+              // Optional: GraphQL syntax validation
+              if (validate) {
+                parse(content) // Throws an error if invalid
+              }
+
+              return `export default ${JSON.stringify(content)}`
             }
-            const message = error instanceof Error ? error.message : String(error)
-            this.error(`Failed to read GraphQL file ${id}: ${message}`)
-          }
+            catch (error) {
+              if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') {
+                return null
+              }
+              const message = error instanceof Error ? error.message : String(error)
+              this.error(`Failed to read GraphQL file ${id}: ${message}`)
+            }
+          },
         },
       })
 
       rollupConfig.plugins.push({
         name: 'nitro-graphql-watcher',
-        order: 'pre',
-        async buildStart() {
-          const graphqlFiles = await scanGraphql(nitro)
+        buildStart: {
+          order: 'pre',
+          async handler() {
+            const graphqlFiles = await scanGraphql(nitro)
 
-          for (const file of graphqlFiles) {
-            this.addWatchFile(file)
-          }
+            for (const file of graphqlFiles) {
+              this.addWatchFile(file)
+            }
 
-          // Individual file watching is sufficient, no need to watch entire directories
+            // Individual file watching is sufficient, no need to watch entire directories
+          },
         },
       })
     }
@@ -128,11 +170,6 @@ export const schemas = [
 ${schemaArray.join(',\n')}
 ];
     `
-
-      // Log virtual module generation in dev mode
-      if (app.options.dev) {
-        app.logger.success(`[nitro-graphql] Generated virtual schema module: ${imports.length} schema(s)`)
-      }
 
       return code
     }
@@ -208,12 +245,6 @@ export function virtualResolvers(app: Nitro) {
 
       const code = content.join('\n')
 
-      // Log virtual module generation in dev mode
-      if (app.options.dev) {
-        const totalExports = imports.reduce((sum, r) => sum + r.imports.length, 0)
-        app.logger.success(`[nitro-graphql] Generated virtual resolver module: ${totalExports} export(s) from ${imports.length} file(s)`)
-      }
-
       return code
     }
     catch (error) {
@@ -283,11 +314,6 @@ export function virtualDirectives(app: Nitro) {
       ]
 
       const code = content.join('\n')
-
-      if (app.options.dev) {
-        const totalExports = imports.reduce((sum, d) => sum + d.imports.length, 0)
-        app.logger.success(`[nitro-graphql] Generated virtual directive module: ${totalExports} directive(s) from ${imports.length} file(s)`)
-      }
 
       return code
     }
