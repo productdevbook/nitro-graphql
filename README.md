@@ -5,6 +5,7 @@
 # Nitro GraphQL
 
 [![npm version][npm-version-src]][npm-version-href]
+[![Beta Status][beta-src]][beta-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![bundle][bundle-src]][bundle-href]
 [![License][license-src]][license-href]
@@ -1272,3 +1273,5 @@ pnpm lint
 [license-href]: https://github.com/productdevbook/nitro-graphql/blob/main/LICENSE
 [docs-src]: https://img.shields.io/badge/docs-read-blue?style=flat&colorA=080f12&colorB=1fa669
 [docs-href]: https://nitro-graphql.pages.dev
+[beta-src]: https://img.shields.io/npm/v/nitro-graphql/beta?style=flat&logo=rocket&logoColor=white&label=beta&color=7c3aed&colorA=080f12
+[beta-href]: https://github.com/productdevbook/nitro-graphql/releases
