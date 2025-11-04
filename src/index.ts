@@ -22,7 +22,6 @@ import {
 } from './utils'
 import { writeFileIfNotExists } from './utils/file-generator'
 import {
-  getDefaultPaths,
   getScaffoldConfig,
   resolveFilePath,
   shouldGenerateScaffold,
