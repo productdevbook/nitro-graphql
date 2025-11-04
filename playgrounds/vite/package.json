@@ -14,6 +14,12 @@
   },
   "devDependencies": {
     "nitro": "npm:nitro-nightly@latest",
-    "vite": "latest"
+    "vite": "npm:rolldown-vite@latest"
+
+  },
+  "pnpm": {
+    "overrides": {
+      "vite": "npm:rolldown-vite@latest"
+    }
   }
 }

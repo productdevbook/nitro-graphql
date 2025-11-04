@@ -342,7 +342,7 @@ export default defineNitroModule({
       nitro.options.handlers.push({
         route: '/_nitro/graphql/debug',
         handler: join(runtime, 'debug'),
-        method: 'get',
+        method: 'GET',
       })
       consola.info('[nitro-graphql] Debug dashboard available at: /_nitro/graphql/debug')
     }
