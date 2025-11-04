@@ -372,13 +372,27 @@ export async function setupNitroGraphQL(nitro: Nitro) {
     if (!rollupConfig.output.inlineDynamicImports) {
       // manualChunks for Rollup
       rollupConfig.output.manualChunks = (id, meta) => {
+        // Handle schema files (.graphql, .gql)
         if (id.endsWith('.graphql') || id.endsWith('.gql')) {
+          let graphqlIndex = id.indexOf('server/graphql/')
+          let baseLength = 'server/graphql/'.length
+
+          if (graphqlIndex === -1) {
+            graphqlIndex = id.indexOf('routes/graphql/')
+            baseLength = 'routes/graphql/'.length
+          }
+
+          if (graphqlIndex !== -1) {
+            const relativePath = id.slice(graphqlIndex + baseLength)
+            // Remove .graphql or .gql extension and add -schema suffix
+            const chunkName = relativePath.replace(/\.(?:graphql|gql)$/, '-schema')
+            return chunkName
+          }
           return 'schemas'
         }
 
+        // Handle resolver files (.resolver.ts)
         if (id.endsWith('.resolver.ts')) {
-          // Extract relative path for per-file chunking
-          // Support both server/graphql/ (Nitro) and routes/graphql/ (Vite) patterns
           let graphqlIndex = id.indexOf('server/graphql/')
           let baseLength = 'server/graphql/'.length
 
@@ -393,7 +407,6 @@ export async function setupNitroGraphQL(nitro: Nitro) {
             const chunkName = relativePath.replace(/\.resolver\.ts$/, '')
             return chunkName
           }
-          // Fallback if pattern not found
           return 'resolvers'
         }
 
@@ -408,7 +421,28 @@ export async function setupNitroGraphQL(nitro: Nitro) {
       rollupConfig.output.advancedChunks = {
         groups: [
           {
-            name: 'schemas',
+            // Dynamic chunk naming for schemas
+            name: (moduleId: string) => {
+              if (!moduleId.endsWith('.graphql') && !moduleId.endsWith('.gql')) {
+                return
+              }
+
+              let graphqlIndex = moduleId.indexOf('server/graphql/')
+              let baseLength = 'server/graphql/'.length
+
+              if (graphqlIndex === -1) {
+                graphqlIndex = moduleId.indexOf('routes/graphql/')
+                baseLength = 'routes/graphql/'.length
+              }
+
+              if (graphqlIndex !== -1) {
+                const relativePath = moduleId.slice(graphqlIndex + baseLength)
+                const chunkName = relativePath.replace(/\.(?:graphql|gql)$/, '-schema')
+                return chunkName
+              }
+
+              return 'schemas'
+            },
             test: /\.(?:graphql|gql)$/,
           },
           {
@@ -418,7 +452,6 @@ export async function setupNitroGraphQL(nitro: Nitro) {
                 return
               }
 
-              // Extract relative path for per-file chunking
               let graphqlIndex = moduleId.indexOf('server/graphql/')
               let baseLength = 'server/graphql/'.length
 
