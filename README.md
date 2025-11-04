@@ -175,6 +175,13 @@ Try these working examples:
 | [**Nuxt Integration**](./playgrounds/nuxt/) | Full Nuxt app with client types | `pnpm playground:nuxt` |
 | [**Apollo Federation**](./playgrounds/federation/) | Federated GraphQL services | `pnpm playground:federation` |
 
+### 🧪 Test Projects
+
+Real-world test projects using nitro-graphql v2:
+
+- [**Vite + Nitro + Rolldown**](https://github.com/productdevbook/vite-nitro-graphql/tree/rolldown) - Testing with Rolldown bundler (Vite 7+)
+- [**Vite + Nitro (Main)**](https://github.com/productdevbook/vite-nitro-graphql) - Standard Vite integration tests
+
 ## 🏗️ Building Your First Feature
 
 Let's create a complete user management system:
