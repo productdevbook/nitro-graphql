@@ -164,7 +164,7 @@ export async function setupNitroGraphQL(nitro: Nitro) {
     ignoreInitial: true,
     ignored: [
       ...nitro.options.ignore,
-      ...generateLayerIgnorePatterns(nitro), // Ignore auto-generated files in all layers
+      ...generateLayerIgnorePatterns(), // Ignore auto-generated files in all layers
     ],
   }).on('all', async (_, path) => {
     if (path.endsWith('.graphql') || path.endsWith('.gql')) {
@@ -370,17 +370,30 @@ export async function setupNitroGraphQL(nitro: Nitro) {
     const chunkFiles = rollupConfig.output?.chunkFileNames
 
     if (!rollupConfig.output.inlineDynamicImports) {
-      // Set both manualChunks (for Rollup) and advancedChunks (for Rolldown)
-      // Rolldown will use advancedChunks and ignore manualChunks (with a harmless warning)
-      // Rollup will ignore advancedChunks (unknown option warning) and use manualChunks
-
-      // For Rollup compatibility
+      // manualChunks for Rollup
       rollupConfig.output.manualChunks = (id, meta) => {
         if (id.endsWith('.graphql') || id.endsWith('.gql')) {
           return 'schemas'
         }
 
         if (id.endsWith('.resolver.ts')) {
+          // Extract relative path for per-file chunking
+          // Support both server/graphql/ (Nitro) and routes/graphql/ (Vite) patterns
+          let graphqlIndex = id.indexOf('server/graphql/')
+          let baseLength = 'server/graphql/'.length
+
+          if (graphqlIndex === -1) {
+            graphqlIndex = id.indexOf('routes/graphql/')
+            baseLength = 'routes/graphql/'.length
+          }
+
+          if (graphqlIndex !== -1) {
+            const relativePath = id.slice(graphqlIndex + baseLength)
+            // Remove .resolver.ts extension to get chunk name
+            const chunkName = relativePath.replace(/\.resolver\.ts$/, '')
+            return chunkName
+          }
+          // Fallback if pattern not found
           return 'resolvers'
         }
 
@@ -390,8 +403,8 @@ export async function setupNitroGraphQL(nitro: Nitro) {
         return undefined
       }
 
-      // For Rolldown optimization (preferred when available)
-      // @ts-expect-error - advancedChunks is a rolldown-specific feature not in RollupOptions yet
+      // advancedChunks for Rolldown - supports dynamic chunk naming via function!
+      // @ts-expect-error - advancedChunks is a rolldown-specific feature
       rollupConfig.output.advancedChunks = {
         groups: [
           {
@@ -399,10 +412,34 @@ export async function setupNitroGraphQL(nitro: Nitro) {
             test: /\.(?:graphql|gql)$/,
           },
           {
-            name: 'resolvers',
-            test: /\.resolver\.ts$/,
+            // Dynamic chunk naming for resolvers
+            name: (moduleId: string) => {
+              if (!moduleId.endsWith('.resolver.ts')) {
+                return
+              }
+
+              // Extract relative path for per-file chunking
+              let graphqlIndex = moduleId.indexOf('server/graphql/')
+              let baseLength = 'server/graphql/'.length
+
+              if (graphqlIndex === -1) {
+                graphqlIndex = moduleId.indexOf('routes/graphql/')
+                baseLength = 'routes/graphql/'.length
+              }
+
+              if (graphqlIndex !== -1) {
+                const relativePath = moduleId.slice(graphqlIndex + baseLength)
+                const chunkName = relativePath.replace(/\.resolver\.ts$/, '')
+                return chunkName
+              }
+
+              return 'resolvers'
+            },
+            test: /\.resolver\.(?:ts|js)$/,
           },
         ],
+        minSize: 0,
+        minShareCount: 1,
       }
     }
 
