@@ -18,6 +18,13 @@
 
 </div>
 
+> [!IMPORTANT]
+> **v2.0 Beta (Current - Main Branch)**
+> This is the **v2.0** beta branch with Nitro v3 and H3 v2 support. Includes Rolldown optimization, improved chunking, and enhanced Vite integration.
+>
+> **Looking for v1.x?**
+> For the stable v1 version (Nitro v2), see the [`v1` branch](https://github.com/productdevbook/nitro-graphql/tree/v1).
+
 ---
 
 ## 🎥 Watch & Learn
@@ -33,6 +40,14 @@
 - 🎯 **Universal** - Works with Nuxt, Nitro, and any Nitro-based framework
 - 🎮 **Developer-friendly** - Built-in Apollo Sandbox for testing
 - 🔧 **Zero config** - Sensible defaults, customize when needed
+
+### 🆕 What's New in v2.0 Beta
+
+- 🚀 **Nitro v3 & H3 v2** - Full compatibility with the latest Nitro and H3
+- ⚙️ **Rolldown Support** - Optimized for both Rolldown (Vite 7+) and Rollup
+- 📦 **Smart Chunking** - GraphQL code split into separate chunks (~98% size reduction)
+- 🔍 **Debug Dashboard** - Built-in diagnostics at `/_nitro/graphql/debug` (dev only)
+- 🎨 **Enhanced Vite Integration** - Better custom path support and virtual module resolution
 
 ## 🚀 Quick Start
 
@@ -147,6 +162,7 @@ pnpm dev
 - **Endpoint**: `http://localhost:3000/api/graphql`
 - **Playground**: `http://localhost:3000/api/graphql` (browser)
 - **Health**: `http://localhost:3000/api/graphql/health`
+- **Debug Dashboard**: `http://localhost:3000/_nitro/graphql/debug` (dev mode only)
 
 ## 🎮 Examples
 
