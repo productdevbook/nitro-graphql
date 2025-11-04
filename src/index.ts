@@ -371,12 +371,28 @@ export default defineNitroModule({
       const chunkFiles = rollupConfig.output?.chunkFileNames
 
       if (!rollupConfig.output.inlineDynamicImports) {
+        // Use rolldown's advancedChunks API (Vite 7+ with rolldown)
+        // Falls back to manualChunks for older Vite/Rollup
+        // @ts-expect-error - advancedChunks is a rolldown-specific feature not in RollupOptions yet
+        rollupConfig.output.advancedChunks = {
+          groups: [
+            {
+              name: 'schemas',
+              test: /\.(?:graphql|gql)$/,
+            },
+            {
+              name: 'resolvers',
+              test: /\.resolver\.ts$/,
+            },
+          ],
+        }
+
+        // Fallback for Rollup (will be ignored if advancedChunks is used)
         rollupConfig.output.manualChunks = (id, meta) => {
           if (id.endsWith('.graphql') || id.endsWith('.gql')) {
             return 'schemas'
           }
 
-          // resolsvers and schemas are not in the same directory, so we need to check both
           if (id.endsWith('.resolver.ts')) {
             return 'resolvers'
           }
@@ -384,7 +400,6 @@ export default defineNitroModule({
           if (typeof manualChunks === 'function') {
             return manualChunks(id, meta)
           }
-          // If manualChunks is not a function, do not call it
           return undefined
         }
       }
