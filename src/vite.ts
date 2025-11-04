@@ -1,9 +1,14 @@
+import type { Nitro } from 'nitro/types'
 import type { Plugin } from 'vite'
+import type { NitroGraphQLOptions } from './types'
 import { readFile } from 'node:fs/promises'
+import defu from 'defu'
+import { setupNitroGraphQL } from './setup'
 
 /**
- * Vite plugin to load GraphQL files as strings
+ * Vite plugin to load GraphQL files as strings AND auto-register Nitro module
  * This prevents Vite from trying to parse .graphql/.gql files as JavaScript
+ * and automatically sets up the nitro-graphql module via the nitro: hook
  *
  * @example
  * ```ts
@@ -13,13 +18,13 @@ import { readFile } from 'node:fs/promises'
  *
  * export default defineConfig({
  *   plugins: [
- *     graphql(), // Must be before nitro()
+ *     graphql({ framework: 'graphql-yoga' }), // Auto-registers Nitro module
  *     nitro()
  *   ]
  * })
  * ```
  */
-export function graphql(): Plugin {
+export function graphql(options?: NitroGraphQLOptions): Plugin {
   return {
     name: 'nitro-graphql:vite',
     enforce: 'pre', // Run before other plugins to prevent Vite from transforming GraphQL files
@@ -42,6 +47,22 @@ export function graphql(): Plugin {
         // Re-throw other errors
         throw error
       }
+    },
+
+    // NEW: Nitro integration hook
+    // This automatically registers the nitro-graphql module when the Vite plugin is used
+    // @ts-expect-error - nitro hook is a Nitro v3 feature not yet in Vite Plugin types
+    nitro: {
+      async setup(nitro: Nitro) {
+        // Merge plugin options with existing nitro.options.graphql config
+        // Priority: existing nitro.options.graphql → plugin options → defaults
+        if (options) {
+          nitro.options.graphql = defu(nitro.options.graphql || {}, options)
+        }
+
+        // Run the shared setup logic
+        await setupNitroGraphQL(nitro)
+      },
     },
   }
 }
