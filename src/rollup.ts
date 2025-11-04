@@ -1,6 +1,7 @@
-import type { Nitro } from 'nitropack'
+import type { Nitro } from 'nitro/types'
 
 import { readFile } from 'node:fs/promises'
+import { fileURLToPath } from 'node:url'
 import { parse } from 'graphql'
 import { genImport } from 'knitwork'
 import { resolve } from 'pathe'
@@ -14,67 +15,134 @@ export async function rollupConfig(app: Nitro) {
   getGraphQLConfig(app)
   virtualModuleConfig(app)
   virtualDebugInfo(app)
+
   app.hooks.hook('rollup:before', (nitro, rollupConfig) => {
     rollupConfig.plugins = rollupConfig.plugins || []
     const {
-      include = /\.(graphql|gql)$/i,
+      include = /\.(?:graphql|gql)$/i,
       exclude,
       validate = false,
     } = app.options.graphql?.loader || {}
 
     if (Array.isArray(rollupConfig.plugins)) {
+      // Add resolve plugin for #nitro-graphql virtual modules
+      // This mimics Nitro's nitro:resolve-ids plugin for #nitro-internal-virtual
+      rollupConfig.plugins.push({
+        name: 'nitro-graphql:virtual',
+        resolveId: {
+          order: 'pre',
+          filter: {
+            id: /^#nitro-graphql\//,
+          },
+          async handler(id, parent, options) {
+            // Handle initial imports TO our virtual modules (mark them as virtual)
+            if (id.startsWith('#nitro-graphql/')) {
+              return `\0virtual:${id}`
+            }
+
+            // Handle imports FROM our virtual modules (resolve dependencies)
+            if (parent?.startsWith('\0virtual:#nitro-graphql')) {
+              const runtimeDir = fileURLToPath(new URL('routes', import.meta.url))
+              const internalRes = await this.resolve(id, runtimeDir, {
+                skipSelf: true,
+                ...options,
+              })
+
+              if (internalRes) {
+                return internalRes
+              }
+            }
+          },
+        },
+        load: {
+          order: 'pre',
+          filter: {
+            id: /^\0virtual:#nitro-graphql\//,
+          },
+          handler(id) {
+            // Handle loading virtual modules
+            if (id.startsWith('\0virtual:#nitro-graphql/')) {
+              const moduleName = id.slice('\0virtual:'.length)
+              const generator = app.options.virtual?.[moduleName]
+
+              if (typeof generator === 'function') {
+                try {
+                  return {
+                    code: generator(),
+                    moduleType: 'js',
+                  }
+                }
+                catch (error) {
+                  const message = error instanceof Error ? error.message : String(error)
+                  this.error(`Failed to generate virtual module ${moduleName}: ${message}`)
+                }
+              }
+              else {
+                this.error(`No generator function found for virtual module ${moduleName}`)
+              }
+            }
+          },
+        },
+      })
+
       rollupConfig.plugins.push({
         name: 'nitro-graphql',
 
-        async load(id) {
-          if (exclude?.test?.(id))
-            return null
-          if (!include.test(id))
-            return null
-
-          try {
-            const content = await readFile(id, 'utf-8')
-
-            // Optional: GraphQL syntax validation
-            if (validate) {
-              parse(content) // Throws an error if invalid
+        resolveId: {
+          order: 'pre',
+          handler(id) {
+            // Mark GraphQL files as external to prevent Vite SSR transformation
+            if (/\.(?:graphql|gql)$/i.test(id)) {
+              return null // Let this plugin handle it
             }
+          },
+        },
 
-            return `export default ${JSON.stringify(content)}`
-          }
-          catch (error) {
-            if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') {
+        load: {
+          order: 'pre',
+          async handler(id) {
+            if (exclude?.test?.(id))
               return null
+            if (!include.test(id))
+              return null
+
+            try {
+              const content = await readFile(id, 'utf-8')
+
+              // Optional: GraphQL syntax validation
+              if (validate) {
+                parse(content) // Throws an error if invalid
+              }
+
+              return `export default ${JSON.stringify(content)}`
             }
-            const message = error instanceof Error ? error.message : String(error)
-            this.error(`Failed to read GraphQL file ${id}: ${message}`)
-          }
+            catch (error) {
+              if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') {
+                return null
+              }
+              const message = error instanceof Error ? error.message : String(error)
+              this.error(`Failed to read GraphQL file ${id}: ${message}`)
+            }
+          },
         },
       })
 
-      rollupConfig.plugins.push({
-        name: 'nitro-graphql-watcher',
-        async buildStart() {
-          const graphqlFiles = await scanGraphql(nitro)
-          // const clientGraphqlFiles = await scanClient(nitro)
+      // Only add watcher in development mode
+      if (app.options.dev) {
+        rollupConfig.plugins.push({
+          name: 'nitro-graphql-watcher',
+          buildStart: {
+            order: 'pre',
+            async handler() {
+              const graphqlFiles = await scanGraphql(nitro)
 
-          for (const file of graphqlFiles) {
-            this.addWatchFile(file)
-          }
-
-          // for (const file of clientGraphqlFiles) {
-          //   this.addWatchFile(file)
-          // }
-
-          // 2. Directory watching (partial çalışır)
-          this.addWatchFile(app.graphql.serverDir)
-
-          // 3. Client GraphQL files
-          // if (app.options.framework.name === 'nuxt') {
-          //   this.addWatchFile('app/graphql/')
-          // }
-        },
-      })
+              for (const file of graphqlFiles) {
+                this.addWatchFile(file)
+              }
+            },
+          },
+        })
+      }
     }
   })
 
@@ -85,17 +153,13 @@ export async function rollupConfig(app: Nitro) {
 }
 
 export function virtualSchemas(app: Nitro) {
-  const getSchemas = () => {
-    const schemas: string[] = [
-      ...app.scanSchemas,
-      ...(app.options.graphql?.typedefs ?? []),
-    ]
-
-    return schemas
-  }
+  const getSchemas = () => [
+    ...app.scanSchemas,
+    ...(app.options.graphql?.typedefs ?? []),
+  ]
 
   app.options.virtual ??= {}
-  app.options.virtual['#nitro-internal-virtual/server-schemas'] = () => {
+  app.options.virtual['#nitro-graphql/server-schemas'] = () => {
     try {
       const imports = getSchemas()
 
@@ -117,11 +181,6 @@ ${schemaArray.join(',\n')}
 ];
     `
 
-      // Log virtual module generation in dev mode
-      if (app.options.dev) {
-        app.logger.success(`[nitro-graphql] Generated virtual schema module: ${imports.length} schema(s)`)
-      }
-
       return code
     }
     catch (error) {
@@ -132,17 +191,10 @@ ${schemaArray.join(',\n')}
 }
 
 export function virtualResolvers(app: Nitro) {
-  const getResolvers = () => {
-    const resolvers = [
-      ...app.scanResolvers,
-      // ...(app.options.graphql?.resolvers ?? []),
-    ]
-
-    return resolvers
-  }
+  const getResolvers = () => [...app.scanResolvers]
 
   app.options.virtual ??= {}
-  app.options.virtual['#nitro-internal-virtual/server-resolvers'] = () => {
+  app.options.virtual['#nitro-graphql/server-resolvers'] = () => {
     try {
       const imports = getResolvers()
 
@@ -203,12 +255,6 @@ export function virtualResolvers(app: Nitro) {
 
       const code = content.join('\n')
 
-      // Log virtual module generation in dev mode
-      if (app.options.dev) {
-        const totalExports = imports.reduce((sum, r) => sum + r.imports.length, 0)
-        app.logger.success(`[nitro-graphql] Generated virtual resolver module: ${totalExports} export(s) from ${imports.length} file(s)`)
-      }
-
       return code
     }
     catch (error) {
@@ -220,16 +266,10 @@ export function virtualResolvers(app: Nitro) {
 }
 
 export function virtualDirectives(app: Nitro) {
-  const getDirectives = () => {
-    const directives = [
-      ...(app.scanDirectives || []),
-    ]
-
-    return directives
-  }
+  const getDirectives = () => app.scanDirectives || []
 
   app.options.virtual ??= {}
-  app.options.virtual['#nitro-internal-virtual/server-directives'] = () => {
+  app.options.virtual['#nitro-graphql/server-directives'] = () => {
     try {
       const imports = getDirectives()
 
@@ -285,11 +325,6 @@ export function virtualDirectives(app: Nitro) {
 
       const code = content.join('\n')
 
-      if (app.options.dev) {
-        const totalExports = imports.reduce((sum, d) => sum + d.imports.length, 0)
-        app.logger.success(`[nitro-graphql] Generated virtual directive module: ${totalExports} directive(s) from ${imports.length} file(s)`)
-      }
-
       return code
     }
     catch (error) {
@@ -303,7 +338,7 @@ export function getGraphQLConfig(app: Nitro) {
   const configPath = resolve(app.graphql.serverDir, 'config.ts')
 
   app.options.virtual ??= {}
-  app.options.virtual['#nitro-internal-virtual/graphql-config'] = () => {
+  app.options.virtual['#nitro-graphql/graphql-config'] = () => {
     return `import config from '${configPath}'
 const importedConfig = config
 export { importedConfig }
@@ -313,7 +348,7 @@ export { importedConfig }
 
 export function virtualModuleConfig(app: Nitro) {
   app.options.virtual ??= {}
-  app.options.virtual['#nitro-internal-virtual/module-config'] = () => {
+  app.options.virtual['#nitro-graphql/module-config'] = () => {
     const moduleConfig = app.options.graphql || {}
 
     return `export const moduleConfig = ${JSON.stringify(moduleConfig, null, 2)};`
@@ -322,13 +357,13 @@ export function virtualModuleConfig(app: Nitro) {
 
 export function virtualDebugInfo(app: Nitro) {
   app.options.virtual ??= {}
-  app.options.virtual['#nitro-internal-virtual/debug-info'] = () => {
+  app.options.virtual['#nitro-graphql/debug-info'] = () => {
     // Generate virtual module codes by calling their generator functions
     const virtualModuleCodes: Record<string, string> = {}
 
     try {
       // Get schemas virtual module code
-      const schemasGenerator = app.options.virtual['#nitro-internal-virtual/server-schemas']
+      const schemasGenerator = app.options.virtual['#nitro-graphql/server-schemas']
       if (schemasGenerator && typeof schemasGenerator === 'function') {
         virtualModuleCodes['server-schemas'] = schemasGenerator() as string
       }
@@ -339,7 +374,7 @@ export function virtualDebugInfo(app: Nitro) {
 
     try {
       // Get resolvers virtual module code
-      const resolversGenerator = app.options.virtual['#nitro-internal-virtual/server-resolvers']
+      const resolversGenerator = app.options.virtual['#nitro-graphql/server-resolvers']
       if (resolversGenerator && typeof resolversGenerator === 'function') {
         virtualModuleCodes['server-resolvers'] = resolversGenerator() as string
       }
@@ -350,7 +385,7 @@ export function virtualDebugInfo(app: Nitro) {
 
     try {
       // Get directives virtual module code
-      const directivesGenerator = app.options.virtual['#nitro-internal-virtual/server-directives']
+      const directivesGenerator = app.options.virtual['#nitro-graphql/server-directives']
       if (directivesGenerator && typeof directivesGenerator === 'function') {
         virtualModuleCodes['server-directives'] = directivesGenerator() as string
       }
@@ -361,7 +396,7 @@ export function virtualDebugInfo(app: Nitro) {
 
     try {
       // Get module config virtual module code
-      const moduleConfigGenerator = app.options.virtual['#nitro-internal-virtual/module-config']
+      const moduleConfigGenerator = app.options.virtual['#nitro-graphql/module-config']
       if (moduleConfigGenerator && typeof moduleConfigGenerator === 'function') {
         virtualModuleCodes['module-config'] = moduleConfigGenerator() as string
       }
@@ -372,7 +407,7 @@ export function virtualDebugInfo(app: Nitro) {
 
     try {
       // Get graphql config virtual module code
-      const graphqlConfigGenerator = app.options.virtual['#nitro-internal-virtual/graphql-config']
+      const graphqlConfigGenerator = app.options.virtual['#nitro-graphql/graphql-config']
       if (graphqlConfigGenerator && typeof graphqlConfigGenerator === 'function') {
         virtualModuleCodes['graphql-config'] = graphqlConfigGenerator() as string
       }

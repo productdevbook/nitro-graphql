@@ -1,9 +1,9 @@
-import { debugInfo } from '#nitro-internal-virtual/debug-info'
-import { moduleConfig } from '#nitro-internal-virtual/module-config'
-import { directives } from '#nitro-internal-virtual/server-directives'
-import { resolvers } from '#nitro-internal-virtual/server-resolvers'
-import { schemas } from '#nitro-internal-virtual/server-schemas'
-import { defineEventHandler, getQuery, setResponseHeader } from 'h3'
+import { debugInfo } from '#nitro-graphql/debug-info'
+import { moduleConfig } from '#nitro-graphql/module-config'
+import { directives } from '#nitro-graphql/server-directives'
+import { resolvers } from '#nitro-graphql/server-resolvers'
+import { schemas } from '#nitro-graphql/server-schemas'
+import { defineEventHandler, getQuery } from 'h3'
 
 /**
  * Debug endpoint for inspecting virtual modules and GraphQL setup
@@ -14,11 +14,8 @@ import { defineEventHandler, getQuery, setResponseHeader } from 'h3'
  * - /_nitro/graphql/debug?format=json - JSON API
  */
 export default defineEventHandler(async (event) => {
-  // Only allow in development
-  if (!debugInfo.isDev) {
-    setResponseHeader(event, 'Content-Type', 'text/plain')
-    return 'Debug endpoint is only available in development mode'
-  }
+  // Note: This route is only registered in development mode (see src/index.ts)
+  // No need for additional isDev check here as it's already handled at registration
 
   const query = getQuery(event)
   const format = query.format as string || 'html'
@@ -112,12 +109,12 @@ export default defineEventHandler(async (event) => {
 
   // JSON format
   if (format === 'json') {
-    setResponseHeader(event, 'Content-Type', 'application/json')
+    event.res.headers.set('Content-Type', 'application/json')
     return fullDebugInfo
   }
 
   // HTML dashboard
-  setResponseHeader(event, 'Content-Type', 'text/html')
+  event.res.headers.set('Content-Type', 'text/html')
   return generateHtmlDashboard(fullDebugInfo)
 })
 
@@ -368,7 +365,7 @@ function generateHtmlDashboard(debugInfo: any): string {
                 <div class="flex items-center gap-3">
                   <span class="${colorConfig.text} text-lg">▸</span>
                   <div>
-                    <span class="font-mono text-sm ${colorConfig.text} font-semibold">#nitro-internal-virtual/${moduleName}</span>
+                    <span class="font-mono text-sm ${colorConfig.text} font-semibold">#nitro-graphql/${moduleName}</span>
                     <div class="text-[10px] text-slate-500 mt-0.5">
                       ${lineCount} lines · ${(byteSize / 1024).toFixed(2)} KB
                     </div>

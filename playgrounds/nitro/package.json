@@ -12,6 +12,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "nitropack": "catalog:"
+    "nitro": "catalog:"
   }
 }

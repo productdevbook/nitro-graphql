@@ -1,0 +1,25 @@
+{
+  "name": "nitro-app",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite dev",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "graphql": "^16.12.0",
+    "graphql-yoga": "^5.16.0",
+    "nitro-graphql": "link:../.."
+  },
+  "devDependencies": {
+    "nitro": "npm:nitro-nightly@latest",
+    "vite": "npm:rolldown-vite@latest"
+
+  },
+  "pnpm": {
+    "overrides": {
+      "vite": "npm:rolldown-vite@latest"
+    }
+  }
+}

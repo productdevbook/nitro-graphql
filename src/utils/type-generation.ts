@@ -1,4 +1,4 @@
-import type { Nitro } from 'nitropack'
+import type { Nitro } from 'nitro/types'
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { buildSubgraphSchema } from '@apollo/subgraph'
@@ -104,9 +104,11 @@ function generateNuxtOfetchClient(
     mkdirSync(serviceDir, { recursive: true })
   }
 
-  // Only create ofetch.ts if it doesn't exist
-  if (!existsSync(ofetchPath)) {
-    const ofetchContent = `// This file is auto-generated once by nitro-graphql for quick start
+  if (existsSync(ofetchPath)) {
+    return // Don't overwrite existing files
+  }
+
+  const ofetchContent = `// This file is auto-generated once by nitro-graphql for quick start
 // You can modify this file according to your needs
 import type { Requester } from './sdk'
 import { getSdk } from './sdk'
@@ -129,8 +131,7 @@ export function createGraphQLClient(endpoint: string): Requester {
 }
 
 export const $sdk = getSdk(createGraphQLClient('/api/graphql'))`
-    writeFileIfNotExists(ofetchPath, ofetchContent, `${serviceName} ofetch.ts`)
-  }
+  writeFileIfNotExists(ofetchPath, ofetchContent, `${serviceName} ofetch.ts`)
 }
 
 function generateExternalOfetchClient(

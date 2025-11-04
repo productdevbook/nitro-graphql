@@ -1,42 +1,42 @@
-declare module '#nitro-internal-virtual/graphql-config' {
+declare module '#nitro-graphql/graphql-config' {
   import type { DefineServerConfig } from '#graphql/utils'
 
   export const importedConfig: Partial<DefineServerConfig>
 }
 
-declare module '#nitro-internal-virtual/server-directives' {
+declare module '#nitro-graphql/server-directives' {
   import type { DirectiveDefinition } from '#graphql/utils'
 
   export const directives: Array<{ directive: DirectiveDefinition }>
 }
 
-declare module '#nitro-internal-virtual/server-resolvers' {
+declare module '#nitro-graphql/server-resolvers' {
   import type { Resolvers } from '#graphql/server'
 
   export const resolvers: Array<{ resolver: Resolvers }>
 }
 
-declare module '#nitro-internal-virtual/server-schemas' {
+declare module '#nitro-graphql/server-schemas' {
   export const schemas: Array<{ def: string }>
 }
 
-declare module '#nitro-internal-virtual/server-scalars' {
+declare module '#nitro-graphql/server-scalars' {
   import type { GraphQLScalarType } from 'graphql'
 
   export const scalars: Record<string, GraphQLScalarType>
 }
 
-declare module '#nitro-internal-virtual/client-schema' {
+declare module '#nitro-graphql/client-schema' {
   export const schema: string
 }
 
-declare module '#nitro-internal-virtual/module-config' {
+declare module '#nitro-graphql/module-config' {
   import type { NitroGraphQLOptions } from '../types'
 
   export const moduleConfig: Partial<NitroGraphQLOptions>
 }
 
-declare module '#nitro-internal-virtual/debug-info' {
+declare module '#nitro-graphql/debug-info' {
   import type { GenImport } from '../types'
 
   export const debugInfo: {

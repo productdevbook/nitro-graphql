@@ -1,4 +1,4 @@
-import { defineNitroConfig } from 'nitropack/config'
+import { defineNitroConfig } from 'nitro/config'
 // import 'nitro-graphql' // Import for types
 
 export default defineNitroConfig({

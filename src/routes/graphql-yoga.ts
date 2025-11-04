@@ -1,9 +1,9 @@
 import type { YogaServerInstance } from 'graphql-yoga'
-import { importedConfig } from '#nitro-internal-virtual/graphql-config'
-import { moduleConfig } from '#nitro-internal-virtual/module-config'
-import { directives } from '#nitro-internal-virtual/server-directives'
-import { resolvers } from '#nitro-internal-virtual/server-resolvers'
-import { schemas } from '#nitro-internal-virtual/server-schemas'
+import { importedConfig } from '#nitro-graphql/graphql-config'
+import { moduleConfig } from '#nitro-graphql/module-config'
+import { directives } from '#nitro-graphql/server-directives'
+import { resolvers } from '#nitro-graphql/server-resolvers'
+import { schemas } from '#nitro-graphql/server-schemas'
 
 import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge'
 import { makeExecutableSchema } from '@graphql-tools/schema'
@@ -11,7 +11,7 @@ import { consola } from 'consola'
 import defu from 'defu'
 import { parse } from 'graphql'
 import { createYoga } from 'graphql-yoga'
-import { defineEventHandler, toWebRequest } from 'h3'
+import { defineEventHandler } from 'h3'
 
 // Conditional imports for federation support - use dynamic import inside function
 let buildSubgraphSchema: any = null
@@ -127,8 +127,7 @@ export default defineEventHandler(async (event) => {
       renderGraphiQL: () => apolloSandboxHtml,
     }, importedConfig))
   }
-  const request = toWebRequest(event)
-  const response = await yoga.handleRequest(request, event)
+  const response = await yoga.handleRequest(event.req, event as any)
 
   return new Response(response.body, response)
 })

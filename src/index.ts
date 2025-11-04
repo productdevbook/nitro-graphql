@@ -1,12 +1,11 @@
-import type { Nitro } from 'nitropack/types'
+import type { Nitro } from 'nitro/types'
 import type { NitroGraphQLOptions } from './types'
 import { existsSync, mkdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { watch } from 'chokidar'
-
 import consola from 'consola'
+
 import defu from 'defu'
-import { defineNitroModule } from 'nitropack/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { rollupConfig } from './rollup'
 import {
@@ -23,7 +22,6 @@ import {
 } from './utils'
 import { writeFileIfNotExists } from './utils/file-generator'
 import {
-  getDefaultPaths,
   getScaffoldConfig,
   getTypesConfig,
   resolveFilePath,
@@ -53,11 +51,15 @@ export default defineNitroModule({
       consola.info(`Configured ${nitro.options.graphql.externalServices.length} external GraphQL services`)
     }
 
+    // Get default paths from path resolver
+    const { getDefaultPaths } = await import('./utils/path-resolver')
+    const defaultPaths = getDefaultPaths(nitro)
+
     nitro.graphql ||= {
       buildDir: '',
       watchDirs: [],
-      clientDir: '',
-      serverDir: resolve(nitro.options.srcDir, 'graphql'),
+      clientDir: defaultPaths.clientGraphql,
+      serverDir: defaultPaths.serverGraphql,
       dir: {
         build: relative(nitro.options.rootDir, nitro.options.buildDir),
         client: 'graphql',
@@ -106,16 +108,10 @@ export default defineNitroModule({
 
     switch (nitro.options.framework.name) {
       case 'nuxt': {
-        // For Nuxt, set clientDir to app/graphql if not already configured
-        if (!nitro.graphql.clientDir) {
-          nitro.graphql.clientDir = resolve(nitro.options.rootDir, 'app', 'graphql')
-          nitro.graphql.dir.client = 'app/graphql'
-        }
+        // Update relative dir paths for Nuxt
+        nitro.graphql.dir.client = relative(nitro.options.rootDir, nitro.graphql.clientDir)
+        nitro.graphql.dir.server = relative(nitro.options.rootDir, nitro.graphql.serverDir)
 
-        // For Nuxt, ensure serverDir points to server/graphql if using default srcDir
-        if (!nitro.options.graphql?.serverDir) {
-          nitro.graphql.serverDir = resolve(nitro.options.rootDir, 'server', 'graphql')
-        }
         watchDirs.push(nitro.graphql.clientDir)
 
         // Add layer directories to watch list
@@ -134,8 +130,13 @@ export default defineNitroModule({
         break
       }
       case 'nitro':
-        nitro.graphql.clientDir = resolve(nitro.options.rootDir, 'graphql')
-        nitro.graphql.dir.client = 'graphql'
+        // Update relative dir paths for Nitro
+        nitro.graphql.dir.client = relative(nitro.options.rootDir, nitro.graphql.clientDir)
+        nitro.graphql.dir.server = relative(nitro.options.rootDir, nitro.graphql.serverDir)
+
+        // Watch both client and server directories
+        watchDirs.push(nitro.graphql.clientDir)
+        watchDirs.push(nitro.graphql.serverDir)
         break
       default:
     }
@@ -167,7 +168,22 @@ export default defineNitroModule({
       ],
     }).on('all', async (_, path) => {
       if (path.endsWith('.graphql') || path.endsWith('.gql')) {
-        await clientTypeGeneration(nitro)
+        // Determine if this is a server or client file
+        const isServerFile = path.includes(nitro.graphql.serverDir)
+          || path.includes('server/graphql')
+          || path.includes('server\\graphql')
+
+        if (isServerFile) {
+          // Server GraphQL file changed - regenerate server types and update client types
+          await serverTypeGeneration(nitro)
+          await clientTypeGeneration(nitro)
+          // Trigger Nitro reload to pick up changes
+          await nitro.hooks.callHook('dev:reload')
+        }
+        else {
+          // Client GraphQL file changed - only regenerate client types
+          await clientTypeGeneration(nitro)
+        }
       }
     })
 
@@ -290,7 +306,7 @@ export default defineNitroModule({
       new URL('routes', import.meta.url),
     )
     // Main GraphQL endpoint
-    const methods = ['get', 'post', 'options'] as const
+    const methods = ['GET', 'POST', 'OPTIONS'] as const
     if (nitro.options.graphql?.framework === 'graphql-yoga') {
       // Register the GraphQL Yoga handler for all methods
       for (const method of methods) {
@@ -317,7 +333,7 @@ export default defineNitroModule({
     nitro.options.handlers.push({
       route: nitro.options.runtimeConfig.graphql?.endpoint?.healthCheck || '/api/graphql/health',
       handler: join(runtime, 'health'),
-      method: 'get',
+      method: 'GET',
     })
 
     // Debug endpoint (development only)
@@ -325,7 +341,7 @@ export default defineNitroModule({
       nitro.options.handlers.push({
         route: '/_nitro/graphql/debug',
         handler: join(runtime, 'debug'),
-        method: 'get',
+        method: 'GET',
       })
       consola.info('[nitro-graphql] Debug dashboard available at: /_nitro/graphql/debug')
     }
@@ -354,12 +370,16 @@ export default defineNitroModule({
       const chunkFiles = rollupConfig.output?.chunkFileNames
 
       if (!rollupConfig.output.inlineDynamicImports) {
+        // Set both manualChunks (for Rollup) and advancedChunks (for Rolldown)
+        // Rolldown will use advancedChunks and ignore manualChunks (with a harmless warning)
+        // Rollup will ignore advancedChunks (unknown option warning) and use manualChunks
+
+        // For Rollup compatibility
         rollupConfig.output.manualChunks = (id, meta) => {
           if (id.endsWith('.graphql') || id.endsWith('.gql')) {
             return 'schemas'
           }
 
-          // resolsvers and schemas are not in the same directory, so we need to check both
           if (id.endsWith('.resolver.ts')) {
             return 'resolvers'
           }
@@ -367,8 +387,22 @@ export default defineNitroModule({
           if (typeof manualChunks === 'function') {
             return manualChunks(id, meta)
           }
-          // If manualChunks is not a function, do not call it
           return undefined
+        }
+
+        // For Rolldown optimization (preferred when available)
+        // @ts-expect-error - advancedChunks is a rolldown-specific feature not in RollupOptions yet
+        rollupConfig.output.advancedChunks = {
+          groups: [
+            {
+              name: 'schemas',
+              test: /\.(?:graphql|gql)$/,
+            },
+            {
+              name: 'resolvers',
+              test: /\.resolver\.ts$/,
+            },
+          ],
         }
       }
 
@@ -589,6 +623,7 @@ export default <IGraphQLConfig> {
         writeFileIfNotExists(serverConfigPath, `// Example GraphQL config file please change it to your needs
 // import * as tables from '../drizzle/schema/index'
 // import { useDatabase } from '../utils/useDb'
+import { defineGraphQLConfig } from 'nitro-graphql/utils/define'
 
 export default defineGraphQLConfig({
 // graphql-yoga example config

@@ -1,3 +1,5 @@
+import { defineResolver } from 'nitro-graphql/utils/define'
+
 export const helloQueries = defineResolver({
   Query: {
     hello: () => 'Hello from auto-discovered resolver!',

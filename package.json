@@ -1,8 +1,8 @@
 {
   "name": "nitro-graphql",
   "type": "module",
-  "version": "1.5.0",
-  "packageManager": "pnpm@10.19.0",
+  "version": "2.0.0-beta.12",
+  "packageManager": "pnpm@10.20.0",
   "description": "GraphQL integration for Nitro",
   "license": "MIT",
   "sideEffects": false,
@@ -10,6 +10,30 @@
     "#graphql/server": {
       "types": "./dist/graphql/server.d.ts",
       "import": "./dist/graphql/server.js"
+    },
+    "#nitro-graphql/graphql-config": {
+      "types": "./dist/virtual/graphql-config.d.ts",
+      "import": "./dist/virtual/graphql-config.js"
+    },
+    "#nitro-graphql/server-schemas": {
+      "types": "./dist/virtual/server-schemas.d.ts",
+      "import": "./dist/virtual/server-schemas.js"
+    },
+    "#nitro-graphql/server-resolvers": {
+      "types": "./dist/virtual/server-resolvers.d.ts",
+      "import": "./dist/virtual/server-resolvers.js"
+    },
+    "#nitro-graphql/server-directives": {
+      "types": "./dist/virtual/server-directives.d.ts",
+      "import": "./dist/virtual/server-directives.js"
+    },
+    "#nitro-graphql/module-config": {
+      "types": "./dist/virtual/module-config.d.ts",
+      "import": "./dist/virtual/module-config.js"
+    },
+    "#nitro-graphql/debug-info": {
+      "types": "./dist/virtual/debug-info.d.ts",
+      "import": "./dist/virtual/debug-info.js"
     }
   },
   "exports": {
@@ -52,6 +76,10 @@
     "./nuxt": {
       "types": "./dist/ecosystem/nuxt.d.ts",
       "import": "./dist/ecosystem/nuxt.js"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.js"
     }
   },
   "module": "./dist/index.js",
@@ -79,8 +107,8 @@
     "@apollo/utils.withrequired": "^3.0.0",
     "@as-integrations/h3": "^2.0.0",
     "graphql": "^16.11.0",
-    "h3": "^1.15.3",
-    "nitropack": "^2.11.13"
+    "h3": "^2.0.1-rc.2",
+    "nitro": "^3.0.1-alpha.0"
   },
   "peerDependenciesMeta": {
     "@apollo/server": {
@@ -131,7 +159,7 @@
     "graphql": "catalog:",
     "graphql-yoga": "catalog:",
     "h3": "catalog:",
-    "nitropack": "catalog:",
+    "nitro": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitepress-plugin-llms": "^1.8.1"
