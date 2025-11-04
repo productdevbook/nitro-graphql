@@ -159,8 +159,8 @@ export function shouldGenerateClientUtils(nitro: Nitro): boolean {
   if (clientUtilsConfig && clientUtilsConfig.enabled === false)
     return false
 
-  // Default: generate client utils (only for Nuxt)
-  return nitro.options.framework?.name === 'nuxt'
+  // Default: generate client utils for all frameworks
+  return true
 }
 
 /**

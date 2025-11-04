@@ -532,12 +532,12 @@ async function generateMainClientTypes(nitro: Nitro) {
     consola.success(`[nitro-graphql] Generated SDK at: ${sdkPath}`)
   }
 
-  // Generate ofetch client for Nuxt framework
-  if (nitro.options.framework?.name === 'nuxt') {
-    // Always generate default service ofetch client (only if it doesn't exist)
-    generateNuxtOfetchClient(nitro, nitro.graphql.clientDir, 'default')
+  // Generate ofetch client for all frameworks (only if it doesn't exist)
+  generateNuxtOfetchClient(nitro, nitro.graphql.clientDir, 'default')
 
-    const externalServices = nitro.options.graphql?.externalServices || []
+  // Generate index file if there are external services
+  const externalServices = nitro.options.graphql?.externalServices || []
+  if (externalServices.length > 0) {
     generateGraphQLIndexFile(nitro, nitro.graphql.clientDir, externalServices)
   }
 }
@@ -625,10 +625,8 @@ async function generateExternalServicesTypes(nitro: Nitro) {
         consola.success(`[graphql:${service.name}] Generated SDK at: ${serviceSdkPath}`)
       }
 
-      // Generate ofetch client for Nuxt framework
-      if (nitro.options.framework?.name === 'nuxt') {
-        generateExternalOfetchClient(nitro, service, service.endpoint)
-      }
+      // Generate ofetch client for all frameworks
+      generateExternalOfetchClient(nitro, service, service.endpoint)
 
       consola.success(`[graphql:${service.name}] External service types generated successfully`)
     }
