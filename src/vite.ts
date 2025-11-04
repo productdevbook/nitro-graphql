@@ -60,6 +60,11 @@ export function graphql(options?: NitroGraphQLOptions): Plugin {
           nitro.options.graphql = defu(nitro.options.graphql || {}, options)
         }
 
+        // Mark that Vite plugin is being used (for client code generation)
+        nitro.options.graphql = nitro.options.graphql || {}
+        // @ts-expect-error - adding custom flag
+        nitro.options.graphql._vitePlugin = true
+
         // Run the shared setup logic
         await setupNitroGraphQL(nitro)
       },

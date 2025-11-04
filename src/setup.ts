@@ -599,7 +599,7 @@ export default <IGraphQLConfig> {
       scaffoldConfig.serverContext,
       scaffoldConfig.enabled,
       true,
-      '{serverGraphql}/context.ts',
+      '{serverGraphql}/context.d.ts',
       placeholders,
     )
 
@@ -639,12 +639,12 @@ export default defineGraphQLConfig({
 `, 'server config.ts')
     }
 
-    // 4. server/graphql/context.ts - H3 context augmentation
+    // 4. server/graphql/context.d.ts - H3 context augmentation
     if (serverContextPath) {
       writeFileIfNotExists(serverContextPath, `// Example context definition - please change it to your needs
 // import type { Database } from '../utils/useDb'
 
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     // Add your custom context properties here
     // useDatabase: () => Database
@@ -656,13 +656,16 @@ declare module 'h3' {
     //   }
     // }
   }
-}`, 'server context.ts')
+}
+
+export {}
+`, 'server context.d.ts')
     }
 
-    // Check for old context.d.ts file and warn users to migrate
-    if (existsSync(join(nitro.graphql.serverDir, 'context.d.ts'))) {
-      consola.warn('nitro-graphql: Found context.d.ts file. Please rename it to context.ts for the new structure.')
-      consola.info('The context file should now be context.ts instead of context.d.ts')
+    // Check for old context.ts file and warn users to migrate
+    if (existsSync(join(nitro.graphql.serverDir, 'context.ts'))) {
+      consola.warn('nitro-graphql: Found context.ts file. Please rename it to context.d.ts for type-only definitions.')
+      consola.info('The context file should now be context.d.ts instead of context.ts')
     }
   }
   else {

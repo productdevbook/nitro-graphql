@@ -108,7 +108,13 @@ function generateNuxtOfetchClient(
     return // Don't overwrite existing files
   }
 
-  const ofetchContent = `// This file is auto-generated once by nitro-graphql for quick start
+  const isNuxt = nitro.options.framework?.name === 'nuxt'
+
+  // Different templates for Nuxt vs Nitro
+  // Nuxt: Use $fetch and useRequestHeaders (Nuxt composables)
+  // Nitro: Use ofetch import (works in all environments)
+  const ofetchContent = isNuxt
+    ? `// This file is auto-generated once by nitro-graphql for quick start
 // You can modify this file according to your needs
 import type { Requester } from './sdk'
 import { getSdk } from './sdk'
@@ -123,6 +129,27 @@ export function createGraphQLClient(endpoint: string): Requester {
       headers: {
         'Content-Type': 'application/json',
         ...headers,
+      },
+    })
+
+    return result as R
+  }
+}
+
+export const $sdk = getSdk(createGraphQLClient('/api/graphql'))`
+    : `// This file is auto-generated once by nitro-graphql for quick start
+// You can modify this file according to your needs
+import type { Requester } from './sdk'
+import { ofetch } from 'ofetch'
+import { getSdk } from './sdk'
+
+export function createGraphQLClient(endpoint: string): Requester {
+  return async <R>(doc: string, vars?: any): Promise<R> => {
+    const result = await ofetch(endpoint, {
+      method: 'POST',
+      body: { query: doc, variables: vars },
+      headers: {
+        'Content-Type': 'application/json',
       },
     })
 
@@ -174,7 +201,13 @@ function generateExternalOfetchClient(
   // Only create ofetch file if it doesn't exist
   if (!existsSync(ofetchPath)) {
     const capitalizedServiceName = serviceName.charAt(0).toUpperCase() + serviceName.slice(1)
-    const ofetchContent = `// This file is auto-generated once by nitro-graphql for quick start
+    const isNuxt = nitro.options.framework?.name === 'nuxt'
+
+    // Different templates for Nuxt vs Nitro
+    // Nuxt: Use $fetch and useRequestHeaders (Nuxt composables)
+    // Nitro: Use ofetch import (works in all environments)
+    const ofetchContent = isNuxt
+      ? `// This file is auto-generated once by nitro-graphql for quick start
 // You can modify this file according to your needs
 import type { Sdk, Requester } from './sdk'
 import { getSdk } from './sdk'
@@ -189,6 +222,27 @@ export function create${capitalizedServiceName}GraphQLClient(endpoint: string = 
       headers: {
         'Content-Type': 'application/json',
         ...headers,
+      },
+    })
+
+    return result as R
+  }
+}
+
+export const $${serviceName}Sdk: Sdk = getSdk(create${capitalizedServiceName}GraphQLClient())`
+      : `// This file is auto-generated once by nitro-graphql for quick start
+// You can modify this file according to your needs
+import type { Sdk, Requester } from './sdk'
+import { ofetch } from 'ofetch'
+import { getSdk } from './sdk'
+
+export function create${capitalizedServiceName}GraphQLClient(endpoint: string = '${endpoint}'): Requester {
+  return async <R>(doc: string, vars?: any): Promise<R> => {
+    const result = await ofetch(endpoint, {
+      method: 'POST',
+      body: { query: doc, variables: vars },
+      headers: {
+        'Content-Type': 'application/json',
       },
     })
 

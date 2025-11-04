@@ -51,7 +51,7 @@ export async function generateTypes(
     },
     defaultScalarType: 'unknown',
     defaultMapper: `ResolverReturnType<{T}>`,
-    contextType: 'h3#H3Event',
+    contextType: 'nitro/h3#H3Event',
     maybeValue: 'T | null | undefined',
     inputMaybeValue: 'T | undefined',
     declarationKind: 'interface',
