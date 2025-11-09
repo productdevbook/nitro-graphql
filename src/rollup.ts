@@ -59,7 +59,7 @@ export async function rollupConfig(app: Nitro) {
           filter: {
             id: /^\0virtual:#nitro-graphql\//,
           },
-          handler(id) {
+          async handler(id) {
             // Handle loading virtual modules
             if (id.startsWith('\0virtual:#nitro-graphql/')) {
               const moduleName = id.slice('\0virtual:'.length)
@@ -68,7 +68,7 @@ export async function rollupConfig(app: Nitro) {
               if (typeof generator === 'function') {
                 try {
                   return {
-                    code: generator(),
+                    code: await generator(),
                     moduleType: 'js',
                   }
                 }

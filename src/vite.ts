@@ -51,7 +51,7 @@ export function graphql(options?: NitroGraphQLOptions): Plugin {
 
     // NEW: Nitro integration hook
     // This automatically registers the nitro-graphql module when the Vite plugin is used
-    // @ts-expect-error - nitro hook is a Nitro v3 feature not yet in Vite Plugin types
+    // nitro hook is a Nitro v3 feature not yet in Vite Plugin types
     nitro: {
       async setup(nitro: Nitro) {
         // Merge plugin options with existing nitro.options.graphql config

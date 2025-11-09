@@ -1,4 +1,4 @@
-import type { Nitro } from 'nitropack/types'
+import type { Nitro } from 'nitro/types'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import consola from 'consola'
 import { dirname } from 'pathe'

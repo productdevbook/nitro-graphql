@@ -208,7 +208,7 @@ export interface PathsConfig {
 }
 
 export interface NitroGraphQLOptions {
-  framework: 'graphql-yoga' | 'apollo-server'
+  framework?: 'graphql-yoga' | 'apollo-server'
   endpoint?: {
     graphql?: string
     healthCheck?: string

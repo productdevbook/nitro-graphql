@@ -90,13 +90,13 @@ export function startServerAndCreateH3Handler<TContext extends BaseContext>(
         }
 
         setHeaders(event, Object.fromEntries(headers))
-        event.res.statusCode = status || 200
+        event.res.status = status || 200
         return body.string
       }
       catch (error) {
         if (error instanceof SyntaxError) {
           // This is what the apollo test suite expects
-          event.res.statusCode = 400
+          event.res.status = 400
           return error.message
         }
         else {

@@ -100,7 +100,8 @@
     "docs:build": "cd .docs && pnpm install && pnpm build",
     "docs:preview": "cd .docs && pnpm preview",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "test:types": "tsc --noEmit"
   },
   "peerDependencies": {
     "@apollo/server": "^5.0.0",
@@ -162,7 +163,8 @@
     "nitro": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
-    "vitepress-plugin-llms": "^1.8.1"
+    "vite": "^7.2.2",
+    "vitepress-plugin-llms": "^1.9.0"
   },
   "resolutions": {
     "nitro-graphql": "link:."
