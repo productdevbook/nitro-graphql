@@ -1,10 +1,9 @@
-import { graphql } from 'nitro-graphql/vite'
+import graphql from 'nitro-graphql'
 import { nitro } from 'nitro/vite'
 import { defineConfig } from 'vite'
 
 export default defineConfig(({ command }) => ({
   plugins: [
-    // NEW: Single import pattern - graphql() auto-registers the Nitro module
     graphql({
       framework: 'graphql-yoga',
       paths: {
@@ -15,6 +14,5 @@ export default defineConfig(({ command }) => ({
   ],
   nitro: {
     preset: 'standard',
-    // modules: ['nitro-graphql'], // No longer needed! The Vite plugin auto-registers
   },
 }))

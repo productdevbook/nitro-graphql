@@ -11,6 +11,7 @@
       "#nitro-graphql/*": ["./src/virtual/*"],
       "nitro-graphql/internal": ["./src/internal/index.ts"],
       "nitro-graphql": ["./src/index.ts"],
+      "nitro-graphql/types": ["./src/types/index.ts"],
       "#graphql/server": ["./src/graphql/server.ts"]
     },
     "resolveJsonModule": true,

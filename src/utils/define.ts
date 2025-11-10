@@ -4,7 +4,7 @@ import type { GraphQLSchema } from 'graphql'
 import type { YogaServerOptions } from 'graphql-yoga'
 import type { H3Event } from 'h3'
 
-import type { StandardSchemaV1 } from 'nitro-graphql'
+import type { StandardSchemaV1 } from 'nitro-graphql/types'
 
 type Flatten<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
 

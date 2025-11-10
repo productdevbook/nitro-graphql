@@ -1,4 +1,4 @@
-import type { Nitro } from 'nitro/types'
+import type { Nitro, NitroModule } from 'nitro/types'
 import type { Plugin } from 'vite'
 import type { NitroGraphQLOptions } from './types'
 import { readFile } from 'node:fs/promises'
@@ -24,7 +24,7 @@ import { setupNitroGraphQL } from './setup'
  * })
  * ```
  */
-export function graphql(options?: NitroGraphQLOptions): Plugin {
+export function graphql(options?: NitroGraphQLOptions): Plugin & { nitro?: NitroModule } {
   return {
     name: 'nitro-graphql:vite',
     enforce: 'pre', // Run before other plugins to prevent Vite from transforming GraphQL files
