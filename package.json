@@ -1,89 +1,69 @@
 {
   "name": "nitro-graphql",
   "type": "module",
-  "version": "2.0.0-beta.19",
+  "version": "2.0.0-beta.20",
   "packageManager": "pnpm@10.21.0",
   "description": "GraphQL integration for Nitro",
   "license": "MIT",
   "sideEffects": false,
   "imports": {
     "#graphql/server": {
-      "types": "./dist/graphql/server.d.ts",
-      "import": "./dist/graphql/server.js"
+      "types": "./dist/graphql/server.d.mts",
+      "import": "./dist/graphql/server.mjs"
     },
     "#nitro-graphql/graphql-config": {
-      "types": "./dist/virtual/graphql-config.d.ts",
-      "import": "./dist/virtual/graphql-config.js"
+      "types": "./dist/virtual/graphql-config.d.mts",
+      "import": "./dist/virtual/graphql-config.mjs"
     },
     "#nitro-graphql/server-schemas": {
-      "types": "./dist/virtual/server-schemas.d.ts",
-      "import": "./dist/virtual/server-schemas.js"
+      "types": "./dist/virtual/server-schemas.d.mts",
+      "import": "./dist/virtual/server-schemas.mjs"
     },
     "#nitro-graphql/server-resolvers": {
-      "types": "./dist/virtual/server-resolvers.d.ts",
-      "import": "./dist/virtual/server-resolvers.js"
+      "types": "./dist/virtual/server-resolvers.d.mts",
+      "import": "./dist/virtual/server-resolvers.mjs"
     },
     "#nitro-graphql/server-directives": {
-      "types": "./dist/virtual/server-directives.d.ts",
-      "import": "./dist/virtual/server-directives.js"
+      "types": "./dist/virtual/server-directives.d.mts",
+      "import": "./dist/virtual/server-directives.mjs"
     },
     "#nitro-graphql/module-config": {
-      "types": "./dist/virtual/module-config.d.ts",
-      "import": "./dist/virtual/module-config.js"
+      "types": "./dist/virtual/module-config.d.mts",
+      "import": "./dist/virtual/module-config.mjs"
     },
     "#nitro-graphql/debug-info": {
-      "types": "./dist/virtual/debug-info.d.ts",
-      "import": "./dist/virtual/debug-info.js"
+      "types": "./dist/virtual/debug-info.d.mts",
+      "import": "./dist/virtual/debug-info.mjs"
     }
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./codegen": {
-      "types": "./dist/codegen.d.ts",
-      "import": "./dist/codegen.js"
-    },
-    "./watcher": {
-      "types": "./dist/watcher.d.ts",
-      "import": "./dist/watcher.js"
-    },
-    "./client-watcher": {
-      "types": "./dist/client-watcher.d.ts",
-      "import": "./dist/client-watcher.js"
-    },
-    "./context": {
-      "types": "./dist/context.d.ts",
-      "import": "./dist/context.js"
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
     },
     "./utils": {
-      "types": "./dist/utils/index.d.ts",
-      "import": "./dist/utils/index.js"
+      "types": "./dist/utils/index.d.mts",
+      "import": "./dist/utils/index.mjs"
     },
     "./utils/define": {
-      "types": "./dist/utils/define.d.ts",
-      "import": "./dist/utils/define.js"
+      "types": "./dist/utils/define.d.mts",
+      "import": "./dist/utils/define.mjs"
     },
     "./utils/apollo": {
-      "types": "./dist/utils/apollo.d.ts",
-      "import": "./dist/utils/apollo.js"
-    },
-    "./internal": {
-      "types": "./dist/internal/index.d.ts",
-      "import": "./dist/internal/index.js"
+      "types": "./dist/utils/apollo.d.mts",
+      "import": "./dist/utils/apollo.mjs"
     },
     "./nuxt": {
-      "types": "./dist/ecosystem/nuxt.d.ts",
-      "import": "./dist/ecosystem/nuxt.js"
+      "types": "./dist/ecosystem/nuxt.d.mts",
+      "import": "./dist/ecosystem/nuxt.mjs"
     },
     "./vite": {
-      "types": "./dist/vite.d.ts",
-      "import": "./dist/vite.js"
+      "types": "./dist/vite.d.mts",
+      "import": "./dist/vite.mjs"
     }
   },
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "files": [
     "dist"
   ],
