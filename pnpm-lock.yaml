@@ -268,8 +268,8 @@ importers:
         specifier: ^7.2.2
         version: 7.2.2(@types/node@24.10.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(yaml@2.8.1)
       vitepress-plugin-llms:
-        specifier: ^1.9.0
-        version: 1.9.0
+        specifier: ^1.9.1
+        version: 1.9.1
 
   playgrounds/apollo:
     dependencies:
@@ -281,7 +281,7 @@ importers:
         version: 3.0.0
       '@as-integrations/h3':
         specifier: 'catalog:'
-        version: 2.0.0(@apollo/server@5.0.0(graphql@16.11.0))(crossws@0.3.5)(graphql-ws@6.0.6(crossws@0.3.5)(graphql@16.11.0)(ws@8.18.3))(graphql@16.11.0)(h3@2.0.1-rc.5(crossws@0.3.5))
+        version: 2.0.0(@apollo/server@5.0.0(graphql@16.11.0))(crossws@0.4.1(srvx@0.8.16))(graphql-ws@6.0.6(crossws@0.4.1(srvx@0.8.16))(graphql@16.11.0)(ws@8.18.3))(graphql@16.11.0)(h3@2.0.1-rc.5(crossws@0.4.1(srvx@0.8.16)))
       graphql:
         specifier: 'catalog:'
         version: 16.11.0
@@ -324,7 +324,7 @@ importers:
     dependencies:
       '@apollo/server':
         specifier: 'catalog:'
-        version: 5.0.0(graphql@16.11.0)
+        version: 5.0.0(graphql@16.12.0)
       nitro-graphql:
         specifier: link:../..
         version: link:../..
@@ -4864,8 +4864,8 @@ packages:
       yaml:
         optional: true
 
-  vitepress-plugin-llms@1.9.0:
-    resolution: {integrity: sha512-Tq8F00w8/OZs936c4kRnRJbLJDi0/MlKfDBbmSaEs9J9q5pD/fi9EwCJdn6C3RQWfZ383VxTvMihU4LaWmI05Q==}
+  vitepress-plugin-llms@1.9.1:
+    resolution: {integrity: sha512-ICFDp2g5l0oXdB8bqpf6la1tXkl1x5Vb3cmBe17ZoxywmqbDJoOTTORl7NNxXo91Dy0YhMlB/VKWPF4mjqve5w==}
 
   vue-eslint-parser@10.2.0:
     resolution: {integrity: sha512-CydUvFOQKD928UzZhTp4pr2vWz1L+H99t7Pkln2QSPdvmURT0MoC4wUccfCnuEaihNsu9aYYyk+bep8rlfkUXw==}
@@ -5039,6 +5039,10 @@ snapshots:
     dependencies:
       graphql: 16.11.0
 
+  '@apollo/cache-control-types@1.0.3(graphql@16.12.0)':
+    dependencies:
+      graphql: 16.12.0
+
   '@apollo/federation-internals@2.12.0(graphql@16.11.0)':
     dependencies:
       '@types/uuid': 9.0.8
@@ -5070,6 +5074,14 @@ snapshots:
       '@apollo/utils.logger': 3.0.0
       graphql: 16.11.0
 
+  '@apollo/server-gateway-interface@2.0.0(graphql@16.12.0)':
+    dependencies:
+      '@apollo/usage-reporting-protobuf': 4.1.1
+      '@apollo/utils.fetcher': 3.1.0
+      '@apollo/utils.keyvaluecache': 4.0.0
+      '@apollo/utils.logger': 3.0.0
+      graphql: 16.12.0
+
   '@apollo/server@5.0.0(graphql@16.11.0)':
     dependencies:
       '@apollo/cache-control-types': 1.0.3(graphql@16.11.0)
@@ -5088,6 +5100,32 @@ snapshots:
       cors: 2.8.5
       finalhandler: 2.1.0
       graphql: 16.11.0
+      loglevel: 1.9.2
+      lru-cache: 11.2.2
+      negotiator: 1.0.0
+      uuid: 11.1.0
+      whatwg-mimetype: 4.0.0
+    transitivePeerDependencies:
+      - supports-color
+
+  '@apollo/server@5.0.0(graphql@16.12.0)':
+    dependencies:
+      '@apollo/cache-control-types': 1.0.3(graphql@16.12.0)
+      '@apollo/server-gateway-interface': 2.0.0(graphql@16.12.0)
+      '@apollo/usage-reporting-protobuf': 4.1.1
+      '@apollo/utils.createhash': 3.0.1
+      '@apollo/utils.fetcher': 3.1.0
+      '@apollo/utils.isnodelike': 3.0.0
+      '@apollo/utils.keyvaluecache': 4.0.0
+      '@apollo/utils.logger': 3.0.0
+      '@apollo/utils.usagereporting': 2.1.0(graphql@16.12.0)
+      '@apollo/utils.withrequired': 3.0.0
+      '@graphql-tools/schema': 10.0.25(graphql@16.12.0)
+      async-retry: 1.3.3
+      body-parser: 2.2.0
+      cors: 2.8.5
+      finalhandler: 2.1.0
+      graphql: 16.12.0
       loglevel: 1.9.2
       lru-cache: 11.2.2
       negotiator: 1.0.0
@@ -5115,6 +5153,10 @@ snapshots:
     dependencies:
       graphql: 16.11.0
 
+  '@apollo/utils.dropunuseddefinitions@2.0.1(graphql@16.12.0)':
+    dependencies:
+      graphql: 16.12.0
+
   '@apollo/utils.fetcher@3.1.0': {}
 
   '@apollo/utils.isnodelike@3.0.0': {}
@@ -5130,18 +5172,35 @@ snapshots:
     dependencies:
       graphql: 16.11.0
 
+  '@apollo/utils.printwithreducedwhitespace@2.0.1(graphql@16.12.0)':
+    dependencies:
+      graphql: 16.12.0
+
   '@apollo/utils.removealiases@2.0.1(graphql@16.11.0)':
     dependencies:
       graphql: 16.11.0
+
+  '@apollo/utils.removealiases@2.0.1(graphql@16.12.0)':
+    dependencies:
+      graphql: 16.12.0
 
   '@apollo/utils.sortast@2.0.1(graphql@16.11.0)':
     dependencies:
       graphql: 16.11.0
       lodash.sortby: 4.7.0
 
+  '@apollo/utils.sortast@2.0.1(graphql@16.12.0)':
+    dependencies:
+      graphql: 16.12.0
+      lodash.sortby: 4.7.0
+
   '@apollo/utils.stripsensitiveliterals@2.0.1(graphql@16.11.0)':
     dependencies:
       graphql: 16.11.0
+
+  '@apollo/utils.stripsensitiveliterals@2.0.1(graphql@16.12.0)':
+    dependencies:
+      graphql: 16.12.0
 
   '@apollo/utils.usagereporting@2.1.0(graphql@16.11.0)':
     dependencies:
@@ -5152,6 +5211,16 @@ snapshots:
       '@apollo/utils.sortast': 2.0.1(graphql@16.11.0)
       '@apollo/utils.stripsensitiveliterals': 2.0.1(graphql@16.11.0)
       graphql: 16.11.0
+
+  '@apollo/utils.usagereporting@2.1.0(graphql@16.12.0)':
+    dependencies:
+      '@apollo/usage-reporting-protobuf': 4.1.1
+      '@apollo/utils.dropunuseddefinitions': 2.0.1(graphql@16.12.0)
+      '@apollo/utils.printwithreducedwhitespace': 2.0.1(graphql@16.12.0)
+      '@apollo/utils.removealiases': 2.0.1(graphql@16.12.0)
+      '@apollo/utils.sortast': 2.0.1(graphql@16.12.0)
+      '@apollo/utils.stripsensitiveliterals': 2.0.1(graphql@16.12.0)
+      graphql: 16.12.0
 
   '@apollo/utils.withrequired@3.0.0': {}
 
@@ -5204,6 +5273,16 @@ snapshots:
       h3: 2.0.1-rc.5(crossws@0.3.5)
     optionalDependencies:
       graphql-ws: 6.0.6(crossws@0.3.5)(graphql@16.11.0)(ws@8.18.3)
+
+  '@as-integrations/h3@2.0.0(@apollo/server@5.0.0(graphql@16.11.0))(crossws@0.4.1(srvx@0.8.16))(graphql-ws@6.0.6(crossws@0.4.1(srvx@0.8.16))(graphql@16.11.0)(ws@8.18.3))(graphql@16.11.0)(h3@2.0.1-rc.5(crossws@0.4.1(srvx@0.8.16)))':
+    dependencies:
+      '@apollo/server': 5.0.0(graphql@16.11.0)
+      '@apollo/utils.withrequired': 3.0.0
+      crossws: 0.4.1(srvx@0.8.16)
+      graphql: 16.11.0
+      h3: 2.0.1-rc.5(crossws@0.4.1(srvx@0.8.16))
+    optionalDependencies:
+      graphql-ws: 6.0.6(crossws@0.4.1(srvx@0.8.16))(graphql@16.11.0)(ws@8.18.3)
 
   '@babel/code-frame@7.27.1':
     dependencies:
@@ -8070,6 +8149,14 @@ snapshots:
       crossws: 0.3.5
       ws: 8.18.3
 
+  graphql-ws@6.0.6(crossws@0.4.1(srvx@0.8.16))(graphql@16.11.0)(ws@8.18.3):
+    dependencies:
+      graphql: 16.11.0
+    optionalDependencies:
+      crossws: 0.4.1(srvx@0.8.16)
+      ws: 8.18.3
+    optional: true
+
   graphql-yoga@5.16.0(graphql@16.12.0):
     dependencies:
       '@envelop/core': 5.3.2
@@ -8129,6 +8216,13 @@ snapshots:
       srvx: 0.9.1
     optionalDependencies:
       crossws: 0.3.5
+
+  h3@2.0.1-rc.5(crossws@0.4.1(srvx@0.8.16)):
+    dependencies:
+      rou3: 0.7.9
+      srvx: 0.9.1
+    optionalDependencies:
+      crossws: 0.4.1(srvx@0.8.16)
 
   h3@2.0.1-rc.5(crossws@0.4.1(srvx@0.9.5)):
     dependencies:
@@ -9871,7 +9965,7 @@ snapshots:
       terser: 5.44.0
       yaml: 2.8.1
 
-  vitepress-plugin-llms@1.9.0:
+  vitepress-plugin-llms@1.9.1:
     dependencies:
       gray-matter: 4.0.3
       markdown-it: 14.1.0

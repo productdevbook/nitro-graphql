@@ -1,8 +1,8 @@
 {
   "name": "nitro-graphql",
   "type": "module",
-  "version": "2.0.0-beta.18",
-  "packageManager": "pnpm@10.20.0",
+  "version": "2.0.0-beta.19",
+  "packageManager": "pnpm@10.21.0",
   "description": "GraphQL integration for Nitro",
   "license": "MIT",
   "sideEffects": false,
@@ -164,7 +164,7 @@
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vite": "^7.2.2",
-    "vitepress-plugin-llms": "^1.9.0"
+    "vitepress-plugin-llms": "^1.9.1"
   },
   "resolutions": {
     "nitro-graphql": "link:."
