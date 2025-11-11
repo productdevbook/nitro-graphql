@@ -18,9 +18,6 @@ catalogs:
     '@apollo/utils.withrequired':
       specifier: ^3.0.0
       version: 3.0.0
-    '@as-integrations/h3':
-      specifier: 2.0.0
-      version: 2.0.0
     '@graphql-codegen/core':
       specifier: ^5.0.0
       version: 5.0.0
@@ -154,9 +151,6 @@ importers:
       '@apollo/utils.withrequired':
         specifier: ^3.0.0
         version: 3.0.0
-      '@as-integrations/h3':
-        specifier: ^2.0.0
-        version: 2.0.0(@apollo/server@5.1.0(graphql@16.12.0))(crossws@0.4.1(srvx@0.9.5))(graphql-ws@6.0.6(crossws@0.4.1(srvx@0.9.5))(graphql@16.12.0)(ws@8.18.3))(graphql@16.12.0)(h3@2.0.1-rc.5(crossws@0.4.1(srvx@0.9.5)))
       '@graphql-codegen/core':
         specifier: 'catalog:'
         version: 5.0.0(graphql@16.12.0)
@@ -287,9 +281,6 @@ importers:
       '@apollo/utils.withrequired':
         specifier: 'catalog:'
         version: 3.0.0
-      '@as-integrations/h3':
-        specifier: 'catalog:'
-        version: 2.0.0(@apollo/server@5.1.0(graphql@16.12.0))(crossws@0.4.1(srvx@0.9.5))(graphql-ws@6.0.6(crossws@0.4.1(srvx@0.9.5))(graphql@16.12.0)(ws@8.18.3))(graphql@16.12.0)(h3@2.0.1-rc.5(crossws@0.4.1(srvx@0.9.5)))
       graphql:
         specifier: 'catalog:'
         version: 16.12.0
@@ -312,15 +303,12 @@ importers:
       '@apollo/subgraph':
         specifier: 'catalog:'
         version: 2.12.0(graphql@16.12.0)
-      '@as-integrations/h3':
-        specifier: 'catalog:'
-        version: 2.0.0(@apollo/server@5.1.0(graphql@16.12.0))(crossws@0.3.5)(graphql-ws@6.0.6(crossws@0.3.5)(graphql@16.12.0)(ws@8.18.3))(graphql@16.12.0)(h3@2.0.1-rc.5(crossws@0.3.5))
       graphql:
         specifier: 'catalog:'
         version: 16.12.0
       h3:
         specifier: 'catalog:'
-        version: 2.0.1-rc.5(crossws@0.3.5)
+        version: 2.0.1-rc.5(crossws@0.4.1(srvx@0.9.5))
       nitro:
         specifier: npm:nitro-nightly@latest
         version: nitro-nightly@3.0.1-20251110-184924-a0b65262(chokidar@4.0.3)(lru-cache@11.2.2)(rolldown-vite@7.2.3(@types/node@24.10.0)(jiti@2.6.1)(yaml@2.8.1))(rolldown@1.0.0-beta.47)
@@ -532,19 +520,6 @@ packages:
     hasBin: true
     peerDependencies:
       graphql: '*'
-
-  '@as-integrations/h3@2.0.0':
-    resolution: {integrity: sha512-yNTKn9lUiGtFYBtrlAozMbxP7xmXcLMdIT4D+JPqhmxOtHpUNxzLRiwb+xSDaQnz5xzIKzI2A7i8wRFUzRfjVw==}
-    engines: {node: 23.9.0}
-    peerDependencies:
-      '@apollo/server': ^4.1.1
-      crossws: ^0.3.0
-      graphql: ^16.0.0
-      graphql-ws: ^5.0.0 || ^6.0.0
-      h3: ^1.11.0
-    peerDependenciesMeta:
-      graphql-ws:
-        optional: true
 
   '@babel/code-frame@7.27.1':
     resolution: {integrity: sha512-cjQ7ZlQ0Mv3b47hABuTevyTuYN4i+loJKGeV9flcCgIK37cCXRh+L1bd3iBHlynerhQ7BhCkn2BPbQUL+rGqFg==}
@@ -4942,26 +4917,6 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@as-integrations/h3@2.0.0(@apollo/server@5.1.0(graphql@16.12.0))(crossws@0.3.5)(graphql-ws@6.0.6(crossws@0.3.5)(graphql@16.12.0)(ws@8.18.3))(graphql@16.12.0)(h3@2.0.1-rc.5(crossws@0.3.5))':
-    dependencies:
-      '@apollo/server': 5.1.0(graphql@16.12.0)
-      '@apollo/utils.withrequired': 3.0.0
-      crossws: 0.3.5
-      graphql: 16.12.0
-      h3: 2.0.1-rc.5(crossws@0.3.5)
-    optionalDependencies:
-      graphql-ws: 6.0.6(crossws@0.3.5)(graphql@16.12.0)(ws@8.18.3)
-
-  '@as-integrations/h3@2.0.0(@apollo/server@5.1.0(graphql@16.12.0))(crossws@0.4.1(srvx@0.9.5))(graphql-ws@6.0.6(crossws@0.4.1(srvx@0.9.5))(graphql@16.12.0)(ws@8.18.3))(graphql@16.12.0)(h3@2.0.1-rc.5(crossws@0.4.1(srvx@0.9.5)))':
-    dependencies:
-      '@apollo/server': 5.1.0(graphql@16.12.0)
-      '@apollo/utils.withrequired': 3.0.0
-      crossws: 0.4.1(srvx@0.9.5)
-      graphql: 16.12.0
-      h3: 2.0.1-rc.5(crossws@0.4.1(srvx@0.9.5))
-    optionalDependencies:
-      graphql-ws: 6.0.6(crossws@0.4.1(srvx@0.9.5))(graphql@16.12.0)(ws@8.18.3)
-
   '@babel/code-frame@7.27.1':
     dependencies:
       '@babel/helper-validator-identifier': 7.28.5
@@ -7695,14 +7650,6 @@ snapshots:
       graphql: 16.12.0
       tslib: 2.6.3
 
-  graphql-ws@6.0.6(crossws@0.3.5)(graphql@16.12.0)(ws@8.18.3):
-    dependencies:
-      graphql: 16.12.0
-    optionalDependencies:
-      crossws: 0.3.5
-      ws: 8.18.3
-    optional: true
-
   graphql-ws@6.0.6(crossws@0.4.1(srvx@0.9.5))(graphql@16.12.0)(ws@8.18.3):
     dependencies:
       graphql: 16.12.0
@@ -7746,13 +7693,6 @@ snapshots:
       radix3: 1.1.2
       ufo: 1.6.1
       uncrypto: 0.1.3
-
-  h3@2.0.1-rc.5(crossws@0.3.5):
-    dependencies:
-      rou3: 0.7.10
-      srvx: 0.9.5
-    optionalDependencies:
-      crossws: 0.3.5
 
   h3@2.0.1-rc.5(crossws@0.4.1(srvx@0.9.5)):
     dependencies:

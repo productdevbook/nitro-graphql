@@ -15,7 +15,6 @@
   "dependencies": {
     "@apollo/server": "catalog:",
     "@apollo/subgraph": "catalog:",
-    "@as-integrations/h3": "catalog:",
     "graphql": "catalog:",
     "h3": "catalog:",
     "nitro": "catalog:",

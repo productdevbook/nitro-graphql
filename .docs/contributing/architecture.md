@@ -161,20 +161,6 @@ export default defineEventHandler(async (event) => {
 
 #### Apollo Server Handler (`src/routes/apollo-server.ts`)
 
-Alternative using Apollo Server:
-
-```typescript
-import { ApolloServer } from '@apollo/server'
-import { startServerAndCreateH3Handler } from '@as-integrations/h3'
-
-export default startServerAndCreateH3Handler(
-  new ApolloServer({
-    schema: loadedSchema,
-    // ... configuration
-  })
-)
-```
-
 **Features:**
 - Apollo Federation support
 - Plugin ecosystem

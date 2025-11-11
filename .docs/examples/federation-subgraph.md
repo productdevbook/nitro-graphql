@@ -45,7 +45,7 @@ cd users-service
 pnpm init
 
 # Install dependencies
-pnpm add nitro-graphql graphql h3 nitropack @apollo/server @apollo/subgraph @as-integrations/h3
+pnpm add nitro-graphql graphql h3 nitropack @apollo/server @apollo/subgraph
 ```
 
 ## Configuration
@@ -67,7 +67,6 @@ pnpm add nitro-graphql graphql h3 nitropack @apollo/server @apollo/subgraph @as-
   "dependencies": {
     "@apollo/server": "^5.0.0",
     "@apollo/subgraph": "^2.9.8",
-    "@as-integrations/h3": "^2.0.0",
     "graphql": "^16.11.0",
     "h3": "^2.0.1",
     "nitro-graphql": "^2.0.0-beta.1",

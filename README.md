@@ -61,7 +61,7 @@ pnpm add nitro-graphql graphql-yoga graphql
 
 **Apollo Server:**
 ```bash
-pnpm add nitro-graphql @apollo/server @apollo/utils.withrequired @as-integrations/h3 graphql
+pnpm add nitro-graphql @apollo/server @apollo/utils.withrequired graphql
 ```
 
 ### 2. Configure
@@ -1029,7 +1029,7 @@ Now implement this setup.
 Set up nitro-graphql with Apollo Server following these exact specifications:
 
 INSTALLATION:
-1. Run: pnpm add nitro-graphql @apollo/server @apollo/utils.withrequired @as-integrations/h3 graphql
+1. Run: pnpm add nitro-graphql @apollo/server @apollo/utils.withrequired graphql
 
 CONFIGURATION (nitro.config.ts):
 import { defineNitroConfig } from 'nitro/config'

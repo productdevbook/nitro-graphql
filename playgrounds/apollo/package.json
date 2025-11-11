@@ -9,7 +9,6 @@
   "dependencies": {
     "@apollo/server": "catalog:",
     "@apollo/utils.withrequired": "catalog:",
-    "@as-integrations/h3": "catalog:",
     "graphql": "catalog:",
     "nitro-graphql": "link:../../",
     "zod": "catalog:"

@@ -585,7 +585,7 @@ Error: Cannot find module 'graphql'
 pnpm add graphql h3 nitropack
 
 # For Apollo Server
-pnpm add @apollo/server @as-integrations/h3
+pnpm add @apollo/server @apollo/utils.withrequired graphql
 ```
 
 2. **Check Version Compatibility:**

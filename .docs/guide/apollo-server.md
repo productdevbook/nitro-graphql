@@ -5,7 +5,7 @@ Guide to using Apollo Server with Nitro GraphQL, including Federation support.
 ## Installation
 
 ```bash
-pnpm add nitro-graphql @apollo/server @apollo/utils.withrequired @as-integrations/h3 graphql
+pnpm add nitro-graphql @apollo/server @apollo/utils.withrequired graphql
 ```
 
 ## Configuration

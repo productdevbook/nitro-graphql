@@ -86,7 +86,6 @@
   "peerDependencies": {
     "@apollo/server": "^5.0.0",
     "@apollo/utils.withrequired": "^3.0.0",
-    "@as-integrations/h3": "^2.0.0",
     "graphql": "^16.11.0",
     "h3": "^2.0.1-rc.2",
     "nitro": "^3.0.1-alpha.0"
@@ -96,9 +95,6 @@
       "optional": true
     },
     "@apollo/utils.withrequired": {
-      "optional": true
-    },
-    "@as-integrations/h3": {
       "optional": true
     }
   },

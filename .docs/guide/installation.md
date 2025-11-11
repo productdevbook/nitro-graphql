@@ -37,7 +37,7 @@ pnpm add nitro-graphql graphql-yoga graphql
 ```
 
 ```bash [Apollo Server]
-pnpm add nitro-graphql @apollo/server @apollo/utils.withrequired @as-integrations/h3 graphql
+pnpm add nitro-graphql @apollo/server @apollo/utils.withrequired graphql
 ```
 
 :::

@@ -9,7 +9,6 @@ catalog:
   '@apollo/server': ^5.1.0
   '@apollo/subgraph': ^2.11.4
   '@apollo/utils.withrequired': ^3.0.0
-  '@as-integrations/h3': 2.0.0
   '@graphql-codegen/core': ^5.0.0
   '@graphql-codegen/import-types-preset': ^3.0.1
   '@graphql-codegen/typescript': ^5.0.2
