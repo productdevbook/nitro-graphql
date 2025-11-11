@@ -133,6 +133,7 @@
     "@nuxt/kit": "catalog:",
     "@nuxt/schema": "catalog:",
     "@types/node": "catalog:",
+    "@vitejs/devtools": "catalog:",
     "bumpp": "catalog:",
     "changelogen": "catalog:",
     "crossws": "catalog:",
@@ -143,8 +144,8 @@
     "nitro": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
-    "vite": "^7.2.2",
-    "vitepress-plugin-llms": "^1.9.1"
+    "vite": "catalog:",
+    "vitepress-plugin-llms": "catalog:"
   },
   "resolutions": {
     "nitro-graphql": "link:."

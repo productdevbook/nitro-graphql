@@ -8,14 +8,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "graphql": "^16.12.0",
-    "graphql-yoga": "^5.16.0",
+    "@vitejs/devtools": "catalog:",
+    "graphql": "catalog:",
+    "graphql-yoga": "catalog:",
     "nitro-graphql": "link:../.."
   },
   "devDependencies": {
-    "nitro": "npm:nitro-nightly@latest",
-    "vite": "npm:rolldown-vite@latest"
-
+    "nitro": "catalog:",
+    "vite": "catalog:"
   },
   "pnpm": {
     "overrides": {

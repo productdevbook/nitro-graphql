@@ -4,3 +4,4 @@ dist
 .nitro
 *.log
 */.vitepress/cache
+.rolldown

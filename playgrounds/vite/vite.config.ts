@@ -1,3 +1,4 @@
+import { DevTools } from '@vitejs/devtools'
 import graphql from 'nitro-graphql'
 import { nitro } from 'nitro/vite'
 import { defineConfig } from 'vite'
@@ -11,8 +12,14 @@ export default defineConfig(({ command }) => ({
       },
     }),
     nitro(),
+    DevTools(),
   ],
   nitro: {
     preset: 'standard',
+  },
+  build: {
+    rolldownOptions: {
+      debug: {}, // enable debug mode
+    },
   },
 }))
