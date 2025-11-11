@@ -9,11 +9,22 @@ import { schemas } from '#nitro-graphql/server-schemas'
 
 import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge'
 import { makeExecutableSchema } from '@graphql-tools/schema'
-import { consola } from 'consola'
 import defu from 'defu'
 import { parse, subscribe, validate } from 'graphql'
 import { createYoga } from 'graphql-yoga'
 import { defineWebSocketHandler } from 'h3'
+
+// Development-only logging
+const isDev = process.env.NODE_ENV === 'development'
+function devLog(message: string, ...args: any[]) {
+  if (isDev)
+    console.log(message, ...args)
+}
+
+// Helper for efficient message sending
+function sendMessage(peer: Peer, message: Record<string, any>) {
+  peer.send(JSON.stringify(message))
+}
 
 // Conditional imports for federation support
 let buildSubgraphSchema: any = null
@@ -59,7 +70,7 @@ async function createMergedSchema() {
         })
       }
       else {
-        console.warn('Federation enabled but @apollo/subgraph not available, falling back to regular schema')
+        console.warn('[GraphQL WS] Federation enabled but @apollo/subgraph not available, falling back to regular schema')
         schema = makeExecutableSchema({
           typeDefs,
           resolvers: mergedResolvers,
@@ -85,7 +96,7 @@ async function createMergedSchema() {
     return schema
   }
   catch (error) {
-    consola.error('Schema merge error:', error)
+    console.error('[GraphQL WS] Schema merge error:', error)
     throw error
   }
 }
@@ -133,7 +144,7 @@ export default defineWebSocketHandler({
   },
 
   async open(peer) {
-    consola.info('[GraphQL WS] Client connected')
+    devLog('[GraphQL WS] Client connected')
     peerSubscriptions.set(peer, new Map())
   },
 
@@ -146,34 +157,28 @@ export default defineWebSocketHandler({
       const subscriptions = peerSubscriptions.get(peer)
 
       if (!subscriptions) {
-        consola.error('[GraphQL WS] No subscriptions map found for peer')
+        console.error('[GraphQL WS] No subscriptions map found for peer')
         return
       }
 
       switch (msg.type) {
         case 'connection_init': {
-          // Acknowledge connection
-          peer.send(JSON.stringify({
-            type: 'connection_ack',
-          }))
+          sendMessage(peer, { type: 'connection_ack' })
           break
         }
 
         case 'ping': {
-          // Respond with pong
-          peer.send(JSON.stringify({
-            type: 'pong',
-          }))
+          sendMessage(peer, { type: 'pong' })
           break
         }
 
         case 'subscribe': {
           if (!msg.id || !msg.payload) {
-            peer.send(JSON.stringify({
+            sendMessage(peer, {
               id: msg.id,
               type: 'error',
               payload: [{ message: 'Invalid subscribe message' }],
-            }))
+            })
             break
           }
 
@@ -185,7 +190,7 @@ export default defineWebSocketHandler({
             const validationErrors = validate(schema, document)
 
             if (validationErrors.length > 0) {
-              peer.send(JSON.stringify({
+              sendMessage(peer, {
                 id: msg.id,
                 type: 'error',
                 payload: validationErrors.map(err => ({
@@ -193,7 +198,7 @@ export default defineWebSocketHandler({
                   locations: err.locations,
                   path: err.path,
                 })),
-              }))
+              })
               break
             }
 
@@ -214,51 +219,51 @@ export default defineWebSocketHandler({
               ;(async () => {
                 try {
                   for await (const value of result) {
-                    peer.send(JSON.stringify({
+                    sendMessage(peer, {
                       id: msg.id,
                       type: 'next',
                       payload: value,
-                    }))
+                    })
                   }
 
                   // Subscription completed
-                  peer.send(JSON.stringify({
+                  sendMessage(peer, {
                     id: msg.id,
                     type: 'complete',
-                  }))
+                  })
                   subscriptions.delete(msg.id)
                 }
                 catch (error) {
-                  consola.error('[GraphQL WS] Subscription error:', error)
-                  peer.send(JSON.stringify({
+                  console.error('[GraphQL WS] Subscription error:', error)
+                  sendMessage(peer, {
                     id: msg.id,
                     type: 'error',
                     payload: [{ message: error instanceof Error ? error.message : 'Subscription error' }],
-                  }))
+                  })
                   subscriptions.delete(msg.id)
                 }
               })()
             }
             else {
               // It's a regular query/mutation result
-              peer.send(JSON.stringify({
+              sendMessage(peer, {
                 id: msg.id,
                 type: 'next',
                 payload: result,
-              }))
-              peer.send(JSON.stringify({
+              })
+              sendMessage(peer, {
                 id: msg.id,
                 type: 'complete',
-              }))
+              })
             }
           }
           catch (error) {
-            consola.error('[GraphQL WS] Operation error:', error)
-            peer.send(JSON.stringify({
+            console.error('[GraphQL WS] Operation error:', error)
+            sendMessage(peer, {
               id: msg.id,
               type: 'error',
               payload: [{ message: error instanceof Error ? error.message : 'Operation failed' }],
-            }))
+            })
           }
           break
         }
@@ -277,21 +282,21 @@ export default defineWebSocketHandler({
         }
 
         default: {
-          consola.warn('[GraphQL WS] Unknown message type:', msg.type)
+          devLog('[GraphQL WS] Unknown message type:', msg.type)
         }
       }
     }
     catch (error) {
-      consola.error('[GraphQL WS] Message handling error:', error)
-      peer.send(JSON.stringify({
+      console.error('[GraphQL WS] Message handling error:', error)
+      sendMessage(peer, {
         type: 'error',
         payload: [{ message: 'Invalid message format' }],
-      }))
+      })
     }
   },
 
   async close(peer, details) {
-    consola.info('[GraphQL WS] Client disconnected:', details)
+    devLog('[GraphQL WS] Client disconnected:', details)
 
     // Clean up all subscriptions for this peer
     const subscriptions = peerSubscriptions.get(peer)
@@ -302,7 +307,7 @@ export default defineWebSocketHandler({
             await iterator.return()
           }
           catch (error) {
-            consola.error(`[GraphQL WS] Error cleaning up subscription ${id}:`, error)
+            console.error(`[GraphQL WS] Error cleaning up subscription ${id}:`, error)
           }
         }
       }
@@ -312,6 +317,6 @@ export default defineWebSocketHandler({
   },
 
   async error(peer, error) {
-    consola.error('[GraphQL WS] WebSocket error:', error)
+    console.error('[GraphQL WS] WebSocket error:', error)
   },
 })
