@@ -1,5 +1,5 @@
 {
-  "name": "nitro-graphql-example",
+  "name": "nitro-playground",
   "private": true,
   "scripts": {
     "dev": "nitro dev",

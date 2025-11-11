@@ -1,5 +1,5 @@
 {
-  "name": "vite-playground",
+  "name": "webhook-playground",
   "type": "module",
   "private": true,
   "scripts": {
@@ -10,6 +10,7 @@
   "dependencies": {
     "@vitejs/devtools": "catalog:",
     "graphql": "catalog:",
+    "graphql-ws": "catalog:",
     "graphql-yoga": "catalog:",
     "nitro-graphql": "link:../.."
   },

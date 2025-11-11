@@ -79,6 +79,8 @@ export interface ExternalServicePaths {
   types?: FileGenerationConfig
   /** ofetch client wrapper path (overrides global clientUtils.ofetch config) */
   ofetch?: FileGenerationConfig
+  /** WebSocket client wrapper path (overrides global clientUtils.wsClient config) */
+  wsClient?: FileGenerationConfig
 }
 
 export interface ExternalGraphQLService {
@@ -88,6 +90,8 @@ export interface ExternalGraphQLService {
   schema: string | string[]
   /** GraphQL endpoint for this service */
   endpoint: string
+  /** Optional WebSocket endpoint for subscriptions */
+  wsEndpoint?: string
   /** Optional headers for schema introspection and client requests */
   headers?: Record<string, string> | (() => Record<string, string>)
   /** Optional: specific document patterns for this service */
@@ -162,6 +166,8 @@ export interface ClientUtilsConfig {
   index?: FileGenerationConfig
   /** app/graphql/{serviceName}/ofetch.ts - ofetch client wrapper */
   ofetch?: FileGenerationConfig
+  /** app/graphql/{serviceName}/ws-client.ts - WebSocket client wrapper */
+  wsClient?: FileGenerationConfig
 }
 
 /**
@@ -207,13 +213,28 @@ export interface PathsConfig {
   typesDir?: string
 }
 
+/**
+ * WebSocket/Subscription configuration
+ */
+export interface SubscriptionsConfig {
+  /** Enable WebSocket subscriptions */
+  enabled?: boolean
+  /** WebSocket endpoint path (relative to graphql endpoint) */
+  endpoint?: string
+  /** GraphQL subscription protocol */
+  protocol?: 'graphql-ws'
+}
+
 export interface NitroGraphQLOptions {
   framework?: 'graphql-yoga' | 'apollo-server'
   endpoint?: {
     graphql?: string
+    ws?: string
     healthCheck?: string
   }
   playground?: boolean
+  /** WebSocket subscriptions configuration */
+  subscriptions?: SubscriptionsConfig
   typedefs?: string[]
   resolvers?: Array<IResolvers<any, any>>
   loader?: {

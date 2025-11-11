@@ -91,14 +91,27 @@ export async function setupNitroGraphQL(nitro: Nitro) {
   nitro.options.runtimeConfig.graphql = defu(nitro.options.runtimeConfig.graphql || {}, {
     endpoint: {
       graphql: '/api/graphql',
+      ws: '/api/graphql/ws',
       healthCheck: '/api/graphql/health',
     },
     playground: true,
+    subscriptions: {
+      enabled: false,
+      endpoint: '/ws',
+      protocol: 'graphql-ws',
+    },
   } as NitroGraphQLOptions)
 
   // Log federation status if enabled
   if (nitro.options.graphql?.federation?.enabled) {
     consola.info(`Apollo Federation enabled for service: ${nitro.options.graphql.federation.serviceName || 'unnamed'}`)
+  }
+
+  // Enable WebSocket feature if subscriptions are enabled
+  if (nitro.options.graphql?.subscriptions?.enabled) {
+    nitro.options.features ||= {}
+    nitro.options.features.websocket = true
+    consola.info('[nitro-graphql] WebSocket subscriptions enabled')
   }
 
   const graphqlBuildDir = resolve(nitro.options.buildDir, 'graphql')
@@ -316,6 +329,15 @@ export async function setupNitroGraphQL(nitro: Nitro) {
         method,
       })
     }
+
+    // Register WebSocket handler if subscriptions are enabled
+    if (nitro.options.graphql?.subscriptions?.enabled) {
+      nitro.options.handlers.push({
+        route: nitro.options.runtimeConfig.graphql?.endpoint?.ws || '/api/graphql/ws',
+        handler: join(runtime, 'graphql-yoga-ws'),
+      })
+      consola.info(`[nitro-graphql] GraphQL Yoga WebSocket endpoint: ${nitro.options.runtimeConfig.graphql?.endpoint?.ws || '/api/graphql/ws'}`)
+    }
   }
 
   if (nitro.options.graphql?.framework === 'apollo-server') {
@@ -326,6 +348,15 @@ export async function setupNitroGraphQL(nitro: Nitro) {
         handler: join(runtime, 'apollo-server'),
         method,
       })
+    }
+
+    // Register WebSocket handler if subscriptions are enabled
+    if (nitro.options.graphql?.subscriptions?.enabled) {
+      nitro.options.handlers.push({
+        route: nitro.options.runtimeConfig.graphql?.endpoint?.ws || '/api/graphql/ws',
+        handler: join(runtime, 'apollo-server-ws'),
+      })
+      consola.info(`[nitro-graphql] Apollo Server WebSocket endpoint: ${nitro.options.runtimeConfig.graphql?.endpoint?.ws || '/api/graphql/ws'}`)
     }
   }
 

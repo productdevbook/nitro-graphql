@@ -1,5 +1,5 @@
 {
-  "name": "nitro-graphql-apollo",
+  "name": "apollo-playground",
   "private": true,
   "scripts": {
     "dev": "nitro dev",

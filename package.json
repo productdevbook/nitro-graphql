@@ -87,6 +87,8 @@
     "@apollo/server": "^5.0.0",
     "@apollo/utils.withrequired": "^3.0.0",
     "graphql": "^16.11.0",
+    "graphql-sse": "^2.6.0",
+    "graphql-ws": "^6.0.6",
     "h3": "^2.0.1-rc.2",
     "nitro": "^3.0.1-alpha.0"
   },
@@ -95,6 +97,12 @@
       "optional": true
     },
     "@apollo/utils.withrequired": {
+      "optional": true
+    },
+    "graphql-sse": {
+      "optional": true
+    },
+    "graphql-ws": {
       "optional": true
     }
   },
@@ -135,6 +143,8 @@
     "crossws": "catalog:",
     "eslint": "catalog:",
     "graphql": "catalog:",
+    "graphql-sse": "catalog:",
+    "graphql-ws": "catalog:",
     "graphql-yoga": "catalog:",
     "h3": "catalog:",
     "nitro": "catalog:",

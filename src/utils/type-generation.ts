@@ -255,6 +255,332 @@ export const $${serviceName}Sdk: Sdk = getSdk(create${capitalizedServiceName}Gra
   }
 }
 
+function generateWebSocketClient(
+  nitro: Nitro,
+  serviceName: string = 'default',
+  wsEndpoint?: string,
+) {
+  // Check if client utils generation is enabled
+  if (!shouldGenerateClientUtils(nitro)) {
+    return
+  }
+
+  // Check if subscriptions are enabled (for main service)
+  if (serviceName === 'default' && !nitro.options.graphql?.subscriptions?.enabled) {
+    return
+  }
+
+  // For external services, only generate if wsEndpoint is provided
+  if (serviceName !== 'default' && !wsEndpoint) {
+    return
+  }
+
+  const placeholders = {
+    ...getDefaultPaths(nitro),
+    serviceName,
+  }
+  const clientUtilsConfig = getClientUtilsConfig(nitro)
+
+  // Resolve ws-client.ts path
+  const wsClientPath = resolveFilePath(
+    clientUtilsConfig.wsClient,
+    clientUtilsConfig.enabled,
+    true,
+    '{clientGraphql}/{serviceName}/ws-client.ts',
+    placeholders,
+  )
+
+  if (!wsClientPath) {
+    return
+  }
+
+  // Create service directory if it doesn't exist
+  const serviceDir = dirname(wsClientPath)
+  if (!existsSync(serviceDir)) {
+    mkdirSync(serviceDir, { recursive: true })
+  }
+
+  if (existsSync(wsClientPath)) {
+    return // Don't overwrite existing files
+  }
+
+  const capitalizedServiceName = serviceName.charAt(0).toUpperCase() + serviceName.slice(1)
+  const defaultWsEndpoint = wsEndpoint || '/api/graphql/ws'
+
+  const wsClientContent = `// This file is auto-generated once by nitro-graphql for quick start
+// You can modify this file according to your needs
+import { createClient } from 'graphql-ws'
+
+export interface WebSocketClientConfig {
+  url?: string
+  headers?: Record<string, string> | (() => Record<string, string>)
+  retryAttempts?: number
+  retryWait?: number | ((retries: number) => number)
+  onConnected?: () => void
+  onDisconnected?: () => void
+  onError?: (error: Error) => void
+}
+
+/**
+ * Create a GraphQL WebSocket client for ${serviceName === 'default' ? 'the main GraphQL service' : serviceName}
+ * Uses graphql-ws protocol for subscriptions
+ */
+export function create${capitalizedServiceName}WebSocketClient(config: WebSocketClientConfig = {}) {
+  const {
+    url = typeof window !== 'undefined'
+      ? \`\${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}/\${window.location.host}${defaultWsEndpoint}\`
+      : '${defaultWsEndpoint}',
+    headers,
+    retryAttempts = 5,
+    retryWait,
+    onConnected,
+    onDisconnected,
+    onError,
+  } = config
+
+  const client = createClient({
+    url,
+    connectionParams: () => {
+      const resolvedHeaders = typeof headers === 'function' ? headers() : headers
+      return resolvedHeaders || {}
+    },
+    retryAttempts,
+    retryWait,
+    on: {
+      connected: () => {
+        console.log('[GraphQL WS] Connected to ${serviceName === 'default' ? 'main service' : serviceName}')
+        onConnected?.()
+      },
+      closed: () => {
+        console.log('[GraphQL WS] Disconnected from ${serviceName === 'default' ? 'main service' : serviceName}')
+        onDisconnected?.()
+      },
+      error: (error) => {
+        console.error('[GraphQL WS] Error:', error)
+        onError?.(error as Error)
+      },
+    },
+  })
+
+  return client
+}
+
+/**
+ * Helper to execute a GraphQL subscription
+ *
+ * @example
+ * const unsubscribe = executeSubscription(client, {
+ *   query: \`subscription { messageSent { id text } }\`,
+ *   onData: (data) => console.log('Message:', data.messageSent),
+ *   onError: (error) => console.error('Error:', error)
+ * })
+ */
+export function executeSubscription<T = any>(
+  client: ReturnType<typeof create${capitalizedServiceName}WebSocketClient>,
+  options: {
+    query: string
+    variables?: Record<string, any>
+    operationName?: string
+    onData: (data: T) => void
+    onError?: (error: Error) => void
+    onComplete?: () => void
+  },
+) {
+  const { query, variables, operationName, onData, onError, onComplete } = options
+
+  const unsubscribe = client.subscribe(
+    {
+      query,
+      variables,
+      operationName,
+    },
+    {
+      next: (result) => {
+        if (result.errors) {
+          onError?.(new Error(result.errors.map(e => e.message).join(', ')))
+        }
+        else if (result.data) {
+          onData(result.data as T)
+        }
+      },
+      error: (error) => {
+        onError?.(error instanceof Error ? error : new Error(String(error)))
+      },
+      complete: () => {
+        onComplete?.()
+      },
+    },
+  )
+
+  return unsubscribe
+}
+
+// Export a default client instance for ${serviceName === 'default' ? 'main service' : serviceName}
+export const $wsClient = create${capitalizedServiceName}WebSocketClient()
+`
+
+  writeFileIfNotExists(wsClientPath, wsClientContent, `${serviceName} ws-client.ts`)
+}
+
+function generateExternalWebSocketClient(
+  nitro: Nitro,
+  service: any, // ExternalGraphQLService
+  wsEndpoint?: string,
+) {
+  if (!wsEndpoint) {
+    return // Only generate if wsEndpoint is provided
+  }
+
+  // Check if client utils generation is enabled
+  if (!shouldGenerateClientUtils(nitro)) {
+    return
+  }
+
+  const serviceName = service.name
+  const placeholders = {
+    ...getDefaultPaths(nitro),
+    serviceName,
+  }
+  const clientUtilsConfig = getClientUtilsConfig(nitro)
+
+  // Resolve ws-client.ts path with service-specific override
+  // Priority: service.paths.wsClient > global clientUtils.wsClient > default
+  const wsClientPath = resolveFilePath(
+    service.paths?.wsClient ?? clientUtilsConfig.wsClient, // Service-specific path first
+    clientUtilsConfig.enabled,
+    true,
+    '{clientGraphql}/{serviceName}/ws-client.ts',
+    placeholders,
+  )
+
+  if (!wsClientPath) {
+    return
+  }
+
+  // Create service directory if it doesn't exist
+  const serviceDir = dirname(wsClientPath)
+  if (!existsSync(serviceDir)) {
+    mkdirSync(serviceDir, { recursive: true })
+  }
+
+  // Only create ws-client file if it doesn't exist
+  if (!existsSync(wsClientPath)) {
+    const capitalizedServiceName = serviceName.charAt(0).toUpperCase() + serviceName.slice(1)
+
+    const wsClientContent = `// This file is auto-generated once by nitro-graphql for quick start
+// You can modify this file according to your needs
+import { createClient } from 'graphql-ws'
+
+export interface WebSocketClientConfig {
+  url?: string
+  headers?: Record<string, string> | (() => Record<string, string>)
+  retryAttempts?: number
+  retryWait?: number | ((retries: number) => number)
+  onConnected?: () => void
+  onDisconnected?: () => void
+  onError?: (error: Error) => void
+}
+
+/**
+ * Create a GraphQL WebSocket client for ${serviceName} external service
+ * Uses graphql-ws protocol for subscriptions
+ */
+export function create${capitalizedServiceName}WebSocketClient(config: WebSocketClientConfig = {}) {
+  const {
+    url = '${wsEndpoint}',
+    headers,
+    retryAttempts = 5,
+    retryWait,
+    onConnected,
+    onDisconnected,
+    onError,
+  } = config
+
+  const client = createClient({
+    url,
+    connectionParams: () => {
+      const resolvedHeaders = typeof headers === 'function' ? headers() : headers
+      return resolvedHeaders || {}
+    },
+    retryAttempts,
+    retryWait,
+    on: {
+      connected: () => {
+        console.log('[GraphQL WS] Connected to ${serviceName}')
+        onConnected?.()
+      },
+      closed: () => {
+        console.log('[GraphQL WS] Disconnected from ${serviceName}')
+        onDisconnected?.()
+      },
+      error: (error) => {
+        console.error('[GraphQL WS] Error:', error)
+        onError?.(error as Error)
+      },
+    },
+  })
+
+  return client
+}
+
+/**
+ * Helper to execute a GraphQL subscription
+ *
+ * @example
+ * const unsubscribe = executeSubscription(client, {
+ *   query: \`subscription { messageSent { id text } }\`,
+ *   onData: (data) => console.log('Message:', data.messageSent),
+ *   onError: (error) => console.error('Error:', error)
+ * })
+ */
+export function executeSubscription<T = any>(
+  client: ReturnType<typeof create${capitalizedServiceName}WebSocketClient>,
+  options: {
+    query: string
+    variables?: Record<string, any>
+    operationName?: string
+    onData: (data: T) => void
+    onError?: (error: Error) => void
+    onComplete?: () => void
+  },
+) {
+  const { query, variables, operationName, onData, onError, onComplete } = options
+
+  const unsubscribe = client.subscribe(
+    {
+      query,
+      variables,
+      operationName,
+    },
+    {
+      next: (result) => {
+        if (result.errors) {
+          onError?.(new Error(result.errors.map(e => e.message).join(', ')))
+        }
+        else if (result.data) {
+          onData(result.data as T)
+        }
+      },
+      error: (error) => {
+        onError?.(error instanceof Error ? error : new Error(String(error)))
+      },
+      complete: () => {
+        onComplete?.()
+      },
+    },
+  )
+
+  return unsubscribe
+}
+
+// Export a default client instance for ${serviceName}
+export const $wsClient = create${capitalizedServiceName}WebSocketClient()
+`
+
+    writeFileIfNotExists(wsClientPath, wsClientContent, `${serviceName} external ws-client.ts`)
+  }
+}
+
 /**
  * Check for duplicate type definitions using a simpler approach
  * Try to build each schema individually - if that succeeds but merging fails, we have duplicates
@@ -589,6 +915,12 @@ async function generateMainClientTypes(nitro: Nitro) {
   // Generate ofetch client for all frameworks (only if it doesn't exist)
   generateNuxtOfetchClient(nitro, nitro.graphql.clientDir, 'default')
 
+  // Generate WebSocket client if subscriptions are enabled
+  if (nitro.options.graphql?.subscriptions?.enabled) {
+    const wsEndpoint = nitro.options.graphql.endpoint?.ws || '/api/graphql/ws'
+    generateWebSocketClient(nitro, 'default', wsEndpoint)
+  }
+
   // Generate index file if there are external services
   const externalServices = nitro.options.graphql?.externalServices || []
   if (externalServices.length > 0) {
@@ -681,6 +1013,12 @@ async function generateExternalServicesTypes(nitro: Nitro) {
 
       // Generate ofetch client for all frameworks
       generateExternalOfetchClient(nitro, service, service.endpoint)
+
+      // Generate WebSocket client if wsEndpoint is provided
+      if (service.wsEndpoint) {
+        generateExternalWebSocketClient(nitro, service, service.wsEndpoint)
+        consola.success(`[graphql:${service.name}] WebSocket client generated`)
+      }
 
       consola.success(`[graphql:${service.name}] External service types generated successfully`)
     }
