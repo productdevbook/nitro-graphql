@@ -75,7 +75,7 @@ export function setupApp(element: HTMLButtonElement) {
   graphqlLink.onmouseleave = () => graphqlLink.style.transform = 'scale(1)'
 
   const graphqlLogo = document.createElement('img')
-  graphqlLogo.src = 'https://graphql.org/img/logo.svg'
+  graphqlLogo.src = 'https://github.com/productdevbook/nitro-graphql/raw/main/.docs/public/logo.svg'
   graphqlLogo.alt = 'GraphQL'
   graphqlLogo.style.cssText = 'width: 48px; height: 48px; display: block;'
   graphqlLink.appendChild(graphqlLogo)
@@ -83,7 +83,7 @@ export function setupApp(element: HTMLButtonElement) {
   logosContainer.append(nitroLink, viteLink, graphqlLink)
 
   const mainTitle = document.createElement('h1')
-  mainTitle.textContent = 'GraphQL Demo'
+  mainTitle.textContent = 'Nitro GraphQL Demo'
   mainTitle.style.cssText = styles.mainTitle
 
   leftPanel.append(logosContainer, mainTitle)

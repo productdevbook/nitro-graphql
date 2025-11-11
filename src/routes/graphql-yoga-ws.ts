@@ -1,105 +1,22 @@
 import type { Peer } from 'crossws'
 import type { GraphQLSchema } from 'graphql'
 import type { YogaServerInstance } from 'graphql-yoga'
+import type { GraphQLWSMessage } from '../utils/ws-protocol'
 import { importedConfig } from '#nitro-graphql/graphql-config'
-import { moduleConfig } from '#nitro-graphql/module-config'
-import { directives } from '#nitro-graphql/server-directives'
-import { resolvers } from '#nitro-graphql/server-resolvers'
-import { schemas } from '#nitro-graphql/server-schemas'
-
-import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge'
-import { makeExecutableSchema } from '@graphql-tools/schema'
 import defu from 'defu'
-import { parse, subscribe, validate } from 'graphql'
 import { createYoga } from 'graphql-yoga'
 import { defineWebSocketHandler } from 'h3'
+import {
+  cleanupSubscriptions,
+  devLog,
 
-// Development-only logging
-const isDev = process.env.NODE_ENV === 'development'
-function devLog(message: string, ...args: any[]) {
-  if (isDev)
-    console.log(message, ...args)
-}
-
-// Helper for efficient message sending
-function sendMessage(peer: Peer, message: Record<string, any>) {
-  peer.send(JSON.stringify(message))
-}
-
-// Conditional imports for federation support
-let buildSubgraphSchema: any = null
-
-async function loadFederationSupport() {
-  if (buildSubgraphSchema !== null)
-    return buildSubgraphSchema
-
-  try {
-    const apolloSubgraph = await import('@apollo/subgraph')
-    buildSubgraphSchema = apolloSubgraph.buildSubgraphSchema
-  }
-  catch {
-    buildSubgraphSchema = false
-  }
-
-  return buildSubgraphSchema
-}
-
-async function createMergedSchema() {
-  try {
-    const mergedSchemas = schemas.map(schema => schema.def).join('\n\n')
-    const typeDefs = mergeTypeDefs([mergedSchemas], {
-      throwOnConflict: true,
-      commentDescriptions: true,
-      sort: true,
-    })
-    const mergedResolvers = mergeResolvers(resolvers.map(r => r.resolver))
-
-    const federationEnabled = moduleConfig.federation?.enabled
-
-    let schema
-
-    if (federationEnabled) {
-      const buildSubgraph = await loadFederationSupport()
-
-      if (buildSubgraph) {
-        const typeDefsDoc = typeof typeDefs === 'string' ? parse(typeDefs) : typeDefs
-
-        schema = buildSubgraph({
-          typeDefs: typeDefsDoc,
-          resolvers: mergedResolvers,
-        })
-      }
-      else {
-        console.warn('[GraphQL WS] Federation enabled but @apollo/subgraph not available, falling back to regular schema')
-        schema = makeExecutableSchema({
-          typeDefs,
-          resolvers: mergedResolvers,
-        })
-      }
-    }
-    else {
-      schema = makeExecutableSchema({
-        typeDefs,
-        resolvers: mergedResolvers,
-      })
-    }
-
-    // Apply directives if any
-    if (directives && directives.length > 0) {
-      for (const { directive } of directives) {
-        if (directive.transformer) {
-          schema = directive.transformer(schema)
-        }
-      }
-    }
-
-    return schema
-  }
-  catch (error) {
-    console.error('[GraphQL WS] Schema merge error:', error)
-    throw error
-  }
-}
+  handleComplete,
+  handleConnectionInit,
+  handlePing,
+  handleSubscribe,
+  sendMessage,
+} from '../utils/ws-protocol'
+import { createMergedSchema } from '../utils/ws-schema'
 
 let schema: GraphQLSchema
 let yoga: YogaServerInstance<object, object>
@@ -118,13 +35,6 @@ async function getSchema() {
     }
   }
   return schema
-}
-
-// graphql-ws protocol implementation
-interface GraphQLWSMessage {
-  id?: string
-  type: string
-  payload?: any
 }
 
 // Store active subscriptions per peer
@@ -162,128 +72,24 @@ export default defineWebSocketHandler({
       }
 
       switch (msg.type) {
-        case 'connection_init': {
-          sendMessage(peer, { type: 'connection_ack' })
+        case 'connection_init':
+          handleConnectionInit(peer)
           break
-        }
 
-        case 'ping': {
-          sendMessage(peer, { type: 'pong' })
+        case 'ping':
+          handlePing(peer)
           break
-        }
 
-        case 'subscribe': {
-          if (!msg.id || !msg.payload) {
-            sendMessage(peer, {
-              id: msg.id,
-              type: 'error',
-              payload: [{ message: 'Invalid subscribe message' }],
-            })
-            break
-          }
-
-          try {
-            const { query, variables, operationName } = msg.payload
-
-            // Parse and validate the query
-            const document = typeof query === 'string' ? parse(query) : query
-            const validationErrors = validate(schema, document)
-
-            if (validationErrors.length > 0) {
-              sendMessage(peer, {
-                id: msg.id,
-                type: 'error',
-                payload: validationErrors.map(err => ({
-                  message: err.message,
-                  locations: err.locations,
-                  path: err.path,
-                })),
-              })
-              break
-            }
-
-            // Try to execute as subscription first
-            const result = await subscribe({
-              schema,
-              document,
-              variableValues: variables,
-              operationName,
-              contextValue: {},
-            })
-
-            // Check if it's a subscription result (AsyncIterator)
-            if (Symbol.asyncIterator in result) {
-              subscriptions.set(msg.id, result)
-
-              // Process subscription events
-              ;(async () => {
-                try {
-                  for await (const value of result) {
-                    sendMessage(peer, {
-                      id: msg.id,
-                      type: 'next',
-                      payload: value,
-                    })
-                  }
-
-                  // Subscription completed
-                  sendMessage(peer, {
-                    id: msg.id,
-                    type: 'complete',
-                  })
-                  subscriptions.delete(msg.id)
-                }
-                catch (error) {
-                  console.error('[GraphQL WS] Subscription error:', error)
-                  sendMessage(peer, {
-                    id: msg.id,
-                    type: 'error',
-                    payload: [{ message: error instanceof Error ? error.message : 'Subscription error' }],
-                  })
-                  subscriptions.delete(msg.id)
-                }
-              })()
-            }
-            else {
-              // It's a regular query/mutation result
-              sendMessage(peer, {
-                id: msg.id,
-                type: 'next',
-                payload: result,
-              })
-              sendMessage(peer, {
-                id: msg.id,
-                type: 'complete',
-              })
-            }
-          }
-          catch (error) {
-            console.error('[GraphQL WS] Operation error:', error)
-            sendMessage(peer, {
-              id: msg.id,
-              type: 'error',
-              payload: [{ message: error instanceof Error ? error.message : 'Operation failed' }],
-            })
-          }
+        case 'subscribe':
+          await handleSubscribe(peer, msg, schema, subscriptions)
           break
-        }
 
-        case 'complete': {
-          if (!msg.id)
-            break
-
-          // Cancel active subscription
-          const iterator = subscriptions.get(msg.id)
-          if (iterator && typeof iterator.return === 'function') {
-            await iterator.return()
-          }
-          subscriptions.delete(msg.id)
+        case 'complete':
+          await handleComplete(msg, subscriptions)
           break
-        }
 
-        default: {
+        default:
           devLog('[GraphQL WS] Unknown message type:', msg.type)
-        }
       }
     }
     catch (error) {
@@ -301,17 +107,7 @@ export default defineWebSocketHandler({
     // Clean up all subscriptions for this peer
     const subscriptions = peerSubscriptions.get(peer)
     if (subscriptions) {
-      for (const [id, iterator] of subscriptions.entries()) {
-        if (typeof iterator.return === 'function') {
-          try {
-            await iterator.return()
-          }
-          catch (error) {
-            console.error(`[GraphQL WS] Error cleaning up subscription ${id}:`, error)
-          }
-        }
-      }
-      subscriptions.clear()
+      await cleanupSubscriptions(subscriptions)
     }
     peerSubscriptions.delete(peer)
   },
