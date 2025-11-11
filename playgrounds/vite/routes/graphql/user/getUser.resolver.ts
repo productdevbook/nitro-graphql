@@ -1,4 +1,4 @@
-import { defineQuery } from 'nitro-graphql/utils/define'
+import { defineQuery } from 'nitro-graphql/define'
 import { mockUsers } from './userStore'
 
 export const data = defineQuery({
