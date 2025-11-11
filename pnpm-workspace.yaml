@@ -3,7 +3,7 @@ packages:
   - playgrounds/*
 catalog:
   '@antfu/eslint-config': ^6.2.0
-  '@apollo/server': 5.0.0
+  '@apollo/server': ^5.1.0
   '@apollo/subgraph': ^2.11.4
   '@apollo/utils.withrequired': ^3.0.0
   '@as-integrations/h3': 2.0.0
@@ -29,13 +29,13 @@ catalog:
   changelogen: ^0.6.2
   chokidar: ^4.0.3
   consola: ^3.4.2
-  crossws: 0.3.5
+  crossws: ^0.4.1
   defu: ^6.1.4
   eslint: ^9.39.1
   graphql: ^16.12.0
   graphql-config: ^5.1.5
   graphql-scalars: ^1.25.0
-  graphql-yoga: ^5.16.0
+  graphql-yoga: ^5.16.2
   h3: ^2.0.1-rc.5
   knitwork: ^1.2.0
   nitro: npm:nitro-nightly@latest
