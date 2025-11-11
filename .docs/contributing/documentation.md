@@ -146,7 +146,7 @@ Use numbered lists for sequential steps:
 **Good:**
 ```typescript
 // ✅ Complete, working example
-import { defineQuery } from 'nitro-graphql/utils/define'
+import { defineQuery } from 'nitro-graphql/define'
 
 export const userQueries = defineQuery({
   user: async (_, { id }, context) => {

@@ -15,6 +15,7 @@ export default defineConfig({
     'src/rollup.ts',
     'src/setup.ts',
     'src/vite.ts',
+    'src/define.ts',
     'src/utils/**',
     'src/routes/**',
     'src/virtual/**',

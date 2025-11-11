@@ -1,8 +1,8 @@
-import { defineMutation } from 'nitro-graphql/utils/define'
+import { defineMutation } from 'nitro-graphql/define'
 import { mockUsers } from './userStore'
 
 export const data = defineMutation({
-  createUser: (_parent: unknown, args: { input: { email: string, name?: string } }) => {
+  createUser: (_parent, args) => {
     const newUser = {
       id: String(mockUsers.length + 1),
       email: args.input.email,

@@ -350,7 +350,7 @@ export async function setupNitroGraphQL(nitro: Nitro) {
   if (nitro.options.imports) {
     nitro.options.imports.presets ??= []
     nitro.options.imports.presets.push({
-      from: fileURLToPath(new URL('utils/define', import.meta.url)),
+      from: fileURLToPath(new URL('define', import.meta.url)),
       imports: [
         'defineResolver',
         'defineMutation',
@@ -693,7 +693,7 @@ export default <IGraphQLConfig> {
       writeFileIfNotExists(serverConfigPath, `// Example GraphQL config file please change it to your needs
 // import * as tables from '../drizzle/schema/index'
 // import { useDatabase } from '../utils/useDb'
-import { defineGraphQLConfig } from 'nitro-graphql/utils/define'
+import { defineGraphQLConfig } from 'nitro-graphql/define'
 
 export default defineGraphQLConfig({
 // graphql-yoga example config

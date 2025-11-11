@@ -45,9 +45,9 @@
       "types": "./dist/utils/index.d.mts",
       "import": "./dist/utils/index.mjs"
     },
-    "./utils/define": {
-      "types": "./dist/utils/define.d.mts",
-      "import": "./dist/utils/define.mjs"
+    "./define": {
+      "types": "./dist/define.d.mts",
+      "import": "./dist/define.mjs"
     },
     "./utils/apollo": {
       "types": "./dist/utils/apollo.d.mts",

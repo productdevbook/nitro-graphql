@@ -402,7 +402,7 @@ pnpm build
 // Instead of:
 import { defineMutation, defineQuery, defineType } from 'nitro-graphql'
 // Only import what you need
-import { defineQuery } from 'nitro-graphql/utils/define'
+import { defineQuery } from 'nitro-graphql/define'
 ```
 
 5. **Parallel Processing:**

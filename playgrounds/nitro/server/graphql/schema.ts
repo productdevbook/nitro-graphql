@@ -1,5 +1,5 @@
 // import { z } from 'zod'
-import { defineSchema } from 'nitro-graphql/utils/define'
+import { defineSchema } from 'nitro-graphql/define'
 
 export default defineSchema({
   // User: z.object({

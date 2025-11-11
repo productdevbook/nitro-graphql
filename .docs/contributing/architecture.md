@@ -435,7 +435,7 @@ The module exports multiple subpaths:
 ```typescript
 import nitroGraphQL from 'nitro-graphql'
 import { buildSubgraphSchema } from 'nitro-graphql/utils/apollo'
-import { defineResolver } from 'nitro-graphql/utils/define'
+import { defineResolver } from 'nitro-graphql/define'
 ```
 
 ## Key Concepts

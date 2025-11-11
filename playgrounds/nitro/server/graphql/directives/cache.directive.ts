@@ -1,6 +1,6 @@
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils'
 import { defaultFieldResolver } from 'graphql'
-import { defineDirective } from 'nitro-graphql/utils/define'
+import { defineDirective } from 'nitro-graphql/define'
 
 // Simple in-memory cache for demo purposes
 const cache = new Map<string, { value: any, expires: number }>()

@@ -8,7 +8,7 @@ Resolvers are functions that return data for GraphQL fields. They connect your s
 
 ## Resolver Functions
 
-All resolver utility functions are auto-imported in `.resolver.ts` files. They are exported from `nitro-graphql/utils/define`.
+All resolver utility functions are auto-imported in `.resolver.ts` files. They are exported from `nitro-graphql/define`.
 
 ### defineResolver
 

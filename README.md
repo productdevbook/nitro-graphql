@@ -649,7 +649,7 @@ server/
 - ✅ Verify exports are named exports
 
 **Import errors**
-- ✅ Use correct path: `nitro-graphql/utils/define`
+- ✅ Use correct path: `nitro-graphql/define`
 - ✅ Use named exports in resolvers
 
 **Vite: "Parse failure: Expected ';', '}' or <eof>" on GraphQL files**

@@ -1,4 +1,4 @@
-import { defineResolver } from 'nitro-graphql/utils/define'
+import { defineResolver } from 'nitro-graphql/define'
 import { users } from '../data'
 
 export const userQueries = defineResolver({

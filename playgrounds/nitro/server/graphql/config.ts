@@ -1,4 +1,4 @@
-import { defineGraphQLConfig } from 'nitro-graphql/utils/define'
+import { defineGraphQLConfig } from 'nitro-graphql/define'
 // Custom GraphQL Yoga configuration
 export default defineGraphQLConfig({
   // Custom context enhancer - adds additional properties to GraphQL context

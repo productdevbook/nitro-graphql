@@ -1,6 +1,6 @@
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils'
 import { defaultFieldResolver, GraphQLError } from 'graphql'
-import { defineDirective } from 'nitro-graphql/utils/define'
+import { defineDirective } from 'nitro-graphql/define'
 
 export const authDirective = defineDirective({
   name: 'auth',

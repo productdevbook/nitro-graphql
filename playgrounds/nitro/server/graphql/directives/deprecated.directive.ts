@@ -1,6 +1,6 @@
 import type { GraphQLFieldConfig } from 'graphql'
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils'
-import { defineDirective } from 'nitro-graphql/utils/define'
+import { defineDirective } from 'nitro-graphql/define'
 
 export const deprecatedFieldDirective = defineDirective({
   name: 'deprecatedField',
