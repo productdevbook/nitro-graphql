@@ -1,6 +1,9 @@
-ignore-workspace-root-check: true
 packages:
   - playgrounds/*
+
+ignoreWorkspaceRootCheck: true
+shellEmulator: true
+
 catalog:
   '@antfu/eslint-config': ^6.2.0
   '@apollo/server': ^5.1.0

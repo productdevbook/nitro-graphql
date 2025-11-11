@@ -16,10 +16,5 @@
   "devDependencies": {
     "nitro": "catalog:",
     "vite": "catalog:"
-  },
-  "pnpm": {
-    "overrides": {
-      "vite": "npm:rolldown-vite@latest"
-    }
   }
 }

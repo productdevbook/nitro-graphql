@@ -147,6 +147,12 @@
     "vite": "catalog:",
     "vitepress-plugin-llms": "catalog:"
   },
+  "pnpm": {
+    "overrides": {
+      "nitro": "npm:nitro-nightly@latest",
+      "vite": "npm:rolldown-vite@latest"
+    }
+  },
   "resolutions": {
     "nitro-graphql": "link:."
   }
