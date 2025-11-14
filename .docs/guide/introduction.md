@@ -183,7 +183,7 @@ graph LR
     D --> F
     F --> G[GraphQL Server]
     E --> H[TypeScript Types]
-    G --> I[/api/graphql]
+    G --> I[api/graphql]
     H --> J[IntelliSense]
 ```
 
