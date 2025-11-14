@@ -119,25 +119,30 @@ type Primitive =
 
 type BuiltIns = Primitive | void | Date | RegExp;
 
+type IsLiteral<T> = T extends string
+  ? string extends T
+    ? false
+    : true
+  : false;
 
 type ResolverReturnType<T> = T extends BuiltIns
-? T
-: T extends (...args: any[]) => unknown
-? T | undefined
-: T extends { __typename?: any }
-? T
-: T extends object
-? T extends Array<infer ItemType> // Test for arrays/tuples, per https://github.com/microsoft/TypeScript/issues/35156
-  ? ItemType[] extends T // Test for arrays (non-tuples) specifically
-    ? Array<ResolverReturnType<ItemType>>
-    : { [K in keyof T]: ResolverReturnType<T[K]> }
-  : { [K in keyof T]: ResolverReturnType<T[K]> }
-: unknown;
+  ? T
+  : T extends (...args: any[]) => unknown
+  ? T | undefined
+  : T extends object
+  ? T extends Array<infer ItemType>
+    ? ItemType[] extends T
+      ? Array<ResolverReturnType<ItemType>>
+      : ResolverReturnTypeObject<T>
+    : ResolverReturnTypeObject<T>
+  : unknown;
 
 type ResolverReturnTypeObject<T extends object> =
   T extends { __typename?: infer TTypename }
-    ? TTypename extends SchemaKeys
-      ? InferOutputFromSchema<TTypename>
+    ? IsLiteral<TTypename> extends true
+      ? TTypename extends SchemaKeys
+        ? InferOutputFromSchema<TTypename>
+        : { [K in keyof T]: ResolverReturnType<T[K]> }
       : { [K in keyof T]: ResolverReturnType<T[K]> }
     : { [K in keyof T]: ResolverReturnType<T[K]> };
 `,
