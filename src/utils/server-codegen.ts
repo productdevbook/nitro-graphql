@@ -119,47 +119,25 @@ type Primitive =
 
 type BuiltIns = Primitive | void | Date | RegExp;
 
-type IsLiteral<T> = T extends string
-  ? string extends T
-    ? false
-    : true
-  : false;
 
 type ResolverReturnType<T> = T extends BuiltIns
-  ? T
-  : T extends (...args: any[]) => unknown
-  ? T | undefined
-  : T extends object
-  ? T extends Array<infer ItemType>
-    ? ItemType[] extends T
-      ? Array<ResolverReturnType<ItemType>>
-      : ResolverReturnTypeObject<T>
-    : ResolverReturnTypeObject<T>
-  : unknown;
-
-// Helper type: Map all properties recursively, preserving __typename as literal
-type MapResolverProps<T extends object> = {
-  [K in keyof T]: K extends '__typename'
-    ? T[K]
-    : ResolverReturnType<T[K]>
-};
-
-// Helper type: Check if schema output is meaningful (not unknown)
-type HasSchemaOutput<T extends SchemaKeys> =
-  InferOutputFromSchema<T> extends unknown
-    ? false
-    : true;
+? T
+: T extends (...args: any[]) => unknown
+? T | undefined
+: T extends object
+? T extends Array<infer ItemType> // Test for arrays/tuples, per https://github.com/microsoft/TypeScript/issues/35156
+  ? ItemType[] extends T // Test for arrays (non-tuples) specifically
+    ? Array<ResolverReturnType<ItemType>>
+    : ResolverReturnTypeObject<T> // Tuples behave properly
+  : ResolverReturnTypeObject<T>
+: unknown;
 
 type ResolverReturnTypeObject<T extends object> =
   T extends { __typename?: infer TTypename }
-    ? IsLiteral<TTypename> extends true
-      ? TTypename extends SchemaKeys
-        ? HasSchemaOutput<TTypename> extends true
-          ? InferOutputFromSchema<TTypename> & Pick<MapResolverProps<T>, '__typename'>
-          : MapResolverProps<T>
-        : MapResolverProps<T>
-      : MapResolverProps<T>
-    : MapResolverProps<T>;
+    ? TTypename extends SchemaKeys
+      ? InferOutputFromSchema<TTypename>
+      : { [K in keyof T]: ResolverReturnType<T[K]> }
+    : { [K in keyof T]: ResolverReturnType<T[K]> };
 `,
               '',
             ],
