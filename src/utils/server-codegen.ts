@@ -137,14 +137,29 @@ type ResolverReturnType<T> = T extends BuiltIns
     : ResolverReturnTypeObject<T>
   : unknown;
 
+// Helper type: Map all properties recursively, preserving __typename as literal
+type MapResolverProps<T extends object> = {
+  [K in keyof T]: K extends '__typename'
+    ? T[K]
+    : ResolverReturnType<T[K]>
+};
+
+// Helper type: Check if schema output is meaningful (not unknown)
+type HasSchemaOutput<T extends SchemaKeys> =
+  InferOutputFromSchema<T> extends unknown
+    ? false
+    : true;
+
 type ResolverReturnTypeObject<T extends object> =
   T extends { __typename?: infer TTypename }
     ? IsLiteral<TTypename> extends true
       ? TTypename extends SchemaKeys
-        ? InferOutputFromSchema<TTypename>
-        : { [K in keyof T]: ResolverReturnType<T[K]> }
-      : { [K in keyof T]: ResolverReturnType<T[K]> }
-    : { [K in keyof T]: ResolverReturnType<T[K]> };
+        ? HasSchemaOutput<TTypename> extends true
+          ? InferOutputFromSchema<TTypename> & Pick<MapResolverProps<T>, '__typename'>
+          : MapResolverProps<T>
+        : MapResolverProps<T>
+      : MapResolverProps<T>
+    : MapResolverProps<T>;
 `,
               '',
             ],
