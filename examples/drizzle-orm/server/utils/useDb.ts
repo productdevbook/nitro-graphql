@@ -7,7 +7,6 @@ export type Database = ReturnType<typeof useDatabaseConnect>
 let _database: ReturnType<typeof useDatabaseConnect>
 
 function useDatabaseConnect() {
-  console.log(process.env.NITRO_BOOK_DATABASE_URL)
   return drizzle(process.env.NITRO_BOOK_DATABASE_URL as string, {
     casing: 'camelCase',
     schema: tables,
