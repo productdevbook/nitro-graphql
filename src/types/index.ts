@@ -5,7 +5,7 @@ import type { TypeScriptResolversPluginConfig } from '@graphql-codegen/typescrip
 import type { IResolvers } from '@graphql-tools/utils'
 import type { ESMCodeGenOptions } from 'knitwork'
 
-export type { StandardSchemaV1 } from './standard-schema'
+export * from './standard-schema.ts'
 
 export type CodegenServerConfig = TypeScriptPluginConfig & TypeScriptResolversPluginConfig
 

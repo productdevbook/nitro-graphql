@@ -1,8 +1,20 @@
 packages:
   - playgrounds/*
+  - examples/**
 
 ignoreWorkspaceRootCheck: true
+
 shellEmulator: true
+# Enable when https://github.com/pnpm/pnpm/pull/10168 lands
+# trustPolicy: no-downgrade
+# trustPolicyExclude:
+#   - chokidar@4.0.3
+#   - '@graphql-tools/url-loader@9.0.4'
+#   - '@graphql-tools/executor-http@3.0.6'
+#   - '@graphql-tools/executor-graphql-ws@3.1.2'
+#   - '@graphql-tools/wrap@11.0.4'
+#   - '@graphql-tools/wrap@10.1.4'
+#   - '@graphql-tools/executor-http@1.3.3'
 
 catalog:
   '@antfu/eslint-config': ^6.2.0

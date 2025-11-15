@@ -11,6 +11,9 @@ export const GLOB_SCAN_PATTERN = '**/*.{graphql,gql,js,mjs,cjs,ts,mts,cts,tsx,js
 // Re-export directive parser utilities
 export { directiveParser, generateDirectiveSchema, generateDirectiveSchemas } from './directive-parser'
 
+// Re-export error handling utilities
+export { createDefaultMaskError } from './errors'
+
 interface FileInfo { path: string, fullPath: string }
 
 /**

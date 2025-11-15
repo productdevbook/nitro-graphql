@@ -18,19 +18,30 @@ const nitro = {
     '.docs/.vitepress/**/*',
   ],
 }
-export default antfu({
-  ...nitro,
-}, {
-  rules: {
-    'node/prefer-global/process': 'off',
-    'no-new-func': 'off',
+export default antfu(
+  {
+    ...nitro,
   },
-}, {
-  files: [
-    'playgrounds/**/*.{ts,js,mjs,cjs}',
-  ],
-  rules: {
-    'no-console': 'off',
-    'unused-imports/no-unused-vars': 'off',
+  {
+    rules: {
+      'node/prefer-global/process': 'off',
+      'no-new-func': 'off',
+    },
   },
-})
+  {
+    files: [
+      'playgrounds/**/*.{ts,js,mjs,cjs}',
+    ],
+    rules: {
+      'no-console': 'off',
+      'unused-imports/no-unused-vars': 'off',
+    },
+  },
+  {
+    files: ['examples/**/*.{ts,js,mjs,cjs,json,vue}'],
+    rules: {
+      'unused-imports/no-unused-vars': 'off',
+      'style/eol-last': 'off',
+    },
+  },
+)

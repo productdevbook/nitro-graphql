@@ -129,5 +129,13 @@ export default defineEventHandler(async (event) => {
   }
   const response = await yoga.handleRequest(event.req, event as any)
 
+  // If resolver set a custom status code via event.res.status, use it
+  if (event.res.statusCode && event.res.statusCode !== 200) {
+    return new Response(response.body, {
+      ...response,
+      status: event.res.statusCode,
+    })
+  }
+
   return new Response(response.body, response)
 })

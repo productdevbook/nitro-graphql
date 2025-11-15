@@ -81,7 +81,7 @@ export async function generateTypes(
           return {
             prepend: [
               `import schemas from '#graphql/schema'`,
-              `import type { StandardSchemaV1 } from 'nitro-graphql'`,
+              `import type { StandardSchemaV1 } from 'nitro-graphql/types'`,
 
               `
 export interface NPMConfig {

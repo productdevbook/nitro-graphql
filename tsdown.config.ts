@@ -20,6 +20,7 @@ export default defineConfig({
     'src/routes/**',
     'src/virtual/**',
     'src/ecosystem/**',
+    'src/types/**',
   ],
   format: ['esm'],
   dts: true,

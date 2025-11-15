@@ -46,19 +46,19 @@ export function defineSchema<T extends Partial<Record<keyof ResolversTypes, Stan
  * ```typescript
  * export const userResolvers = defineResolver({
  *   Query: {
- *     user: async (_, { id }, context) => {
+ *     user: async (parent, { id }, context) => {
  *       return await context.storage.getItem(`user:${id}`)
  *     }
  *   },
  *   Mutation: {
- *     createUser: async (_, { input }, context) => {
+ *     createUser: async (parent, { input }, context) => {
  *       const user = { id: generateId(), ...input }
  *       await context.storage.setItem(`user:${user.id}`, user)
  *       return user
  *     }
  *   },
  *   User: {
- *     fullName: (parent) => `${parent.firstName} ${parent.lastName}`
+ *     fullName: (parent, args, context) => `${parent.firstName} ${parent.lastName}`
  *   }
  * })
  * ```
@@ -82,10 +82,10 @@ export function defineResolver(
  * @example
  * ```typescript
  * export const userQueries = defineQuery({
- *   user: async (_, { id }, context) => {
+ *   user: async (parent, { id }, context) => {
  *     return await fetchUser(id)
  *   },
- *   users: async (_, __, context) => {
+ *   users: async (parent, args, context) => {
  *     return await fetchAllUsers()
  *   }
  * })
@@ -117,14 +117,14 @@ export function defineQuery(
  * @example
  * ```typescript
  * export const userMutations = defineMutation({
- *   createUser: async (_, { input }, context) => {
+ *   createUser: async (parent, { input }, context) => {
  *     const user = await context.db.users.create(input)
  *     return user
  *   },
- *   updateUser: async (_, { id, input }, context) => {
+ *   updateUser: async (parent, { id, input }, context) => {
  *     return await context.db.users.update(id, input)
  *   },
- *   deleteUser: async (_, { id }, context) => {
+ *   deleteUser: async (parent, { id }, context) => {
  *     return await context.db.users.delete(id)
  *   }
  * })
@@ -159,13 +159,13 @@ export function defineMutation(
  *
  * export const messageSubscriptions = defineSubscription({
  *   messageAdded: {
- *     subscribe: async function* (_, { channelId }, context) {
+ *     subscribe: async function* (parent, { channelId }, context) {
  *       const pubsub = context.pubsub
  *       yield* pubsub.subscribe(`channel:${channelId}`)
  *     }
  *   },
  *   userStatusChanged: {
- *     subscribe: async (_, __, context) => {
+ *     subscribe: async (parent, args, context) => {
  *       return new Repeater(async (push, stop) => {
  *         // Real-time subscription logic
  *       })
@@ -237,6 +237,8 @@ export function defineType(
  *
  * @example
  * ```typescript
+ * import { createDefaultMaskError } from 'nitro-graphql/utils'
+ *
  * // GraphQL Yoga configuration
  * export default defineGraphQLConfig({
  *   schema: {
@@ -248,10 +250,10 @@ export function defineType(
  *       db: getDatabase()
  *     }
  *   },
- *   yoga: {
- *     graphiql: true,
- *     maskedErrors: false
- *   }
+ *   maskedErrors: {
+ *     maskError: createDefaultMaskError()
+ *   },
+ *   graphiql: true
  * })
  * ```
  *
