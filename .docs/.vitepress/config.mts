@@ -1,8 +1,9 @@
 import { defineConfig } from 'vitepress'
+import { withMermaid } from 'vitepress-plugin-mermaid'
 import llmstxt from 'vitepress-plugin-llms'
 
 // https://vitepress.dev/reference/site-config
-export default defineConfig({
+export default withMermaid(defineConfig({
   title: 'Nitro GraphQL',
   description: 'The easiest way to add GraphQL to any Nitro application. Auto-discovery, type generation, and zero config setup.',
   lang: 'en-US',
@@ -230,4 +231,4 @@ export default defineConfig({
   sitemap: {
     hostname: 'https://nitro-graphql.dev',
   },
-})
+}))
