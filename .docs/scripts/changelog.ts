@@ -55,16 +55,58 @@ export function getFileChangelog(filePath: string, limit = 10): CommitInfo[] {
 }
 
 /**
- * Get all version/release commits (like VueUse does)
+ * Fetch version commits from GitHub Releases API (for shallow clones)
  */
-function getVersionCommits(): CommitInfo[] {
+async function fetchGitHubReleases(): Promise<CommitInfo[]> {
+  try {
+    const response = await fetch(
+      'https://api.github.com/repos/productdevbook/nitro-graphql/releases?per_page=20',
+      {
+        headers: {
+          'content-type': 'application/json',
+        },
+      },
+    )
+
+    if (!response.ok) {
+      console.warn('GitHub API rate limit or error:', response.status)
+      return []
+    }
+
+    const releases = await response.json() as Array<{
+      tag_name: string
+      published_at: string
+      author: { login: string }
+      name: string
+      body: string
+    }>
+
+    return releases.map(release => ({
+      hash: release.tag_name,
+      date: release.published_at,
+      author: release.author.login,
+      message: release.name || `Release ${release.tag_name}`,
+      version: release.tag_name.replace(/^v/, ''),
+      functions: [],
+    }))
+  }
+  catch (error) {
+    console.warn('Failed to fetch GitHub releases:', error)
+    return []
+  }
+}
+
+/**
+ * Get all version/release commits (with GitHub API fallback)
+ */
+async function getVersionCommits(): Promise<CommitInfo[]> {
+  let commits: CommitInfo[] = []
+
   try {
     const output = execSync(
       'git log --tags --simplify-by-decoration --pretty="%h|%aI|%an|%s|%D"',
       { encoding: 'utf-8', cwd: process.cwd() },
     )
-
-    const commits: CommitInfo[] = []
 
     for (const line of output.trim().split('\n')) {
       if (!line.trim())
@@ -87,26 +129,41 @@ function getVersionCommits(): CommitInfo[] {
         })
       }
     }
+  }
+  catch {
+    console.warn('Git log for tags failed, using GitHub API fallback')
+  }
 
-    return commits
+  // If git log returned few/no results (shallow clone), fetch from GitHub API
+  if (commits.length < 5) {
+    console.log('Using GitHub Releases API for version history (shallow clone detected)')
+    const githubReleases = await fetchGitHubReleases()
+
+    // Merge with git results, prefer git data when available
+    const commitMap = new Map(commits.map(c => [c.version, c]))
+    for (const release of githubReleases) {
+      if (release.version && !commitMap.has(release.version)) {
+        commitMap.set(release.version, release)
+      }
+    }
+
+    commits = Array.from(commitMap.values())
   }
-  catch (error) {
-    console.warn('Failed to get version commits:', error)
-    return []
-  }
+
+  return commits
 }
 
 /**
  * Get changelog for all documentation files
  */
-export function getAllChangelogs(docsDir: string, limit = 10): ChangelogData {
+export async function getAllChangelogs(docsDir: string, limit = 10): Promise<ChangelogData> {
   // eslint-disable-next-line ts/no-require-imports
   const { join } = require('node:path')
   // eslint-disable-next-line ts/no-require-imports
   const { scanMarkdownFiles, getFunctionNameFromPath } = require('../metadata/extractor')
 
   // Get all version commits (like VueUse - these are shown on all pages)
-  const versionCommits = getVersionCommits()
+  const versionCommits = await getVersionCommits()
 
   const changelogs: ChangelogData = {}
   const directories = ['api', 'guide', 'ecosystem', 'troubleshooting', 'contributing']

@@ -56,7 +56,7 @@ async function updateMetadata() {
 
   // 4. Extract changelog
   console.log('\n📝 Extracting changelog...')
-  const changelog = getAllChangelogs(DOCS_DIR, 20) // Increased limit like VueUse
+  const changelog = await getAllChangelogs(DOCS_DIR, 20) // Increased limit like VueUse
   const changelogPath = join(DOCS_DIR, 'metadata/changelog.json')
   writeFileSync(changelogPath, JSON.stringify(changelog, null, 2))
   console.log(`✓ Changelog: ${Object.keys(changelog).length} functions`)
