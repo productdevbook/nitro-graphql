@@ -82,16 +82,32 @@ function matchGitHubUsername(email: string, name: string, githubUsers: Array<{ l
 
 /**
  * Get contributors for a specific file
+ * Uses GitHub API as source of truth, enriches with git log commit counts
  */
 export async function getFileContributors(filePath: string, githubUsers: Array<{ login: string, avatar_url: string }>): Promise<ContributorInfo[]> {
+  // Start with all GitHub contributors to ensure everyone is included
+  // This is crucial for Cloudflare Pages shallow clones
+  const contributorsMap = new Map<string, ContributorInfo>()
+
+  // Initialize with GitHub API contributors
+  for (const user of githubUsers) {
+    contributorsMap.set(user.login, {
+      name: user.login,
+      email: `${user.login}@users.noreply.github.com`,
+      count: 0, // Will be updated from git log if available
+      github: user.login,
+      hash: createHash('md5')
+        .update(`${user.login}@users.noreply.github.com`.toLowerCase())
+        .digest('hex'),
+    })
+  }
+
+  // Try to enrich with git log data for accurate commit counts
   try {
-    // Get contributors with commit count using git shortlog
     const output = execSync(
       `git log --follow --format="%an|%ae" -- "${filePath}" | sort | uniq -c | sort -rn`,
       { encoding: 'utf-8', cwd: process.cwd() },
     )
-
-    const contributors: ContributorInfo[] = []
 
     for (const line of output.trim().split('\n')) {
       if (!line.trim())
@@ -107,27 +123,50 @@ export async function getFileContributors(filePath: string, githubUsers: Array<{
         // Match to GitHub username
         const githubMatch = matchGitHubUsername(email, name, githubUsers)
 
-        // Create MD5 hash for Gravatar fallback
-        const hash = createHash('md5')
-          .update(email.trim().toLowerCase())
-          .digest('hex')
+        // Update existing contributor or add new one
+        if (githubMatch) {
+          const existing = contributorsMap.get(githubMatch.login)
+          if (existing) {
+            existing.count = count
+            existing.name = name.trim() // Use real git name if available
+            existing.email = email.trim()
+            existing.hash = createHash('md5')
+              .update(email.trim().toLowerCase())
+              .digest('hex')
+          }
+        }
+        else {
+          // Contributor not in GitHub API (might be old/deleted account)
+          const hash = createHash('md5')
+            .update(email.trim().toLowerCase())
+            .digest('hex')
 
-        contributors.push({
-          name: name.trim(),
-          email: email.trim(),
-          count,
-          github: githubMatch?.login || null,
-          hash,
-        })
+          contributorsMap.set(email, {
+            name: name.trim(),
+            email: email.trim(),
+            count,
+            github: null,
+            hash,
+          })
+        }
       }
     }
-
-    return contributors
   }
   catch (error) {
-    console.warn(`Failed to get contributors for ${filePath}:`, error)
-    return []
+    console.warn(`Git log failed for ${filePath}, using GitHub API contributors with default counts`)
   }
+
+  // Convert to array and filter out contributors with 0 commits
+  // But keep at least the main contributors even if count is 0 (for new files)
+  const result = Array.from(contributorsMap.values())
+  const hasCommits = result.some(c => c.count > 0)
+
+  if (hasCommits) {
+    return result.filter(c => c.count > 0).sort((a, b) => b.count - a.count)
+  }
+
+  // For new files or shallow clones, return all GitHub contributors
+  return result.map(c => ({ ...c, count: 1 })).sort((a, b) => b.count - a.count)
 }
 
 /**
