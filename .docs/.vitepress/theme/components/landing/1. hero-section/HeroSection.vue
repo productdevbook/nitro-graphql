@@ -12,7 +12,7 @@ import GraphQLFlowDiagram from './GraphQLFlowDiagram.vue'
         target="_blank"
       >
         <span>⚡</span>
-        <span>v1.5.1 Released</span>
+        <span>v2.0.0-beta.26 Released</span>
       </a>
 
       <!-- Heading -->

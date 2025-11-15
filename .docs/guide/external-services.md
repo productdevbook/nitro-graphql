@@ -13,6 +13,8 @@ Connect to external GraphQL APIs and generate types for third-party services lik
 
 ```ts
 // nuxt.config.ts
+import { defineNuxtConfig } from 'nuxt/config'
+
 export default defineNuxtConfig({
   nitro: {
     graphql: {
@@ -52,6 +54,7 @@ query GetRepository($owner: String!, $name: String!) {
 
 ```vue
 <script setup lang="ts">
+// useGraphql() is auto-imported in Nuxt
 const { github } = useGraphql()
 
 const { data } = await useAsyncData('repo', () =>

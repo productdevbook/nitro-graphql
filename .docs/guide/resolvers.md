@@ -26,10 +26,10 @@ Define a complete resolver map with Query, Mutation, and custom types:
 export const appResolver = defineResolver({
   Query: {
     hello: () => 'Hello World',
-    user: (_, { id }) => findUser(id),
+    user: (parent, { id }) => findUser(id),
   },
   Mutation: {
-    createUser: (_, { input }) => createUser(input),
+    createUser: (parent, { input }) => createUser(input),
   },
   User: {
     posts: parent => findPostsByUser(parent.id),
@@ -44,10 +44,10 @@ Define only Query resolvers:
 ```ts
 // server/graphql/users/queries.resolver.ts
 export const userQueries = defineQuery({
-  users: async (_, __, context) => {
+  users: async (parent, args, context) => {
     return await context.storage?.getItem('users') || []
   },
-  user: async (_, { id }, context) => {
+  user: async (parent, { id }, context) => {
     const users = await context.storage?.getItem('users') || []
     return users.find(u => u.id === id) || null
   },
@@ -61,7 +61,7 @@ Define only Mutation resolvers:
 ```ts
 // server/graphql/users/mutations.resolver.ts
 export const userMutations = defineMutation({
-  createUser: async (_, { input }, context) => {
+  createUser: async (parent, { input }, context) => {
     const users = await context.storage?.getItem('users') || []
     const user = {
       id: Date.now().toString(),
@@ -73,7 +73,7 @@ export const userMutations = defineMutation({
     return user
   },
 
-  updateUser: async (_, { id, input }, context) => {
+  updateUser: async (parent, { id, input }, context) => {
     const users = await context.storage?.getItem('users') || []
     const index = users.findIndex(u => u.id === id)
     if (index === -1)
@@ -84,7 +84,7 @@ export const userMutations = defineMutation({
     return users[index]
   },
 
-  deleteUser: async (_, { id }, context) => {
+  deleteUser: async (parent, { id }, context) => {
     const users = await context.storage?.getItem('users') || []
     const filtered = users.filter(u => u.id !== id)
     await context.storage?.setItem('users', filtered)
@@ -102,7 +102,7 @@ Define field resolvers for custom types:
 export const userTypes = defineType({
   User: {
     // Resolve the posts field
-    posts: async (parent, _, context) => {
+    posts: async (parent, args, context) => {
       const posts = await context.storage?.getItem('posts') || []
       return posts.filter(p => p.authorId === parent.id)
     },
@@ -128,14 +128,14 @@ Define WebSocket subscriptions:
 // server/graphql/messages/subscriptions.resolver.ts
 export const messageSubscriptions = defineSubscription({
   messageAdded: {
-    subscribe: (_, __, context) => {
+    subscribe: (parent, args, context) => {
       return context.pubsub.asyncIterator(['MESSAGE_ADDED'])
     },
     resolve: payload => payload,
   },
 
   userTyping: {
-    subscribe: (_, { channelId }, context) => {
+    subscribe: (parent, { channelId }, context) => {
       return context.pubsub.asyncIterator([`TYPING_${channelId}`])
     },
   },
@@ -194,12 +194,12 @@ Arguments passed to the field:
 
 ```ts
 export const userQueries = defineQuery({
-  user: (_, args) => {
+  user: (parent, args) => {
     console.log(args.id) // The id argument
     return findUser(args.id)
   },
 
-  users: (_, args) => {
+  users: (parent, args) => {
     console.log(args.limit) // 10
     console.log(args.offset) // 0
     return findUsers(args)
@@ -211,8 +211,8 @@ With destructuring:
 
 ```ts
 export const userQueries = defineQuery({
-  user: (_, { id }) => findUser(id),
-  users: (_, { limit = 10, offset = 0 }) => findUsers(limit, offset),
+  user: (parent, { id }) => findUser(id),
+  users: (parent, { limit = 10, offset = 0 }) => findUsers(limit, offset),
 })
 ```
 
@@ -222,7 +222,7 @@ The H3 Event context object:
 
 ```ts
 export const userQueries = defineQuery({
-  me: async (_, __, context) => {
+  me: async (parent, args, context) => {
     // Access H3 event
     const event = context.event
 
@@ -250,7 +250,7 @@ Field execution information (rarely used):
 
 ```ts
 export const userQueries = defineQuery({
-  users: (_, __, ___, info) => {
+  users: (parent, args, context, info) => {
     console.log(info.fieldName) // 'users'
     console.log(info.returnType) // [User!]!
     console.log(info.parentType) // Query
@@ -274,14 +274,14 @@ export const postQueries = defineQuery({
     return await db.post.findMany()
   },
 
-  post: async (_, { id }) => {
+  post: async (parent, { id }) => {
     const db = await useDatabase()
     return await db.post.findUnique({ where: { id } })
   },
 })
 
 export const postMutations = defineMutation({
-  createPost: async (_, { input }) => {
+  createPost: async (parent, { input }) => {
     const db = await useDatabase()
     return await db.post.create({ data: input })
   },
@@ -306,13 +306,13 @@ type Post {
 export const postTypes = defineType({
   Post: {
     // Resolve author relationship
-    author: async (parent, _, context) => {
+    author: async (parent, args, context) => {
       const users = await context.storage?.getItem('users') || []
       return users.find(u => u.id === parent.authorId)
     },
 
     // Resolve comments relationship
-    comments: async (parent, _, context) => {
+    comments: async (parent, args, context) => {
       const comments = await context.storage?.getItem('comments') || []
       return comments.filter(c => c.postId === parent.id)
     },
@@ -363,7 +363,7 @@ Throw GraphQL errors from resolvers:
 import { GraphQLError } from 'graphql'
 
 export const postMutations = defineMutation({
-  deletePost: async (_, { id }, context) => {
+  deletePost: async (parent, { id }, context) => {
     const post = await findPost(id)
 
     if (!post) {
@@ -402,7 +402,7 @@ import type { CreateUserInput, Resolvers, User } from '#graphql/server'
 
 export const userMutations = defineMutation({
   createUser: async (
-    _,
+    parent,
     { input }: { input: CreateUserInput },
     context
   ): Promise<User> => {
@@ -479,11 +479,11 @@ export default defineQuery({...})
 // ✅ Good - Single responsibility
 export const userQueries = defineQuery({
   users: () => getAllUsers(),
-  user: (_, { id }) => getUser(id),
+  user: (parent, { id }) => getUser(id),
 })
 
 export const userMutations = defineMutation({
-  createUser: (_, { input }) => createUser(input),
+  createUser: (parent, { input }) => createUser(input),
 })
 
 // ❌ Bad - Too much in one file
@@ -513,12 +513,12 @@ async function createUserAccount(input: CreateUserInput) {
 }
 
 export const userMutations = defineMutation({
-  createUser: (_, { input }) => createUserAccount(input),
+  createUser: (parent, { input }) => createUserAccount(input),
 })
 
 // ❌ Bad - Everything in resolver
 export const userMutations = defineMutation({
-  createUser: async (_, { input }) => {
+  createUser: async (parent, { input }) => {
     if (!isValidEmail(input.email))
       throw new Error('Invalid email')
     const user = await db.user.create({ data: input })
@@ -533,7 +533,7 @@ export const userMutations = defineMutation({
 ```ts
 // ✅ Good - Use context
 export const userQueries = defineQuery({
-  users: async (_, __, context) => {
+  users: async (parent, args, context) => {
     const db = context.db // Shared DB connection
     return await db.user.findMany()
   },
@@ -553,7 +553,7 @@ export const userQueries = defineQuery({
 ```ts
 // ✅ Good - Explicit null handling
 export const userQueries = defineQuery({
-  user: async (_, { id }, context) => {
+  user: async (parent, { id }, context) => {
     const user = await context.db.user.findUnique({ where: { id } })
     return user || null // Explicit null for not found
   },
@@ -561,7 +561,7 @@ export const userQueries = defineQuery({
 
 // ❌ Bad - Undefined can cause issues
 export const userQueries = defineQuery({
-  user: async (_, { id }, context) => {
+  user: async (parent, { id }, context) => {
     return await context.db.user.findUnique({ where: { id } })
     // Returns undefined if not found
   },
@@ -578,7 +578,7 @@ import type { CreatePostInput, Post, UpdatePostInput } from '#graphql/server'
 import { GraphQLError } from 'graphql'
 
 export const postQueries = defineQuery({
-  posts: async (_, { limit = 10, offset = 0 }, context) => {
+  posts: async (parent, { limit = 10, offset = 0 }, context) => {
     return await context.db.post.findMany({
       take: limit,
       skip: offset,
@@ -586,7 +586,7 @@ export const postQueries = defineQuery({
     })
   },
 
-  post: async (_, { id }, context) => {
+  post: async (parent, { id }, context) => {
     const post = await context.db.post.findUnique({
       where: { id },
     })
@@ -600,7 +600,7 @@ export const postQueries = defineQuery({
     return post
   },
 
-  myPosts: async (_, __, context) => {
+  myPosts: async (parent, args, context) => {
     const userId = context.auth?.userId
 
     if (!userId) {
@@ -616,7 +616,7 @@ export const postQueries = defineQuery({
 })
 
 export const postMutations = defineMutation({
-  createPost: async (_, { input }, context) => {
+  createPost: async (parent, { input }, context) => {
     const userId = context.auth?.userId
 
     if (!userId) {
@@ -635,7 +635,7 @@ export const postMutations = defineMutation({
     return post
   },
 
-  updatePost: async (_, { id, input }, context) => {
+  updatePost: async (parent, { id, input }, context) => {
     const post = await context.db.post.findUnique({ where: { id } })
 
     if (!post) {
@@ -659,19 +659,19 @@ export const postMutations = defineMutation({
 
 export const postTypes = defineType({
   Post: {
-    author: async (parent, _, context) => {
+    author: async (parent, args, context) => {
       return await context.db.user.findUnique({
         where: { id: parent.authorId },
       })
     },
 
-    comments: async (parent, _, context) => {
+    comments: async (parent, args, context) => {
       return await context.db.comment.findMany({
         where: { postId: parent.id },
       })
     },
 
-    isLiked: async (parent, _, context) => {
+    isLiked: async (parent, args, context) => {
       const userId = context.auth?.userId
       if (!userId)
         return false

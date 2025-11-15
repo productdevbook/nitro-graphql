@@ -15,15 +15,15 @@ Install the required dependencies:
 ::: code-group
 
 ```bash [pnpm]
-pnpm add nitro-graphql graphql-yoga graphql
+pnpm add nitro-graphql@beta graphql-yoga graphql graphql-config
 ```
 
 ```bash [npm]
-npm install nitro-graphql graphql-yoga graphql
+npm install nitro-graphql@beta graphql-yoga graphql graphql-config
 ```
 
 ```bash [yarn]
-yarn add nitro-graphql graphql-yoga graphql
+yarn add nitro-graphql@beta graphql-yoga graphql graphql-config
 ```
 
 :::

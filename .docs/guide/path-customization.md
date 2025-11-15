@@ -12,35 +12,45 @@ Customize file discovery and generation paths for monorepos and custom project s
 ## Global Paths
 
 ```ts
-graphql: {
-  paths: {
-    serverGraphql: 'src/server/graphql',
-    clientGraphql: 'src/client/graphql',
-    buildDir: '.build',
-    typesDir: '.build/types',
+import { defineNitroConfig } from 'nitro/config'
+
+export default defineNitroConfig({
+  graphql: {
+    paths: {
+      serverGraphql: 'src/server/graphql',
+      clientGraphql: 'src/client/graphql',
+      buildDir: '.build',
+      typesDir: '.build/types',
+    },
   },
-}
+})
 ```
 
 ## Per-File Paths
 
 ```ts
-graphql: {
-  scaffold: {
-    serverSchema: 'lib/graphql/schema.ts',
-    serverConfig: 'lib/graphql/config.ts',
+import { defineNitroConfig } from 'nitro/config'
+
+export default defineNitroConfig({
+  graphql: {
+    scaffold: {
+      serverSchema: 'lib/graphql/schema.ts',
+      serverConfig: 'lib/graphql/config.ts',
+    },
+    types: {
+      server: 'types/graphql-server.d.ts',
+      client: 'types/graphql-client.d.ts',
+    },
   },
-  types: {
-    server: 'types/graphql-server.d.ts',
-    client: 'types/graphql-client.d.ts',
-  },
-}
+})
 ```
 
 ## Monorepo Example
 
 ```ts
 // packages/api/nitro.config.ts
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
   graphql: {
     paths: {

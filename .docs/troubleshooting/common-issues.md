@@ -320,11 +320,15 @@ pnpm dev
 For Nitro:
 ```typescript
 // nitro.config.ts
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
-  modules: ['nitro-graphql'], // ✅ Must be registered
-  graphql: {
-    framework: 'graphql-yoga'
-  }
+  modules: [
+    graphql({
+      framework: 'graphql-yoga', // ✅ Must be registered
+    }),
+  ],
 })
 ```
 
@@ -332,10 +336,12 @@ For Nuxt:
 ```typescript
 // nuxt.config.ts
 export default defineNuxtConfig({
-  modules: ['nitro-graphql'], // ✅ Must be registered
-  graphql: {
-    framework: 'graphql-yoga'
-  }
+  modules: ['nitro-graphql/nuxt'], // ✅ Must be registered (Nuxt uses different pattern)
+  nitro: {
+    graphql: {
+      framework: 'graphql-yoga',
+    },
+  },
 })
 ```
 
@@ -393,11 +399,17 @@ http://localhost:3000/api/graphql/debug
 
 1. **Verify Playground is Enabled:**
 ```typescript
-// nitro.config.ts or nuxt.config.ts
+// nitro.config.ts
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
-  graphql: {
-    playground: true // ✅ Must be true in development
-  }
+  modules: [
+    graphql({
+      framework: 'graphql-yoga',
+      playground: true, // ✅ Must be true in development
+    }),
+  ],
 })
 ```
 

@@ -59,11 +59,15 @@ export default defineEventHandler(yoga)
 
 ```typescript [Nitro GraphQL Approach]
 // nitro.config.ts
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
-  modules: ['nitro-graphql'],
-  graphql: {
-    framework: 'graphql-yoga'
-  }
+  modules: [
+    graphql({
+      framework: 'graphql-yoga',
+    }),
+  ],
 })
 
 // That's it! Everything else is automatic.
@@ -102,7 +106,7 @@ import type { Post, Query, User } from '#graphql/server'
 
 export const userQueries = defineQuery({
   // ✅ Fully typed arguments and return values
-  user: async (_, { id }: { id: string }): Promise<User | null> => {
+  user: async (parent, { id }: { id: string }): Promise<User | null> => {
     return await db.user.findUnique({ where: { id } })
   }
 })

@@ -9,9 +9,13 @@ category: Guide
 
 Set up a full-stack GraphQL application in your Nuxt project with type-safe client queries in 5 minutes.
 
+::: warning Nuxt v5 Compatibility
+This module is currently compatible with **Nuxt 4.x**. Support for **Nuxt v5** will be available in a future release. Stay tuned for updates!
+:::
+
 ## Prerequisites
 
-- Node.js 18 or higher
+- Node.js 24 or higher
 - pnpm, npm, or yarn
 - Basic knowledge of Nuxt 3, TypeScript, and GraphQL
 
@@ -20,15 +24,15 @@ Set up a full-stack GraphQL application in your Nuxt project with type-safe clie
 ::: code-group
 
 ```bash [pnpm]
-pnpm add nitro-graphql graphql-yoga graphql
+pnpm add nitro-graphql@beta graphql-yoga graphql graphql-config
 ```
 
 ```bash [npm]
-npm install nitro-graphql graphql-yoga graphql
+npm install nitro-graphql@beta graphql-yoga graphql graphql-config
 ```
 
 ```bash [yarn]
-yarn add nitro-graphql graphql-yoga graphql
+yarn add nitro-graphql@beta graphql-yoga graphql graphql-config
 ```
 
 :::
@@ -39,12 +43,18 @@ Add `nitro-graphql/nuxt` to your Nuxt modules:
 
 ```ts
 // nuxt.config.ts
+import { defineNuxtConfig } from 'nuxt/config'
+import graphql from 'nitro-graphql'
+
+
 export default defineNuxtConfig({
   modules: ['nitro-graphql/nuxt'],
   nitro: {
-    graphql: {
-      framework: 'graphql-yoga',
-    },
+    modules: [
+      graphql({
+        framework: 'graphql-yoga',
+      })
+    ],
   },
 })
 ```
@@ -86,20 +96,22 @@ Create resolver files to implement your API:
 
 ```ts
 // server/graphql/users.resolver.ts
+import { defineQuery, defineMutation } from 'nitro-graphql/define'
+
 export const userQueries = defineQuery({
-  users: async (_, __, context) => {
+  users: async (parent, args, context) => {
     // Access H3 event context
     const users = await context.storage?.getItem('users') || []
     return users
   },
-  user: async (_, { id }, context) => {
+  user: async (parent, { id }, context) => {
     const users = await context.storage?.getItem('users') || []
     return users.find(u => u.id === id) || null
   }
 })
 
 export const userMutations = defineMutation({
-  createUser: async (_, { input }, context) => {
+  createUser: async (parent, { input }, context) => {
     const users = await context.storage?.getItem('users') || []
     const user = {
       id: Date.now().toString(),
@@ -381,7 +393,7 @@ All schemas and resolvers from layers are automatically merged with your app's s
 
 ### Module not found: nitro-graphql
 
-**Solution**: Make sure you installed the package with `pnpm add nitro-graphql graphql-yoga graphql`
+**Solution**: Make sure you installed the package with `pnpm add nitro-graphql@beta graphql-yoga graphql graphql-config`
 
 ### GraphQL endpoint returns 404
 

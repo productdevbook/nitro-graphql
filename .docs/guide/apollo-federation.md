@@ -18,22 +18,26 @@ Apollo Federation allows you to split your GraphQL API across multiple services 
 ### 1. Install Dependencies
 
 ```bash
-pnpm add @apollo/server @apollo/subgraph @apollo/utils.withrequired graphql
+pnpm add @apollo/server @apollo/subgraph @apollo/utils.withrequired graphql graphql-config nitro-graphql@beta
 ```
 
 ### 2. Configure Subgraph
 
 ```ts
 // nitro.config.ts
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
-  modules: ['nitro-graphql'],
-  graphql: {
-    framework: 'apollo-server',
-    federation: {
-      enabled: true,
-      serviceName: 'users-service',
-    },
-  },
+  modules: [
+    graphql({
+      framework: 'apollo-server',
+      federation: {
+        enabled: true,
+        serviceName: 'users-service',
+      },
+    }),
+  ],
 })
 ```
 
@@ -57,6 +61,8 @@ extend type Post @key(fields: "id") {
 
 ```ts
 // server/graphql/users.resolver.ts
+import { defineResolver } from 'nitro-graphql/define'
+
 export const userResolver = defineResolver({
   User: {
     __resolveReference: (reference) => {
@@ -75,14 +81,19 @@ export const userResolver = defineResolver({
 
 ```ts
 // users-service/nitro.config.ts
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
-  graphql: {
-    framework: 'apollo-server',
-    federation: {
-      enabled: true,
-      serviceName: 'users',
-    },
-  },
+  modules: [
+    graphql({
+      framework: 'apollo-server',
+      federation: {
+        enabled: true,
+        serviceName: 'users',
+      },
+    }),
+  ],
 })
 ```
 
@@ -98,14 +109,19 @@ type User @key(fields: "id") {
 
 ```ts
 // posts-service/nitro.config.ts
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
-  graphql: {
-    framework: 'apollo-server',
-    federation: {
-      enabled: true,
-      serviceName: 'posts',
-    },
-  },
+  modules: [
+    graphql({
+      framework: 'apollo-server',
+      federation: {
+        enabled: true,
+        serviceName: 'posts',
+      },
+    }),
+  ],
 })
 ```
 

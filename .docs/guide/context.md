@@ -20,6 +20,8 @@ Context is an object passed to every resolver function as the third argument. It
 ## Accessing Context
 
 ```ts
+import { defineQuery } from 'nitro-graphql/define'
+
 export const userQueries = defineQuery({
   users: async (parent, args, context) => {
     // context is H3EventContext
@@ -35,8 +37,10 @@ export const userQueries = defineQuery({
 The raw H3 event object:
 
 ```ts
+import { defineQuery } from 'nitro-graphql/define'
+
 export const userQueries = defineQuery({
-  me: async (_, __, context) => {
+  me: async (parent, args, context) => {
     const event = context.event
 
     // Request headers
@@ -61,8 +65,10 @@ export const userQueries = defineQuery({
 Nitro's storage layer (unstorage):
 
 ```ts
+import { defineQuery, defineMutation } from 'nitro-graphql/define'
+
 export const userQueries = defineQuery({
-  users: async (_, __, context) => {
+  users: async (parent, args, context) => {
     // Get from storage
     const users = await context.storage?.getItem('users') || []
 
@@ -71,7 +77,7 @@ export const userQueries = defineQuery({
 })
 
 export const userMutations = defineMutation({
-  createUser: async (_, { input }, context) => {
+  createUser: async (parent, { input }, context) => {
     const users = await context.storage?.getItem('users') || []
     const user = { id: Date.now().toString(), ...input }
     users.push(user)
@@ -143,15 +149,16 @@ export default defineEventHandler(async (event) => {
 Now access your custom context in resolvers:
 
 ```ts
+import { defineQuery, defineMutation } from 'nitro-graphql/define'
 import type { User } from '#graphql/server'
 
 export const userQueries = defineQuery({
-  users: async (_, __, context) => {
+  users: async (parent, args, context) => {
     // Fully typed database access
     return await context.db.user.findMany()
   },
 
-  me: async (_, __, context) => {
+  me: async (parent, args, context) => {
     const userId = context.auth?.userId
 
     if (!userId) {
@@ -167,7 +174,7 @@ export const userQueries = defineQuery({
 })
 
 export const userMutations = defineMutation({
-  createUser: async (_, { input }, context) => {
+  createUser: async (parent, { input }, context) => {
     const user = await context.db.user.create({
       data: input
     })
@@ -208,8 +215,10 @@ export default defineEventHandler((event) => {
 
 ```ts
 // Resolver
+import { defineQuery } from 'nitro-graphql/define'
+
 export const postQueries = defineQuery({
-  posts: async (_, __, context) => {
+  posts: async (parent, args, context) => {
     return await context.db.post.findMany()
   },
 })
@@ -253,8 +262,10 @@ export default defineEventHandler(async (event) => {
 
 ```ts
 // Resolver with auth check
+import { defineQuery } from 'nitro-graphql/define'
+
 export const userQueries = defineQuery({
-  me: (_, __, context) => {
+  me: (parent, args, context) => {
     if (!context.auth) {
       throw new GraphQLError('Not authenticated', {
         extensions: { code: 'UNAUTHENTICATED' }
@@ -319,8 +330,10 @@ export default defineEventHandler((event) => {
 
 ```ts
 // Resolver with caching
+import { defineQuery } from 'nitro-graphql/define'
+
 export const postQueries = defineQuery({
-  post: async (_, { id }, context) => {
+  post: async (parent, { id }, context) => {
     const cacheKey = `post:${id}`
 
     // Try cache first
@@ -346,6 +359,8 @@ You can also enhance context in the GraphQL config:
 
 ```ts
 // server/graphql/config.ts
+import { defineGraphQLConfig } from 'nitro-graphql/define'
+
 export default defineGraphQLConfig({
   context: async ({ event }) => {
     // Add extra context properties specific to GraphQL
@@ -361,8 +376,10 @@ export default defineGraphQLConfig({
 Access merged context:
 
 ```ts
+import { defineQuery } from 'nitro-graphql/define'
+
 export const userQueries = defineQuery({
-  users: async (_, __, context) => {
+  users: async (parent, args, context) => {
     console.log(context.requestId) // From GraphQL config
     console.log(context.db) // From middleware
     console.log(context.auth) // From middleware
@@ -381,6 +398,8 @@ export default defineEventHandler((event) => {
 })
 
 // ❌ Bad - Create new instance per resolver
+import { defineQuery } from 'nitro-graphql/define'
+
 export const userQueries = defineQuery({
   users: async () => {
     const db = new PrismaClient()
@@ -433,8 +452,10 @@ declare module 'h3' {
 
 ```ts
 // ✅ Good - Check context in resolver
+import { defineQuery } from 'nitro-graphql/define'
+
 export const userQueries = defineQuery({
-  me: (_, __, context) => {
+  me: (parent, args, context) => {
     if (!context.auth) {
       throw new GraphQLError('Unauthorized')
     }
@@ -444,7 +465,7 @@ export const userQueries = defineQuery({
 
 // ❌ Bad - Assume context exists
 export const userQueries = defineQuery({
-  me: (_, __, context) => {
+  me: (parent, args, context) => {
     // This will crash if auth is undefined
     return findUser(context.auth.userId)
   },
@@ -519,14 +540,16 @@ export default defineEventHandler(async (event) => {
 
 ```ts
 // server/graphql/users.resolver.ts
+import { defineQuery } from 'nitro-graphql/define'
+
 export const userQueries = defineQuery({
   // Public query
-  users: async (_, __, context) => {
+  users: async (parent, args, context) => {
     return await context.db.user.findMany()
   },
 
   // Protected query
-  me: async (_, __, context) => {
+  me: async (parent, args, context) => {
     if (!context.auth) {
       throw new GraphQLError('Not authenticated', {
         extensions: { code: 'UNAUTHENTICATED' }
@@ -539,7 +562,7 @@ export const userQueries = defineQuery({
   },
 
   // Admin-only query
-  adminStats: async (_, __, context) => {
+  adminStats: async (parent, args, context) => {
     if (!context.auth || context.auth.role !== 'ADMIN') {
       throw new GraphQLError('Not authorized', {
         extensions: { code: 'FORBIDDEN' }
@@ -556,8 +579,10 @@ export const userQueries = defineQuery({
 Log context to see what's available:
 
 ```ts
+import { defineQuery } from 'nitro-graphql/define'
+
 export const debugQuery = defineQuery({
-  debug: (_, __, context) => {
+  debug: (parent, args, context) => {
     console.log('Context keys:', Object.keys(context))
     console.log('Auth:', context.auth)
     console.log('Database:', !!context.db)

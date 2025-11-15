@@ -51,7 +51,7 @@ export default withMermaid(defineConfig({
       { text: 'Guide', link: '/guide/introduction', activeMatch: '/guide/' },
       { text: 'API', link: '/api/configuration', activeMatch: '/api/' },
       {
-        text: 'v1.5.1',
+        text: 'v2.0.0-beta.26',
         items: [
           { text: 'Changelog', link: 'https://github.com/productdevbook/nitro-graphql/releases' },
           { text: 'Contributing', link: '/contributing/development-setup' },

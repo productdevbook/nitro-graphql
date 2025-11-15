@@ -51,6 +51,7 @@ Create a resolver to fetch the data:
 
 ```ts
 // server/graphql/posts/post.resolver.ts
+import { defineQuery } from 'nitro-graphql/define'
 import type { Post } from '#graphql/server'
 
 // Sample data
@@ -78,7 +79,7 @@ export const postQueries = defineQuery({
   },
 
   // Query: post(id) - Returns a single post
-  post: (_, { id }) => {
+  post: (parent, { id }) => {
     return posts.find(p => p.id === id) || null
   },
 })
@@ -147,8 +148,11 @@ extend type Mutation {
 
 ```ts
 // server/graphql/posts/post.resolver.ts (continued)
+import { defineMutation } from 'nitro-graphql/define'
+import type { Post } from '#graphql/server'
+
 export const postMutations = defineMutation({
-  createPost: async (_, { input }, context) => {
+  createPost: async (parent, { input }, context) => {
     const newPost: Post = {
       id: Date.now().toString(),
       ...input,
@@ -163,7 +167,7 @@ export const postMutations = defineMutation({
     return newPost
   },
 
-  updatePost: async (_, { id, input }, context) => {
+  updatePost: async (parent, { id, input }, context) => {
     const posts = await context.storage?.getItem('posts') || []
     const index = posts.findIndex(p => p.id === id)
 
@@ -181,7 +185,7 @@ export const postMutations = defineMutation({
     return posts[index]
   },
 
-  deletePost: async (_, { id }, context) => {
+  deletePost: async (parent, { id }, context) => {
     const posts = await context.storage?.getItem('posts') || []
     const filtered = posts.filter(p => p.id !== id)
 
@@ -248,8 +252,10 @@ The third argument to resolvers is the H3 Event context, which provides access t
 Example with authentication:
 
 ```ts
+import { defineQuery } from 'nitro-graphql/define'
+
 export const postQueries = defineQuery({
-  myPosts: async (_, __, context) => {
+  myPosts: async (parent, args, context) => {
     // Access user from context
     const userId = context.auth?.userId
 
@@ -282,8 +288,10 @@ type Query {
 ```
 
 ```ts
+import { defineQuery } from 'nitro-graphql/define'
+
 export const postQueries = defineQuery({
-  posts: (_, { limit = 10, offset = 0, authorId }) => {
+  posts: (parent, { limit = 10, offset = 0, authorId }) => {
     let results = posts
 
     // Filter by author if provided
@@ -321,8 +329,10 @@ Variables:
 Most real-world resolvers are async (database calls, API requests):
 
 ```ts
+import { defineQuery } from 'nitro-graphql/define'
+
 export const postQueries = defineQuery({
-  posts: async (_, { limit = 10 }) => {
+  posts: async (parent, { limit = 10 }) => {
     // Simulate database query
     const db = await useDatabase()
     const posts = await db.post.findMany({
@@ -332,7 +342,7 @@ export const postQueries = defineQuery({
     return posts
   },
 
-  post: async (_, { id }) => {
+  post: async (parent, { id }) => {
     const db = await useDatabase()
     const post = await db.post.findUnique({
       where: { id }
@@ -347,10 +357,11 @@ export const postQueries = defineQuery({
 Throw errors to return GraphQL errors:
 
 ```ts
+import { defineMutation } from 'nitro-graphql/define'
 import { GraphQLError } from 'graphql'
 
 export const postMutations = defineMutation({
-  deletePost: async (_, { id }, context) => {
+  deletePost: async (parent, { id }, context) => {
     const posts = await context.storage?.getItem('posts') || []
     const post = posts.find(p => p.id === id)
 
@@ -418,10 +429,12 @@ type User {
 ```
 
 ```ts
+import { defineType } from 'nitro-graphql/define'
+
 export const postTypes = defineType({
   Post: {
     // Resolve the author field
-    author: async (parent, _, context) => {
+    author: async (parent, args, context) => {
       // parent.authorId comes from the Post resolver
       const users = await context.storage?.getItem('users') || []
       return users.find(u => u.id === parent.authorId)
@@ -453,6 +466,8 @@ You can split resolvers across multiple files:
 
 ```ts
 // server/graphql/posts/queries.resolver.ts
+import { defineQuery } from 'nitro-graphql/define'
+
 export const postQueries = defineQuery({
   posts: () => [...],
   post: () => {...},
@@ -461,6 +476,8 @@ export const postQueries = defineQuery({
 
 ```ts
 // server/graphql/posts/mutations.resolver.ts
+import { defineMutation } from 'nitro-graphql/define'
+
 export const postMutations = defineMutation({
   createPost: () => {...},
   updatePost: () => {...},
@@ -470,6 +487,8 @@ export const postMutations = defineMutation({
 
 ```ts
 // server/graphql/posts/types.resolver.ts
+import { defineType } from 'nitro-graphql/define'
+
 export const postTypes = defineType({
   Post: {
     author: () => {...},

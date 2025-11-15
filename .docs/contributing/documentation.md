@@ -624,15 +624,27 @@ yarn add nitro-graphql
 
 ```typescript [Nitro]
 // nitro.config.ts
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
-  modules: ['nitro-graphql']
+  modules: [
+    graphql({
+      framework: 'graphql-yoga',
+    }),
+  ],
 })
 ```
 
 ```typescript [Nuxt]
 // nuxt.config.ts
 export default defineNuxtConfig({
-  modules: ['nitro-graphql']
+  modules: ['nitro-graphql/nuxt'],
+  nitro: {
+    graphql: {
+      framework: 'graphql-yoga',
+    },
+  },
 })
 ```
 

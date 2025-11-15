@@ -27,6 +27,8 @@ type Query {
 
 ```ts
 // server/graphql/directives/auth.directive.ts
+import { defineDirective } from 'nitro-graphql/define'
+
 export const authDirective = defineDirective({
   name: 'auth',
   locations: ['FIELD_DEFINITION'],
@@ -55,6 +57,8 @@ export const authDirective = defineDirective({
 ### With Arguments
 
 ```ts
+import { defineDirective } from 'nitro-graphql/define'
+
 export const cacheDirective = defineDirective({
   name: 'cache',
   locations: ['FIELD_DEFINITION'],

@@ -1,0 +1,419 @@
+# Nitro GraphQL + Drizzle ORM Example
+
+This example demonstrates a complete book management GraphQL API using **Nitro GraphQL v2** with **Drizzle ORM** and **PostgreSQL**. It showcases best practices for database integration, Zod validation, custom field resolvers, and error handling.
+
+## Features
+
+- ✅ **Drizzle ORM Integration** - Type-safe database queries with PostgreSQL
+- ✅ **Zod Validation** - Input validation using `drizzle-zod` generated schemas
+- ✅ **Custom Field Resolvers** - Computed fields (e.g., `isAvailable`)
+- ✅ **Error Handling** - Automatic masking of ZodError and HTTPError
+- ✅ **V2 Explicit Imports** - All resolvers use explicit imports (no auto-imports)
+- ✅ **H3 v2 Context** - Modern H3 event context pattern
+- ✅ **Drizzle Kit** - Database migrations and schema management
+- ✅ **Organized Structure** - Modular resolver and schema organization
+
+## Prerequisites
+
+- **Node.js** 18+
+- **pnpm** 10+
+- **PostgreSQL** database (local or remote)
+
+## Getting Started
+
+### 1. Install Dependencies
+
+```bash
+pnpm install
+```
+
+### 2. Database Setup
+
+Create a `.env` file based on `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and configure your PostgreSQL connection:
+
+```env
+NITRO_ECOMMERCE_DATABASE_URL=postgresql://user:password@localhost:5432/ecommerce
+```
+
+### 3. Run Migrations
+
+Generate and run database migrations:
+
+```bash
+# Generate migration files from schema
+pnpm db:generate
+
+# Apply migrations to database
+pnpm db:migrate
+```
+
+### 4. Start Development Server
+
+```bash
+pnpm dev
+```
+
+The GraphQL playground will be available at:
+- **Endpoint**: http://localhost:3000/api/graphql
+- **Health Check**: http://localhost:3000/api/graphql/health
+
+## Project Structure
+
+```
+examples/drizzle-orm/
+├── server/
+│   ├── drizzle/
+│   │   ├── schema/
+│   │   │   ├── book.ts          # Drizzle table + Zod schemas
+│   │   │   ├── shared.ts        # Reusable helpers (timestamps, soft delete)
+│   │   │   └── index.ts         # Schema exports
+│   │   └── migrations/          # Drizzle Kit migrations
+│   ├── graphql/
+│   │   ├── books/
+│   │   │   ├── book.graphql     # GraphQL type definitions
+│   │   │   ├── field.resolver.ts    # Custom field resolver
+│   │   │   ├── queries/
+│   │   │   │   ├── books.resolver.ts   # List all books
+│   │   │   │   └── book.resolver.ts    # Get single book
+│   │   │   └── mutations/
+│   │   │       ├── create-book.resolver.ts
+│   │   │       ├── update-book.resolver.ts
+│   │   │       └── delete-book.resolver.ts
+│   │   ├── config.ts            # GraphQL Yoga configuration
+│   │   ├── context.d.ts         # H3 context augmentation
+│   │   └── schema.ts            # Schema definition with Zod
+│   └── utils/
+│       └── useDb.ts             # Database singleton
+├── drizzle.config.ts            # Drizzle Kit configuration
+├── nitro.config.ts              # Nitro configuration
+└── package.json
+```
+
+## Key Concepts
+
+### 1. Drizzle → Zod → GraphQL Flow
+
+This example demonstrates a powerful pattern for type safety and validation:
+
+**Step 1: Define Drizzle Schema** (`server/drizzle/schema/book.ts`)
+```typescript
+import { pgTable, text, uuid } from 'drizzle-orm/pg-core'
+
+export const book = pgTable('book', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  title: text('title').notNull(),
+  author: text('author').notNull(),
+  isbn: text('isbn').notNull().unique(),
+  publicationYear: integer('publication_year').notNull(),
+  ...sharedColumns, // createdAt, updatedAt, deletedAt
+})
+```
+
+**Step 2: Generate Zod Schemas** (same file)
+```typescript
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
+
+export const insertBookSchema = createInsertSchema(book, {
+  title: schema => schema.min(1, 'Title is required'),
+  author: schema => schema.min(1, 'Author is required'),
+  isbn: schema => schema.regex(/^[\d-]+$/, 'Invalid ISBN format'),
+})
+
+export const selectBookSchema = createSelectSchema(book)
+```
+
+**Step 3: Use in GraphQL Schema** (`server/graphql/schema.ts`)
+```typescript
+import { defineSchema } from 'nitro-graphql/define'
+import { selectBookSchema } from '../drizzle/schema'
+
+export default defineSchema({
+  Book: selectBookSchema, // Integrates Zod schema with GraphQL
+})
+```
+
+**Step 4: Validate in Mutations**
+```typescript
+import { defineMutation } from 'nitro-graphql/define'
+import { insertBookSchema } from '~/server/drizzle/schema'
+
+export const createBook = defineMutation({
+  createBook: async (_, { input }) => {
+    // Validates input and throws ZodError if invalid
+    const validatedInput = insertBookSchema.parse(input)
+
+    const [newBook] = await db.insert(book).values(validatedInput).returning()
+    return newBook
+  },
+})
+```
+
+### 2. V2 Explicit Imports
+
+**Important**: In Nitro GraphQL v2, resolver utilities are **NOT auto-imported**. You must explicitly import them:
+
+```typescript
+// REQUIRED in all resolver files
+import { defineMutation, defineQuery, defineType } from 'nitro-graphql/define'
+```
+
+**Available utilities**:
+- `defineResolver` - Complete resolver (Query + Mutation + Type)
+- `defineQuery` - Query-only resolvers
+- `defineMutation` - Mutation-only resolvers
+- `defineType` - Custom type resolvers (computed fields)
+- `defineDirective` - Custom GraphQL directives
+- `defineGraphQLConfig` - GraphQL Yoga configuration
+- `defineSchema` - Schema definition with Zod integration
+
+### 3. Custom Field Resolvers
+
+The example includes a computed field `isAvailable` that isn't stored in the database:
+
+**GraphQL Schema** (`server/graphql/books/book.graphql`)
+```graphql
+type Book {
+  id: ID!
+  title: String!
+  author: String!
+  isbn: String!
+  publicationYear: Int!
+  isAvailable: Boolean!  # Computed field
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+```
+
+**Resolver** (`server/graphql/books/field.resolver.ts`)
+```typescript
+import { defineType } from 'nitro-graphql/define'
+
+export const bookFieldResolvers = defineType({
+  Book: {
+    isAvailable: (parent) => {
+      const currentYear = new Date().getFullYear()
+      // Books published within last 5 years are "available"
+      return currentYear - parent.publicationYear <= 5
+    },
+  },
+})
+```
+
+### 4. Error Handling
+
+The example uses `createDefaultMaskError()` to handle validation and HTTP errors gracefully:
+
+**Configuration** (`server/graphql/config.ts`)
+```typescript
+import { defineGraphQLConfig } from 'nitro-graphql/define'
+import { createDefaultMaskError } from 'nitro-graphql/utils'
+
+export default defineGraphQLConfig({
+  maskedErrors: {
+    maskError: createDefaultMaskError(), // Handles ZodError, HTTPError
+  },
+})
+```
+
+**Benefits**:
+- **ZodError**: Automatically formats validation errors for clients
+- **HTTPError**: Properly exposes status codes and messages
+- **Other Errors**: Masked as "Internal Server Error" for security
+
+### 5. Database Singleton Pattern
+
+The `useDb()` utility ensures only one database connection is created:
+
+**Implementation** (`server/utils/useDb.ts`)
+```typescript
+import { drizzle } from 'drizzle-orm/node-postgres'
+import * as schema from '~/server/drizzle/schema'
+
+let _db: ReturnType<typeof drizzle> | null = null
+
+export function useDb() {
+  if (!_db) {
+    _db = drizzle(process.env.NITRO_ECOMMERCE_DATABASE_URL!, {
+      casing: 'snake_case',
+      schema,
+    })
+  }
+  return _db
+}
+```
+
+## Example Queries & Mutations
+
+### Create a Book
+
+```graphql
+mutation {
+  createBook(input: {
+    title: "The GraphQL Guide"
+    author: "John Resig"
+    isbn: "978-1-234567-89-0"
+    publicationYear: 2024
+  }) {
+    id
+    title
+    author
+    isAvailable
+  }
+}
+```
+
+### List All Books
+
+```graphql
+query {
+  books {
+    id
+    title
+    author
+    isbn
+    publicationYear
+    isAvailable
+    createdAt
+  }
+}
+```
+
+### Get Single Book
+
+```graphql
+query {
+  book(id: "uuid-here") {
+    id
+    title
+    author
+    isbn
+    publicationYear
+    isAvailable
+  }
+}
+```
+
+### Update a Book
+
+```graphql
+mutation {
+  updateBook(
+    id: "uuid-here"
+    input: {
+      title: "The Complete GraphQL Guide"
+      publicationYear: 2025
+    }
+  ) {
+    id
+    title
+    publicationYear
+  }
+}
+```
+
+### Delete a Book (Soft Delete)
+
+```graphql
+mutation {
+  deleteBook(id: "uuid-here")
+}
+```
+
+Note: This performs a soft delete (sets `deletedAt` timestamp). The `sharedColumns` pattern includes soft delete support.
+
+## Database Commands
+
+```bash
+# Generate migration files from schema changes
+pnpm db:generate
+
+# Apply pending migrations to database
+pnpm db:migrate
+
+# Open Drizzle Studio (database GUI)
+pnpm db:studio
+```
+
+## Configuration
+
+### Nitro Config
+
+```typescript
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
+export default defineNitroConfig({
+  serverDir: './server',
+  modules: [
+    graphql({
+      framework: 'graphql-yoga',
+    }),
+  ],
+})
+```
+
+### Drizzle Kit Config
+
+```typescript
+import { defineConfig } from 'drizzle-kit'
+
+export default defineConfig({
+  schema: './server/drizzle/schema/index.ts',
+  out: './server/drizzle/migrations',
+  dialect: 'postgresql',
+  dbCredentials: {
+    url: process.env.NITRO_ECOMMERCE_DATABASE_URL!,
+  },
+})
+```
+
+## Best Practices Demonstrated
+
+1. **Type Safety Chain**: Drizzle schema → Zod validation → GraphQL types
+2. **Explicit Imports**: All resolvers use `import { ... } from 'nitro-graphql/define'`
+3. **Input Validation**: Zod schemas validate all mutations before database operations
+4. **Error Handling**: Centralized error masking with user-friendly messages
+5. **Modular Structure**: Organized by feature (books/) with separate query/mutation folders
+6. **Computed Fields**: Type resolvers for fields not stored in database
+7. **Soft Deletes**: Reusable `sharedColumns` pattern with `deletedAt`
+8. **Database Singleton**: Single connection instance across the application
+9. **Environment Variables**: Database credentials in `.env` (not committed)
+10. **Migration Management**: Drizzle Kit for schema version control
+
+## Common Issues
+
+### "defineQuery is not defined"
+
+**Solution**: Add explicit import to your resolver file:
+```typescript
+import { defineQuery } from 'nitro-graphql/define'
+```
+
+### Database Connection Error
+
+**Check**:
+1. PostgreSQL is running
+2. `.env` file has correct `NITRO_ECOMMERCE_DATABASE_URL`
+3. Database exists and is accessible
+4. Migrations have been applied: `pnpm db:migrate`
+
+### Validation Errors Not Showing
+
+**Ensure**: `createDefaultMaskError()` is configured in `server/graphql/config.ts`
+
+## Learn More
+
+- [Nitro GraphQL Documentation](https://nitro-graphql.pages.dev)
+- [Drizzle ORM Docs](https://orm.drizzle.team)
+- [Drizzle Zod](https://orm.drizzle.team/docs/zod)
+- [GraphQL Yoga](https://the-guild.dev/graphql/yoga-server)
+
+## License
+
+MIT

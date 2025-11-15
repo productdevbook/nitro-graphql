@@ -132,6 +132,8 @@ type User {
 Usage in resolvers:
 
 ```ts
+import { defineQuery } from 'nitro-graphql/define'
+
 export const userQueries = defineQuery({
   usersByRole: (_, { role }) => {
     // role is typed as 'ADMIN' | 'MODERATOR' | 'USER' | 'GUEST'
@@ -312,6 +314,8 @@ type Query {
 Resolver:
 
 ```ts
+import { defineQuery, defineType } from 'nitro-graphql/define'
+
 export const nodeResolver = defineQuery({
   node: (_, { id }) => {
     // Return User or Post
@@ -347,6 +351,8 @@ type Query {
 Resolver:
 
 ```ts
+import { defineType } from 'nitro-graphql/define'
+
 export const searchTypes = defineType({
   SearchResult: {
     __resolveType(obj) {

@@ -11,7 +11,7 @@ Get a GraphQL API running in your Nitro project in 5 minutes.
 
 ## Prerequisites
 
-- Node.js 18 or higher
+- Node.js 24 or higher
 - pnpm, npm, or yarn
 - Basic knowledge of TypeScript and GraphQL
 
@@ -20,15 +20,15 @@ Get a GraphQL API running in your Nitro project in 5 minutes.
 ::: code-group
 
 ```bash [pnpm]
-pnpm add nitro-graphql graphql-yoga graphql
+pnpm add nitro-graphql@beta graphql-yoga graphql graphql-config
 ```
 
 ```bash [npm]
-npm install nitro-graphql graphql-yoga graphql
+npm install nitro-graphql@beta graphql-yoga graphql graphql-config
 ```
 
 ```bash [yarn]
-yarn add nitro-graphql graphql-yoga graphql
+yarn add nitro-graphql@beta graphql-yoga graphql graphql-config
 ```
 
 :::
@@ -43,13 +43,15 @@ Add `nitro-graphql` to your Nitro modules:
 
 ```ts
 // nitro.config.ts
-import { defineNitroConfig } from 'nitropack/config'
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
 
 export default defineNitroConfig({
-  modules: ['nitro-graphql'],
-  graphql: {
-    framework: 'graphql-yoga',
-  },
+  modules: [
+    graphql({
+      framework: 'graphql-yoga',
+    }),
+  ],
 })
 ```
 
@@ -83,10 +85,12 @@ Create a resolver file to implement your queries:
 
 ```ts
 // server/graphql/hello.resolver.ts
+import { defineResolver } from 'nitro-graphql/define'
+
 export const helloResolver = defineResolver({
   Query: {
     hello: () => 'Hello from GraphQL!',
-    greeting: (_, { name }) => `Hello, ${name}!`,
+    greeting: (parent, { name }) => `Hello, ${name}!`,
   },
 })
 ```
@@ -236,7 +240,11 @@ Now that you have a working GraphQL API, you can:
 
 ### defineResolver is not defined
 
-**Solution**: Restart your dev server. The auto-imports need to be regenerated.
+**Solution**: Make sure you import resolver utilities from `nitro-graphql/define`:
+
+```ts
+import { defineResolver } from 'nitro-graphql/define'
+```
 
 ### Types not generating
 

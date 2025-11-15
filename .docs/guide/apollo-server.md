@@ -12,18 +12,22 @@ Guide to using Apollo Server with Nitro GraphQL, including Federation support.
 ## Installation
 
 ```bash
-pnpm add nitro-graphql @apollo/server @apollo/utils.withrequired graphql
+pnpm add nitro-graphql@beta @apollo/server @apollo/utils.withrequired graphql graphql-config
 ```
 
 ## Configuration
 
 ```ts
 // nitro.config.ts
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
-  modules: ['nitro-graphql'],
-  graphql: {
-    framework: 'apollo-server',
-  },
+  modules: [
+    graphql({
+      framework: 'apollo-server',
+    }),
+  ],
 })
 ```
 
@@ -37,14 +41,19 @@ export default defineNitroConfig({
 ## Apollo Federation
 
 ```ts
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
-  graphql: {
-    framework: 'apollo-server',
-    federation: {
-      enabled: true,
-      serviceName: 'users-service',
-    },
-  },
+  modules: [
+    graphql({
+      framework: 'apollo-server',
+      federation: {
+        enabled: true,
+        serviceName: 'users-service',
+      },
+    }),
+  ],
 })
 ```
 

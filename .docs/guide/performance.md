@@ -17,7 +17,7 @@ Optimization tips for GraphQL resolvers, caching strategies, and batching.
 // Bad: N+1 queries
 export const postTypes = defineType({
   Post: {
-    author: async (parent, _, context) => {
+    author: async (parent, args, context) => {
       // This runs once per post!
       return await context.db.user.findUnique({
         where: { id: parent.authorId }
@@ -54,7 +54,7 @@ export const postTypes = defineType({
 const cache = new Map()
 
 export const postQueries = defineQuery({
-  post: async (_, { id }) => {
+  post: async (parent, { id }) => {
     const cached = cache.get(id)
     if (cached)
       return cached
@@ -70,7 +70,7 @@ export const postQueries = defineQuery({
 
 ```ts
 export const postQueries = defineQuery({
-  posts: async (_, __, context) => {
+  posts: async (parent, args, context) => {
     const cached = await context.redis.get('posts')
     if (cached)
       return JSON.parse(cached)
@@ -88,7 +88,7 @@ export const postQueries = defineQuery({
 
 ```ts
 export const userQueries = defineQuery({
-  users: (_, { limit = 10 }) => {
+  users: (parent, { limit = 10 }) => {
     return db.user.findMany({
       take: limit,
       select: { id: true, name: true, email: true },
@@ -101,7 +101,7 @@ export const userQueries = defineQuery({
 
 ```ts
 export const postQueries = defineQuery({
-  posts: (_, { cursor, limit = 10 }) => {
+  posts: (parent, { cursor, limit = 10 }) => {
     return db.post.findMany({
       take: limit,
       skip: cursor ? 1 : 0,

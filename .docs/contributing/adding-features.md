@@ -198,13 +198,18 @@ Brief description of what your feature does.
 
 \`\`\`typescript
 // Code example
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
-  modules: ['nitro-graphql'],
-  graphql: {
-    myFeature: {
-      option1: 'value'
-    }
-  }
+  modules: [
+    graphql({
+      framework: 'graphql-yoga',
+      myFeature: {
+        option1: 'value',
+      },
+    }),
+  ],
 })
 \`\`\`
 
