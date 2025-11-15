@@ -56,12 +56,12 @@
 
 **GraphQL Yoga (recommended):**
 ```bash
-pnpm add nitro-graphql graphql-yoga graphql
+pnpm add nitro-graphql graphql-yoga graphql graphql-config
 ```
 
 **Apollo Server:**
 ```bash
-pnpm add nitro-graphql @apollo/server @apollo/utils.withrequired graphql
+pnpm add nitro-graphql @apollo/server @apollo/utils.withrequired graphql graphql-config
 ```
 
 ### 2. Configure
