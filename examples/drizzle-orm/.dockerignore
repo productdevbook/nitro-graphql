@@ -1,0 +1,49 @@
+# Dependencies
+node_modules
+pnpm-lock.yaml
+
+# Build output
+.output
+.nitro
+dist
+
+# Development files
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+coverage
+.nyc_output
+
+# Docker
+Dockerfile
+docker-compose.yaml
+.dockerignore
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Misc
+README.md
+*.md
+.editorconfig
+.prettierrc
+.eslintrc*

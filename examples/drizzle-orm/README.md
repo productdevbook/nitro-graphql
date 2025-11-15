@@ -340,6 +340,136 @@ pnpm db:migrate
 pnpm db:studio
 ```
 
+## Docker Deployment
+
+This example includes Docker support for production deployment with PostgreSQL.
+
+### Quick Start with Docker Compose
+
+The easiest way to run the application in production mode:
+
+```bash
+# Build and start all services (PostgreSQL + App)
+docker compose up -d
+
+# View logs
+docker compose logs -f app
+
+# Stop services
+docker compose down
+
+# Stop and remove volumes (⚠️ deletes database data)
+docker compose down -v
+```
+
+The application will be available at:
+- **GraphQL Endpoint**: http://localhost:3000/api/graphql
+- **Health Check**: http://localhost:3000/api/graphql/health
+
+### Docker Architecture
+
+**Multi-stage Dockerfile**:
+1. **deps stage**: Installs dependencies with pnpm
+2. **builder stage**: Builds the Nitro application
+3. **runner stage**: Lightweight production image with srvx runtime
+
+**Services** (docker-compose.yaml):
+- **postgres**: PostgreSQL 17 Alpine with persistent volume
+- **app**: Nitro GraphQL application with automatic migrations
+
+### Environment Variables
+
+Configure via environment variables or `.env` file:
+
+```env
+# Database (automatically set in docker-compose.yaml)
+NITRO_BOOK_DATABASE_URL=postgresql://postgres:postgres_dev_password@postgres:5432/books
+
+# Application
+NODE_ENV=production
+HOST=0.0.0.0
+PORT=3000
+```
+
+### Production Deployment
+
+For production deployment, update the following in `docker-compose.yaml`:
+
+1. **Change database credentials**:
+```yaml
+environment:
+  POSTGRES_PASSWORD: your-strong-password
+  NITRO_BOOK_DATABASE_URL: postgresql://postgres:your-strong-password@postgres:5432/books
+```
+
+2. **Use secrets** (recommended):
+```yaml
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+```
+
+3. **Configure persistent volumes** for backups
+
+4. **Set up reverse proxy** (nginx/traefik) for HTTPS
+
+### Docker Commands
+
+```bash
+# Build image only
+docker compose build
+
+# Rebuild without cache
+docker compose build --no-cache
+
+# Run in foreground (see logs directly)
+docker compose up
+
+# Scale app service (if using load balancer)
+docker compose up -d --scale app=3
+
+# Execute commands in running container
+docker compose exec app sh
+docker compose exec postgres psql -U postgres -d books
+
+# View database logs
+docker compose logs -f postgres
+```
+
+### Health Checks
+
+The application includes built-in health checks:
+
+- **Docker healthcheck**: Automatically monitors container health
+- **GraphQL health endpoint**: `GET /api/graphql/health`
+
+### Troubleshooting Docker
+
+**Database connection fails**:
+```bash
+# Check postgres is healthy
+docker compose ps
+
+# Check logs
+docker compose logs postgres
+
+# Restart services
+docker compose restart
+```
+
+**Migrations not running**:
+```bash
+# Run migrations manually
+docker compose exec app pnpm drizzle-kit migrate
+```
+
+**Port already in use**:
+```bash
+# Change ports in docker-compose.yaml
+ports:
+  - "3001:3000"  # Map to different host port
+```
+
 ## Configuration
 
 ### Nitro Config
