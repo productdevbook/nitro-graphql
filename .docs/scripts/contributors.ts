@@ -152,21 +152,20 @@ export async function getFileContributors(filePath: string, githubUsers: Array<{
       }
     }
   }
-  catch (error) {
+  catch {
     console.warn(`Git log failed for ${filePath}, using GitHub API contributors with default counts`)
   }
 
-  // Convert to array and filter out contributors with 0 commits
-  // But keep at least the main contributors even if count is 0 (for new files)
+  // Convert to array
   const result = Array.from(contributorsMap.values())
-  const hasCommits = result.some(c => c.count > 0)
 
-  if (hasCommits) {
-    return result.filter(c => c.count > 0).sort((a, b) => b.count - a.count)
-  }
-
-  // For new files or shallow clones, return all GitHub contributors
-  return result.map(c => ({ ...c, count: 1 })).sort((a, b) => b.count - a.count)
+  // In shallow clones, some GitHub contributors might not appear in git log
+  // Always include GitHub API contributors even if their count is 0
+  // Only filter out non-GitHub contributors (old accounts) with 0 commits
+  return result
+    .filter(c => c.github !== null || c.count > 0) // Keep all GitHub users + git-only users with commits
+    .map(c => c.count === 0 ? { ...c, count: 1 } : c) // Set minimum count of 1 for GitHub users
+    .sort((a, b) => b.count - a.count)
 }
 
 /**
