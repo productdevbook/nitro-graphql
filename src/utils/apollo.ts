@@ -11,7 +11,6 @@ import type {
   ContextFunction,
   HTTPGraphQLRequest,
 } from '@apollo/server'
-import type { WithRequired } from '@apollo/utils.withrequired'
 import type { Hooks } from 'crossws'
 import type {
   EventHandler,
@@ -24,6 +23,9 @@ import {
   getRequestURL,
   readBody,
 } from 'h3'
+
+// Inline utility type to avoid dependency on @apollo/utils.withrequired
+type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
 
 export interface H3ContextFunctionArgument {
   event: H3Event

@@ -18,7 +18,7 @@ Apollo Federation allows you to split your GraphQL API across multiple services 
 ### 1. Install Dependencies
 
 ```bash
-pnpm add @apollo/server @apollo/subgraph @apollo/utils.withrequired graphql graphql-config nitro-graphql@beta
+pnpm add @apollo/server @apollo/subgraph graphql graphql-config nitro-graphql@beta
 ```
 
 ### 2. Configure Subgraph

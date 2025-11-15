@@ -12,7 +12,7 @@ Guide to using Apollo Server with Nitro GraphQL, including Federation support.
 ## Installation
 
 ```bash
-pnpm add nitro-graphql@beta @apollo/server @apollo/utils.withrequired graphql graphql-config
+pnpm add nitro-graphql@beta @apollo/server graphql graphql-config
 ```
 
 ## Configuration

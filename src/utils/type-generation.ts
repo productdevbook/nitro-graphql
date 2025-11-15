@@ -1,7 +1,6 @@
 import type { Nitro } from 'nitro/types'
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { buildSubgraphSchema } from '@apollo/subgraph'
 import { loadFilesSync } from '@graphql-tools/load-files'
 import { mergeTypeDefs } from '@graphql-tools/merge'
 import { printSchemaWithDirectives } from '@graphql-tools/utils'
@@ -22,6 +21,26 @@ import {
 import { generateTypes } from './server-codegen'
 
 const logger = consola.withTag('nitro-graphql')
+
+// Dynamic import for Apollo Federation support (optional dependency)
+let buildSubgraphSchema: any = null
+
+async function loadFederationSupport() {
+  if (buildSubgraphSchema !== null)
+    return buildSubgraphSchema
+
+  try {
+    // Try to import @apollo/subgraph for federation support
+    const apolloSubgraph = await import('@apollo/subgraph')
+    buildSubgraphSchema = apolloSubgraph.buildSubgraphSchema
+  }
+  catch {
+    // @apollo/subgraph is optional, continue without federation
+    buildSubgraphSchema = false
+  }
+
+  return buildSubgraphSchema
+}
 
 function generateGraphQLIndexFile(
   nitro: Nitro,
@@ -439,11 +458,19 @@ export async function serverTypeGeneration(app: Nitro, options: { silent?: boole
       sort: true,
     })
 
-    const schema = federationEnabled
-      ? buildSubgraphSchema([{
-          typeDefs: parse(mergedSchemas),
-        }])
-      : buildSchema(mergedSchemas)
+    let schema
+    if (federationEnabled) {
+      const buildSubgraph = await loadFederationSupport()
+      if (!buildSubgraph) {
+        throw new Error('Federation is enabled but @apollo/subgraph is not installed. Run: pnpm add @apollo/subgraph')
+      }
+      schema = buildSubgraph([{
+        typeDefs: parse(mergedSchemas),
+      }])
+    }
+    else {
+      schema = buildSchema(mergedSchemas)
+    }
 
     const data = await generateTypes(app.options.graphql?.framework || 'graphql-yoga', schema, app.options.graphql ?? {})
 
@@ -549,11 +576,20 @@ async function generateMainClientTypes(nitro: Nitro, options: { silent?: boolean
 
   const graphqlString = readFileSync(schemaFilePath, 'utf-8')
   const federationEnabled = nitro.options.graphql?.federation?.enabled === true
-  const schema = federationEnabled
-    ? buildSubgraphSchema([{
-        typeDefs: parse(graphqlString),
-      }])
-    : buildSchema(graphqlString)
+
+  let schema
+  if (federationEnabled) {
+    const buildSubgraph = await loadFederationSupport()
+    if (!buildSubgraph) {
+      throw new Error('Federation is enabled but @apollo/subgraph is not installed. Run: pnpm add @apollo/subgraph')
+    }
+    schema = buildSubgraph([{
+      typeDefs: parse(graphqlString),
+    }])
+  }
+  else {
+    schema = buildSchema(graphqlString)
+  }
 
   const types = await generateClientTypes(schema, loadDocs, nitro.options.graphql?.codegen?.client ?? {}, nitro.options.graphql?.codegen?.clientSDK ?? {}, undefined, undefined, undefined, options)
   if (types === false) {

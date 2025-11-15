@@ -76,13 +76,26 @@ export async function setupNitroGraphQL(nitro: Nitro) {
       '@oxc-parser',
     ]
 
+    const allExternals = [...codegenExternals]
+
+    // Apollo Federation is optional - only mark as external if NOT enabled
+    // (if enabled, it will be bundled; if not, it won't be imported at all)
+    if (!nitro.options.graphql?.federation?.enabled) {
+      const federationExternals = [
+        '@apollo/subgraph',
+        '@apollo/federation-internals',
+        '@apollo/cache-control-types',
+      ]
+      allExternals.push(...federationExternals)
+    }
+
     if (Array.isArray(rollupConfig.external)) {
-      rollupConfig.external.push(...codegenExternals)
+      rollupConfig.external.push(...allExternals)
     }
     else if (typeof rollupConfig.external === 'function') {
       const originalExternal = rollupConfig.external
       rollupConfig.external = (id, parent, isResolved) => {
-        if (codegenExternals.some(external => id.includes(external))) {
+        if (allExternals.some(external => id.includes(external))) {
           return true
         }
         return originalExternal(id, parent, isResolved)

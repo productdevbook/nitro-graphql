@@ -61,7 +61,7 @@ pnpm add nitro-graphql@beta graphql-yoga graphql graphql-config
 
 **Apollo Server:**
 ```bash
-pnpm add nitro-graphql@beta @apollo/server @apollo/utils.withrequired graphql graphql-config
+pnpm add nitro-graphql@beta @apollo/server graphql graphql-config
 ```
 
 ### 2. Configure

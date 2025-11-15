@@ -15,9 +15,6 @@ catalogs:
     '@apollo/subgraph':
       specifier: ^2.12.1
       version: 2.12.1
-    '@apollo/utils.withrequired':
-      specifier: ^3.0.0
-      version: 3.0.0
     '@graphql-codegen/core':
       specifier: ^5.0.0
       version: 5.0.0
@@ -148,9 +145,6 @@ importers:
       '@apollo/subgraph':
         specifier: 'catalog:'
         version: 2.12.1(graphql@16.12.0)
-      '@apollo/utils.withrequired':
-        specifier: ^3.0.0
-        version: 3.0.0
       '@graphql-codegen/core':
         specifier: 'catalog:'
         version: 5.0.0(graphql@16.12.0)
@@ -314,9 +308,6 @@ importers:
       '@apollo/server':
         specifier: 'catalog:'
         version: 5.1.0(graphql@16.12.0)
-      '@apollo/utils.withrequired':
-        specifier: 'catalog:'
-        version: 3.0.0
       graphql:
         specifier: 'catalog:'
         version: 16.12.0

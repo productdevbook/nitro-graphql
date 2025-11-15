@@ -20,7 +20,6 @@ catalog:
   '@antfu/eslint-config': ^6.2.0
   '@apollo/server': ^5.1.0
   '@apollo/subgraph': ^2.12.1
-  '@apollo/utils.withrequired': ^3.0.0
   '@graphql-codegen/core': ^5.0.0
   '@graphql-codegen/import-types-preset': ^3.0.1
   '@graphql-codegen/typescript': ^5.0.4
