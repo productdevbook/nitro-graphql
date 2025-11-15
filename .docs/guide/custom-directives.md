@@ -1,4 +1,11 @@
+---
+title: Custom Directives
+category: Guide
+---
+
 # Custom Directives
+
+<FunctionInfo fn="customDirectives"/>
 
 Create reusable GraphQL directives for authentication, caching, validation, and more.
 
@@ -77,3 +84,17 @@ See the [playgrounds/nitro/server/graphql/directives/](https://github.com/produc
 - [Schemas](/guide/schemas)
 - [Context](/guide/context)
 - [Resolvers](/guide/resolvers)
+
+---
+
+## Source
+
+<SourceLinks fn="customDirectives"/>
+
+## Contributors
+
+<Contributors fn="customDirectives"/>
+
+## Changelog
+
+<Changelog fn="customDirectives"/>

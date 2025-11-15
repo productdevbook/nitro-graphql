@@ -1,4 +1,11 @@
+---
+title: Path Customization
+category: Guide
+---
+
 # Path Customization
+
+<FunctionInfo fn="pathCustomization"/>
 
 Customize file discovery and generation paths for monorepos and custom project structures.
 
@@ -48,3 +55,17 @@ export default defineNitroConfig({
 
 - [File Generation Control](/guide/file-generation-control)
 - [File Organization](/guide/file-organization)
+
+---
+
+## Source
+
+<SourceLinks fn="pathCustomization"/>
+
+## Contributors
+
+<Contributors fn="pathCustomization"/>
+
+## Changelog
+
+<Changelog fn="pathCustomization"/>

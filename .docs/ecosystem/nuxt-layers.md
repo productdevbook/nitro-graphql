@@ -1,4 +1,10 @@
+---
+category: Ecosystem
+---
+
 # Nuxt Layers
+
+<FunctionInfo fn="nuxtLayers"/>
 
 Nitro GraphQL provides full support for Nuxt layers, allowing you to share GraphQL schemas, resolvers, and queries across multiple projects or within a monorepo structure.
 
@@ -762,3 +768,14 @@ export default defineNuxtConfig({
 - [Client Usage](/ecosystem/client-usage) - Frontend GraphQL patterns
 - [File Organization](/guide/file-organization) - Best practices for structure
 - [Type Generation](/guide/type-generation) - Understanding generated types
+
+---
+
+## Source
+<SourceLinks fn="nuxtLayers"/>
+
+## Contributors
+<Contributors fn="nuxtLayers"/>
+
+## Changelog
+<Changelog fn="nuxtLayers"/>

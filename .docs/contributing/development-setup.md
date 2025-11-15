@@ -1,4 +1,10 @@
+---
+category: Contributing
+---
+
 # Development Setup
+
+<FunctionInfo fn="developmentSetup"/>
 
 This guide will help you set up a local development environment for contributing to Nitro GraphQL.
 
@@ -317,3 +323,14 @@ If you encounter issues during setup:
 - Check existing [GitHub Issues](https://github.com/productdevbook/nitro-graphql/issues)
 - Open a new issue with details about your setup
 - Ask in [GitHub Discussions](https://github.com/productdevbook/nitro-graphql/discussions)
+
+---
+
+## Source
+<SourceLinks fn="developmentSetup"/>
+
+## Contributors
+<Contributors fn="developmentSetup"/>
+
+## Changelog
+<Changelog fn="developmentSetup"/>

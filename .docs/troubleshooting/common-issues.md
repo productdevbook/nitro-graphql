@@ -1,4 +1,10 @@
+---
+category: Troubleshooting
+---
+
 # Common Issues
+
+<FunctionInfo fn="commonIssues"/>
 
 Frequently encountered problems and their solutions when working with Nitro GraphQL.
 
@@ -629,3 +635,14 @@ pnpm install
 - [Performance Issues](/troubleshooting/performance-issues) - Optimization guide
 - [Debug Mode](/troubleshooting/debug-mode) - Using the debug dashboard
 - [Migration Guide](/troubleshooting/migration-guide) - Upgrading between versions
+
+---
+
+## Source
+<SourceLinks fn="commonIssues"/>
+
+## Contributors
+<Contributors fn="commonIssues"/>
+
+## Changelog
+<Changelog fn="commonIssues"/>

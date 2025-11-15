@@ -1,4 +1,11 @@
+---
+title: Introduction
+category: Guide
+---
+
 # Introduction
+
+<FunctionInfo fn="introduction"/>
 
 ## What is Nitro GraphQL?
 
@@ -333,3 +340,17 @@ Integrate third-party GraphQL services:
   }
 }
 </style>
+
+---
+
+## Source
+
+<SourceLinks fn="introduction"/>
+
+## Contributors
+
+<Contributors fn="introduction"/>
+
+## Changelog
+
+<Changelog fn="introduction"/>

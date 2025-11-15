@@ -1,4 +1,11 @@
+---
+title: Performance
+category: Guide
+---
+
 # Performance
+
+<FunctionInfo fn="performance"/>
 
 Optimization tips for GraphQL resolvers, caching strategies, and batching.
 
@@ -109,3 +116,17 @@ export const postQueries = defineQuery({
 - [Caching Directive](/guide/custom-directives)
 - [Context](/guide/context)
 - [Resolvers](/guide/resolvers)
+
+---
+
+## Source
+
+<SourceLinks fn="performance"/>
+
+## Contributors
+
+<Contributors fn="performance"/>
+
+## Changelog
+
+<Changelog fn="performance"/>

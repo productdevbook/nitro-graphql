@@ -1,4 +1,16 @@
+---
+title: Resolver Functions
+category: API
+related:
+  - configuration
+  - type-definitions
+  - hooks
+description: Complete reference for all resolver definition utilities provided by Nitro GraphQL.
+---
+
 # Resolver Functions API Reference
+
+<FunctionInfo fn="resolverFunctions"/>
 
 Complete reference for all resolver definition utilities provided by Nitro GraphQL.
 
@@ -845,3 +857,14 @@ export const userQueries: QueryResolvers = defineQuery({
   }
 })
 ```
+
+---
+
+## Source
+<SourceLinks fn="resolverFunctions"/>
+
+## Contributors
+<Contributors fn="resolverFunctions"/>
+
+## Changelog
+<Changelog fn="resolverFunctions"/>

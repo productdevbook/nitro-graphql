@@ -1,4 +1,10 @@
+---
+category: Contributing
+---
+
 # Documentation
+
+<FunctionInfo fn="documentation"/>
 
 This guide covers how to contribute to Nitro GraphQL documentation, including writing guides, API references, and examples.
 
@@ -746,3 +752,14 @@ Before submitting large documentation changes:
 - Review [Development Setup](/contributing/development-setup)
 - Understand [Architecture](/contributing/architecture)
 - Learn about [Adding Features](/contributing/adding-features)
+
+---
+
+## Source
+<SourceLinks fn="documentation"/>
+
+## Contributors
+<Contributors fn="documentation"/>
+
+## Changelog
+<Changelog fn="documentation"/>

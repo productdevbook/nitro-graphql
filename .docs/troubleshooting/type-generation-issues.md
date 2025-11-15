@@ -1,4 +1,10 @@
+---
+category: Troubleshooting
+---
+
 # Type Generation Issues
+
+<FunctionInfo fn="typeGenerationIssues"/>
 
 Troubleshooting TypeScript type generation problems in Nitro GraphQL.
 
@@ -681,3 +687,14 @@ export const userResolvers = defineType('User', {
 - [Debug Mode](/troubleshooting/debug-mode) - Using the debug dashboard
 - [Performance Issues](/troubleshooting/performance-issues) - Optimization guide
 - [Type Generation Guide](/guide/type-generation) - Learn about type generation
+
+---
+
+## Source
+<SourceLinks fn="typeGenerationIssues"/>
+
+## Contributors
+<Contributors fn="typeGenerationIssues"/>
+
+## Changelog
+<Changelog fn="typeGenerationIssues"/>

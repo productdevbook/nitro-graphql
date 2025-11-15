@@ -1,4 +1,10 @@
+---
+category: Troubleshooting
+---
+
 # Migration Guide
+
+<FunctionInfo fn="migrationGuide"/>
 
 Guide for upgrading Nitro GraphQL between major versions.
 
@@ -647,3 +653,14 @@ pnpm dev
 - [Type Generation Issues](/troubleshooting/type-generation-issues) - Type-specific problems
 - [Debug Mode](/troubleshooting/debug-mode) - Using the debug dashboard
 - [Installation Guide](/guide/installation) - Fresh installation guide
+
+---
+
+## Source
+<SourceLinks fn="migrationGuide"/>
+
+## Contributors
+<Contributors fn="migrationGuide"/>
+
+## Changelog
+<Changelog fn="migrationGuide"/>

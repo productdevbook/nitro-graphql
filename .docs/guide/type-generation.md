@@ -1,4 +1,11 @@
+---
+title: Type Generation
+category: Guide
+---
+
 # Type Generation
+
+<FunctionInfo fn="typeGeneration"/>
 
 Automatic TypeScript type generation for server-side resolvers and client-side queries.
 
@@ -641,3 +648,17 @@ This enables:
   }
 }
 </style>
+
+---
+
+## Source
+
+<SourceLinks fn="typeGeneration"/>
+
+## Contributors
+
+<Contributors fn="typeGeneration"/>
+
+## Changelog
+
+<Changelog fn="typeGeneration"/>

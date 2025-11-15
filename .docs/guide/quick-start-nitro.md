@@ -1,4 +1,11 @@
+---
+title: Quick Start - Nitro
+category: Guide
+---
+
 # Quick Start: Nitro
+
+<FunctionInfo fn="quickStartNitro"/>
 
 Get a GraphQL API running in your Nitro project in 5 minutes.
 
@@ -309,3 +316,17 @@ export default defineConfig({
   }
 }
 </style>
+
+---
+
+## Source
+
+<SourceLinks fn="quickStartNitro"/>
+
+## Contributors
+
+<Contributors fn="quickStartNitro"/>
+
+## Changelog
+
+<Changelog fn="quickStartNitro"/>

@@ -1,4 +1,15 @@
+---
+title: Hooks
+category: API
+related:
+  - configuration
+  - resolver-functions
+description: Complete reference for Nitro hooks provided and used by Nitro GraphQL.
+---
+
 # Hooks API Reference
+
+<FunctionInfo fn="hooks"/>
 
 Complete reference for Nitro hooks provided and used by Nitro GraphQL.
 
@@ -657,3 +668,21 @@ hooks: {
 2. Use type assertions if needed
 3. Check Nitro version for breaking changes
 4. Consult Nitro TypeScript documentation
+
+---
+
+## Metadata
+
+<FunctionInfo fn="hooks"/>
+
+## Source
+
+<SourceLinks fn="hooks"/>
+
+## Contributors
+
+<Contributors fn="hooks"/>
+
+## Changelog
+
+<Changelog fn="hooks"/>

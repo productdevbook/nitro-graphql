@@ -1,4 +1,10 @@
+---
+category: Ecosystem
+---
+
 # Nuxt Integration
+
+<FunctionInfo fn="nuxtIntegration"/>
 
 Nitro GraphQL provides first-class integration with Nuxt 3, offering seamless full-stack GraphQL development with automatic type generation for both server and client code.
 
@@ -510,3 +516,14 @@ pnpm install
 - [Client Usage](/ecosystem/client-usage) - Frontend GraphQL patterns
 - [Context](/guide/context) - Request context and middleware
 - [External Services](/guide/external-services) - Third-party GraphQL APIs
+
+---
+
+## Source
+<SourceLinks fn="nuxtIntegration"/>
+
+## Contributors
+<Contributors fn="nuxtIntegration"/>
+
+## Changelog
+<Changelog fn="nuxtIntegration"/>

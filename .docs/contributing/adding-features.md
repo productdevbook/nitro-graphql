@@ -1,4 +1,10 @@
+---
+category: Contributing
+---
+
 # Adding Features
+
+<FunctionInfo fn="addingFeatures"/>
 
 This guide walks you through the process of adding new features to Nitro GraphQL, from initial development to submitting a pull request.
 
@@ -601,3 +607,14 @@ If you need help while developing:
 - Review the [Architecture](/contributing/architecture) guide
 - Learn about [Documentation](/contributing/documentation) standards
 - Check out [existing PRs](https://github.com/productdevbook/nitro-graphql/pulls) for examples
+
+---
+
+## Source
+<SourceLinks fn="addingFeatures"/>
+
+## Contributors
+<Contributors fn="addingFeatures"/>
+
+## Changelog
+<Changelog fn="addingFeatures"/>

@@ -1,4 +1,11 @@
+---
+title: Auto-Discovery
+category: Guide
+---
+
 # Auto-Discovery
+
+<FunctionInfo fn="autoDiscovery"/>
 
 Learn how Nitro GraphQL automatically discovers and loads your GraphQL schemas, resolvers, and directives.
 
@@ -450,3 +457,17 @@ File watching is efficient:
   }
 }
 </style>
+
+---
+
+## Source
+
+<SourceLinks fn="autoDiscovery"/>
+
+## Contributors
+
+<Contributors fn="autoDiscovery"/>
+
+## Changelog
+
+<Changelog fn="autoDiscovery"/>

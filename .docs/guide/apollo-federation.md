@@ -1,4 +1,11 @@
+---
+title: Apollo Federation
+category: Guide
+---
+
 # Apollo Federation
+
+<FunctionInfo fn="apolloFederation"/>
 
 Build distributed GraphQL architectures with Apollo Federation support.
 
@@ -125,3 +132,17 @@ Use Apollo Gateway or Apollo Router to compose subgraphs.
 - [Apollo Server Guide](/guide/apollo-server)
 - [Framework Comparison](/guide/framework-comparison)
 - [Playground Example](https://github.com/productdevbook/nitro-graphql/tree/main/playgrounds/federation)
+
+---
+
+## Source
+
+<SourceLinks fn="apolloFederation"/>
+
+## Contributors
+
+<Contributors fn="apolloFederation"/>
+
+## Changelog
+
+<Changelog fn="apolloFederation"/>

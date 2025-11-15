@@ -1,4 +1,11 @@
+---
+title: Error Handling
+category: Guide
+---
+
 # Error Handling
+
+<FunctionInfo fn="errorHandling"/>
 
 Custom errors, error formatting, and error codes in GraphQL.
 
@@ -132,3 +139,17 @@ throw new ValidationError('Email is invalid', 'email')
 - [Resolvers](/guide/resolvers)
 - [Custom Directives](/guide/custom-directives)
 - [Testing](/guide/testing)
+
+---
+
+## Source
+
+<SourceLinks fn="errorHandling"/>
+
+## Contributors
+
+<Contributors fn="errorHandling"/>
+
+## Changelog
+
+<Changelog fn="errorHandling"/>

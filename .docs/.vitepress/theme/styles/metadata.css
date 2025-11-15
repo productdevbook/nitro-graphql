@@ -1,0 +1,315 @@
+/**
+ * Metadata components styling
+ * VueUse-inspired design with Nitro GraphQL branding
+ */
+
+/* ============================================
+   Function Info Component
+   ============================================ */
+
+.function-info {
+  --metadata-bg: var(--vp-c-bg-soft);
+  --metadata-border: var(--vp-c-divider);
+  --metadata-label: var(--vp-c-text-2);
+  --metadata-value: var(--vp-c-text-1);
+}
+
+.dark .function-info {
+  --metadata-bg: rgba(255, 255, 255, 0.04);
+  --metadata-border: rgba(255, 255, 255, 0.1);
+}
+
+/* Grid hover effects */
+.function-info .info-item:hover {
+  background: var(--vp-c-bg-elv);
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+/* Category badge styling */
+.category-link {
+  position: relative;
+  overflow: hidden;
+}
+
+.category-link::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--vp-c-brand-1), var(--vp-c-brand-2));
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.category-link:hover::before {
+  opacity: 0.1;
+}
+
+/* Related links animation */
+.related-link {
+  position: relative;
+  overflow: hidden;
+}
+
+.related-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--vp-c-brand-1);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.related-link:hover::after {
+  transform: scaleX(1);
+}
+
+/* ============================================
+   Contributors Component
+   ============================================ */
+
+.contributors-grid .contributor {
+  position: relative;
+}
+
+.contributors-grid .contributor::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--vp-c-brand-1), var(--vp-c-brand-2));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.contributors-grid .contributor:hover::before {
+  opacity: 0.05;
+}
+
+.contributors-grid .avatar {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.contributors-grid .contributor:hover .avatar {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 3px rgba(225, 0, 152, 0.2);
+}
+
+/* Contributor name gradient on hover */
+.contributors-grid .contributor:hover .name {
+  background: linear-gradient(135deg, var(--vp-c-brand-1), var(--vp-c-brand-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============================================
+   Changelog Component
+   ============================================ */
+
+.changelog .commit-entry {
+  position: relative;
+  overflow: hidden;
+}
+
+.changelog .commit-entry::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--vp-c-brand-1), var(--vp-c-brand-2));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.changelog .commit-entry:hover::before {
+  opacity: 1;
+}
+
+/* Version tag glow effect */
+.version-tag {
+  position: relative;
+  box-shadow: 0 4px 12px rgba(225, 0, 152, 0.3);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(225, 0, 152, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(225, 0, 152, 0.5);
+  }
+}
+
+/* Commit hash hover effect */
+.commit-hash {
+  position: relative;
+}
+
+.commit-hash::after {
+  content: '→';
+  margin-left: 4px;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all 0.2s ease;
+}
+
+.commit-hash:hover::after {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Type badge animations */
+.type-badge {
+  transition: all 0.2s ease;
+}
+
+.commit-entry:hover .type-badge {
+  transform: scale(1.05);
+}
+
+/* Dark mode adjustments for type badges */
+.dark .type-badge.feat {
+  background: rgba(16, 185, 129, 0.2);
+}
+
+.dark .type-badge.fix {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.dark .type-badge.docs {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.dark .type-badge.refactor {
+  background: rgba(139, 92, 246, 0.2);
+}
+
+.dark .type-badge.chore {
+  background: rgba(107, 114, 128, 0.2);
+}
+
+/* ============================================
+   Source Links Component
+   ============================================ */
+
+.source-links .source-link {
+  position: relative;
+  overflow: hidden;
+}
+
+.source-links .source-link::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--vp-c-brand-1), var(--vp-c-brand-2));
+  opacity: 0;
+  transform: translateY(100%);
+  transition: all 0.3s ease;
+}
+
+.source-links .source-link:hover::before {
+  opacity: 0.1;
+  transform: translateY(0);
+}
+
+.source-links .icon {
+  transition: transform 0.3s ease;
+}
+
+.source-links .source-link:hover .icon {
+  transform: scale(1.2) rotate(10deg);
+}
+
+/* ============================================
+   Responsive Adjustments
+   ============================================ */
+
+@media (max-width: 768px) {
+  .function-info {
+    padding: 1rem;
+  }
+
+  .contributors-grid {
+    gap: 0.5rem;
+  }
+
+  .changelog .commit-entry {
+    padding: 0.75rem;
+  }
+
+  .source-links {
+    gap: 0.5rem;
+  }
+}
+
+/* ============================================
+   Print Styles
+   ============================================ */
+
+@media print {
+  .function-info,
+  .contributors,
+  .changelog,
+  .source-links {
+    break-inside: avoid;
+  }
+
+  .function-info {
+    border: 1px solid #ddd;
+  }
+
+  .contributors-grid .avatar {
+    print-color-adjust: exact;
+  }
+}
+
+/* ============================================
+   Accessibility
+   ============================================ */
+
+/* Focus states */
+.category-link:focus-visible,
+.related-link:focus-visible,
+.contributor:focus-visible,
+.commit-hash:focus-visible,
+.source-link:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .function-info .info-item:hover,
+  .contributors-grid .avatar,
+  .changelog .commit-entry::before,
+  .version-tag,
+  .commit-hash::after,
+  .type-badge,
+  .source-links .icon {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .function-info,
+  .contributors-grid .contributor,
+  .changelog .commit-entry,
+  .source-links .source-link {
+    border-width: 2px;
+  }
+
+  .type-badge {
+    border: 1px solid currentColor;
+  }
+}

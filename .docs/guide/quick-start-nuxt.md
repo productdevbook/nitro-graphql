@@ -1,4 +1,11 @@
+---
+title: Quick Start - Nuxt
+category: Guide
+---
+
 # Quick Start: Nuxt
+
+<FunctionInfo fn="quickStartNuxt"/>
 
 Set up a full-stack GraphQL application in your Nuxt project with type-safe client queries in 5 minutes.
 
@@ -448,3 +455,17 @@ All schemas and resolvers from layers are automatically merged with your app's s
   }
 }
 </style>
+
+---
+
+## Source
+
+<SourceLinks fn="quickStartNuxt"/>
+
+## Contributors
+
+<Contributors fn="quickStartNuxt"/>
+
+## Changelog
+
+<Changelog fn="quickStartNuxt"/>

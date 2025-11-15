@@ -1,4 +1,10 @@
+---
+category: Contributing
+---
+
 # Architecture
+
+<FunctionInfo fn="architecture"/>
 
 This guide provides a deep dive into the Nitro GraphQL architecture, helping you understand how the module works internally.
 
@@ -534,3 +540,14 @@ To add new virtual modules:
 - Learn about [Adding Features](/contributing/adding-features)
 - Understand the [Development Setup](/contributing/development-setup)
 - Contribute to [Documentation](/contributing/documentation)
+
+---
+
+## Source
+<SourceLinks fn="architecture"/>
+
+## Contributors
+<Contributors fn="architecture"/>
+
+## Changelog
+<Changelog fn="architecture"/>

@@ -1,4 +1,11 @@
+---
+title: Apollo Server
+category: Guide
+---
+
 # Apollo Server
+
+<FunctionInfo fn="apolloServer"/>
 
 Guide to using Apollo Server with Nitro GraphQL, including Federation support.
 
@@ -46,3 +53,17 @@ export default defineNitroConfig({
 - [Apollo Federation](/guide/apollo-federation)
 - [GraphQL Yoga](/guide/graphql-yoga)
 - [Framework Comparison](/guide/framework-comparison)
+
+---
+
+## Source
+
+<SourceLinks fn="apolloServer"/>
+
+## Contributors
+
+<Contributors fn="apolloServer"/>
+
+## Changelog
+
+<Changelog fn="apolloServer"/>

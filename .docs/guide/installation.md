@@ -1,4 +1,16 @@
+---
+title: Installation
+category: Getting Started
+related:
+  - quick-start-nitro
+  - quick-start-nuxt
+  - introduction
+description: Learn how to install Nitro GraphQL in your Nitro or Nuxt project with pnpm, npm, or yarn.
+---
+
 # Installation
+
+<FunctionInfo fn="installation"/>
 
 ## Prerequisites
 
@@ -368,3 +380,17 @@ export default defineNitroConfig({
   color: var(--vp-c-brand-2);
 }
 </style>
+
+---
+
+## Source
+
+<SourceLinks fn="installation"/>
+
+## Contributors
+
+<Contributors fn="installation"/>
+
+## Changelog
+
+<Changelog fn="installation"/>

@@ -1,4 +1,11 @@
+---
+title: Your First Query
+category: Guide
+---
+
 # Your First Query
+
+<FunctionInfo fn="yourFirstQuery"/>
 
 Learn how to create, test, and use GraphQL queries and mutations in your Nitro GraphQL application.
 
@@ -580,3 +587,17 @@ const { data: posts } = await useAsyncData('posts', () =>
   }
 }
 </style>
+
+---
+
+## Source
+
+<SourceLinks fn="yourFirstQuery"/>
+
+## Contributors
+
+<Contributors fn="yourFirstQuery"/>
+
+## Changelog
+
+<Changelog fn="yourFirstQuery"/>

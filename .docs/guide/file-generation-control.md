@@ -1,4 +1,11 @@
+---
+title: File Generation Control
+category: Guide
+---
+
 # File Generation Control
+
+<FunctionInfo fn="fileGenerationControl"/>
 
 Complete control over which files are auto-generated and their output paths (v2.0+).
 
@@ -142,3 +149,17 @@ externalServices: [
 - [Path Customization](/guide/path-customization)
 - [External Services](/guide/external-services)
 - [Auto-Discovery](/guide/auto-discovery)
+
+---
+
+## Source
+
+<SourceLinks fn="fileGenerationControl"/>
+
+## Contributors
+
+<Contributors fn="fileGenerationControl"/>
+
+## Changelog
+
+<Changelog fn="fileGenerationControl"/>

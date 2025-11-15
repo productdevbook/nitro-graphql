@@ -1,4 +1,11 @@
+---
+title: Subscriptions
+category: Guide
+---
+
 # Subscriptions
+
+<FunctionInfo fn="subscriptions"/>
 
 Real-time GraphQL subscriptions with WebSocket support.
 
@@ -77,3 +84,17 @@ const { data } = await useAsyncData(
 
 - [Resolvers](/guide/resolvers)
 - [GraphQL Yoga](/guide/graphql-yoga)
+
+---
+
+## Source
+
+<SourceLinks fn="subscriptions"/>
+
+## Contributors
+
+<Contributors fn="subscriptions"/>
+
+## Changelog
+
+<Changelog fn="subscriptions"/>

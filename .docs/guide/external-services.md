@@ -1,4 +1,11 @@
+---
+title: External Services
+category: Guide
+---
+
 # External Services
+
+<FunctionInfo fn="externalServices"/>
 
 Connect to external GraphQL APIs and generate types for third-party services like GitHub, Shopify, Contentful, and more.
 
@@ -95,3 +102,17 @@ externalServices: [
 - [Type Generation](/guide/type-generation)
 - [Path Customization](/guide/path-customization)
 - [File Generation Control](/guide/file-generation-control)
+
+---
+
+## Source
+
+<SourceLinks fn="externalServices"/>
+
+## Contributors
+
+<Contributors fn="externalServices"/>
+
+## Changelog
+
+<Changelog fn="externalServices"/>

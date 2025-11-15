@@ -11,16 +11,20 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "vitepress dev",
     "build": "vitepress build",
-    "preview": "vitepress preview"
+    "preview": "vitepress preview",
+    "update:metadata": "tsx scripts/update-metadata.ts"
   },
   "dependencies": {
     "dayjs": "^1.11.19",
+    "gray-matter": "^4.0.3",
     "gsap": "^3.13.0",
     "shiki": "^3.15.0"
   },
   "devDependencies": {
+    "@types/node": "^22.10.2",
     "mermaid": "^11.12.1",
-    "vitepress": "2.0.0-alpha.12",
+    "tsx": "^4.19.2",
+    "vitepress": "2.0.0-alpha.13",
     "vitepress-plugin-mermaid": "^2.0.17"
   }
 }

@@ -1,6 +1,23 @@
 import { defineConfig } from 'vitepress'
 import { withMermaid } from 'vitepress-plugin-mermaid'
 import llmstxt from 'vitepress-plugin-llms'
+import { readFileSync, existsSync } from 'node:fs'
+import { join } from 'node:path'
+import { ContributorsPlugin, ChangelogPlugin, MetadataPlugin } from './plugins'
+
+// Load metadata files
+const metadataDir = join(__dirname, '../metadata')
+const loadJSON = (filename: string) => {
+  const path = join(metadataDir, filename)
+  if (existsSync(path)) {
+    return JSON.parse(readFileSync(path, 'utf-8'))
+  }
+  return filename.includes('index') ? { functions: {}, categories: {}, lastUpdated: Date.now() } : {}
+}
+
+const metadataIndex = loadJSON('index.json')
+const contributorsData = loadJSON('contributors.json')
+const changelogData = loadJSON('changelog.json')
 
 // https://vitepress.dev/reference/site-config
 export default withMermaid(defineConfig({
@@ -12,7 +29,12 @@ export default withMermaid(defineConfig({
   ignoreDeadLinks: true,
 
   vite: {
-    plugins: [llmstxt()],
+    plugins: [
+      llmstxt(),
+      MetadataPlugin(metadataIndex),
+      ContributorsPlugin(contributorsData),
+      ChangelogPlugin(changelogData),
+    ],
   },
 
   head: [
@@ -36,8 +58,6 @@ export default withMermaid(defineConfig({
     nav: [
       { text: 'Guide', link: '/guide/introduction', activeMatch: '/guide/' },
       { text: 'API', link: '/api/configuration', activeMatch: '/api/' },
-      { text: 'Recipes', link: '/recipes/crud-operations', activeMatch: '/recipes/' },
-      { text: 'Examples', link: '/examples/nitro-basic', activeMatch: '/examples/' },
       {
         text: 'v1.5.1',
         items: [
@@ -104,24 +124,6 @@ export default withMermaid(defineConfig({
           ],
         },
       ],
-      '/recipes/': [
-        {
-          text: 'Recipes',
-          items: [
-            { text: 'CRUD Operations', link: '/recipes/crud-operations' },
-            { text: 'Authentication', link: '/recipes/authentication' },
-            { text: 'Authorization', link: '/recipes/authorization' },
-            { text: 'Database Integration', link: '/recipes/database-integration' },
-            { text: 'Pagination', link: '/recipes/pagination' },
-            { text: 'File Uploads', link: '/recipes/file-uploads' },
-            { text: 'Real-time Data', link: '/recipes/real-time-data' },
-            { text: 'External API Integration', link: '/recipes/external-api-integration' },
-            { text: 'Caching Strategies', link: '/recipes/caching-strategies' },
-            { text: 'Rate Limiting', link: '/recipes/rate-limiting' },
-            { text: 'Error Tracking', link: '/recipes/error-tracking' },
-          ],
-        },
-      ],
       '/api/': [
         {
           text: 'API Reference',
@@ -132,19 +134,6 @@ export default withMermaid(defineConfig({
             { text: 'Virtual Imports', link: '/api/virtual-imports' },
             { text: 'Apollo Utilities', link: '/api/apollo-utilities' },
             { text: 'Hooks', link: '/api/hooks' },
-          ],
-        },
-      ],
-      '/examples/': [
-        {
-          text: 'Examples',
-          items: [
-            { text: 'Basic Nitro Server', link: '/examples/nitro-basic' },
-            { text: 'Full-Stack Nuxt App', link: '/examples/nuxt-fullstack' },
-            { text: 'Federation Subgraph', link: '/examples/federation-subgraph' },
-            { text: 'External Services', link: '/examples/external-services' },
-            { text: 'E-Commerce API', link: '/examples/e-commerce-api' },
-            { text: 'Social App', link: '/examples/social-app' },
           ],
         },
       ],

@@ -1,0 +1,7 @@
+# Generated metadata files
+index.json
+contributors.json
+changelog.json
+
+# Keep export-sizes.json as it's manually maintained
+!export-sizes.json

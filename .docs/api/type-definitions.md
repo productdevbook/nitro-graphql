@@ -1,4 +1,16 @@
+---
+title: Type Definitions
+category: API
+related:
+  - resolver-functions
+  - virtual-imports
+  - configuration
+description: Complete reference for TypeScript types generated and used by Nitro GraphQL.
+---
+
 # Type Definitions API Reference
+
+<FunctionInfo fn="typeDefinitions"/>
 
 Complete reference for TypeScript types generated and used by Nitro GraphQL.
 
@@ -911,3 +923,14 @@ export default defineNitroConfig({
   }
 })
 ```
+
+---
+
+## Source
+<SourceLinks fn="typeDefinitions"/>
+
+## Contributors
+<Contributors fn="typeDefinitions"/>
+
+## Changelog
+<Changelog fn="typeDefinitions"/>

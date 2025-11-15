@@ -1,4 +1,11 @@
+---
+title: Context
+category: Guide
+---
+
 # Context
+
+<FunctionInfo fn="context"/>
 
 Learn how to work with H3EventContext in your GraphQL resolvers, add custom context properties, and access request data.
 
@@ -634,3 +641,17 @@ export const debugQuery = defineQuery({
   }
 }
 </style>
+
+---
+
+## Source
+
+<SourceLinks fn="context"/>
+
+## Contributors
+
+<Contributors fn="context"/>
+
+## Changelog
+
+<Changelog fn="context"/>

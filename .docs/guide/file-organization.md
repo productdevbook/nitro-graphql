@@ -1,4 +1,11 @@
+---
+title: File Organization
+category: Guide
+---
+
 # File Organization
+
+<FunctionInfo fn="fileOrganization"/>
 
 Best practices for organizing your GraphQL code in Nitro GraphQL applications.
 
@@ -114,3 +121,17 @@ server/graphql/
 - [Auto-Discovery](/guide/auto-discovery)
 - [Schemas](/guide/schemas)
 - [Resolvers](/guide/resolvers)
+
+---
+
+## Source
+
+<SourceLinks fn="fileOrganization"/>
+
+## Contributors
+
+<Contributors fn="fileOrganization"/>
+
+## Changelog
+
+<Changelog fn="fileOrganization"/>

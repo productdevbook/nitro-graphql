@@ -1,4 +1,10 @@
+---
+category: Troubleshooting
+---
+
 # Debug Mode
+
+<FunctionInfo fn="debugMode"/>
 
 Using the built-in debug dashboard to troubleshoot and inspect your GraphQL setup.
 
@@ -640,3 +646,14 @@ export default defineGraphQLConfig({
 - [Type Generation Issues](/troubleshooting/type-generation-issues) - Type-specific problems
 - [Performance Issues](/troubleshooting/performance-issues) - Optimization guide
 - [Debug Dashboard Guide](/guide/debug-dashboard) - Complete feature overview
+
+---
+
+## Source
+<SourceLinks fn="debugMode"/>
+
+## Contributors
+<Contributors fn="debugMode"/>
+
+## Changelog
+<Changelog fn="debugMode"/>

@@ -1,4 +1,11 @@
+---
+title: Resolvers
+category: Guide
+---
+
 # Resolvers
+
+<FunctionInfo fn="resolvers"/>
 
 Master GraphQL resolvers with `defineResolver`, `defineQuery`, `defineMutation`, `defineType`, and `defineSubscription`.
 
@@ -757,3 +764,17 @@ export const postTypes = defineType({
   }
 }
 </style>
+
+---
+
+## Source
+
+<SourceLinks fn="resolvers"/>
+
+## Contributors
+
+<Contributors fn="resolvers"/>
+
+## Changelog
+
+<Changelog fn="resolvers"/>

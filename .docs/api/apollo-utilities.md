@@ -1,4 +1,15 @@
+---
+title: Apollo Utilities
+category: API
+related:
+  - configuration
+  - resolver-functions
+description: Complete reference for Apollo Server integration and Apollo Federation utilities.
+---
+
 # Apollo Utilities API Reference
+
+<FunctionInfo fn="apolloUtilities"/>
 
 Complete reference for Apollo Server integration and Apollo Federation utilities.
 
@@ -683,3 +694,14 @@ export default defineNitroConfig({
 2. Ensure context returns correct shape
 3. Check H3 event context is properly set up
 4. Verify middleware is running before GraphQL handler
+
+---
+
+## Source
+<SourceLinks fn="apolloUtilities"/>
+
+## Contributors
+<Contributors fn="apolloUtilities"/>
+
+## Changelog
+<Changelog fn="apolloUtilities"/>

@@ -1,4 +1,10 @@
+---
+category: Ecosystem
+---
+
 # Client Usage
+
+<FunctionInfo fn="clientUsage"/>
 
 Learn how to use GraphQL on the frontend with auto-generated types, composables, and best practices for Nuxt applications.
 
@@ -839,3 +845,14 @@ query GetUsers {
 - [Type Generation](/guide/type-generation) - Understanding generated types
 - [External Services](/guide/external-services) - Third-party GraphQL APIs
 - [Error Handling](/guide/error-handling) - Error handling strategies
+
+---
+
+## Source
+<SourceLinks fn="clientUsage"/>
+
+## Contributors
+<Contributors fn="clientUsage"/>
+
+## Changelog
+<Changelog fn="clientUsage"/>

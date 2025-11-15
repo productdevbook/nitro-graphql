@@ -1,4 +1,11 @@
+---
+title: GraphQL Yoga
+category: Guide
+---
+
 # GraphQL Yoga
+
+<FunctionInfo fn="graphqlYoga"/>
 
 Complete guide to using GraphQL Yoga with Nitro GraphQL.
 
@@ -75,3 +82,17 @@ export default defineGraphQLConfig({
 - [Apollo Server](/guide/apollo-server) - Alternative framework
 - [Framework Comparison](/guide/framework-comparison)
 - [Configuration Reference](/reference/config)
+
+---
+
+## Source
+
+<SourceLinks fn="graphqlYoga"/>
+
+## Contributors
+
+<Contributors fn="graphqlYoga"/>
+
+## Changelog
+
+<Changelog fn="graphqlYoga"/>

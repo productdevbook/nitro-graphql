@@ -1,4 +1,10 @@
+---
+category: Troubleshooting
+---
+
 # Performance Issues
+
+<FunctionInfo fn="performanceIssues"/>
 
 Troubleshooting and optimizing GraphQL performance in Nitro GraphQL.
 
@@ -705,3 +711,14 @@ useResponseCache({
 - [Type Generation Issues](/troubleshooting/type-generation-issues) - Type-specific problems
 - [Debug Mode](/troubleshooting/debug-mode) - Using the debug dashboard
 - [Performance Guide](/guide/performance) - Best practices
+
+---
+
+## Source
+<SourceLinks fn="performanceIssues"/>
+
+## Contributors
+<Contributors fn="performanceIssues"/>
+
+## Changelog
+<Changelog fn="performanceIssues"/>

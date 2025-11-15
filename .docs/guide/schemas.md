@@ -1,4 +1,11 @@
+---
+title: GraphQL Schemas
+category: Guide
+---
+
 # GraphQL Schemas
+
+<FunctionInfo fn="schemas"/>
 
 Learn how to define and organize GraphQL schemas in your Nitro GraphQL application.
 
@@ -826,3 +833,17 @@ type User {
   }
 }
 </style>
+
+---
+
+## Source
+
+<SourceLinks fn="schemas"/>
+
+## Contributors
+
+<Contributors fn="schemas"/>
+
+## Changelog
+
+<Changelog fn="schemas"/>
