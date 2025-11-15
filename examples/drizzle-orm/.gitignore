@@ -18,4 +18,4 @@ Thumbs.db
 # TypeScript
 *.tsbuildinfo
 
-.graphql
+*.graphql
