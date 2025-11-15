@@ -16,6 +16,8 @@
     "drizzle-kit": "^0.31.7",
     "drizzle-orm": "^0.44.7",
     "drizzle-zod": "^0.8.3",
+    "graphql": "^16.12.0",
+    "graphql-yoga": "^5.16.2",
     "nitro": "^3.0.1-alpha.1",
     "nitro-graphql": "beta",
     "pg": "^8.16.3",

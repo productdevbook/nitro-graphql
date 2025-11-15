@@ -88,7 +88,7 @@ catalogs:
       specifier: ^9.39.1
       version: 9.39.1
     graphql:
-      specifier: ^16.12.0
+      specifier: 16.12.0
       version: 16.12.0
     graphql-config:
       specifier: ^5.1.5
@@ -97,7 +97,7 @@ catalogs:
       specifier: ^1.25.0
       version: 1.25.0
     graphql-yoga:
-      specifier: ^5.16.2
+      specifier: 5.16.2
       version: 5.16.2
     h3:
       specifier: ^2.0.1-rc.5
@@ -284,6 +284,12 @@ importers:
       drizzle-zod:
         specifier: ^0.8.3
         version: 0.8.3(drizzle-orm@0.44.7(@types/pg@8.15.6)(pg@8.16.3))(zod@4.1.12)
+      graphql:
+        specifier: ^16.12.0
+        version: 16.12.0
+      graphql-yoga:
+        specifier: ^5.16.2
+        version: 5.16.2(graphql@16.12.0)
       nitro:
         specifier: npm:nitro-nightly@latest
         version: nitro-nightly@3.0.1-20251113-100129-fde97b54(chokidar@4.0.3)(drizzle-orm@0.44.7(@types/pg@8.15.6)(pg@8.16.3))(lru-cache@11.2.2)(rolldown-vite@7.2.5(@types/node@24.10.1)(esbuild@0.25.12)(jiti@2.6.1)(tsx@4.20.6)(yaml@2.8.1))(rolldown@1.0.0-beta.50)
