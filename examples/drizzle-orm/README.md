@@ -38,7 +38,7 @@ cp .env.example .env
 Edit `.env` and configure your PostgreSQL connection:
 
 ```env
-NITRO_ECOMMERCE_DATABASE_URL=postgresql://user:password@localhost:5432/ecommerce
+NITRO_BOOK_DATABASE_URL=postgresql://user:password@localhost:5432/ecommerce
 ```
 
 ### 3. Run Migrations
@@ -239,7 +239,7 @@ let _db: ReturnType<typeof drizzle> | null = null
 
 export function useDb() {
   if (!_db) {
-    _db = drizzle(process.env.NITRO_ECOMMERCE_DATABASE_URL!, {
+    _db = drizzle(process.env.NITRO_BOOK_DATABASE_URL!, {
       casing: 'snake_case',
       schema,
     })
@@ -368,7 +368,7 @@ export default defineConfig({
   out: './server/drizzle/migrations',
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.NITRO_ECOMMERCE_DATABASE_URL!,
+    url: process.env.NITRO_BOOK_DATABASE_URL!,
   },
 })
 ```
@@ -399,7 +399,7 @@ import { defineQuery } from 'nitro-graphql/define'
 
 **Check**:
 1. PostgreSQL is running
-2. `.env` file has correct `NITRO_ECOMMERCE_DATABASE_URL`
+2. `.env` file has correct `NITRO_BOOK_DATABASE_URL`
 3. Database exists and is accessible
 4. Migrations have been applied: `pnpm db:migrate`
 

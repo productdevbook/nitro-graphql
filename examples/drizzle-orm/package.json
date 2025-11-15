@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "nitro dev",
     "build": "nitro build",
-    "preview": "node .output/server/index.mjs",
+    "preview": "npx srvx .output/server/index.mjs",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",

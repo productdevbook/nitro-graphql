@@ -5,7 +5,7 @@ export default defineConfig({
   out: './server/drizzle/migrations',
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.NITRO_ECOMMERCE_DATABASE_URL || 'postgresql://postgres:postgres_dev_password@localhost:5432/books',
+    url: process.env.NITRO_BOOK_DATABASE_URL || 'postgresql://postgres:postgres_dev_password@localhost:5432/books',
   },
   casing: 'camelCase',
 })
