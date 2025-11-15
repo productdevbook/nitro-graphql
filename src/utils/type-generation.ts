@@ -21,6 +21,8 @@ import {
 } from './path-resolver'
 import { generateTypes } from './server-codegen'
 
+const logger = consola.withTag('nitro-graphql')
+
 function generateGraphQLIndexFile(
   nitro: Nitro,
   clientDir: string,
@@ -399,18 +401,20 @@ function validateNoDuplicateTypes(schemas: string[], schemaStrings: string[]): b
   return true // Validation passed
 }
 
-export async function serverTypeGeneration(app: Nitro) {
+export async function serverTypeGeneration(app: Nitro, options: { silent?: boolean } = {}) {
   try {
     // Check if type generation is enabled
     if (!shouldGenerateTypes(app)) {
-      consola.debug('[nitro-graphql] Server type generation is disabled')
+      logger.debug('Server type generation is disabled')
       return
     }
 
     const schemas = app.scanSchemas || []
 
     if (!schemas.length) {
-      consola.info('No GraphQL definitions found for server type generation.')
+      if (!options.silent) {
+        consola.info('No GraphQL definitions found for server type generation.')
+      }
       return
     }
 
@@ -464,31 +468,34 @@ export async function serverTypeGeneration(app: Nitro) {
     if (serverTypesPath) {
       mkdirSync(dirname(serverTypesPath), { recursive: true })
       writeFileSync(serverTypesPath, data, 'utf-8')
-      consola.success(`[nitro-graphql] Generated server types at: ${serverTypesPath}`)
+      if (!options.silent) {
+        logger.success(`Generated server types at: ${serverTypesPath}`)
+      }
     }
   }
   catch (error) {
-    consola.error('Server schema generation error:', error)
+    logger.error('Server schema generation error:', error)
   }
 }
 
 export async function clientTypeGeneration(
   nitro: Nitro,
+  options: { silent?: boolean, isInitial?: boolean } = {},
 ) {
   try {
     // Generate main service types (only if server schema exists)
     const hasServerSchema = nitro.scanSchemas && nitro.scanSchemas.length > 0
     if (hasServerSchema) {
-      await generateMainClientTypes(nitro)
+      await generateMainClientTypes(nitro, options)
     }
 
     // Generate external service types (can work independently)
     if (nitro.options.graphql?.externalServices?.length) {
-      await generateExternalServicesTypes(nitro)
+      await generateExternalServicesTypes(nitro, options)
     }
   }
   catch (error) {
-    consola.error('Client schema generation error:', error)
+    logger.error('Client schema generation error:', error)
   }
 }
 
@@ -525,7 +532,7 @@ function checkOldStructure(clientDir: string): void {
   }
 }
 
-async function generateMainClientTypes(nitro: Nitro) {
+async function generateMainClientTypes(nitro: Nitro, options: { silent?: boolean, isInitial?: boolean } = {}) {
   // Check for old structure files and warn user
   checkOldStructure(nitro.graphql.clientDir)
 
@@ -534,7 +541,9 @@ async function generateMainClientTypes(nitro: Nitro) {
 
   const schemaFilePath = join(nitro.graphql.buildDir, 'schema.graphql')
   if (!existsSync(schemaFilePath)) {
-    consola.info('Schema file not ready yet for client type generation. Server types need to be generated first.')
+    if (!options.silent) {
+      consola.info('Schema file not ready yet for client type generation. Server types need to be generated first.')
+    }
     return
   }
 
@@ -546,7 +555,7 @@ async function generateMainClientTypes(nitro: Nitro) {
       }])
     : buildSchema(graphqlString)
 
-  const types = await generateClientTypes(schema, loadDocs, nitro.options.graphql?.codegen?.client ?? {}, nitro.options.graphql?.codegen?.clientSDK ?? {})
+  const types = await generateClientTypes(schema, loadDocs, nitro.options.graphql?.codegen?.client ?? {}, nitro.options.graphql?.codegen?.clientSDK ?? {}, undefined, undefined, undefined, options)
   if (types === false) {
     return
   }
@@ -568,7 +577,9 @@ async function generateMainClientTypes(nitro: Nitro) {
   if (clientTypesPath) {
     mkdirSync(dirname(clientTypesPath), { recursive: true })
     writeFileSync(clientTypesPath, types.types, 'utf-8')
-    consola.success(`[nitro-graphql] Generated client types at: ${clientTypesPath}`)
+    if (!options.silent) {
+      logger.success(`Generated client types at: ${clientTypesPath}`)
+    }
   }
 
   // 2. Generate SDK file
@@ -583,7 +594,9 @@ async function generateMainClientTypes(nitro: Nitro) {
   if (sdkPath) {
     mkdirSync(dirname(sdkPath), { recursive: true })
     writeFileSync(sdkPath, types.sdk, 'utf-8')
-    consola.success(`[nitro-graphql] Generated SDK at: ${sdkPath}`)
+    if (!options.silent) {
+      logger.success(`Generated SDK at: ${sdkPath}`)
+    }
   }
 
   // Generate ofetch client for all frameworks (only if it doesn't exist)
@@ -596,12 +609,14 @@ async function generateMainClientTypes(nitro: Nitro) {
   }
 }
 
-async function generateExternalServicesTypes(nitro: Nitro) {
+async function generateExternalServicesTypes(nitro: Nitro, options: { silent?: boolean } = {}) {
   const externalServices = nitro.options.graphql?.externalServices || []
 
   for (const service of externalServices) {
     try {
-      consola.info(`[graphql:${service.name}] Processing external service`)
+      if (!options.silent) {
+        consola.info(`[graphql:${service.name}] Processing external service`)
+      }
 
       // Download and save schema if enabled
       await downloadAndSaveSchema(service, nitro.options.buildDir)
@@ -661,7 +676,9 @@ async function generateExternalServicesTypes(nitro: Nitro) {
       if (serviceTypesPath) {
         mkdirSync(dirname(serviceTypesPath), { recursive: true })
         writeFileSync(serviceTypesPath, types.types, 'utf-8')
-        consola.success(`[graphql:${service.name}] Generated types at: ${serviceTypesPath}`)
+        if (!options.silent) {
+          consola.success(`[graphql:${service.name}] Generated types at: ${serviceTypesPath}`)
+        }
       }
 
       // 2. Generate external service SDK
@@ -676,13 +693,17 @@ async function generateExternalServicesTypes(nitro: Nitro) {
       if (serviceSdkPath) {
         mkdirSync(dirname(serviceSdkPath), { recursive: true })
         writeFileSync(serviceSdkPath, types.sdk, 'utf-8')
-        consola.success(`[graphql:${service.name}] Generated SDK at: ${serviceSdkPath}`)
+        if (!options.silent) {
+          consola.success(`[graphql:${service.name}] Generated SDK at: ${serviceSdkPath}`)
+        }
       }
 
       // Generate ofetch client for all frameworks
       generateExternalOfetchClient(nitro, service, service.endpoint)
 
-      consola.success(`[graphql:${service.name}] External service types generated successfully`)
+      if (!options.silent) {
+        consola.success(`[graphql:${service.name}] External service types generated successfully`)
+      }
     }
     catch (error) {
       consola.error(`[graphql:${service.name}] External service generation failed:`, error)

@@ -147,8 +147,8 @@ export async function rollupConfig(app: Nitro) {
   })
 
   app.hooks.hook('dev:reload', async () => {
-    await serverTypeGeneration(app)
-    await clientTypeGeneration(app)
+    await serverTypeGeneration(app, { silent: true })
+    await clientTypeGeneration(app, { silent: true })
   })
 }
 

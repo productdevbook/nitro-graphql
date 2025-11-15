@@ -3,7 +3,7 @@ import type { GenImport } from '../types'
 import { readFile } from 'node:fs/promises'
 import { hash } from 'ohash'
 import { parseAsync } from 'oxc-parser'
-import { join, relative } from 'pathe'
+import { basename, join, relative } from 'pathe'
 import { glob } from 'tinyglobby'
 
 export const GLOB_SCAN_PATTERN = '**/*.{graphql,gql,js,mjs,cjs,ts,mts,cts,tsx,jsx}'
@@ -120,6 +120,21 @@ export async function scanResolvers(nitro: Nitro) {
       const fileContent = await readFile(file.fullPath, 'utf-8')
       const parsed = await parseAsync(file.fullPath, fileContent)
 
+      // Check for syntax errors first
+      if (parsed.errors && parsed.errors.length > 0) {
+        if (nitro.options.dev) {
+          const fileName = basename(file.fullPath)
+          const firstError = parsed.errors[0]
+          // Extract line number if available
+          const location = firstError.labels?.[0]
+          const lineInfo = location ? `:${location.start}` : ''
+          // Simplify error message
+          const message = firstError.message.split(',')[0] // Take first part before comma
+          console.error(`✖ ${fileName}${lineInfo} - ${message}`)
+        }
+        continue
+      }
+
       const exports: GenImport = {
         imports: [],
         specifier: file.fullPath,
@@ -201,8 +216,6 @@ export async function scanResolvers(nitro: Nitro) {
 
       // Emit warnings for common issues (only in development)
       if (nitro.options.dev) {
-        const relPath = relative(nitro.options.rootDir, file.fullPath)
-
         if (hasDefaultExport && !hasNamedExport) {
           nitro.logger.warn(`[nitro-graphql] ${relPath}: Using default export instead of named export. Resolvers must use named exports like "export const myResolver = defineQuery(...)". Default exports are not detected.`)
         }

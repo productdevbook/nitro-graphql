@@ -29,26 +29,28 @@ import {
 } from './utils/path-resolver'
 import { clientTypeGeneration, serverTypeGeneration } from './utils/type-generation'
 
+const logger = consola.withTag('nitro-graphql')
+
 /**
  * Shared setup logic for nitro-graphql module
  * Used by both the direct Nitro module export and the Vite plugin's nitro: hook
  */
 export async function setupNitroGraphQL(nitro: Nitro) {
   if (!nitro.options.graphql?.framework) {
-    consola.warn('No GraphQL framework specified. Please set graphql.framework to "graphql-yoga" or "apollo-server".')
+    logger.warn('No GraphQL framework specified. Please set graphql.framework to "graphql-yoga" or "apollo-server".')
   }
 
   // Validate external services configuration
   if (nitro.options.graphql?.externalServices?.length) {
     const validationErrors = validateExternalServices(nitro.options.graphql.externalServices)
     if (validationErrors.length > 0) {
-      consola.error('External services configuration errors:')
+      logger.error('External services configuration errors:')
       for (const error of validationErrors) {
-        consola.error(`  - ${error}`)
+        logger.error(`  - ${error}`)
       }
       throw new Error('Invalid external services configuration')
     }
-    consola.info(`Configured ${nitro.options.graphql.externalServices.length} external GraphQL services`)
+    logger.info(`Configured ${nitro.options.graphql.externalServices.length} external GraphQL services`)
   }
 
   // Get default paths from path resolver
@@ -98,7 +100,7 @@ export async function setupNitroGraphQL(nitro: Nitro) {
 
   // Log federation status if enabled
   if (nitro.options.graphql?.federation?.enabled) {
-    consola.info(`Apollo Federation enabled for service: ${nitro.options.graphql.federation.serviceName || 'unnamed'}`)
+    logger.info(`Apollo Federation enabled for service: ${nitro.options.graphql.federation.serviceName || 'unnamed'}`)
   }
 
   const graphqlBuildDir = resolve(nitro.options.buildDir, 'graphql')
@@ -167,22 +169,30 @@ export async function setupNitroGraphQL(nitro: Nitro) {
       ...generateLayerIgnorePatterns(), // Ignore auto-generated files in all layers
     ],
   }).on('all', async (_, path) => {
-    if (path.endsWith('.graphql') || path.endsWith('.gql')) {
+    const isGraphQLFile = path.endsWith('.graphql') || path.endsWith('.gql')
+    const isResolverFile = path.endsWith('.resolver.ts') || path.endsWith('.resolver.js')
+    const isDirectiveFile = path.endsWith('.directive.ts') || path.endsWith('.directive.js')
+
+    if (isGraphQLFile || isResolverFile || isDirectiveFile) {
       // Determine if this is a server or client file
       const isServerFile = path.includes(nitro.graphql.serverDir)
         || path.includes('server/graphql')
         || path.includes('server\\graphql')
 
-      if (isServerFile) {
-        // Server GraphQL file changed - regenerate server types and update client types
-        await serverTypeGeneration(nitro)
-        await clientTypeGeneration(nitro)
+      if (isServerFile || isResolverFile || isDirectiveFile) {
+        // Server GraphQL/resolver/directive file changed - rescan and reload
+        await scanResolvers(nitro).then(r => nitro.scanResolvers = r)
+        await scanDirectives(nitro).then(d => nitro.scanDirectives = d)
+        logger.success('Types regenerated')
+        await serverTypeGeneration(nitro, { silent: true })
+        await clientTypeGeneration(nitro, { silent: true })
         // Trigger Nitro reload to pick up changes
         await nitro.hooks.callHook('dev:reload')
       }
       else {
         // Client GraphQL file changed - only regenerate client types
-        await clientTypeGeneration(nitro)
+        logger.success('Types regenerated')
+        await clientTypeGeneration(nitro, { silent: true })
       }
     }
   })
@@ -212,6 +222,9 @@ export async function setupNitroGraphQL(nitro: Nitro) {
   // Generate directive schemas file using clean parser
   await generateDirectiveSchemas(nitro, directives)
 
+  // Track if we've already shown initial logs to prevent duplicates
+  let hasShownInitialLogs = false
+
   nitro.hooks.hook('dev:start', async () => {
     const schemas = await scanSchemas(nitro)
     nitro.scanSchemas = schemas
@@ -229,23 +242,9 @@ export async function setupNitroGraphQL(nitro: Nitro) {
     nitro.scanDocuments = docs
 
     // Validate resolver setup and provide helpful diagnostics (only in dev)
-    if (nitro.options.dev) {
-      consola.box({
-        title: 'Nitro GraphQL',
-        message: [
-          `Framework: ${nitro.options.graphql?.framework || 'Not configured'}`,
-          `Schemas: ${schemas.length}`,
-          `Resolvers: ${resolvers.length}`,
-          `Directives: ${directives.length}`,
-          `Documents: ${docs.length}`,
-          '',
-          'Debug Dashboard: /_nitro/graphql/debug',
-        ].join('\n'),
-        style: {
-          borderColor: 'cyan',
-          borderStyle: 'rounded',
-        },
-      })
+    // Only show once during startup to avoid duplicate logs
+    if (nitro.options.dev && !hasShownInitialLogs) {
+      hasShownInitialLogs = true
 
       if (resolvers.length > 0) {
         const totalExports = resolvers.reduce((sum, r) => sum + r.imports.length, 0)
@@ -282,24 +281,24 @@ export async function setupNitroGraphQL(nitro: Nitro) {
           breakdown.push(`${typeCount.directive} directive`)
 
         if (breakdown.length > 0) {
-          consola.success(`[nitro-graphql] ${totalExports} resolver export(s): ${breakdown.join(', ')}`)
+          logger.success(`${totalExports} resolver export(s): ${breakdown.join(', ')}`)
         }
       }
       else {
-        consola.warn('[nitro-graphql] No resolvers found. Check /_nitro/graphql/debug for details.')
+        logger.warn('No resolvers found. Check /_nitro/graphql/debug for details.')
       }
     }
   })
 
   await rollupConfig(nitro)
 
-  // Generate server and client types
+  // Generate server and client types (initial generation with logs)
   await serverTypeGeneration(nitro)
-  await clientTypeGeneration(nitro)
+  await clientTypeGeneration(nitro, { isInitial: true })
 
   nitro.hooks.hook('close', async () => {
-    await serverTypeGeneration(nitro)
-    await clientTypeGeneration(nitro)
+    await serverTypeGeneration(nitro, { silent: true })
+    await clientTypeGeneration(nitro, { silent: true })
   })
 
   const runtime = fileURLToPath(
@@ -343,7 +342,6 @@ export async function setupNitroGraphQL(nitro: Nitro) {
       handler: join(runtime, 'debug'),
       method: 'GET',
     })
-    consola.info('[nitro-graphql] Debug dashboard available at: /_nitro/graphql/debug')
   }
 
   // Auto-import utilities
@@ -734,11 +732,11 @@ export {}
 
     // Check for old context.ts file and warn users to migrate
     if (existsSync(join(nitro.graphql.serverDir, 'context.ts'))) {
-      consola.warn('nitro-graphql: Found context.ts file. Please rename it to context.d.ts for type-only definitions.')
-      consola.info('The context file should now be context.d.ts instead of context.ts')
+      logger.warn('Found context.ts file. Please rename it to context.d.ts for type-only definitions.')
+      logger.info('The context file should now be context.d.ts instead of context.ts')
     }
   }
   else {
-    consola.info('[nitro-graphql] Scaffold file generation is disabled (library mode)')
+    logger.info('Scaffold file generation is disabled (library mode)')
   }
 }

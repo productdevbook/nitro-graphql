@@ -300,10 +300,14 @@ export async function generateClientTypes(
   outputPath?: string,
   serviceName?: string,
   virtualTypesPath?: string,
+  options: { silent?: boolean, isInitial?: boolean } = {},
 ) {
   // For external services, allow schema-only generation (no documents required)
   if (docs.length === 0 && !serviceName) {
-    consola.info('No client GraphQL files found. Skipping client type generation.')
+    // Only show this message on initial generation, not on file changes
+    if (!options.silent && options.isInitial) {
+      consola.info('No client GraphQL files found. Skipping client type generation.')
+    }
     return false
   }
 
