@@ -1,23 +1,15 @@
 import { defineConfig } from 'vitepress'
 import { withMermaid } from 'vitepress-plugin-mermaid'
 import llmstxt from 'vitepress-plugin-llms'
-import { readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { ContributorsPlugin, ChangelogPlugin, MetadataPlugin } from './plugins'
 
-// Load metadata files
+// Pass metadata file paths instead of loaded data
+// This allows plugins to load data lazily at build time
 const metadataDir = join(__dirname, '../metadata')
-const loadJSON = (filename: string) => {
-  const path = join(metadataDir, filename)
-  if (existsSync(path)) {
-    return JSON.parse(readFileSync(path, 'utf-8'))
-  }
-  return filename.includes('index') ? { functions: {}, categories: {}, lastUpdated: Date.now() } : {}
-}
-
-const metadataIndex = loadJSON('index.json')
-const contributorsData = loadJSON('contributors.json')
-const changelogData = loadJSON('changelog.json')
+const metadataIndexPath = join(metadataDir, 'index.json')
+const contributorsDataPath = join(metadataDir, 'contributors.json')
+const changelogDataPath = join(metadataDir, 'changelog.json')
 
 // https://vitepress.dev/reference/site-config
 export default withMermaid(defineConfig({
@@ -31,9 +23,9 @@ export default withMermaid(defineConfig({
   vite: {
     plugins: [
       llmstxt(),
-      MetadataPlugin(metadataIndex),
-      ContributorsPlugin(contributorsData),
-      ChangelogPlugin(changelogData),
+      MetadataPlugin(metadataIndexPath),
+      ContributorsPlugin(contributorsDataPath),
+      ChangelogPlugin(changelogDataPath),
     ],
   },
 
