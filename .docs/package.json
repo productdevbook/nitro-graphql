@@ -1,7 +1,7 @@
 {
   "name": "docs",
   "version": "1.0.0",
-  "packageManager": "pnpm@10.18.3",
+  "packageManager": "pnpm@10.22.0",
   "description": "",
   "author": "",
   "license": "ISC",
@@ -14,8 +14,9 @@
     "preview": "vitepress preview"
   },
   "dependencies": {
+    "dayjs": "^1.11.19",
     "gsap": "^3.13.0",
-    "shiki": "^3.14.0"
+    "shiki": "^3.15.0"
   },
   "devDependencies": {
     "mermaid": "^11.12.1",
