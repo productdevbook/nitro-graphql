@@ -36,6 +36,13 @@ const logger = consola.withTag('nitro-graphql')
  * Used by both the direct Nitro module export and the Vite plugin's nitro: hook
  */
 export async function setupNitroGraphQL(nitro: Nitro) {
+  nitro.options.graphql ||= {}
+  nitro.options.graphql.types = defu(nitro.options.graphql.types, {
+    server: '.graphql/nitro-graphql-server.d.ts',
+    client: '.graphql/nitro-graphql-client.d.ts',
+    enabled: true,
+  })
+
   if (!nitro.options.graphql?.framework) {
     logger.warn('No GraphQL framework specified. Please set graphql.framework to "graphql-yoga" or "apollo-server".')
   }

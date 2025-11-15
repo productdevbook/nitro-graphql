@@ -11,28 +11,6 @@ dist
 .env.local
 .env.*.local
 
-# Database
-*.db
-*.db-shm
-*.db-wal
-drizzle
-
-# Logs
-logs
-*.log
-npm-debug.log*
-pnpm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# IDE
-.vscode/*
-!.vscode/extensions.json
-.idea
-*.swp
-*.swo
-*~
-
 # OS
 .DS_Store
 Thumbs.db
@@ -40,5 +18,4 @@ Thumbs.db
 # TypeScript
 *.tsbuildinfo
 
-# Generated files
-graphql.config.ts
+.graphql
