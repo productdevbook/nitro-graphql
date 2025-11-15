@@ -10,7 +10,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "vitepress dev",
-    "build": "vitepress build",
+    "build": "tsx scripts/update-metadata.ts && vitepress build",
     "preview": "vitepress preview",
     "update:metadata": "tsx scripts/update-metadata.ts"
   },
