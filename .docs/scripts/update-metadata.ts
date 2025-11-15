@@ -33,7 +33,7 @@ async function updateMetadata() {
 
       // Case-insensitive match
       const matchingKey = Object.keys(metadataIndex.functions).find(
-        key => key.toLowerCase() === functionName.toLowerCase()
+        key => key.toLowerCase() === functionName.toLowerCase(),
       )
 
       if (matchingKey) {

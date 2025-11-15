@@ -3,9 +3,9 @@
  * Based on VueUse's approach - no manual mapping, pure GitHub API
  */
 
+import type { ContributorInfo, ContributorsData } from '../metadata/types'
 import { execSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import type { ContributorInfo, ContributorsData } from '../metadata/types'
 
 /**
  * Fetch contributors from GitHub API (like VueUse does)
@@ -98,6 +98,7 @@ export async function getFileContributors(filePath: string, githubUsers: Array<{
         continue
 
       // Parse: "  5 John Doe|john@example.com"
+      // eslint-disable-next-line regexp/no-super-linear-backtracking
       const match = line.trim().match(/^\s*(\d+)\s+(.+?)\|(.+)$/)
       if (match) {
         const [, countStr, name, email] = match
@@ -133,8 +134,10 @@ export async function getFileContributors(filePath: string, githubUsers: Array<{
  * Get contributors for all documentation files
  */
 export async function getAllContributors(docsDir: string): Promise<ContributorsData> {
-  const { scanMarkdownFiles, getFunctionNameFromPath } = require('../metadata/extractor')
+  // eslint-disable-next-line ts/no-require-imports
   const { join } = require('node:path')
+  // eslint-disable-next-line ts/no-require-imports
+  const { scanMarkdownFiles, getFunctionNameFromPath } = require('../metadata/extractor')
 
   // Fetch GitHub contributors first (like VueUse)
   console.log('🔍 Fetching contributors from GitHub API...')

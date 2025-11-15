@@ -2,8 +2,8 @@
  * Extract changelog information from Git history
  */
 
-import { execSync } from 'node:child_process'
 import type { ChangelogData, CommitInfo } from '../metadata/types'
+import { execSync } from 'node:child_process'
 
 /**
  * Get changelog for a specific file (last N commits)
@@ -100,8 +100,10 @@ function getVersionCommits(): CommitInfo[] {
  * Get changelog for all documentation files
  */
 export function getAllChangelogs(docsDir: string, limit = 10): ChangelogData {
-  const { scanMarkdownFiles, getFunctionNameFromPath } = require('../metadata/extractor')
+  // eslint-disable-next-line ts/no-require-imports
   const { join } = require('node:path')
+  // eslint-disable-next-line ts/no-require-imports
+  const { scanMarkdownFiles, getFunctionNameFromPath } = require('../metadata/extractor')
 
   // Get all version commits (like VueUse - these are shown on all pages)
   const versionCommits = getVersionCommits()
