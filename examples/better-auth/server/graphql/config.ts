@@ -1,7 +1,6 @@
 import { defineGraphQLConfig } from 'nitro-graphql/define'
 import { createDefaultMaskError } from 'nitro-graphql/utils'
 import { tables } from '../drizzle'
-import { auth } from '../utils/auth'
 import { useDatabase } from '../utils/useDb'
 
 // Custom GraphQL Yoga configuration with Better Auth integration
@@ -13,18 +12,11 @@ export default defineGraphQLConfig({
   context: async (event) => {
     const db = useDatabase()
 
-    // Retrieve session from Better Auth
-    const session = await auth.api.getSession({
-      headers: event.headers,
-    })
-
     return {
       context: {
+        ...event.context,
         tables,
         database: db,
-        // Better Auth session and user
-        session: session?.session ?? null,
-        user: session?.user ?? null,
       },
     }
   },
