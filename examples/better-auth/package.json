@@ -11,14 +11,12 @@
     "db:studio": "drizzle-kit studio",
     "better:init": "npx @better-auth/cli@latest generate --config ./server/utils/auth.ts"
   },
-  "dependencies": {
-    "better-auth": "^1.3.34",
-    "cors": "^2.8.5"
-  },
   "devDependencies": {
     "@better-auth/cli": "^1.3.34",
+    "@graphql-tools/utils": "^10.10.3",
     "@types/cors": "^2.8.19",
     "@types/pg": "^8.15.6",
+    "better-auth": "^1.3.34",
     "drizzle-kit": "^0.31.7",
     "drizzle-orm": "^0.44.7",
     "drizzle-zod": "^0.8.3",

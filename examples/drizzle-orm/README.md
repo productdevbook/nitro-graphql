@@ -2,6 +2,22 @@
 
 This example demonstrates a complete book management GraphQL API using **Nitro GraphQL v2** with **Drizzle ORM** and **PostgreSQL**. It showcases best practices for database integration, Zod validation, custom field resolvers, and error handling.
 
+## Get Started
+
+Clone this example using [giget](https://github.com/unjs/giget):
+
+```bash
+npx giget@latest gh:productdevbook/nitro-graphql/examples/drizzle-orm my-drizzle-app
+cd my-drizzle-app
+pnpm install
+```
+
+Or using pnpm:
+
+```bash
+pnpm dlx giget@latest gh:productdevbook/nitro-graphql/examples/drizzle-orm my-drizzle-app
+```
+
 ## Features
 
 - ✅ **Drizzle ORM Integration** - Type-safe database queries with PostgreSQL

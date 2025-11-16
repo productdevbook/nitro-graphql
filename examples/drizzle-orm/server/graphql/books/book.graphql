@@ -5,8 +5,8 @@ type Book {
   isbn: String
   description: String
   publishedYear: String
-  createdAt: String!
-  updatedAt: String!
+  createdAt: Timestamp!
+  updatedAt: Timestamp!
   isAvailable: Boolean!
 }
 
@@ -26,7 +26,7 @@ input UpdateBookInput {
   publishedYear: String
 }
 
-type Query {
+extend type Query {
   # Get all books
   books: [Book!]!
 
@@ -34,7 +34,7 @@ type Query {
   book(id: ID!): Book
 }
 
-type Mutation {
+extend type Mutation {
   # Create a new book
   createBook(input: CreateBookInput!): Book!
 
