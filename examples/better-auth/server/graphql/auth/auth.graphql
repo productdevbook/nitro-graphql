@@ -1,0 +1,41 @@
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  emailVerified: Boolean!
+  image: String
+  createdAt: Timestamp!
+  updatedAt: Timestamp!
+}
+
+type AuthResponse {
+  user: User!
+  session: String
+}
+
+input SignUpInput {
+  email: String!
+  password: String!
+  name: String!
+}
+
+input SignInInput {
+  email: String!
+  password: String!
+}
+
+extend type Query {
+  # Get the currently authenticated user
+  me: User! @auth
+}
+
+extend type Mutation {
+  # Sign up a new user with email and password
+  signUp(input: SignUpInput!): AuthResponse!
+
+  # Sign in with email and password
+  signIn(input: SignInInput!): AuthResponse!
+
+  # Sign out the current user
+  signOut: Boolean!
+}
