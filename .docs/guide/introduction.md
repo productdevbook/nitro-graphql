@@ -34,7 +34,7 @@ Traditional GraphQL setup requires:
 // Lots of manual setup...
 import { makeExecutableSchema } from '@graphql-tools/schema'
 import { createYoga } from 'graphql-yoga'
-import { defineEventHandler } from 'h3'
+import { defineEventHandler } from 'nitro/h3'
 
 import postResolvers from './resolvers/post'
 // Import resolvers manually

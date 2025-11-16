@@ -100,7 +100,7 @@ Create or edit `server/graphql/context.ts`:
 // server/graphql/context.ts
 import type { Database } from '../utils/db'
 
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     // Database connection
     db: Database
@@ -195,7 +195,7 @@ export const userMutations = defineMutation({
 // server/graphql/context.ts
 import type { PrismaClient } from '@prisma/client'
 
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     db: PrismaClient
   }
@@ -228,7 +228,7 @@ export const postQueries = defineQuery({
 
 ```ts
 // server/graphql/context.ts
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     auth?: {
       userId: string
@@ -281,7 +281,7 @@ export const userQueries = defineQuery({
 
 ```ts
 // server/graphql/context.ts
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     requestInfo: {
       ip: string
@@ -309,7 +309,7 @@ export default defineEventHandler((event) => {
 // server/graphql/context.ts
 import type { RedisClient } from 'redis'
 
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     cache: RedisClient
   }
@@ -412,7 +412,7 @@ export const userQueries = defineQuery({
 
 ```ts
 // ✅ Good - Fully typed
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     db: PrismaClient
     auth?: AuthPayload
@@ -420,7 +420,7 @@ declare module 'h3' {
 }
 
 // ❌ Bad - Untyped context
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     db: any
     auth: any
@@ -432,7 +432,7 @@ declare module 'h3' {
 
 ```ts
 // ✅ Good - Optional auth
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     auth?: { // Optional - not all routes need auth
       userId: string
@@ -441,7 +441,7 @@ declare module 'h3' {
 }
 
 // ✅ Good - Required database
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     db: Database // Required - always available
   }
@@ -492,7 +492,7 @@ Complete authentication and database example:
 // server/graphql/context.ts
 import type { PrismaClient } from '@prisma/client'
 
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     db: PrismaClient
     auth?: {

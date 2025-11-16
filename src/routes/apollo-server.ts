@@ -11,8 +11,8 @@ import { makeExecutableSchema } from '@graphql-tools/schema'
 import { consola } from 'consola'
 import defu from 'defu'
 import { parse } from 'graphql'
-import { defineEventHandler } from 'h3'
 import { startServerAndCreateH3Handler } from 'nitro-graphql/utils/apollo'
+import { defineEventHandler } from 'nitro/h3'
 
 // Conditional imports for federation support - use dynamic import inside function
 let buildSubgraphSchema: any = null

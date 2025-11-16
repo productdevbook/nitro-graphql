@@ -16,13 +16,13 @@ import type {
   EventHandler,
   H3Event,
   HTTPMethod,
-} from 'h3'
+} from 'nitro/h3'
 import { HeaderMap } from '@apollo/server'
 import {
   eventHandler,
   getRequestURL,
   readBody,
-} from 'h3'
+} from 'nitro/h3'
 
 // Inline utility type to avoid dependency on @apollo/utils.withrequired
 type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }

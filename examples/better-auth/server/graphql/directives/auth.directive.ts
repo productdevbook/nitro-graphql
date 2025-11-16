@@ -1,8 +1,8 @@
-import type { H3EventContext } from 'h3'
+import type { H3EventContext } from 'nitro/h3'
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils'
 import { defaultFieldResolver, GraphQLError } from 'graphql'
-import { HTTPError } from 'h3'
 import { defineDirective } from 'nitro-graphql/define'
+import { HTTPError } from 'nitro/h3'
 
 /**
  * @auth directive

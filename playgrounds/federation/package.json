@@ -16,7 +16,6 @@
     "@apollo/server": "catalog:",
     "@apollo/subgraph": "catalog:",
     "graphql": "catalog:",
-    "h3": "catalog:",
     "nitro": "catalog:",
     "nitro-graphql": "link:../"
   }

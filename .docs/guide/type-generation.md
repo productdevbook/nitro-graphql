@@ -462,7 +462,7 @@ Extend context with custom types:
 
 ```ts
 // server/graphql/context.ts
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     db: Database
     auth?: {

@@ -1,4 +1,4 @@
-import { defineEventHandler } from 'h3'
+import { defineEventHandler } from 'nitro/h3'
 
 export default defineEventHandler((event) => {
   event.res.headers.set('Content-Type', 'text/html; charset=utf-8')

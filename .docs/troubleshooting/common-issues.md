@@ -476,9 +476,9 @@ const user = await context.db.user.findUnique()
 1. **Define Context Types:**
 ```typescript
 // server/graphql/context.ts
-import type { H3Event } from 'h3'
+import type { H3Event } from 'nitro/h3'
 
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     db: Database
     user?: User

@@ -11,7 +11,7 @@ import { consola } from 'consola'
 import defu from 'defu'
 import { parse } from 'graphql'
 import { createYoga } from 'graphql-yoga'
-import { defineEventHandler } from 'h3'
+import { defineEventHandler } from 'nitro/h3'
 
 // Conditional imports for federation support - use dynamic import inside function
 let buildSubgraphSchema: any = null
@@ -130,10 +130,10 @@ export default defineEventHandler(async (event) => {
   const response = await yoga.handleRequest(event.req, event as any)
 
   // If resolver set a custom status code via event.res.status, use it
-  if (event.res.statusCode && event.res.statusCode !== 200) {
+  if (event.res.status && event.res.status !== 200) {
     return new Response(response.body, {
       ...response,
-      status: event.res.statusCode,
+      status: event.res.status,
     })
   }
 

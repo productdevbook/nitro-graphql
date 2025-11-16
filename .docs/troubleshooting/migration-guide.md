@@ -33,7 +33,7 @@ Version 2.0 will bring Nitro v3 and H3 v2 compatibility with several breaking ch
 **Before (v1.x with H3 v1):**
 ```typescript
 // server/graphql/context.ts
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     db: Database
   }
@@ -43,9 +43,9 @@ declare module 'h3' {
 **After (v2.x with H3 v2):**
 ```typescript
 // server/graphql/context.ts
-import type { H3Event } from 'h3'
+import type { H3Event } from 'nitro/h3'
 
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     db: Database
   }

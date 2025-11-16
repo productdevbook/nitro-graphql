@@ -64,7 +64,7 @@ export function createUserLoader() {
 // server/graphql/context.ts
 import { createUserLoader } from './loaders/user.loader'
 
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     loaders: {
       user: ReturnType<typeof createUserLoader>

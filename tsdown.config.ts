@@ -33,7 +33,6 @@ export default defineConfig({
     'nitro/types',
     'graphql',
     'graphql-yoga',
-    'h3',
     '#nitro-graphql/server-schemas',
     '#nitro-graphql/server-resolvers',
     '#nitro-graphql/server-directives',

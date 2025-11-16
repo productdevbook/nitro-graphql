@@ -1,4 +1,4 @@
-// import { HTTPError } from 'h3'
+// import { HTTPError } from 'nitro/h3'
 import { defineMutation } from 'nitro-graphql/define'
 
 export const createBookMutation = defineMutation({

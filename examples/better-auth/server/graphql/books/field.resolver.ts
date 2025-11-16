@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm'
-import { HTTPError } from 'h3'
 import { defineType } from 'nitro-graphql/define'
+import { HTTPError } from 'nitro/h3'
 
 export const field = defineType({
   Book: {

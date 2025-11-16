@@ -1,5 +1,5 @@
-import { HTTPError } from 'h3'
 import { defineMutation } from 'nitro-graphql/define'
+import { HTTPError } from 'nitro/h3'
 import { auth } from '../../../utils/auth'
 
 export const signUpMutation = defineMutation({

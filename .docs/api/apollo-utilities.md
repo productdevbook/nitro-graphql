@@ -73,7 +73,7 @@ Returns an H3 `EventHandler` that can be used with Nitro routes.
 
 ```typescript
 import { ApolloServer } from '@apollo/server'
-import { defineEventHandler } from 'h3'
+import { defineEventHandler } from 'nitro/h3'
 import { startServerAndCreateH3Handler } from 'nitro-graphql/utils/apollo'
 
 const server = new ApolloServer({

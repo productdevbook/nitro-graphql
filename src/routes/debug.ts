@@ -3,7 +3,7 @@ import { moduleConfig } from '#nitro-graphql/module-config'
 import { directives } from '#nitro-graphql/server-directives'
 import { resolvers } from '#nitro-graphql/server-resolvers'
 import { schemas } from '#nitro-graphql/server-schemas'
-import { defineEventHandler, getQuery } from 'h3'
+import { defineEventHandler, getQuery } from 'nitro/h3'
 
 /**
  * Debug endpoint for inspecting virtual modules and GraphQL setup

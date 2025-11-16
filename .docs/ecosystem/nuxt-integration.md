@@ -357,9 +357,9 @@ Here's a complete example integrating authentication:
 
 ```ts
 // server/graphql/context.ts
-import type { H3Event } from 'h3'
+import type { H3Event } from 'nitro/h3'
 
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     user?: {
       id: string

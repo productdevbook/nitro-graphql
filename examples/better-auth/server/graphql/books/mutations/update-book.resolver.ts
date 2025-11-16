@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm'
-import { HTTPError } from 'h3'
 import { defineMutation } from 'nitro-graphql/define'
+import { HTTPError } from 'nitro/h3'
 
 export const updateBookMutation = defineMutation({
   // Update an existing book (@auth directive ensures user is authenticated)

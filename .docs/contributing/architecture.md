@@ -147,7 +147,7 @@ The default GraphQL server implementation:
 
 ```typescript
 import { createYoga } from 'graphql-yoga'
-import { defineEventHandler } from 'h3'
+import { defineEventHandler } from 'nitro/h3'
 
 export default defineEventHandler(async (event) => {
   const yoga = createYoga({
@@ -392,7 +392,7 @@ export default defineConfig({
     // External dependencies that shouldn't be bundled
     'nitropack',
     'graphql',
-    'h3',
+    'nitro/h3',
     // ...
   ]
 })
@@ -455,7 +455,7 @@ export default defineQuery({
 Extend H3 context in `server/graphql/context.ts`:
 
 ```typescript
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     user?: User
     session?: Session

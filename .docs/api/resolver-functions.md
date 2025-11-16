@@ -765,7 +765,7 @@ The context parameter has the type `H3Event` from h3, augmented with your custom
 
 ```typescript
 // server/graphql/context.ts
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     db: Database
     auth?: {

@@ -349,7 +349,7 @@ The context type is automatically inferred from your context augmentation:
 // server/graphql/context.ts
 import type { Database } from '../utils/useDb'
 
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     db: Database
     auth?: {
@@ -828,7 +828,7 @@ Define your context once and get full type safety:
 
 ```typescript
 // server/graphql/context.ts
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     db: Database
     auth?: AuthContext
