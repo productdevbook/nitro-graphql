@@ -6,7 +6,7 @@ declare module 'nitro/h3' {
   interface H3EventContext {
     // Add your custom context properties here
     database: Database
-    tables: tables
+    tables: typeof tables
     // auth?: {
     //   user?: {
     //     id: string

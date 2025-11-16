@@ -6,12 +6,14 @@ This example demonstrates a complete book management GraphQL API using **Nitro G
 
 - ✅ **Drizzle ORM Integration** - Type-safe database queries with PostgreSQL
 - ✅ **Zod Validation** - Input validation using `drizzle-zod` generated schemas
+- ✅ **Context-Based Access** - Database and tables provided through GraphQL context
 - ✅ **Custom Field Resolvers** - Computed fields (e.g., `isAvailable`)
 - ✅ **Error Handling** - Automatic masking of ZodError and HTTPError
 - ✅ **V2 Explicit Imports** - All resolvers use explicit imports (no auto-imports)
-- ✅ **H3 v2 Context** - Modern H3 event context pattern
+- ✅ **H3 v2 Context** - Modern H3 event context pattern with type augmentation
 - ✅ **Drizzle Kit** - Database migrations and schema management
 - ✅ **Organized Structure** - Modular resolver and schema organization
+- ✅ **Docker Support** - Multi-stage Dockerfile with PostgreSQL integration
 
 ## Prerequisites
 
@@ -71,9 +73,10 @@ examples/drizzle-orm/
 │   ├── drizzle/
 │   │   ├── schema/
 │   │   │   ├── book.ts          # Drizzle table + Zod schemas
-│   │   │   ├── shared.ts        # Reusable helpers (timestamps, soft delete)
+│   │   │   ├── shared.ts        # Reusable helpers (custom timestamp)
 │   │   │   └── index.ts         # Schema exports
-│   │   └── migrations/          # Drizzle Kit migrations
+│   │   ├── migrations/          # Drizzle Kit migrations
+│   │   └── index.ts             # Export schema and tables
 │   ├── graphql/
 │   │   ├── books/
 │   │   │   ├── book.graphql     # GraphQL type definitions
@@ -85,11 +88,13 @@ examples/drizzle-orm/
 │   │   │       ├── create-book.resolver.ts
 │   │   │       ├── update-book.resolver.ts
 │   │   │       └── delete-book.resolver.ts
-│   │   ├── config.ts            # GraphQL Yoga configuration
-│   │   ├── context.d.ts         # H3 context augmentation
+│   │   ├── config.ts            # GraphQL Yoga configuration + context setup
+│   │   ├── context.d.ts         # H3 context type augmentation
 │   │   └── schema.ts            # Schema definition with Zod
+│   ├── drizzle/
+│   │   └── index.ts             # Schema exports (tables + Zod)
 │   └── utils/
-│       └── useDb.ts             # Database singleton
+│       └── useDb.ts             # Database singleton (used by context)
 ├── drizzle.config.ts            # Drizzle Kit configuration
 ├── nitro.config.ts              # Nitro configuration
 └── package.json
@@ -103,15 +108,19 @@ This example demonstrates a powerful pattern for type safety and validation:
 
 **Step 1: Define Drizzle Schema** (`server/drizzle/schema/book.ts`)
 ```typescript
-import { pgTable, text, uuid } from 'drizzle-orm/pg-core'
+import { pgTable, text, uuid, varchar } from 'drizzle-orm/pg-core'
+import { v7 as uuidv7 } from 'uuid'
+import { customTimestamp } from './shared'
 
 export const book = pgTable('book', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  title: text('title').notNull(),
-  author: text('author').notNull(),
-  isbn: text('isbn').notNull().unique(),
-  publicationYear: integer('publication_year').notNull(),
-  ...sharedColumns, // createdAt, updatedAt, deletedAt
+  id: uuid().primaryKey().$defaultFn(uuidv7),
+  title: varchar({ length: 255 }).notNull(),
+  author: varchar({ length: 255 }).notNull(),
+  isbn: varchar({ length: 13 }).unique(),
+  description: text(),
+  publishedYear: varchar({ length: 4 }),
+  createdAt: customTimestamp().defaultNow().notNull(),
+  updatedAt: customTimestamp().defaultNow().notNull().$onUpdateFn(() => new Date().toISOString()),
 })
 ```
 
@@ -122,7 +131,8 @@ import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 export const insertBookSchema = createInsertSchema(book, {
   title: schema => schema.min(1, 'Title is required'),
   author: schema => schema.min(1, 'Author is required'),
-  isbn: schema => schema.regex(/^[\d-]+$/, 'Invalid ISBN format'),
+  isbn: schema => schema.length(13, 'ISBN must be 13 characters').optional(),
+  publishedYear: schema => schema.regex(/^\d{4}$/, 'Year must be 4 digits').optional(),
 })
 
 export const selectBookSchema = createSelectSchema(book)
@@ -138,17 +148,21 @@ export default defineSchema({
 })
 ```
 
-**Step 4: Validate in Mutations**
+**Step 4: Use in Mutations**
 ```typescript
 import { defineMutation } from 'nitro-graphql/define'
-import { insertBookSchema } from '~/server/drizzle/schema'
 
 export const createBook = defineMutation({
-  createBook: async (_, { input }) => {
-    // Validates input and throws ZodError if invalid
-    const validatedInput = insertBookSchema.parse(input)
+  createBook: async (_, { input }, { context }) => {
+    const { database, tables } = context
 
-    const [newBook] = await db.insert(book).values(validatedInput).returning()
+    // Validates input and throws ZodError if invalid
+    const validatedInput = tables.insertBookSchema.parse(input)
+
+    const [newBook] = await database
+      .insert(tables.book)
+      .values(validatedInput)
+      .returning()
     return newBook
   },
 })
@@ -172,7 +186,59 @@ import { defineMutation, defineQuery, defineType } from 'nitro-graphql/define'
 - `defineGraphQLConfig` - GraphQL Yoga configuration
 - `defineSchema` - Schema definition with Zod integration
 
-### 3. Custom Field Resolvers
+### 3. Context-Based Database Access
+
+**New in v2**: Instead of importing `useDatabase()` in each resolver, the database connection and tables are provided through GraphQL context for better testability and consistency.
+
+**Context Setup** (`server/graphql/config.ts`)
+```typescript
+import { defineGraphQLConfig } from 'nitro-graphql/define'
+import { createDefaultMaskError } from 'nitro-graphql/utils'
+import { tables } from '../drizzle'
+import { useDatabase } from '../utils/useDb'
+
+export default defineGraphQLConfig({
+  maskedErrors: {
+    maskError: createDefaultMaskError(),
+  },
+  context: async (event) => {
+    const db = useDatabase()
+    return {
+      context: {
+        tables, // Drizzle schemas and Zod validators
+        database: db, // Database connection
+      },
+    }
+  },
+})
+```
+
+**Context Types** (`server/graphql/context.d.ts`)
+```typescript
+import type { tables } from '../drizzle'
+import type { Database } from '../utils/useDb'
+
+declare module 'nitro/h3' {
+  interface H3EventContext {
+    database: Database
+    tables: tables
+  }
+}
+```
+
+**Using Context in Resolvers**
+```typescript
+import { defineQuery } from 'nitro-graphql/define'
+
+export const booksQuery = defineQuery({
+  books: async (parent, args, { context }) => {
+    const { database, tables } = context
+    return await database.select().from(tables.book)
+  },
+})
+```
+
+### 4. Custom Field Resolvers
 
 The example includes a computed field `isAvailable` that isn't stored in the database:
 
@@ -182,11 +248,12 @@ type Book {
   id: ID!
   title: String!
   author: String!
-  isbn: String!
-  publicationYear: Int!
+  isbn: String
+  description: String
+  publishedYear: String
+  createdAt: String!
+  updatedAt: String!
   isAvailable: Boolean!  # Computed field
-  createdAt: DateTime!
-  updatedAt: DateTime!
 }
 ```
 
@@ -194,18 +261,19 @@ type Book {
 ```typescript
 import { defineType } from 'nitro-graphql/define'
 
-export const bookFieldResolvers = defineType({
+export const field = defineType({
   Book: {
-    isAvailable: (parent) => {
+    isAvailable: (parent, args, { context }) => {
+      // A book is considered available if it was published within the last 5 years
       const currentYear = new Date().getFullYear()
-      // Books published within last 5 years are "available"
-      return currentYear - parent.publicationYear <= 5
+      return parent.publishedYear !== null
+        && currentYear - Number.parseInt(parent.publishedYear) <= 5
     },
   },
 })
 ```
 
-### 4. Error Handling
+### 5. Error Handling
 
 The example uses `createDefaultMaskError()` to handle validation and HTTP errors gracefully:
 
@@ -226,26 +294,50 @@ export default defineGraphQLConfig({
 - **HTTPError**: Properly exposes status codes and messages
 - **Other Errors**: Masked as "Internal Server Error" for security
 
-### 5. Database Singleton Pattern
+### 6. Database Singleton Pattern
 
-The `useDb()` utility ensures only one database connection is created:
+The `useDatabase()` utility ensures only one database connection is created and is called once in the context setup:
 
 **Implementation** (`server/utils/useDb.ts`)
 ```typescript
 import { drizzle } from 'drizzle-orm/node-postgres'
-import * as schema from '~/server/drizzle/schema'
+import { tables } from '../drizzle'
 
-let _db: ReturnType<typeof drizzle> | null = null
+export type Database = ReturnType<typeof useDatabaseConnect>
 
-export function useDb() {
-  if (!_db) {
-    _db = drizzle(process.env.NITRO_BOOK_DATABASE_URL!, {
-      casing: 'snake_case',
-      schema,
-    })
-  }
-  return _db
+let _database: ReturnType<typeof useDatabaseConnect>
+
+function useDatabaseConnect() {
+  return drizzle(process.env.NITRO_BOOK_DATABASE_URL as string, {
+    casing: 'camelCase',
+    schema: tables,
+  })
 }
+
+export function useDatabase() {
+  if (!_database) {
+    _database = useDatabaseConnect()
+  }
+  return _database
+}
+```
+
+**Used in Context** (`server/graphql/config.ts`)
+```typescript
+import { tables } from '../drizzle'
+import { useDatabase } from '../utils/useDb'
+
+export default defineGraphQLConfig({
+  context: async (event) => {
+    const db = useDatabase()
+    return {
+      context: {
+        database: db,
+        tables,
+      },
+    }
+  },
+})
 ```
 
 ## Example Queries & Mutations
@@ -257,12 +349,15 @@ mutation {
   createBook(input: {
     title: "The GraphQL Guide"
     author: "John Resig"
-    isbn: "978-1-234567-89-0"
-    publicationYear: 2024
+    isbn: "9781234567890"
+    description: "A comprehensive guide to GraphQL"
+    publishedYear: "2024"
   }) {
     id
     title
     author
+    isbn
+    publishedYear
     isAvailable
   }
 }
@@ -277,9 +372,11 @@ query {
     title
     author
     isbn
-    publicationYear
+    description
+    publishedYear
     isAvailable
     createdAt
+    updatedAt
   }
 }
 ```
@@ -293,8 +390,11 @@ query {
     title
     author
     isbn
-    publicationYear
+    description
+    publishedYear
     isAvailable
+    createdAt
+    updatedAt
   }
 }
 ```
@@ -307,17 +407,18 @@ mutation {
     id: "uuid-here"
     input: {
       title: "The Complete GraphQL Guide"
-      publicationYear: 2025
+      publishedYear: "2025"
     }
   ) {
     id
     title
-    publicationYear
+    publishedYear
+    isAvailable
   }
 }
 ```
 
-### Delete a Book (Soft Delete)
+### Delete a Book
 
 ```graphql
 mutation {
@@ -325,7 +426,7 @@ mutation {
 }
 ```
 
-Note: This performs a soft delete (sets `deletedAt` timestamp). The `sharedColumns` pattern includes soft delete support.
+Note: This performs a hard delete, removing the book from the database.
 
 ## Database Commands
 
@@ -506,15 +607,17 @@ export default defineConfig({
 ## Best Practices Demonstrated
 
 1. **Type Safety Chain**: Drizzle schema → Zod validation → GraphQL types
-2. **Explicit Imports**: All resolvers use `import { ... } from 'nitro-graphql/define'`
-3. **Input Validation**: Zod schemas validate all mutations before database operations
-4. **Error Handling**: Centralized error masking with user-friendly messages
-5. **Modular Structure**: Organized by feature (books/) with separate query/mutation folders
-6. **Computed Fields**: Type resolvers for fields not stored in database
-7. **Soft Deletes**: Reusable `sharedColumns` pattern with `deletedAt`
-8. **Database Singleton**: Single connection instance across the application
-9. **Environment Variables**: Database credentials in `.env` (not committed)
-10. **Migration Management**: Drizzle Kit for schema version control
+2. **Context-Based Access**: Database and tables provided through GraphQL context (not direct imports)
+3. **Explicit Imports**: All resolvers use `import { ... } from 'nitro-graphql/define'`
+4. **Input Validation**: Zod schemas validate all mutations before database operations
+5. **Error Handling**: Centralized error masking with user-friendly messages
+6. **Modular Structure**: Organized by feature (books/) with separate query/mutation folders
+7. **Computed Fields**: Type resolvers for fields not stored in database
+8. **Reusable Schema Helpers**: Custom timestamp function for consistent date handling
+9. **Database Singleton**: Single connection instance shared via context
+10. **Environment Variables**: Database credentials in `.env` (not committed)
+11. **Migration Management**: Drizzle Kit for schema version control
+12. **Docker Deployment**: Production-ready multi-stage Dockerfile with PostgreSQL
 
 ## Common Issues
 
