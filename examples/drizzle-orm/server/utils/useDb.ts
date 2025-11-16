@@ -1,6 +1,5 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
-
-import * as tables from '../drizzle/schema/index'
+import { tables } from '../drizzle'
 
 export type Database = ReturnType<typeof useDatabaseConnect>
 
