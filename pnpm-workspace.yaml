@@ -39,14 +39,14 @@ catalog:
   nitro: npm:nitro-nightly@latest
   nuxt: ^4.2.1
   ohash: ^2.0.11
-  oxc-parser: ^0.97.0
+  oxc-parser: ^0.98.0
   pathe: ^2.0.3
   tailwindcss: ^4.1.17
   tinyglobby: ^0.2.15
-  tsdown: ^0.16.4
+  tsdown: ^0.16.6
   typescript: ^5.9.3
   vite: npm:rolldown-vite@latest
-  vitepress-plugin-llms: ^1.9.1
+  vitepress-plugin-llms: ^1.9.3
   vue: ^3.5.24
   vue-router: ^4.6.3
   zod: ^4.1.12

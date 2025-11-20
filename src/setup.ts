@@ -417,7 +417,6 @@ export async function setupNitroGraphQL(nitro: Nitro) {
       }
 
       // advancedChunks for Rolldown - supports dynamic chunk naming via function!
-      // @ts-expect-error - advancedChunks is a rolldown-specific feature
       rollupConfig.output.advancedChunks = {
         groups: [
           {

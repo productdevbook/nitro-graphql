@@ -5,3 +5,4 @@ dist
 *.log
 */.vitepress/cache
 .rolldown
+**/.graphql

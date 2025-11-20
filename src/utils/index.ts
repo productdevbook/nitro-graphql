@@ -2,7 +2,7 @@ import type { Nitro } from 'nitro/types'
 import type { GenImport } from '../types'
 import { readFile } from 'node:fs/promises'
 import { hash } from 'ohash'
-import { parseAsync } from 'oxc-parser'
+import { parseSync } from 'oxc-parser'
 import { basename, join, relative } from 'pathe'
 import { glob } from 'tinyglobby'
 
@@ -118,7 +118,7 @@ export async function scanResolvers(nitro: Nitro) {
   for (const file of files) {
     try {
       const fileContent = await readFile(file.fullPath, 'utf-8')
-      const parsed = await parseAsync(file.fullPath, fileContent)
+      const parsed = parseSync(file.fullPath, fileContent)
 
       // Check for syntax errors first
       if (parsed.errors && parsed.errors.length > 0) {
@@ -126,10 +126,10 @@ export async function scanResolvers(nitro: Nitro) {
           const fileName = basename(file.fullPath)
           const firstError = parsed.errors[0]
           // Extract line number if available
-          const location = firstError.labels?.[0]
+          const location = firstError?.labels?.[0]
           const lineInfo = location ? `:${location.start}` : ''
           // Simplify error message
-          const message = firstError.message.split(',')[0] // Take first part before comma
+          const message = firstError?.message.split(',')[0] || 'Syntax error' // Take first part before comma
           console.error(`✖ ${fileName}${lineInfo} - ${message}`)
         }
         continue
@@ -216,6 +216,7 @@ export async function scanResolvers(nitro: Nitro) {
 
       // Emit warnings for common issues (only in development)
       if (nitro.options.dev) {
+        const relPath = relative(nitro.options.rootDir, file.fullPath)
         if (hasDefaultExport && !hasNamedExport) {
           nitro.logger.warn(`[nitro-graphql] ${relPath}: Using default export instead of named export. Resolvers must use named exports like "export const myResolver = defineQuery(...)". Default exports are not detected.`)
         }
@@ -270,7 +271,7 @@ export async function scanDirectives(nitro: Nitro) {
   const exportName: GenImport[] = []
   for (const file of files) {
     const fileContent = await readFile(file.fullPath, 'utf-8')
-    const parsed = await parseAsync(file.fullPath, fileContent)
+    const parsed = parseSync(file.fullPath, fileContent)
 
     const exports: GenImport = {
       imports: [],
