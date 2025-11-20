@@ -666,7 +666,7 @@ export default defineGraphQLConfig({
 
 4. **Verify Entity Resolvers:**
 ```typescript
-export const userResolvers = defineType('User', {
+export const userResolvers = defineField('User', {
   __resolveReference: async (reference) => {
     return await db.user.findUnique({ where: { id: reference.id } })
   }

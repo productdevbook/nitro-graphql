@@ -174,7 +174,7 @@ For each GraphQL type in your schema, a specific resolver type is generated:
 ```typescript
 import type { PostResolvers, UserResolvers } from '#graphql/server'
 
-export const userTypeResolvers: UserResolvers = defineType({
+export const userTypeResolvers: UserResolvers = defineField({
   User: {
     fullName: parent => `${parent.firstName} ${parent.lastName}`,
     posts: async (parent, _args, context) => {
@@ -183,7 +183,7 @@ export const userTypeResolvers: UserResolvers = defineType({
   }
 })
 
-export const postTypeResolvers: PostResolvers = defineType({
+export const postTypeResolvers: PostResolvers = defineField({
   Post: {
     author: async (parent, _args, context) => {
       return await context.db.users.findById(parent.authorId)

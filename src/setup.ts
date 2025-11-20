@@ -364,24 +364,6 @@ export async function setupNitroGraphQL(nitro: Nitro) {
     })
   }
 
-  // Auto-import utilities
-  if (nitro.options.imports) {
-    nitro.options.imports.presets ??= []
-    nitro.options.imports.presets.push({
-      from: fileURLToPath(new URL('define', import.meta.url)),
-      imports: [
-        'defineResolver',
-        'defineMutation',
-        'defineQuery',
-        'defineSubscription',
-        'defineType',
-        'defineGraphQLConfig',
-        'defineSchema',
-        'defineDirective',
-      ],
-    })
-  }
-
   // Access the internal rollup config and add our prefix
   nitro.hooks.hook('rollup:before', (_, rollupConfig) => {
     const manualChunks = rollupConfig.output?.manualChunks

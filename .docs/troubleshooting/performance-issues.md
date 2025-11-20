@@ -31,7 +31,7 @@ Troubleshooting and optimizing GraphQL performance in Nitro GraphQL.
 The N+1 problem occurs when fetching related data:
 ```typescript
 // ❌ N+1 Problem - Queries database for each user
-export const postResolvers = defineType('Post', {
+export const postResolvers = defineField('Post', {
   author: async (parent) => {
     // This runs once per post!
     return await db.user.findUnique({ where: { id: parent.authorId } })
@@ -88,7 +88,7 @@ export default defineGraphQLConfig({
 
 ```typescript
 // ✅ Optimized - Batches database queries
-export const postResolvers = defineType('Post', {
+export const postResolvers = defineField('Post', {
   author: async (parent, _, context) => {
     return await context.loaders.user.load(parent.authorId)
   }
@@ -406,7 +406,7 @@ pnpm build
 4. **Optimize Dependencies:**
 ```typescript
 // Instead of:
-import { defineMutation, defineQuery, defineType } from 'nitro-graphql'
+import { defineMutation, defineQuery, defineField } from 'nitro-graphql'
 // Only import what you need
 import { defineQuery } from 'nitro-graphql/define'
 ```

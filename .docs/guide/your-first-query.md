@@ -429,9 +429,9 @@ type User {
 ```
 
 ```ts
-import { defineType } from 'nitro-graphql/define'
+import { defineField } from 'nitro-graphql/define'
 
-export const postTypes = defineType({
+export const postTypes = defineField({
   Post: {
     // Resolve the author field
     author: async (parent, args, context) => {
@@ -487,9 +487,9 @@ export const postMutations = defineMutation({
 
 ```ts
 // server/graphql/posts/types.resolver.ts
-import { defineType } from 'nitro-graphql/define'
+import { defineField } from 'nitro-graphql/define'
 
-export const postTypes = defineType({
+export const postTypes = defineField({
   Post: {
     author: () => {...},
   },

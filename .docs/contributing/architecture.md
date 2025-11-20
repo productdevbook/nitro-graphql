@@ -199,7 +199,7 @@ export function defineQuery(query: QueryResolvers): Resolvers
 export function defineMutation(mutation: MutationResolvers): Resolvers
 
 // Define custom type resolvers
-export function defineType<T>(type: T): T
+export function defineField<T>(type: T): T
 
 // Define custom directives
 export function defineDirective(directive: DirectiveConfig): DirectiveConfig

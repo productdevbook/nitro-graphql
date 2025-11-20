@@ -328,14 +328,14 @@ export const channelSubscriptions = defineSubscription({
 
 ---
 
-## defineType()
+## defineField()
 
 Define custom type resolvers (field resolvers for GraphQL types).
 
 ### Signature
 
 ```typescript
-function defineType(resolvers: Resolvers): Resolvers
+function defineField(resolvers: Resolvers): Resolvers
 ```
 
 ### Parameters
@@ -351,7 +351,7 @@ Returns the same `Resolvers` object with full type safety.
 #### Basic Type Resolver
 
 ```typescript
-export const userTypeResolvers = defineType({
+export const userTypeResolvers = defineField({
   User: {
     fullName: (parent) => {
       return `${parent.firstName} ${parent.lastName}`
@@ -371,7 +371,7 @@ export const userTypeResolvers = defineType({
 #### Relationship Resolvers
 
 ```typescript
-export const postTypeResolvers = defineType({
+export const postTypeResolvers = defineField({
   Post: {
     author: async (parent, _args, context) => {
       return await context.db.users.findById(parent.authorId)
@@ -397,7 +397,7 @@ export const postTypeResolvers = defineType({
 #### Computed Fields
 
 ```typescript
-export const productTypeResolvers = defineType({
+export const productTypeResolvers = defineField({
   Product: {
     finalPrice: (parent) => {
       if (parent.discount) {

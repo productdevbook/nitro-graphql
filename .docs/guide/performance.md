@@ -15,7 +15,7 @@ Optimization tips for GraphQL resolvers, caching strategies, and batching.
 
 ```ts
 // Bad: N+1 queries
-export const postTypes = defineType({
+export const postTypes = defineField({
   Post: {
     author: async (parent, args, context) => {
       // This runs once per post!
@@ -39,7 +39,7 @@ const userLoader = new DataLoader(async (ids: readonly string[]) => {
   return ids.map(id => users.find(u => u.id === id))
 })
 
-export const postTypes = defineType({
+export const postTypes = defineField({
   Post: {
     author: parent => userLoader.load(parent.authorId),
   },

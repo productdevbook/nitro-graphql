@@ -492,10 +492,10 @@ export const userQueries = defineQuery({
 For field resolvers, use partial parent types:
 
 ```ts
-import { defineType } from 'nitro-graphql/utils'
+import { defineField } from 'nitro-graphql/utils'
 import type { Post, User } from '#graphql/server'
 
-export const postTypes = defineType({
+export const postTypes = defineField({
   Post: {
     author: async (parent: Pick<Post, 'authorId'>) => {
       // parent only needs authorId field

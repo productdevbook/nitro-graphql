@@ -620,7 +620,7 @@ export default defineNitroConfig({
 > **⚠️ Breaking Change**: Utilities are **NOT auto-imported**. You must explicitly import them from `nitro-graphql/define`:
 
 ```typescript
-import { defineResolver, defineQuery, defineMutation, defineType, defineDirective } from 'nitro-graphql/define'
+import { defineResolver, defineQuery, defineMutation, defineField, defineDirective } from 'nitro-graphql/define'
 ```
 
 | Function | Purpose | Example |
@@ -628,7 +628,7 @@ import { defineResolver, defineQuery, defineMutation, defineType, defineDirectiv
 | `defineResolver` | Complete resolvers | `defineResolver({ Query: {...}, Mutation: {...} })` |
 | `defineQuery` | Query-only resolvers | `defineQuery({ users: () => [...] })` |
 | `defineMutation` | Mutation-only resolvers | `defineMutation({ createUser: (...) => {...} })` |
-| `defineType` | Custom type resolvers | `defineType({ User: { posts: (parent) => [...] } })` |
+| `defineField` | Custom type resolvers | `defineField({ User: { posts: (parent) => [...] } })` |
 | `defineDirective` | Custom directives | `defineDirective({ name: 'auth', ... })` |
 | `defineGraphQLConfig` | GraphQL server config | `defineGraphQLConfig({ maskedErrors: {...} })` |
 | `defineSchema` | Schema with Zod integration | `defineSchema({ Book: selectBookSchema })` |
@@ -777,7 +777,7 @@ This error occurs when the resolver scanner can't find the expected export in yo
   - `defineResolver` - Complete resolver with Query, Mutation, etc.
   - `defineQuery` - Query-only resolvers
   - `defineMutation` - Mutation-only resolvers
-  - `defineType` - Custom type resolvers
+  - `defineField` - Custom type resolvers
   - `defineSubscription` - Subscription resolvers
   - `defineDirective` - Directive resolvers
 - Only exports using these functions are included in the virtual module

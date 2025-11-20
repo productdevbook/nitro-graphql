@@ -1,8 +1,8 @@
 import { eq } from 'drizzle-orm'
-import { defineType } from 'nitro-graphql/define'
+import { defineField } from 'nitro-graphql/define'
 import { HTTPError } from 'nitro/h3'
 
-export const field = defineType({
+export const field = defineField({
   Book: {
     isAvailable: (parent, args, { context }) => {
       // A book is considered available if it was published within the last 5 years

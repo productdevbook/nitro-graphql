@@ -314,7 +314,7 @@ type Query {
 Resolver:
 
 ```ts
-import { defineQuery, defineType } from 'nitro-graphql/define'
+import { defineQuery, defineField } from 'nitro-graphql/define'
 
 export const nodeResolver = defineQuery({
   node: (_, { id }) => {
@@ -323,7 +323,7 @@ export const nodeResolver = defineQuery({
   },
 })
 
-export const nodeTypes = defineType({
+export const nodeTypes = defineField({
   Node: {
     __resolveType(obj) {
       if ('email' in obj)
@@ -351,9 +351,9 @@ type Query {
 Resolver:
 
 ```ts
-import { defineType } from 'nitro-graphql/define'
+import { defineField } from 'nitro-graphql/define'
 
-export const searchTypes = defineType({
+export const searchTypes = defineField({
   SearchResult: {
     __resolveType(obj) {
       if ('email' in obj)

@@ -190,14 +190,14 @@ export const createBook = defineMutation({
 
 ```typescript
 // REQUIRED in all resolver files
-import { defineMutation, defineQuery, defineType } from 'nitro-graphql/define'
+import { defineMutation, defineQuery, defineField } from 'nitro-graphql/define'
 ```
 
 **Available utilities**:
 - `defineResolver` - Complete resolver (Query + Mutation + Type)
 - `defineQuery` - Query-only resolvers
 - `defineMutation` - Mutation-only resolvers
-- `defineType` - Custom type resolvers (computed fields)
+- `defineField` - Custom type resolvers (computed fields)
 - `defineDirective` - Custom GraphQL directives
 - `defineGraphQLConfig` - GraphQL Yoga configuration
 - `defineSchema` - Schema definition with Zod integration
@@ -275,9 +275,9 @@ type Book {
 
 **Resolver** (`server/graphql/books/field.resolver.ts`)
 ```typescript
-import { defineType } from 'nitro-graphql/define'
+import { defineField } from 'nitro-graphql/define'
 
-export const field = defineType({
+export const field = defineField({
   Book: {
     isAvailable: (parent, args, { context }) => {
       // A book is considered available if it was published within the last 5 years

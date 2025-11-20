@@ -113,7 +113,7 @@ export async function scanResolvers(nitro: Nitro) {
   })
 
   const exportName: GenImport[] = []
-  const VALID_DEFINE_FUNCTIONS = ['defineResolver', 'defineQuery', 'defineMutation', 'defineType', 'defineSubscription', 'defineDirective']
+  const VALID_DEFINE_FUNCTIONS = ['defineResolver', 'defineQuery', 'defineMutation', 'defineField', 'defineSubscription', 'defineDirective']
 
   for (const file of files) {
     try {
@@ -185,7 +185,7 @@ export async function scanResolvers(nitro: Nitro) {
                   })
                 }
 
-                if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineType') {
+                if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineField') {
                   exports.imports.push({
                     name: decl.id.name,
                     type: 'type',

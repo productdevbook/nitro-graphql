@@ -7,7 +7,7 @@ category: Guide
 
 <FunctionInfo fn="resolvers"/>
 
-Master GraphQL resolvers with `defineResolver`, `defineQuery`, `defineMutation`, `defineType`, and `defineSubscription`.
+Master GraphQL resolvers with `defineResolver`, `defineQuery`, `defineMutation`, `defineField`, and `defineSubscription`.
 
 ## What are Resolvers?
 
@@ -93,13 +93,13 @@ export const userMutations = defineMutation({
 })
 ```
 
-### defineType
+### defineField
 
 Define field resolvers for custom types:
 
 ```ts
 // server/graphql/users/types.resolver.ts
-export const userTypes = defineType({
+export const userTypes = defineField({
   User: {
     // Resolve the posts field
     posts: async (parent, args, context) => {
@@ -176,7 +176,7 @@ export const userQueries = defineQuery({
   }),
 })
 
-export const userTypes = defineType({
+export const userTypes = defineField({
   User: {
     posts: (parent) => {
       // parent is the User object from the query resolver
@@ -303,7 +303,7 @@ type Post {
 ```
 
 ```ts
-export const postTypes = defineType({
+export const postTypes = defineField({
   Post: {
     // Resolve author relationship
     author: async (parent, args, context) => {
@@ -341,7 +341,7 @@ const userLoader = new DataLoader(async (userIds: readonly string[]) => {
   return userIds.map(id => users.find(u => u.id === id))
 })
 
-export const postTypes = defineType({
+export const postTypes = defineField({
   Post: {
     // Use DataLoader - batches and caches requests
     author: async (parent) => {
@@ -443,7 +443,7 @@ export const userMutations = defineMutation({
 
 ```ts
 // server/graphql/users/types.resolver.ts
-export const userTypes = defineType({
+export const userTypes = defineField({
   User: {
     posts: () => [...],
   },
@@ -657,7 +657,7 @@ export const postMutations = defineMutation({
   },
 })
 
-export const postTypes = defineType({
+export const postTypes = defineField({
   Post: {
     author: async (parent, args, context) => {
       return await context.db.user.findUnique({

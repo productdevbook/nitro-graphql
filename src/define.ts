@@ -200,7 +200,7 @@ export function defineSubscription(
  * @example
  * ```typescript
  * // For a User type with computed fields
- * export const userTypeResolvers = defineType({
+ * export const userTypeResolvers = defineField({
  *   User: {
  *     fullName: (parent) => `${parent.firstName} ${parent.lastName}`,
  *     age: (parent) => {
@@ -218,7 +218,7 @@ export function defineSubscription(
  * This is functionally equivalent to defineResolver but semantically indicates
  * you're defining type-specific field resolvers rather than root-level operations.
  */
-export function defineType(
+export function defineField(
   resolvers: Resolvers,
 ): Resolvers {
   return resolvers

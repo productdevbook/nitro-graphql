@@ -111,7 +111,7 @@ export const mutations: MutationResolvers = defineMutation({
 ```typescript
 import type { PostResolvers, UserResolvers } from '#graphql/server'
 
-export const userTypes: UserResolvers = defineType({
+export const userTypes: UserResolvers = defineField({
   User: {
     fullName: parent => `${parent.firstName} ${parent.lastName}`,
     posts: async (parent, _args, context) => {

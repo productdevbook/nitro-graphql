@@ -256,7 +256,7 @@ The scanner looks for named exports using these functions:
 - `defineResolver`
 - `defineQuery`
 - `defineMutation`
-- `defineType`
+- `defineField`
 - `defineSubscription`
 - `defineDirective`
 

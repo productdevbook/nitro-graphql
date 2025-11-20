@@ -76,7 +76,7 @@ Auto-imported utilities include:
 - `defineQuery`
 - `defineMutation`
 - `defineSubscription`
-- `defineType`
+- `defineField`
 - `defineGraphQLConfig`
 - `defineSchema`
 - `defineDirective`

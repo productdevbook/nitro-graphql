@@ -366,7 +366,7 @@ interface ReferenceResolver<TContext> {
 ```typescript
 import type { UserResolvers } from '#graphql/server'
 
-export const userResolvers: UserResolvers = defineType({
+export const userResolvers: UserResolvers = defineField({
   User: {
     __resolveReference: async (reference, context) => {
       // reference contains fields marked with @key
@@ -583,7 +583,7 @@ const server = new ApolloServer({
 Always implement `__resolveReference` for federated types:
 
 ```typescript
-export const userResolvers = defineType({
+export const userResolvers = defineField({
   User: {
     __resolveReference: async (reference, context) => {
       // Resolve entity from its key fields
@@ -598,7 +598,7 @@ export const userResolvers = defineType({
 When referencing types from other subgraphs, return a reference object:
 
 ```typescript
-export const postResolvers = defineType({
+export const postResolvers = defineField({
   Post: {
     author: (post) => {
       // Don't resolve the entire user, return a reference
