@@ -190,7 +190,7 @@ export const createBook = defineMutation({
 
 ```typescript
 // REQUIRED in all resolver files
-import { defineMutation, defineQuery, defineField } from 'nitro-graphql/define'
+import { defineField, defineMutation, defineQuery } from 'nitro-graphql/define'
 ```
 
 **Available utilities**:
