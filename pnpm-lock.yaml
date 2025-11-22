@@ -299,9 +299,6 @@ importers:
       pg:
         specifier: ^8.16.3
         version: 8.16.3
-      rolldown:
-        specifier: ^1.0.0-beta.51
-        version: 1.0.0-beta.51
       tsx:
         specifier: ^4.20.6
         version: 4.20.6
@@ -353,6 +350,28 @@ importers:
       zod:
         specifier: ^4.1.12
         version: 4.1.12
+
+  examples/vite:
+    dependencies:
+      graphql:
+        specifier: ^16.12.0
+        version: 16.12.0
+      graphql-yoga:
+        specifier: ^5.16.2
+        version: 5.16.2(graphql@16.12.0)
+      nitro-graphql:
+        specifier: link:../..
+        version: link:../..
+      rolldown:
+        specifier: ^1.0.0-beta.51
+        version: 1.0.0-beta.51
+    devDependencies:
+      nitro:
+        specifier: npm:nitro-nightly@latest
+        version: nitro-nightly@3.0.1-20251118-175529-0316c6c6(better-sqlite3@12.4.1)(chokidar@4.0.3)(drizzle-orm@0.44.7(@prisma/client@5.22.0(prisma@5.22.0))(@types/better-sqlite3@7.6.13)(@types/pg@8.15.6)(better-sqlite3@12.4.1)(kysely@0.28.8)(pg@8.16.3)(prisma@5.22.0))(lru-cache@11.2.2)(rolldown-vite@7.2.7(@types/node@24.10.1)(esbuild@0.25.12)(jiti@2.6.1)(tsx@4.20.6)(yaml@2.8.1))(rolldown@1.0.0-beta.51)
+      vite:
+        specifier: npm:rolldown-vite@latest
+        version: rolldown-vite@7.2.7(@types/node@24.10.1)(esbuild@0.25.12)(jiti@2.6.1)(tsx@4.20.6)(yaml@2.8.1)
 
   playgrounds/apollo:
     dependencies:
