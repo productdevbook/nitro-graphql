@@ -1,0 +1,16 @@
+{
+  "extends": "nitro/tsconfig",
+  "compilerOptions": {
+    "paths": {
+      "#graphql/server": [
+        "./.graphql/nitro-graphql-server.d.ts"
+      ],
+      "#graphql/client": [
+        "./.graphql/nitro-graphql-client.d.ts"
+      ],
+      "#graphql/schema": [
+        "./server/graphql/schema.ts"
+      ]
+    }
+  }
+}

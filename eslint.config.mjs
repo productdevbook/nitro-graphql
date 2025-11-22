@@ -18,6 +18,8 @@ const nitro = {
     '.docs/.vitepress/**/*',
     '**/*.graphql',
     '**/README.md',
+    'examples/vite-vue/src/**/*.vue',
+    'examples/vite-react/src/**/*.{tsx,jsx}',
   ],
 }
 export default antfu(

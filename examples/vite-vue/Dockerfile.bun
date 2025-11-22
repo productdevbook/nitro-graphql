@@ -1,0 +1,39 @@
+# Build stage
+FROM oven/bun:1-alpine AS builder
+
+# Build arguments
+ARG NITRO_PRESET=bun
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json bun.lockb* ./
+
+# Install dependencies
+RUN bun install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Build the application with specified preset
+ENV NITRO_PRESET=$NITRO_PRESET
+RUN bun run build
+
+# Production stage
+FROM oven/bun:1-alpine
+
+WORKDIR /app
+
+# Copy built output from builder
+COPY --from=builder /app/.output /app/.output
+
+# Expose the port Nitro uses
+EXPOSE 3000
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV NITRO_PORT=3000
+ENV NITRO_HOST=0.0.0.0
+
+# Start the Nitro server
+CMD ["bun", "run", ".output/server/index.mjs"]

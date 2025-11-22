@@ -1,0 +1,49 @@
+type User {
+  id: ID!
+  email: String!
+  name: String
+  createdAt: String!
+}
+
+input CreateUserInput {
+  email: String!
+  name: String
+}
+
+"""
+Base interface for all error types
+Provides consistent error handling across the API
+"""
+interface Error {
+  message: String!
+}
+
+"""
+Returned when a user with the given ID does not exist
+"""
+type UserNotFoundError implements Error {
+  message: String!
+  userId: ID!
+}
+
+"""
+Returned when the client lacks permission to access the user
+"""
+type UnauthorizedError implements Error {
+  message: String!
+  requiredPermission: String!
+}
+
+"""
+Result type for user queries - can be success or various error types
+This pattern provides type-safe error handling without null ambiguity
+"""
+union UserResult = User | UserNotFoundError | UnauthorizedError
+
+type Query {
+  getUser(id: ID!): UserResult!
+}
+
+type Mutation {
+  createUser(input: CreateUserInput!): User!
+}

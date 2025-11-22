@@ -1,0 +1,22 @@
+query test($id: ID!) {
+  getUser(id: $id) {
+    __typename
+
+    ... on User {
+      id
+      name
+      email
+      createdAt
+    }
+
+    ... on UserNotFoundError {
+      message
+      userId
+    }
+
+    ... on UnauthorizedError {
+      message
+      requiredPermission
+    }
+  }
+}
