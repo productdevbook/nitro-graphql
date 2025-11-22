@@ -1,0 +1,61 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NITRO_PRESET: node-server
+    container_name: vite-react-graphql
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+      - NITRO_PORT=3000
+      - NITRO_HOST=0.0.0.0
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # Bun version (use with: docker compose --profile bun up)
+  bun:
+    build:
+      context: .
+      dockerfile: Dockerfile.bun
+      args:
+        NITRO_PRESET: bun
+    container_name: vite-react-graphql-bun
+    profiles:
+      - bun
+    ports:
+      - '3001:3000'
+    environment:
+      - NODE_ENV=production
+      - NITRO_PORT=3000
+      - NITRO_HOST=0.0.0.0
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # Development service (optional - use with docker compose --profile dev up)
+  dev:
+    image: node:24-alpine
+    container_name: vite-react-graphql-dev
+    working_dir: /app
+    profiles:
+      - dev
+    ports:
+      - '5173:5173'
+      - '3000:3000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    command: sh -c "corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm dev"
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

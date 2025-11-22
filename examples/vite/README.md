@@ -120,10 +120,10 @@ mutation CreateUser($input: CreateUserInput!) {
 This example uses `nitro-graphql` as a Vite plugin:
 
 ```typescript
-// vite.config.ts
-import { defineConfig } from 'vite'
 import graphql from 'nitro-graphql'
 import nitro from 'nitro/vite'
+// vite.config.ts
+import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [
@@ -172,9 +172,11 @@ Replace with a real database for production use.
 This example includes experimental support for [Rolldown](https://rolldown.rs/), a Rust-based bundler:
 
 ```json
-"pnpm": {
-  "overrides": {
-    "vite": "npm:rolldown-vite@latest"
+{
+  "pnpm": {
+    "overrides": {
+      "vite": "npm:rolldown-vite@latest"
+    }
   }
 }
 ```
