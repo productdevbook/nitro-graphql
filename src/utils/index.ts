@@ -332,7 +332,7 @@ export async function scanSchemas(nitro: Nitro) {
     .map(f => f.fullPath)
 }
 
-export async function scanDocs(nitro: Nitro) {
+export async function scanDocuments(nitro: Nitro) {
   // Scan main project documents
   const files = await scanDir(nitro, nitro.options.rootDir, nitro.graphql.dir.client, '**/*.graphql')
 

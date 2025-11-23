@@ -1,3 +1,4 @@
+import type { Source } from '@graphql-tools/utils'
 import type { GraphQLSchema } from 'graphql'
 import type { CodegenServerConfig, NitroGraphQLOptions } from '../types'
 import { codegen } from '@graphql-codegen/core'
@@ -8,15 +9,16 @@ import consola from 'consola'
 import { defu } from 'defu'
 import { parse } from 'graphql'
 import { CurrencyResolver, DateTimeISOResolver, DateTimeResolver, JSONObjectResolver, JSONResolver, NonEmptyStringResolver, UUIDResolver } from 'graphql-scalars'
-// import {
-//   CurrencyResolver,
-//   DateTimeResolver,
-//   JSONResolver,
-//   NonEmptyStringResolver,
-//   UUIDResolver,
-// } from 'graphql-scalars'
 
-function pluginContent(_schema: any, _documents: any, _config: any, _info: any) {
+/**
+ * Plugin to add prepend comments to generated files
+ */
+function pluginContent(
+  _schema: GraphQLSchema,
+  _documents: Source[],
+  _config: Record<string, unknown> | undefined,
+  _info: Record<string, unknown> | undefined,
+) {
   return {
     prepend: [
       '// THIS FILE IS GENERATED, DO NOT EDIT!',
@@ -37,13 +39,13 @@ export async function generateTypes(
 ) {
   const defaultConfig: CodegenServerConfig = {
     scalars: {
-      DateTime: DateTimeResolver.extensions.codegenScalarType as any,
-      DateTimeISO: DateTimeISOResolver.extensions.codegenScalarType as any,
-      UUID: UUIDResolver.extensions.codegenScalarType as any,
-      JSON: JSONResolver.extensions.codegenScalarType as any,
-      JSONObject: JSONObjectResolver.extensions.codegenScalarType as any,
-      NonEmptyString: NonEmptyStringResolver.extensions.codegenScalarType as any,
-      Currency: CurrencyResolver.extensions.codegenScalarType as any,
+      DateTime: DateTimeResolver.extensions.codegenScalarType as string,
+      DateTimeISO: DateTimeISOResolver.extensions.codegenScalarType as string,
+      UUID: UUIDResolver.extensions.codegenScalarType as string,
+      JSON: JSONResolver.extensions.codegenScalarType as string,
+      JSONObject: JSONObjectResolver.extensions.codegenScalarType as string,
+      NonEmptyString: NonEmptyStringResolver.extensions.codegenScalarType as string,
+      Currency: CurrencyResolver.extensions.codegenScalarType as string,
       File: {
         input: 'File',
         output: 'File',
@@ -148,7 +150,7 @@ type ResolverReturnTypeObject<T extends object> =
       typescript: typescriptPlugin,
       typescriptResolvers: typescriptResolversPlugin,
     },
-  }).catch((e: any) => {
+  }).catch((e: unknown) => {
     consola.withTag('graphql').error('Error generating types:', e)
     return ''
   })

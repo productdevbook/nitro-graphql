@@ -1,7 +1,7 @@
 {
   "name": "nitro-graphql",
   "type": "module",
-  "version": "2.0.0-beta.31",
+  "version": "2.0.0-beta.32",
   "packageManager": "pnpm@10.22.0",
   "description": "GraphQL integration for Nitro",
   "license": "MIT",
@@ -85,6 +85,10 @@
     "docs:preview": "cd .docs && pnpm preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:types": "tsc --noEmit"
   },
   "peerDependencies": {
@@ -129,6 +133,7 @@
     "@nuxt/schema": "catalog:",
     "@types/node": "catalog:",
     "@vitejs/devtools": "catalog:",
+    "@vitest/ui": "catalog:",
     "bumpp": "catalog:",
     "changelogen": "catalog:",
     "crossws": "catalog:",
@@ -139,7 +144,8 @@
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
-    "vitepress-plugin-llms": "catalog:"
+    "vitepress-plugin-llms": "catalog:",
+    "vitest": "catalog:"
   },
   "pnpm": {
     "overrides": {

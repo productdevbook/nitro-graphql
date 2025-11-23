@@ -1,0 +1,17 @@
+type Post {
+  id: ID!
+  title: String!
+  content: String!
+  authorId: ID!
+  published: Boolean!
+}
+
+extend type Query {
+  post(id: ID!): Post
+  posts: [Post!]!
+}
+
+extend type Mutation {
+  createPost(title: String!, content: String!, authorId: ID!): Post!
+  publishPost(id: ID!): Post
+}

@@ -29,7 +29,15 @@ export type GraphQLTypeDefPointer = UnnormalizedTypeDefPointer | UnnormalizedTyp
  */
 export type GraphQLLoadSchemaOptions = Partial<LoadSchemaOptions>
 
-function pluginContent(_schema: any, _documents: any, _config: any, _info: any) {
+/**
+ * Plugin to add prepend comments to generated files
+ */
+function pluginContent(
+  _schema: GraphQLSchema,
+  _documents: Source[],
+  _config: Record<string, unknown> | undefined,
+  _info: Record<string, unknown> | undefined,
+) {
   return {
     prepend: [
       '// THIS FILE IS GENERATED, DO NOT EDIT!',
@@ -59,14 +67,15 @@ export async function graphQLLoadSchemaSync(
       loaders: [
         new GraphQLFileLoader(),
         new UrlLoader(),
-        ...((data.loaders || []) as any[]),
+        ...(data.loaders || []),
       ],
     })
   }
-  catch (e: any) {
+  catch (e: unknown) {
+    const error = e as Error
     if (
       // https://www.graphql-tools.com/docs/documents-loading#no-files-found
-      (e.message || '').includes(
+      (error.message || '').includes(
         'Unable to find any GraphQL type definitions for the following pointers:',
       )
     ) {
@@ -276,9 +285,10 @@ export async function loadGraphQLDocuments(patterns: string | string[]) {
     })
     return result
   }
-  catch (e: any) {
+  catch (e: unknown) {
+    const error = e as Error
     if (
-      (e.message || '').includes(
+      (error.message || '').includes(
         'Unable to find any GraphQL type definitions for the following pointers:',
       )
     ) {
@@ -324,13 +334,13 @@ export async function generateClientTypes(
     dedupeOperationSuffix: true,
     rawRequest: true,
     scalars: {
-      DateTime: DateTimeResolver.extensions.codegenScalarType as any,
-      DateTimeISO: DateTimeISOResolver.extensions.codegenScalarType as any,
-      UUID: UUIDResolver.extensions.codegenScalarType as any,
-      JSON: JSONResolver.extensions.codegenScalarType as any,
-      JSONObject: JSONObjectResolver.extensions.codegenScalarType as any,
-      NonEmptyString: NonEmptyStringResolver.extensions.codegenScalarType as any,
-      Currency: CurrencyResolver.extensions.codegenScalarType as any,
+      DateTime: DateTimeResolver.extensions.codegenScalarType as string,
+      DateTimeISO: DateTimeISOResolver.extensions.codegenScalarType as string,
+      UUID: UUIDResolver.extensions.codegenScalarType as string,
+      JSON: JSONResolver.extensions.codegenScalarType as string,
+      JSONObject: JSONObjectResolver.extensions.codegenScalarType as string,
+      NonEmptyString: NonEmptyStringResolver.extensions.codegenScalarType as string,
+      Currency: CurrencyResolver.extensions.codegenScalarType as string,
       File: {
         input: 'File',
         output: 'File',

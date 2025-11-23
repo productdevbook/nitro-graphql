@@ -266,10 +266,11 @@ export function generateDirectiveSchema(directive: ParsedDirective): string {
 
 /**
  * Generate directive schemas file from scanned directives
+ * @returns The path to the generated _directives.graphql file, or null if no directives
  */
-export async function generateDirectiveSchemas(nitro: any, directives: any[]) {
+export async function generateDirectiveSchemas(nitro: any, directives: any[]): Promise<string | null> {
   if (directives.length === 0)
-    return
+    return null
 
   const { existsSync, readFileSync, writeFileSync, mkdirSync } = await import('node:fs')
   const { readFile } = await import('node:fs/promises')
@@ -323,11 +324,11 @@ ${directiveSchemas.join('\n\n')}`
       writeFileSync(directivesPath, content, 'utf-8')
     }
 
-    // Add to scanned schemas
-    if (!nitro.scanSchemas.includes(directivesPath)) {
-      nitro.scanSchemas.push(directivesPath)
-    }
+    // Return the path so caller can add it to scanSchemas after scanning
+    return directivesPath
   }
+
+  return null
 }
 
 /**
