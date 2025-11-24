@@ -45,27 +45,17 @@ export function setupRollupChunking(nitro: Nitro): void {
         return undefined
       }
 
-      // advancedChunks for Rolldown - supports dynamic chunk naming via function!
+      // advancedChunks for Rolldown - merge all GraphQL files into single chunks
       rollupConfig.output.advancedChunks = {
         groups: [
           {
-            // Dynamic chunk naming for schemas
-            name: (moduleId: string) => {
-              if (!isGraphQLFile(moduleId)) {
-                return
-              }
-              return getSchemaChunkName(moduleId)
-            },
+            // All schemas into single chunk
+            name: CHUNK_NAME_SCHEMAS,
             test: new RegExp(`\\.(${GRAPHQL_EXTENSIONS.map(e => e.slice(1)).join('|')})$`),
           },
           {
-            // Dynamic chunk naming for resolvers
-            name: (moduleId: string) => {
-              if (!isResolverFile(moduleId)) {
-                return
-              }
-              return getResolverChunkName(moduleId)
-            },
+            // All resolvers into single chunk
+            name: CHUNK_NAME_RESOLVERS,
             test: /\.resolver\.(ts|js)$/,
           },
         ],
@@ -109,45 +99,19 @@ function isResolverFile(id: string): boolean {
 
 /**
  * Get chunk name for GraphQL schema files
+ * All schemas are bundled into a single chunk since GraphQL server
+ * merges them at runtime anyway - no benefit from separate chunks
  */
-function getSchemaChunkName(id: string): string {
-  let graphqlIndex = id.indexOf(`${DIR_SERVER_GRAPHQL}/`)
-  let baseLength = (`${DIR_SERVER_GRAPHQL}/`).length
-
-  if (graphqlIndex === -1) {
-    graphqlIndex = id.indexOf(`${DIR_ROUTES_GRAPHQL}/`)
-    baseLength = (`${DIR_ROUTES_GRAPHQL}/`).length
-  }
-
-  if (graphqlIndex !== -1) {
-    const relativePath = id.slice(graphqlIndex + baseLength)
-    // Remove .graphql or .gql extension and add -schema suffix
-    const chunkName = relativePath.replace(/\.(graphql|gql)$/, '-schema')
-    return chunkName
-  }
-
+function getSchemaChunkName(_id: string): string {
   return CHUNK_NAME_SCHEMAS
 }
 
 /**
  * Get chunk name for resolver files
+ * All resolvers are bundled into a single chunk since GraphQL server
+ * requires all resolvers to be registered at startup - no runtime lazy loading
  */
-function getResolverChunkName(id: string): string {
-  let graphqlIndex = id.indexOf(`${DIR_SERVER_GRAPHQL}/`)
-  let baseLength = (`${DIR_SERVER_GRAPHQL}/`).length
-
-  if (graphqlIndex === -1) {
-    graphqlIndex = id.indexOf(`${DIR_ROUTES_GRAPHQL}/`)
-    baseLength = (`${DIR_ROUTES_GRAPHQL}/`).length
-  }
-
-  if (graphqlIndex !== -1) {
-    const relativePath = id.slice(graphqlIndex + baseLength)
-    // Remove .resolver.ts extension to get chunk name
-    const chunkName = relativePath.replace(/\.resolver\.ts$/, '')
-    return chunkName
-  }
-
+function getResolverChunkName(_id: string): string {
   return CHUNK_NAME_RESOLVERS
 }
 
