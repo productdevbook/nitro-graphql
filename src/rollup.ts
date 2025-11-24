@@ -5,8 +5,8 @@ import { fileURLToPath } from 'node:url'
 import { parse } from 'graphql'
 import { genImport } from 'knitwork'
 import { resolve } from 'pathe'
+import { generateClientTypes, generateServerTypes } from './codegen'
 import { getImportId, scanGraphql } from './utils'
-import { clientTypeGeneration, serverTypeGeneration } from './utils/type-generation'
 
 export async function rollupConfig(nitro: Nitro) {
   virtualSchemas(nitro)
@@ -150,8 +150,8 @@ export async function rollupConfig(nitro: Nitro) {
   })
 
   nitro.hooks.hook('dev:reload', async () => {
-    await serverTypeGeneration(nitro, { silent: true })
-    await clientTypeGeneration(nitro, { silent: true })
+    await generateServerTypes(nitro, { silent: true })
+    await generateClientTypes(nitro, { silent: true })
   })
 }
 

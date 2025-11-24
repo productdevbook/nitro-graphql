@@ -79,7 +79,7 @@ export function validateNoDuplicateTypes(schemas: string[], schemaStrings: strin
           const typeName = def.name.value
 
           // Skip built-in scalars
-          if (BUILTIN_SCALARS.includes(typeName as any)) {
+          if ((BUILTIN_SCALARS as readonly string[]).includes(typeName)) {
             return
           }
 

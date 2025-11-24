@@ -231,7 +231,7 @@ export class DirectiveParser {
   /**
    * Extract literal value (string, number, boolean)
    */
-  private extractLiteralValue(node: any): any {
+  private extractLiteralValue(node: { type?: string, value?: string | number | boolean | null } | null | undefined): string | number | boolean | null | undefined {
     if (node?.type === 'Literal') {
       return node.value
     }

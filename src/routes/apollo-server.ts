@@ -13,26 +13,7 @@ import defu from 'defu'
 import { parse } from 'graphql'
 import { startServerAndCreateH3Handler } from 'nitro-graphql/utils/apollo'
 import { defineEventHandler } from 'nitro/h3'
-
-// Conditional imports for federation support - use dynamic import inside function
-let buildSubgraphSchema: any = null
-
-async function loadFederationSupport() {
-  if (buildSubgraphSchema !== null)
-    return buildSubgraphSchema
-
-  try {
-    // Try to import @apollo/subgraph for federation support
-    const apolloSubgraph = await import('@apollo/subgraph')
-    buildSubgraphSchema = apolloSubgraph.buildSubgraphSchema
-  }
-  catch {
-    // @apollo/subgraph is optional, continue without federation
-    buildSubgraphSchema = false
-  }
-
-  return buildSubgraphSchema
-}
+import { loadFederationSupport, warnFederationUnavailable } from '../utils/federation'
 
 async function createMergedSchema() {
   try {
@@ -64,7 +45,7 @@ async function createMergedSchema() {
         })
       }
       else {
-        console.warn('Federation enabled but @apollo/subgraph not available, falling back to regular schema')
+        warnFederationUnavailable()
         schema = makeExecutableSchema({
           typeDefs,
           resolvers: mergedResolvers,

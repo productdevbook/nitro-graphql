@@ -12,26 +12,7 @@ import defu from 'defu'
 import { parse } from 'graphql'
 import { createYoga } from 'graphql-yoga'
 import { defineEventHandler } from 'nitro/h3'
-
-// Conditional imports for federation support - use dynamic import inside function
-let buildSubgraphSchema: any = null
-
-async function loadFederationSupport() {
-  if (buildSubgraphSchema !== null)
-    return buildSubgraphSchema
-
-  try {
-    // Try to import @apollo/subgraph for federation support
-    const apolloSubgraph = await import('@apollo/subgraph')
-    buildSubgraphSchema = apolloSubgraph.buildSubgraphSchema
-  }
-  catch {
-    // @apollo/subgraph is optional, continue without federation
-    buildSubgraphSchema = false
-  }
-
-  return buildSubgraphSchema
-}
+import { loadFederationSupport, warnFederationUnavailable } from '../utils/federation'
 
 // Apollo Sandbox HTML with 1 week cache
 const apolloSandboxHtml = `<!DOCTYPE html>
@@ -82,7 +63,7 @@ async function createMergedSchema() {
         })
       }
       else {
-        console.warn('Federation enabled but @apollo/subgraph not available, falling back to regular schema')
+        warnFederationUnavailable()
         schema = makeExecutableSchema({
           typeDefs,
           resolvers: mergedResolvers,
@@ -127,7 +108,7 @@ export default defineEventHandler(async (event) => {
       renderGraphiQL: () => apolloSandboxHtml,
     }, importedConfig))
   }
-  const response = await yoga.handleRequest(event.req, event as any)
+  const response = await yoga.handleRequest(event.req, event as unknown as Record<string, unknown>)
 
   // If resolver set a custom status code via event.res.status, use it
   if (event.res.status && event.res.status !== 200) {

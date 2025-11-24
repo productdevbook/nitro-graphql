@@ -7,6 +7,7 @@ import type { Nitro } from 'nitro/types'
 import { watch } from 'chokidar'
 import consola from 'consola'
 import { join } from 'pathe'
+import { generateClientTypes, generateServerTypes } from '../codegen'
 import {
   DEFAULT_WATCHER_IGNORE_INITIAL,
   DEFAULT_WATCHER_PERSISTENT,
@@ -28,7 +29,6 @@ import {
   scanResolvers,
   scanSchemas,
 } from '../utils'
-import { clientTypeGeneration, serverTypeGeneration } from '../utils/type-generation'
 
 const logger = consola.withTag(LOG_TAG)
 
@@ -82,15 +82,15 @@ export function setupFileWatcher(nitro: Nitro, watchDirs: string[]): FSWatcher {
         await scanResolvers(nitro).then(r => nitro.scanResolvers = r)
 
         logger.success('Types regenerated')
-        await serverTypeGeneration(nitro, { silent: true })
-        await clientTypeGeneration(nitro, { silent: true })
+        await generateServerTypes(nitro, { silent: true })
+        await generateClientTypes(nitro, { silent: true })
         // Trigger Nitro reload to pick up changes
         await nitro.hooks.callHook('dev:reload')
       }
       else {
         // Client GraphQL file changed - only regenerate client types
         logger.success('Types regenerated')
-        await clientTypeGeneration(nitro, { silent: true })
+        await generateClientTypes(nitro, { silent: true })
       }
     }
   })

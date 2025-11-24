@@ -8,31 +8,8 @@ import consola from 'consola'
 import { LOG_TAG } from '../constants'
 import { generateMainClientTypes } from './client-types'
 import { generateExternalServicesTypes } from './external-types'
-import { generateServerTypes } from './server-types'
 
 const logger = consola.withTag(LOG_TAG)
-
-/**
- * Generate server-side GraphQL resolver types
- * @deprecated Use generateServerTypes instead
- */
-export async function serverTypeGeneration(
-  nitro: Nitro,
-  options: { silent?: boolean } = {},
-): Promise<void> {
-  return generateServerTypes(nitro, options)
-}
-
-/**
- * Generate client-side GraphQL types (main service + external services)
- * @deprecated Use generateClientTypes instead
- */
-export async function clientTypeGeneration(
-  nitro: Nitro,
-  options: { silent?: boolean, isInitial?: boolean } = {},
-): Promise<void> {
-  return generateClientTypes(nitro, options)
-}
 
 /**
  * Generate client-side GraphQL types
@@ -61,6 +38,5 @@ export async function generateClientTypes(
 
 export { generateMainClientTypes } from './client-types'
 export { generateExternalServicesTypes } from './external-types'
-// Re-export individual generators for direct use
 export { generateServerTypes } from './server-types'
 export { validateNoDuplicateTypes } from './validation'

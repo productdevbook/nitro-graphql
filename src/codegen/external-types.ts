@@ -6,9 +6,7 @@
 import type { Nitro } from 'nitro/types'
 import type { ExternalGraphQLService } from '../types'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
-import consola from 'consola'
 import { dirname } from 'pathe'
-import { LOG_TAG } from '../constants'
 import {
   downloadAndSaveSchema,
   generateExternalClientTypes,
@@ -24,8 +22,6 @@ import {
   resolveFilePath,
   shouldGenerateClientUtils,
 } from '../utils/path-resolver'
-
-const logger = consola.withTag(LOG_TAG)
 
 /**
  * Generate types for all external GraphQL services
