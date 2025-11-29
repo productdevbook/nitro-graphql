@@ -4,15 +4,10 @@ import { moduleConfig } from '#nitro-graphql/module-config'
 import { directives } from '#nitro-graphql/server-directives'
 import { resolvers } from '#nitro-graphql/server-resolvers'
 import { schemas } from '#nitro-graphql/server-schemas'
-
-import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge'
-import { makeExecutableSchema } from '@graphql-tools/schema'
-import { consola } from 'consola'
 import defu from 'defu'
-import { parse } from 'graphql'
 import { createYoga } from 'graphql-yoga'
 import { defineEventHandler } from 'nitro/h3'
-import { loadFederationSupport, warnFederationUnavailable } from '../utils/federation'
+import { createMergedSchema } from '../utils/schema-builder'
 
 // Apollo Sandbox HTML with 1 week cache
 const apolloSandboxHtml = `<!DOCTYPE html>
@@ -33,73 +28,16 @@ new window.EmbeddedSandbox({
 </body>
 </html>`
 
-async function createMergedSchema() {
-  try {
-    const mergedSchemas = schemas.map(schema => schema.def).join('\n\n')
-    const typeDefs = mergeTypeDefs([mergedSchemas], {
-      throwOnConflict: true,
-      commentDescriptions: true,
-      sort: true,
-    })
-    const mergedResolvers = mergeResolvers(resolvers.map(r => r.resolver))
-
-    // Check if federation is enabled via config
-    const federationEnabled = moduleConfig.federation?.enabled
-
-    let schema
-
-    if (federationEnabled) {
-      // Load federation support dynamically
-      const buildSubgraph = await loadFederationSupport()
-
-      if (buildSubgraph) {
-        // Use Apollo Federation buildSubgraphSchema
-        // buildSubgraphSchema requires DocumentNode, convert string if needed
-        const typeDefsDoc = typeof typeDefs === 'string' ? parse(typeDefs) : typeDefs
-
-        schema = buildSubgraph({
-          typeDefs: typeDefsDoc,
-          resolvers: mergedResolvers,
-        })
-      }
-      else {
-        warnFederationUnavailable()
-        schema = makeExecutableSchema({
-          typeDefs,
-          resolvers: mergedResolvers,
-        })
-      }
-    }
-    else {
-      // Use regular schema builder
-      schema = makeExecutableSchema({
-        typeDefs,
-        resolvers: mergedResolvers,
-      })
-    }
-
-    // Apply directives if any
-    if (directives && directives.length > 0) {
-      for (const { directive } of directives) {
-        if (directive.transformer) {
-          schema = directive.transformer(schema)
-        }
-      }
-    }
-
-    return schema
-  }
-  catch (error) {
-    consola.error('Schema merge error:', error)
-    throw error
-  }
-}
-
 let yoga: YogaServerInstance<object, object>
 
 export default defineEventHandler(async (event) => {
   if (!yoga) {
-    const schema = await createMergedSchema()
+    const schema = await createMergedSchema({
+      schemas,
+      resolvers,
+      directives,
+      moduleConfig,
+    })
     // Yoga instance'ı henüz oluşturulmadıysa, oluştur
     yoga = createYoga(defu({
       schema,

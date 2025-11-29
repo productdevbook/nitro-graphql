@@ -11,7 +11,9 @@ import { buildSchema, parse } from 'graphql'
 import { dirname, join, resolve } from 'pathe'
 import { FILE_INDEX_TS, LOG_TAG, SERVICE_DEFAULT } from '../constants'
 import { generateClientTypes as generateClientTypesUtil, loadGraphQLDocuments } from '../utils/client-codegen'
+import { loadFederationSupport } from '../utils/federation'
 import { writeFileIfNotExists } from '../utils/file-generator'
+import { generateOfetchTemplate } from '../utils/ofetch-templates'
 import {
   getClientUtilsConfig,
   getDefaultPaths,
@@ -22,19 +24,6 @@ import {
 } from '../utils/path-resolver'
 
 const logger = consola.withTag(LOG_TAG)
-
-/**
- * Load federation support for client-side schema building
- */
-async function loadFederationSupport() {
-  try {
-    const apolloSubgraph = await import('@apollo/subgraph')
-    return apolloSubgraph.buildSubgraphSchema
-  }
-  catch {
-    return false
-  }
-}
 
 /**
  * Check for old structure files and warn user about manual migration
@@ -265,55 +254,12 @@ function generateNuxtOfetchClient(
   }
 
   const isNuxt = nitro.options.framework?.name === 'nuxt'
-
-  // Different templates for Nuxt vs Nitro
-  // Nuxt: Use $fetch and useRequestHeaders (Nuxt composables)
-  // Nitro: Use ofetch import (works in all environments)
-  const ofetchContent = isNuxt
-    ? `// This file is auto-generated once by nitro-graphql for quick start
-// You can modify this file according to your needs
-import type { Requester } from './sdk'
-import { getSdk } from './sdk'
-
-export function createGraphQLClient(endpoint: string): Requester {
-  return async <R>(doc: string, vars?: any): Promise<R> => {
-    const headers = import.meta.server ? useRequestHeaders() : undefined
-
-    const result = await $fetch(endpoint, {
-      method: 'POST',
-      body: { query: doc, variables: vars },
-      headers: {
-        'Content-Type': 'application/json',
-        ...headers,
-      },
-    })
-
-    return result as R
-  }
-}
-
-export const $sdk = getSdk(createGraphQLClient('/api/graphql'))`
-    : `// This file is auto-generated once by nitro-graphql for quick start
-// You can modify this file according to your needs
-import type { Requester } from './sdk'
-import { ofetch } from 'ofetch'
-import { getSdk } from './sdk'
-
-export function createGraphQLClient(endpoint: string): Requester {
-  return async <R>(doc: string, vars?: any): Promise<R> => {
-    const result = await ofetch(endpoint, {
-      method: 'POST',
-      body: { query: doc, variables: vars },
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
-    return result as R
-  }
-}
-
-export const $sdk = getSdk(createGraphQLClient('/api/graphql'))`
+  const ofetchContent = generateOfetchTemplate({
+    serviceName,
+    isNuxt,
+    endpoint: '/api/graphql',
+    isExternal: false,
+  })
 
   writeFileIfNotExists(ofetchPath, ofetchContent, `${serviceName} ofetch.ts`)
 }

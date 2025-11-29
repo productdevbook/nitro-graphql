@@ -12,10 +12,10 @@
     "moduleResolution": "Bundler",
     "paths": {
       "#graphql/server": [
-        "./node_modules/.nitro/types/nitro-graphql-server.d.ts"
+        "./.graphql/nitro-graphql-server.d.ts"
       ],
       "#graphql/client": [
-        "./node_modules/.nitro/types/nitro-graphql-client.d.ts"
+        "./.graphql/nitro-graphql-client.d.ts"
       ],
       "#graphql/schema": [
         "./server/graphql/schema.ts"

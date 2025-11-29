@@ -12,36 +12,12 @@ import consola from 'consola'
 import { buildSchema, parse } from 'graphql'
 import { dirname, resolve } from 'pathe'
 import { LOG_TAG } from '../constants'
+import { loadFederationSupport } from '../utils/federation'
 import { getDefaultPaths, getTypesConfig, resolveFilePath, shouldGenerateTypes } from '../utils/path-resolver'
 import { generateTypes } from '../utils/server-codegen'
 import { validateNoDuplicateTypes } from './validation'
 
 const logger = consola.withTag(LOG_TAG)
-
-// Dynamic import for Apollo Federation support (optional dependency)
-type BuildSubgraphSchemaFn = ((options: any[]) => any) | false | null
-
-let buildSubgraphSchema: BuildSubgraphSchemaFn = null
-
-/**
- * Load Apollo Federation support if enabled
- */
-async function loadFederationSupport(): Promise<BuildSubgraphSchemaFn> {
-  if (buildSubgraphSchema !== null)
-    return buildSubgraphSchema
-
-  try {
-    // Try to import @apollo/subgraph for federation support
-    const apolloSubgraph = await import('@apollo/subgraph')
-    buildSubgraphSchema = apolloSubgraph.buildSubgraphSchema
-  }
-  catch {
-    // @apollo/subgraph is optional, continue without federation
-    buildSubgraphSchema = false
-  }
-
-  return buildSubgraphSchema
-}
 
 /**
  * Generate server-side GraphQL types

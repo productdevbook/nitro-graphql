@@ -15,6 +15,7 @@ import {
   loadGraphQLDocuments,
 } from '../utils/client-codegen'
 import { writeFileIfNotExists } from '../utils/file-generator'
+import { generateOfetchTemplate } from '../utils/ofetch-templates'
 import {
   getClientUtilsConfig,
   getDefaultPaths,
@@ -174,57 +175,13 @@ function generateExternalOfetchClient(
 
   // Only create ofetch file if it doesn't exist
   if (!existsSync(ofetchPath)) {
-    const capitalizedServiceName = serviceName.charAt(0).toUpperCase() + serviceName.slice(1)
     const isNuxt = nitro.options.framework?.name === 'nuxt'
-
-    // Different templates for Nuxt vs Nitro
-    // Nuxt: Use $fetch and useRequestHeaders (Nuxt composables)
-    // Nitro: Use ofetch import (works in all environments)
-    const ofetchContent = isNuxt
-      ? `// This file is auto-generated once by nitro-graphql for quick start
-// You can modify this file according to your needs
-import type { Sdk, Requester } from './sdk'
-import { getSdk } from './sdk'
-
-export function create${capitalizedServiceName}GraphQLClient(endpoint: string = '${endpoint}'): Requester {
-  return async <R>(doc: string, vars?: any): Promise<R> => {
-    const headers = import.meta.server ? useRequestHeaders() : undefined
-
-    const result = await $fetch(endpoint, {
-      method: 'POST',
-      body: { query: doc, variables: vars },
-      headers: {
-        'Content-Type': 'application/json',
-        ...headers,
-      },
+    const ofetchContent = generateOfetchTemplate({
+      serviceName,
+      isNuxt,
+      endpoint,
+      isExternal: true,
     })
-
-    return result as R
-  }
-}
-
-export const $${serviceName}Sdk: Sdk = getSdk(create${capitalizedServiceName}GraphQLClient())`
-      : `// This file is auto-generated once by nitro-graphql for quick start
-// You can modify this file according to your needs
-import type { Sdk, Requester } from './sdk'
-import { ofetch } from 'ofetch'
-import { getSdk } from './sdk'
-
-export function create${capitalizedServiceName}GraphQLClient(endpoint: string = '${endpoint}'): Requester {
-  return async <R>(doc: string, vars?: any): Promise<R> => {
-    const result = await ofetch(endpoint, {
-      method: 'POST',
-      body: { query: doc, variables: vars },
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
-    return result as R
-  }
-}
-
-export const $${serviceName}Sdk: Sdk = getSdk(create${capitalizedServiceName}GraphQLClient())`
 
     writeFileIfNotExists(ofetchPath, ofetchContent, `${serviceName} external ofetch.ts`)
   }

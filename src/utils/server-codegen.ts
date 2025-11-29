@@ -1,4 +1,3 @@
-import type { Source } from '@graphql-tools/utils'
 import type { GraphQLSchema } from 'graphql'
 import type { CodegenServerConfig, NitroGraphQLOptions } from '../types'
 import { codegen } from '@graphql-codegen/core'
@@ -8,28 +7,8 @@ import { printSchemaWithDirectives } from '@graphql-tools/utils'
 import consola from 'consola'
 import { defu } from 'defu'
 import { parse } from 'graphql'
-import { CurrencyResolver, DateTimeISOResolver, DateTimeResolver, JSONObjectResolver, JSONResolver, NonEmptyStringResolver, UUIDResolver } from 'graphql-scalars'
-
-/**
- * Plugin to add prepend comments to generated files
- */
-function pluginContent(
-  _schema: GraphQLSchema,
-  _documents: Source[],
-  _config: Record<string, unknown> | undefined,
-  _info: Record<string, unknown> | undefined,
-) {
-  return {
-    prepend: [
-      '// THIS FILE IS GENERATED, DO NOT EDIT!',
-      '/* eslint-disable eslint-comments/no-unlimited-disable */',
-      '/* tslint:disable */',
-      '/* eslint-disable */',
-      '/* prettier-ignore */',
-    ],
-    content: '',
-  }
-}
+import { DEFAULT_GRAPHQL_SCALARS } from '../constants/scalars'
+import { pluginContent } from './codegen-plugin'
 
 export async function generateTypes(
   selectFremework: string,
@@ -38,19 +17,7 @@ export async function generateTypes(
   outputPath?: string,
 ) {
   const defaultConfig: CodegenServerConfig = {
-    scalars: {
-      DateTime: DateTimeResolver.extensions.codegenScalarType as string,
-      DateTimeISO: DateTimeISOResolver.extensions.codegenScalarType as string,
-      UUID: UUIDResolver.extensions.codegenScalarType as string,
-      JSON: JSONResolver.extensions.codegenScalarType as string,
-      JSONObject: JSONObjectResolver.extensions.codegenScalarType as string,
-      NonEmptyString: NonEmptyStringResolver.extensions.codegenScalarType as string,
-      Currency: CurrencyResolver.extensions.codegenScalarType as string,
-      File: {
-        input: 'File',
-        output: 'File',
-      },
-    },
+    scalars: DEFAULT_GRAPHQL_SCALARS,
     defaultScalarType: 'unknown',
     defaultMapper: `ResolverReturnType<{T}>`,
     contextType: 'nitro/h3#H3Event',
