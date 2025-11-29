@@ -6,6 +6,7 @@
 import type { Nitro } from 'nitro/types'
 import type { ExternalGraphQLService } from '../types'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import consola from 'consola'
 import { dirname } from 'pathe'
 import {
   downloadAndSaveSchema,

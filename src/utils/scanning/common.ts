@@ -23,7 +23,7 @@ export async function scanDir(
   nitro: Nitro,
   dir: string,
   name: string,
-  globPattern = GLOB_SCAN_PATTERN,
+  globPattern: string = GLOB_SCAN_PATTERN,
 ): Promise<FileInfo[]> {
   const fileNames = await glob(join(name, globPattern), {
     cwd: dir,
