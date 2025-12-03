@@ -80,7 +80,7 @@
     "build": "tsdown",
     "dev": "tsdown --watch",
     "bumpp": "bumpp package.json",
-    "release": "pnpm build && pnpm bumpp && pnpm publish --no-git-checks --access public",
+    "release": "pnpm build && pnpm bumpp",
     "playground:nitro": "cd playgrounds/nitro && pnpm install && pnpm dev",
     "playground:nuxt": "cd playgrounds/nuxt && pnpm install && pnpm dev",
     "playground:federation": "cd playgrounds/federation && pnpm install && pnpm dev",
