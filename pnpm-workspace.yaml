@@ -4,29 +4,30 @@ packages:
 
 catalog:
   '@antfu/eslint-config': ^6.2.0
-  '@apollo/server': ^5.1.0
+  '@apollo/server': ^5.2.0
   '@apollo/subgraph': ^2.12.1
   '@graphql-codegen/core': ^5.0.0
   '@graphql-codegen/import-types-preset': ^3.0.1
-  '@graphql-codegen/typescript': ^5.0.4
+  '@graphql-codegen/typescript': ^5.0.6
   '@graphql-codegen/typescript-generic-sdk': ^4.0.2
-  '@graphql-codegen/typescript-operations': ^5.0.4
-  '@graphql-codegen/typescript-resolvers': ^5.1.2
-  '@graphql-tools/graphql-file-loader': ^8.1.6
-  '@graphql-tools/load': ^8.1.6
+  '@graphql-codegen/typescript-operations': ^5.0.6
+  '@graphql-codegen/typescript-resolvers': ^5.1.4
+  '@graphql-tools/graphql-file-loader': ^8.1.8
+  '@graphql-tools/load': ^8.1.7
   '@graphql-tools/load-files': ^7.0.1
-  '@graphql-tools/merge': ^9.1.5
-  '@graphql-tools/schema': ^10.0.29
-  '@graphql-tools/url-loader': ^9.0.4
-  '@graphql-tools/utils': ^10.10.3
+  '@graphql-tools/merge': ^9.1.6
+  '@graphql-tools/schema': ^10.0.30
+  '@graphql-tools/url-loader': ^9.0.5
+  '@graphql-tools/utils': ^10.11.0
   '@nuxt/kit': ^4.2.1
   '@nuxt/schema': ^4.2.1
   '@nuxtjs/tailwindcss': 7.0.0-beta.1
   '@types/node': ^24.10.1
   '@vitejs/devtools': ^0.0.0-alpha.16
-  bumpp: ^10.3.1
+  '@vitest/ui': ^4.0.14
+  bumpp: ^10.3.2
   changelogen: ^0.6.2
-  chokidar: ^4.0.3
+  chokidar: ^5.0.0
   consola: ^3.4.2
   crossws: ^0.4.1
   defu: ^6.1.4
@@ -39,17 +40,18 @@ catalog:
   nitro: npm:nitro-nightly@latest
   nuxt: ^4.2.1
   ohash: ^2.0.11
-  oxc-parser: ^0.98.0
+  oxc-parser: ^0.99.0
   pathe: ^2.0.3
   tailwindcss: ^4.1.17
   tinyglobby: ^0.2.15
-  tsdown: ^0.16.6
+  tsdown: ^0.16.8
   typescript: ^5.9.3
   vite: npm:rolldown-vite@latest
   vitepress-plugin-llms: ^1.9.3
-  vue: ^3.5.24
+  vitest: ^4.0.14
+  vue: ^3.5.25
   vue-router: ^4.6.3
-  zod: ^4.1.12
+  zod: ^4.1.13
 
 ignoreWorkspaceRootCheck: true
 

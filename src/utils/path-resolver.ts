@@ -177,7 +177,7 @@ export function getClientUtilsConfig(nitro: Nitro): ClientUtilsConfig {
 /**
  * Check if SDK files should be generated (category-level check)
  */
-export function shouldGenerateSDK(nitro: Nitro): boolean {
+export function shouldGenerateSdk(nitro: Nitro): boolean {
   const sdkConfig = nitro.options.graphql?.sdk
 
   // If sdk is explicitly false, skip all

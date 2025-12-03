@@ -7,27 +7,8 @@ import { printSchemaWithDirectives } from '@graphql-tools/utils'
 import consola from 'consola'
 import { defu } from 'defu'
 import { parse } from 'graphql'
-import { CurrencyResolver, DateTimeISOResolver, DateTimeResolver, JSONObjectResolver, JSONResolver, NonEmptyStringResolver, UUIDResolver } from 'graphql-scalars'
-// import {
-//   CurrencyResolver,
-//   DateTimeResolver,
-//   JSONResolver,
-//   NonEmptyStringResolver,
-//   UUIDResolver,
-// } from 'graphql-scalars'
-
-function pluginContent(_schema: any, _documents: any, _config: any, _info: any) {
-  return {
-    prepend: [
-      '// THIS FILE IS GENERATED, DO NOT EDIT!',
-      '/* eslint-disable eslint-comments/no-unlimited-disable */',
-      '/* tslint:disable */',
-      '/* eslint-disable */',
-      '/* prettier-ignore */',
-    ],
-    content: '',
-  }
-}
+import { DEFAULT_GRAPHQL_SCALARS } from '../constants/scalars'
+import { pluginContent } from './codegen-plugin'
 
 export async function generateTypes(
   selectFremework: string,
@@ -36,19 +17,7 @@ export async function generateTypes(
   outputPath?: string,
 ) {
   const defaultConfig: CodegenServerConfig = {
-    scalars: {
-      DateTime: DateTimeResolver.extensions.codegenScalarType as any,
-      DateTimeISO: DateTimeISOResolver.extensions.codegenScalarType as any,
-      UUID: UUIDResolver.extensions.codegenScalarType as any,
-      JSON: JSONResolver.extensions.codegenScalarType as any,
-      JSONObject: JSONObjectResolver.extensions.codegenScalarType as any,
-      NonEmptyString: NonEmptyStringResolver.extensions.codegenScalarType as any,
-      Currency: CurrencyResolver.extensions.codegenScalarType as any,
-      File: {
-        input: 'File',
-        output: 'File',
-      },
-    },
+    scalars: DEFAULT_GRAPHQL_SCALARS,
     defaultScalarType: 'unknown',
     defaultMapper: `ResolverReturnType<{T}>`,
     contextType: 'nitro/h3#H3Event',
@@ -148,7 +117,7 @@ type ResolverReturnTypeObject<T extends object> =
       typescript: typescriptPlugin,
       typescriptResolvers: typescriptResolversPlugin,
     },
-  }).catch((e: any) => {
+  }).catch((e: unknown) => {
     consola.withTag('graphql').error('Error generating types:', e)
     return ''
   })
