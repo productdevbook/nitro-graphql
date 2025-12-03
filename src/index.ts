@@ -341,6 +341,7 @@ export default defineNitroModule({
           'defineQuery',
           'defineSubscription',
           'defineType',
+          'defineField',
           'defineGraphQLConfig',
           'defineSchema',
           'defineDirective',

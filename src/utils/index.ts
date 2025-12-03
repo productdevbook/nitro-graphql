@@ -75,7 +75,7 @@ export async function scanResolvers(nitro: Nitro) {
   const files = await scanFiles(nitro, 'graphql', '**/*.resolver.{ts,js}')
 
   const exportName: GenImport[] = []
-  const VALID_DEFINE_FUNCTIONS = ['defineResolver', 'defineQuery', 'defineMutation', 'defineType', 'defineSubscription', 'defineDirective']
+  const VALID_DEFINE_FUNCTIONS = ['defineResolver', 'defineQuery', 'defineMutation', 'defineType', 'defineField', 'defineSubscription', 'defineDirective']
 
   for (const file of files) {
     try {
@@ -133,6 +133,14 @@ export async function scanResolvers(nitro: Nitro) {
                 }
 
                 if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineType') {
+                  exports.imports.push({
+                    name: decl.id.name,
+                    type: 'type',
+                    as: `_${hash(decl.id.name + file.fullPath).replace(/-/g, '').slice(0, 6)}`,
+                  })
+                }
+
+                if (decl.init.callee.type === 'Identifier' && decl.init.callee.name === 'defineField') {
                   exports.imports.push({
                     name: decl.id.name,
                     type: 'type',

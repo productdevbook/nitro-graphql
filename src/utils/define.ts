@@ -55,7 +55,16 @@ export function defineSubscription(
   }
 }
 
+/**
+ * @deprecated Use `defineField` instead. This function will be removed in a future version.
+ */
 export function defineType(
+  resolvers: Resolvers,
+): Resolvers {
+  return resolvers
+}
+
+export function defineField(
   resolvers: Resolvers,
 ): Resolvers {
   return resolvers
