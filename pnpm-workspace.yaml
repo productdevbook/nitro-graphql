@@ -3,7 +3,7 @@ packages:
   - examples/**
 
 catalog:
-  '@antfu/eslint-config': ^6.2.0
+  '@antfu/eslint-config': ^6.3.0
   '@apollo/server': ^5.2.0
   '@apollo/subgraph': ^2.12.1
   '@graphql-codegen/core': ^5.0.0
@@ -24,7 +24,7 @@ catalog:
   '@nuxtjs/tailwindcss': 7.0.0-beta.1
   '@types/node': ^24.10.1
   '@vitejs/devtools': ^0.0.0-alpha.16
-  '@vitest/ui': ^4.0.14
+  '@vitest/ui': ^4.0.15
   bumpp: ^10.3.2
   changelogen: ^0.6.2
   chokidar: ^5.0.0
@@ -40,7 +40,7 @@ catalog:
   nitro: npm:nitro-nightly@latest
   nuxt: ^4.2.1
   ohash: ^2.0.11
-  oxc-parser: ^0.99.0
+  oxc-parser: ^0.101.0
   pathe: ^2.0.3
   tailwindcss: ^4.1.17
   tinyglobby: ^0.2.15
@@ -48,7 +48,7 @@ catalog:
   typescript: ^5.9.3
   vite: npm:rolldown-vite@latest
   vitepress-plugin-llms: ^1.9.3
-  vitest: ^4.0.14
+  vitest: ^4.0.15
   vue: ^3.5.25
   vue-router: ^4.6.3
   zod: ^4.1.13
