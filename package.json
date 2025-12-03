@@ -5,6 +5,10 @@
   "packageManager": "pnpm@10.24.0",
   "description": "GraphQL integration for Nitro",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/productdevbook/nitro-graphql"
+  },
   "sideEffects": false,
   "imports": {
     "#graphql/server": {
