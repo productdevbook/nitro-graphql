@@ -29,7 +29,17 @@ jobs:
 
       - run: pnpm build
 
-      - run: npm publish --provenance --access public
+      - name: Determine npm tag
+        id: npm-tag
+        run: |
+          if [[ "${{ github.ref_name }}" == *"-beta"* ]] || [[ "${{ github.ref_name }}" == *"-rc"* ]] || [[ "${{ github.ref_name }}" == *"-alpha"* ]]; then
+            echo "tag=beta" >> $GITHUB_OUTPUT
+          else
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publish to npm
+        run: npm publish --provenance --access public --tag ${{ steps.npm-tag.outputs.tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
