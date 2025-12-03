@@ -2,7 +2,7 @@ import type { Nitro } from 'nitropack'
 import type { GenImport } from '../types'
 import { readFile } from 'node:fs/promises'
 import { hash } from 'ohash'
-import { parseAsync } from 'oxc-parser'
+import { parseSync } from 'oxc-parser'
 import { join, relative } from 'pathe'
 import { glob } from 'tinyglobby'
 
@@ -80,7 +80,7 @@ export async function scanResolvers(nitro: Nitro) {
   for (const file of files) {
     try {
       const fileContent = await readFile(file.fullPath, 'utf-8')
-      const parsed = await parseAsync(file.fullPath, fileContent)
+      const parsed = parseSync(file.fullPath, fileContent)
 
       const exports: GenImport = {
         imports: [],
@@ -199,7 +199,7 @@ export async function scanDirectives(nitro: Nitro) {
   const exportName: GenImport[] = []
   for (const file of files) {
     const fileContent = await readFile(file.fullPath, 'utf-8')
-    const parsed = await parseAsync(file.fullPath, fileContent)
+    const parsed = await parseSync(file.fullPath, fileContent)
 
     const exports: GenImport = {
       imports: [],
