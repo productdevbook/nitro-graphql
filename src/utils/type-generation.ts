@@ -1,5 +1,3 @@
-import type { Source } from '@graphql-tools/utils'
-
 import type { Nitro } from 'nitropack'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { buildSubgraphSchema } from '@apollo/subgraph'
@@ -9,7 +7,7 @@ import { printSchemaWithDirectives } from '@graphql-tools/utils'
 import consola from 'consola'
 import { buildSchema, parse } from 'graphql'
 import { basename, dirname, join, resolve } from 'pathe'
-import { downloadAndSaveSchema, extractSubscriptions, generateClientTypes, generateExternalClientTypes, loadExternalSchema, loadGraphQLDocuments } from './client-codegen'
+import { downloadAndSaveSchema, generateClientTypes, generateExternalClientTypes, loadExternalSchema, loadGraphQLDocuments } from './client-codegen'
 import { writeFileIfNotExists } from './file-generator'
 import {
   getClientUtilsConfig,
@@ -543,9 +541,6 @@ async function generateMainClientTypes(nitro: Nitro) {
 
     const externalServices = nitro.options.graphql?.externalServices || []
     generateGraphQLIndexFile(nitro, nitro.graphql.clientDir, externalServices)
-
-    // Note: Subscription composables are now generated directly in sdk.ts
-    // The generateNuxtSubscriptionComposables function is deprecated
   }
 }
 
@@ -643,145 +638,4 @@ async function generateExternalServicesTypes(nitro: Nitro) {
       consola.error(`[graphql:${service.name}] External service generation failed:`, error)
     }
   }
-}
-
-/**
- * Generate Vue composables for subscriptions (Nuxt only)
- */
-function generateNuxtSubscriptionComposables(
-  nitro: Nitro,
-  docs: Source[],
-  serviceName: string = 'default',
-): void {
-  // Only generate for Nuxt framework
-  if (nitro.options.framework?.name !== 'nuxt') {
-    return
-  }
-
-  const subscriptions = extractSubscriptions(docs)
-  if (subscriptions.length === 0) {
-    return
-  }
-
-  const placeholders = {
-    ...getDefaultPaths(nitro),
-    serviceName,
-  }
-
-  // Resolve composables.ts path
-  const composablesPath = resolveFilePath(
-    true, // Always enabled for Nuxt
-    true,
-    true,
-    '{clientGraphql}/{serviceName}/composables.ts',
-    placeholders,
-  )
-
-  if (!composablesPath) {
-    return
-  }
-
-  // Generate composables content
-  let content = `// THIS FILE IS GENERATED, DO NOT EDIT!
-/* eslint-disable eslint-comments/no-unlimited-disable */
-/* tslint:disable */
-/* eslint-disable */
-/* prettier-ignore */
-import { ref, onUnmounted } from 'vue'
-import type { Ref } from 'vue'
-import { subscription } from './sdk'
-import type { SubscriptionClient } from './subscribe'
-import type * as Types from '#graphql/client'
-
-export interface UseSubscriptionReturn<T> {
-  /** Reactive subscription data */
-  data: Ref<T | null>
-  /** Is subscription active */
-  isActive: Ref<boolean>
-  /** Last error */
-  error: Ref<Error | null>
-  /** Start subscription */
-  start: () => void
-  /** Stop subscription */
-  stop: () => void
-}
-
-`
-
-  for (const sub of subscriptions) {
-    const typeName = `Types.${sub.name}Subscription['${sub.fieldName}']`
-
-    if (sub.hasVariables) {
-      content += `export function use${sub.name}(
-  variables: Types.${sub.name}SubscriptionVariables,
-  options?: { immediate?: boolean }
-): UseSubscriptionReturn<${typeName}> {
-  const data = ref<${typeName} | null>(null) as Ref<${typeName} | null>
-  const isActive = ref(false)
-  const error = ref<Error | null>(null)
-  let sub: SubscriptionClient | null = null
-
-  function start() {
-    stop()
-    isActive.value = true
-    error.value = null
-    sub = subscription.${sub.methodName}(variables)
-      .onData((d) => { data.value = d })
-      .onError((e) => { error.value = e; isActive.value = false })
-      .start()
-  }
-
-  function stop() {
-    sub?.unsubscribe()
-    sub = null
-    isActive.value = false
-  }
-
-  if (options?.immediate) start()
-  onUnmounted(stop)
-
-  return { data, isActive, error, start, stop }
-}
-
-`
-    }
-    else {
-      content += `export function use${sub.name}(
-  options?: { immediate?: boolean }
-): UseSubscriptionReturn<${typeName}> {
-  const data = ref<${typeName} | null>(null) as Ref<${typeName} | null>
-  const isActive = ref(false)
-  const error = ref<Error | null>(null)
-  let sub: SubscriptionClient | null = null
-
-  function start() {
-    stop()
-    isActive.value = true
-    error.value = null
-    sub = subscription.${sub.methodName}()
-      .onData((d) => { data.value = d })
-      .onError((e) => { error.value = e; isActive.value = false })
-      .start()
-  }
-
-  function stop() {
-    sub?.unsubscribe()
-    sub = null
-    isActive.value = false
-  }
-
-  if (options?.immediate) start()
-  onUnmounted(stop)
-
-  return { data, isActive, error, start, stop }
-}
-
-`
-    }
-  }
-
-  // Write composables file
-  mkdirSync(dirname(composablesPath), { recursive: true })
-  writeFileSync(composablesPath, content, 'utf-8')
-  consola.success(`[nitro-graphql] Generated subscription composables at: ${composablesPath}`)
 }

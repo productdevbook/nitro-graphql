@@ -80,7 +80,8 @@
     "docs:build": "cd .docs && pnpm install && pnpm build",
     "docs:preview": "cd .docs && pnpm preview",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "@apollo/server": "^5.0.0",
