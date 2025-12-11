@@ -18,6 +18,12 @@ function devLog(message: string, ...args: any[]) {
     console.log(message, ...args)
 }
 
+// ============================================================================
+// Configuration
+// ============================================================================
+
+const DEFAULT_MAX_SUBSCRIPTIONS_PER_PEER = 20
+
 // GraphQL-WS protocol message types
 interface GraphQLWSMessage {
   id?: string
@@ -66,6 +72,18 @@ async function handleSubscribe(
 
   const subscriptions = peer.context.subscriptions as Map<string, AsyncIterator<any>>
   const connectionParams = peer.context.connectionParams as Record<string, unknown> | undefined
+
+  // Check for duplicate subscription ID
+  if (subscriptions.has(msg.id)) {
+    sendErrorMessage(peer, msg.id, [{ message: `Subscription with ID "${msg.id}" already exists` }])
+    return
+  }
+
+  // Check subscription limit
+  if (subscriptions.size >= DEFAULT_MAX_SUBSCRIPTIONS_PER_PEER) {
+    sendErrorMessage(peer, msg.id, [{ message: `Maximum subscriptions limit (${DEFAULT_MAX_SUBSCRIPTIONS_PER_PEER}) reached` }])
+    return
+  }
 
   try {
     const { query, variables, operationName } = msg.payload
@@ -217,14 +235,15 @@ async function createMergedSchema(): Promise<GraphQLSchema> {
   return schema
 }
 
-// Handler state
-let schema: GraphQLSchema
+// Handler state - using Promise lock to prevent race conditions
+let schemaPromise: Promise<GraphQLSchema> | null = null
 
-async function getSchema() {
-  if (!schema) {
-    schema = await createMergedSchema()
+async function getSchema(): Promise<GraphQLSchema> {
+  // Use Promise caching to prevent multiple concurrent schema creations
+  if (!schemaPromise) {
+    schemaPromise = createMergedSchema()
   }
-  return schema
+  return schemaPromise
 }
 
 export default defineWebSocketHandler({
