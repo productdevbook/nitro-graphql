@@ -81,6 +81,7 @@ export function createSubscription<TData = unknown, TVariables = Record<string, 
   let isConnected = false
   let retryCount = 0
   let subscriptionId: string | null = null
+  let intentionalClose = false
   const maxRetries = options.maxRetries ?? 5
 
   // ============================================================================
@@ -189,6 +190,12 @@ export function createSubscription<TData = unknown, TVariables = Record<string, 
       subscriptionId = null
       options.onDisconnected?.()
 
+      // Don't reconnect if intentionally closed
+      if (intentionalClose) {
+        intentionalClose = false
+        return
+      }
+
       // Reconnect with exponential backoff
       if (retryCount < maxRetries) {
         retryCount++
@@ -260,6 +267,7 @@ export function createSubscription<TData = unknown, TVariables = Record<string, 
   }
 
   function disconnect() {
+    intentionalClose = true
     if (ws) {
       if (subscriptionId) {
         sendMessage({ id: subscriptionId, type: 'complete' })
