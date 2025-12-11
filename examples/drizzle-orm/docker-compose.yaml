@@ -1,0 +1,60 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:17-alpine
+    container_name: drizzle-orm-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_dev_password
+      POSTGRES_DB: books
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U postgres -d books]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - app-network
+
+  # Nitro GraphQL Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: drizzle-orm-app
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      NITRO_BOOK_DATABASE_URL: postgresql://postgres:postgres_dev_password@postgres:5432/books
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+    command: >
+      sh -c "
+        echo 'Waiting for database to be ready...' &&
+        sleep 2 &&
+        echo 'Running database migrations...' &&
+        pnpm drizzle-kit migrate &&
+        echo 'Starting application...' &&
+        srvx .output/server/index.mjs
+      "
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge

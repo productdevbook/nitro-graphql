@@ -1,4 +1,16 @@
+---
+title: Resolver Functions
+category: API
+related:
+  - configuration
+  - type-definitions
+  - hooks
+description: Complete reference for all resolver definition utilities provided by Nitro GraphQL.
+---
+
 # Resolver Functions API Reference
+
+<FunctionInfo fn="resolverFunctions"/>
 
 Complete reference for all resolver definition utilities provided by Nitro GraphQL.
 
@@ -316,14 +328,14 @@ export const channelSubscriptions = defineSubscription({
 
 ---
 
-## defineType()
+## defineField()
 
 Define custom type resolvers (field resolvers for GraphQL types).
 
 ### Signature
 
 ```typescript
-function defineType(resolvers: Resolvers): Resolvers
+function defineField(resolvers: Resolvers): Resolvers
 ```
 
 ### Parameters
@@ -339,7 +351,7 @@ Returns the same `Resolvers` object with full type safety.
 #### Basic Type Resolver
 
 ```typescript
-export const userTypeResolvers = defineType({
+export const userTypeResolvers = defineField({
   User: {
     fullName: (parent) => {
       return `${parent.firstName} ${parent.lastName}`
@@ -359,7 +371,7 @@ export const userTypeResolvers = defineType({
 #### Relationship Resolvers
 
 ```typescript
-export const postTypeResolvers = defineType({
+export const postTypeResolvers = defineField({
   Post: {
     author: async (parent, _args, context) => {
       return await context.db.users.findById(parent.authorId)
@@ -385,7 +397,7 @@ export const postTypeResolvers = defineType({
 #### Computed Fields
 
 ```typescript
-export const productTypeResolvers = defineType({
+export const productTypeResolvers = defineField({
   Product: {
     finalPrice: (parent) => {
       if (parent.discount) {
@@ -753,7 +765,7 @@ The context parameter has the type `H3Event` from h3, augmented with your custom
 
 ```typescript
 // server/graphql/context.ts
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     db: Database
     auth?: {
@@ -845,3 +857,14 @@ export const userQueries: QueryResolvers = defineQuery({
   }
 })
 ```
+
+---
+
+## Source
+<SourceLinks fn="resolverFunctions"/>
+
+## Contributors
+<Contributors fn="resolverFunctions"/>
+
+## Changelog
+<Changelog fn="resolverFunctions"/>

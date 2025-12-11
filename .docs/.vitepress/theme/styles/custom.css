@@ -1,259 +1,44 @@
 /**
- * Custom Styles for Nitro GraphQL Documentation
+ * Custom Styles - Based on VueUse
  */
 
-/* Enhanced Code Blocks */
-.vp-doc div[class*='language-'] {
-  border-radius: 8px;
-  transition: background-color 0.3s ease;
+html.dark {
+  color-scheme: dark;
 }
 
-/* Copy Button Enhancement */
-.vp-doc div[class*='language-'] button.copy {
-  transition: opacity 0.3s ease;
+.vp-doc h2 {
+  border-top: 0;
+  margin-top: 10px;
 }
 
-/* Dark mode code block border */
-.dark .vp-doc div[class*='language-'] {
-  border: 1px solid var(--vp-c-divider);
+.VPMenuLink .link {
+  line-height: 28px !important;
 }
 
-/* Custom Badges */
-.custom-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
+.VPSidebarGroup .link {
+  padding: 3px 0 !important;
+}
+
+.vp-doc a:has(> code) {
+  text-decoration: none;
+  color: var(--vp-c-brand-1);
+}
+
+.vp-doc a:has(> code):hover {
+  text-decoration: underline;
+}
+
+#app a:focus-visible,
+#app button:focus-visible,
+#app input[type='checkbox']:focus-visible {
+  --at-apply: outline-1 outline-primary ring-2 ring-primary;
+}
+
+.custom-block-title {
+  opacity: 0.5;
   font-size: 12px;
-  font-weight: 600;
-  line-height: 1.5;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.custom-badge.new {
-  background-color: var(--vp-c-accent-soft);
-  color: var(--vp-c-accent-1);
-}
-
-.custom-badge.beta {
-  background-color: var(--vp-c-purple-soft, rgba(139, 92, 246, 0.14));
-  color: var(--vp-c-purple-1);
-}
-
-.custom-badge.deprecated {
-  background-color: var(--vp-c-warning-soft);
-  color: var(--vp-c-warning-1);
-}
-
-/* Dark mode badges */
-.dark .custom-badge {
-  border: 1px solid currentColor;
-}
-
-.dark .custom-badge.new {
-  background-color: rgba(0, 245, 150, 0.15);
-  border-color: var(--vp-c-accent-1);
-}
-
-.dark .custom-badge.beta {
-  background-color: rgba(167, 139, 250, 0.15);
-  border-color: var(--vp-c-purple-1);
-}
-
-.dark .custom-badge.deprecated {
-  background-color: rgba(234, 179, 8, 0.15);
-  border-color: var(--vp-c-warning-1);
-}
-
-/* Feature Grid Enhancements */
-.VPFeature {
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-}
-
-.VPFeature:hover {
-  transform: translateY(-2px);
-}
-
-/* Dark mode feature cards */
-.dark .VPFeature {
-  border: 1px solid var(--vp-c-divider);
-}
-
-.dark .VPFeature:hover {
-  border-color: var(--vp-c-brand-1);
-  box-shadow: 0 8px 24px rgba(225, 0, 152, 0.15);
-}
-
-/* Hero Section Enhancement */
-.VPHero .name {
-  background: var(--vp-home-hero-name-background);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Custom Table Styles */
-.vp-doc table {
-  width: 100%;
-  overflow-x: auto;
-}
-
-.vp-doc tr {
-  transition: background-color 0.2s ease;
-}
-
-.vp-doc tr:hover {
-  background-color: var(--vp-c-bg-soft);
-}
-
-/* Dark mode table enhancements */
-.dark .vp-doc table {
-  border-color: var(--vp-c-divider);
-}
-
-.dark .vp-doc th {
-  background-color: var(--vp-c-bg-soft);
-  border-color: var(--vp-c-divider);
-}
-
-.dark .vp-doc td {
-  border-color: var(--vp-c-divider);
-}
-
-/* Info Boxes */
-.info-box {
-  padding: 16px;
-  border-left: 4px solid var(--vp-c-brand-1);
-  background-color: var(--vp-c-brand-soft);
-  border-radius: 8px;
-  margin: 16px 0;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
-.info-box.tip {
-  border-left-color: var(--vp-c-tip-1);
-  background-color: var(--vp-c-tip-soft);
-}
-
-.info-box.warning {
-  border-left-color: var(--vp-c-warning-1);
-  background-color: var(--vp-c-warning-soft);
-}
-
-.info-box.danger {
-  border-left-color: var(--vp-c-danger-1);
-  background-color: var(--vp-c-danger-soft);
-}
-
-/* Dark mode enhancements for info boxes */
-.dark .info-box {
-  border-left-width: 3px;
-}
-
-/* Code Group Tabs - Let VitePress handle these */
-
-/* Inline Code Enhancement */
-.vp-doc :not(pre) > code {
-  font-weight: 500;
-}
-
-/* Navigation Enhancement */
-.VPNavBarTitle .title {
-  font-weight: 700;
-}
-
-/* Sidebar Enhancement - Let VitePress handle these */
-
-/* Custom Animations */
-@keyframes gradient-shift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-.animated-gradient {
-  background: linear-gradient(270deg, var(--vp-c-brand-1), var(--vp-c-purple-1), var(--vp-c-accent-1));
-  background-size: 600% 600%;
-  animation: gradient-shift 8s ease infinite;
-}
-
-/* Responsive Images */
-.vp-doc img {
-  border-radius: 8px;
-  max-width: 100%;
-  height: auto;
-  transition: opacity 0.3s ease;
-}
-
-/* Dark mode image adjustments */
-.dark .vp-doc img {
-  opacity: 0.9;
-}
-
-.dark .vp-doc img:hover {
-  opacity: 1;
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--vp-c-divider);
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--vp-c-text-3);
-}
-
-/* Dark mode scrollbar */
-.dark ::-webkit-scrollbar-thumb {
-  background: var(--vp-c-divider);
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: var(--vp-c-brand-1);
-}
-
-/* Responsive Breakpoints */
-@media (max-width: 768px) {
-  .vp-doc table {
-    font-size: 14px;
-  }
-
-  .info-box {
-    padding: 12px;
-  }
-}
-
-@media (max-width: 480px) {
-  .vp-doc :not(pre) > code {
-    font-size: 0.875em;
-  }
-}
-
-/* Print Styles */
-@media print {
-  .VPNav,
-  .VPSidebar,
-  .VPFooter {
-    display: none;
-  }
-
-  .vp-doc {
-    max-width: 100%;
-  }
+  margin-top: -5px !important;
+  margin-bottom: -10px !important;
+  filter: saturate(0.6);
+  letter-spacing: 0.5px;
 }

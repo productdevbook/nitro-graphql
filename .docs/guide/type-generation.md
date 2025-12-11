@@ -1,4 +1,11 @@
+---
+title: Type Generation
+category: Guide
+---
+
 # Type Generation
+
+<FunctionInfo fn="typeGeneration"/>
 
 Automatic TypeScript type generation for server-side resolvers and client-side queries.
 
@@ -105,11 +112,12 @@ export interface Resolvers {
 In resolvers:
 
 ```ts
+import { defineMutation } from 'nitro-graphql/utils'
 import type { CreateUserInput, User } from '#graphql/server'
 
 export const userMutations = defineMutation({
   createUser: async (
-    _,
+    parent,
     { input }: { input: CreateUserInput }
   ): Promise<User> => {
     const user: User = {
@@ -184,6 +192,7 @@ In Vue components:
 <script setup lang="ts">
 import type { GetUsersQuery } from '#graphql/client'
 
+// useGraphql() is auto-imported in Nuxt
 const { GetUsers } = useGraphql()
 
 // Fully typed response
@@ -244,6 +253,7 @@ Usage:
 <script setup lang="ts">
 import type { GetUserQuery, GetUserQueryVariables } from '#graphql/client'
 
+// useGraphql() is auto-imported in Nuxt
 const { GetUser } = useGraphql()
 
 const userId = ref('1')
@@ -287,6 +297,7 @@ export interface CreateUserMutation {
 Usage:
 
 ```ts
+// useGraphql() is auto-imported in Nuxt
 const { CreateUser } = useGraphql()
 
 const newUser = await CreateUser({
@@ -304,6 +315,8 @@ const newUser = await CreateUser({
 
 ```ts
 // nuxt.config.ts
+import { defineNuxtConfig } from 'nuxt/config'
+
 export default defineNuxtConfig({
   nitro: {
     graphql: {
@@ -352,6 +365,7 @@ query GetRepository($owner: String!, $name: String!) {
 <script setup lang="ts">
 import type { GetRepositoryQuery } from '#graphql/client/github'
 
+// useGraphql() is auto-imported in Nuxt
 const { github } = useGraphql()
 
 const { data } = await useAsyncData<GetRepositoryQuery>(
@@ -378,6 +392,8 @@ const { data } = await useAsyncData<GetRepositoryQuery>(
 
 ```ts
 // nitro.config.ts
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
   graphql: {
     framework: 'graphql-yoga',
@@ -393,6 +409,8 @@ export default defineNitroConfig({
 ### Custom Type Paths
 
 ```ts
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
   graphql: {
     framework: 'graphql-yoga',
@@ -412,6 +430,7 @@ export default defineNitroConfig({
 Full type safety in resolvers:
 
 ```ts
+import { defineResolver } from 'nitro-graphql/utils'
 import type { Resolvers } from '#graphql/server'
 
 // Fully typed resolver map
@@ -443,7 +462,7 @@ Extend context with custom types:
 
 ```ts
 // server/graphql/context.ts
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     db: Database
     auth?: {
@@ -457,8 +476,10 @@ declare module 'h3' {
 Use in resolvers:
 
 ```ts
+import { defineQuery } from 'nitro-graphql/utils'
+
 export const userQueries = defineQuery({
-  users: async (_, __, context) => {
+  users: async (parent, args, context) => {
     // context.db is typed
     // context.auth is typed
     return await context.db.user.findMany()
@@ -471,9 +492,10 @@ export const userQueries = defineQuery({
 For field resolvers, use partial parent types:
 
 ```ts
+import { defineField } from 'nitro-graphql/utils'
 import type { Post, User } from '#graphql/server'
 
-export const postTypes = defineType({
+export const postTypes = defineField({
   Post: {
     author: async (parent: Pick<Post, 'authorId'>) => {
       // parent only needs authorId field
@@ -641,3 +663,17 @@ This enables:
   }
 }
 </style>
+
+---
+
+## Source
+
+<SourceLinks fn="typeGeneration"/>
+
+## Contributors
+
+<Contributors fn="typeGeneration"/>
+
+## Changelog
+
+<Changelog fn="typeGeneration"/>

@@ -1,4 +1,11 @@
+---
+title: Error Handling
+category: Guide
+---
+
 # Error Handling
+
+<FunctionInfo fn="errorHandling"/>
 
 Custom errors, error formatting, and error codes in GraphQL.
 
@@ -8,7 +15,7 @@ Custom errors, error formatting, and error codes in GraphQL.
 import { GraphQLError } from 'graphql'
 
 export const userQueries = defineQuery({
-  user: async (_, { id }, context) => {
+  user: async (parent, { id }, context) => {
     const user = await context.db.user.findUnique({ where: { id } })
 
     if (!user) {
@@ -74,7 +81,7 @@ export default defineGraphQLConfig({
 
 ```ts
 export const userMutations = defineMutation({
-  createUser: async (_, { input }) => {
+  createUser: async (parent, { input }) => {
     const errors = validateUserInput(input)
 
     if (errors.length > 0) {
@@ -132,3 +139,17 @@ throw new ValidationError('Email is invalid', 'email')
 - [Resolvers](/guide/resolvers)
 - [Custom Directives](/guide/custom-directives)
 - [Testing](/guide/testing)
+
+---
+
+## Source
+
+<SourceLinks fn="errorHandling"/>
+
+## Contributors
+
+<Contributors fn="errorHandling"/>
+
+## Changelog
+
+<Changelog fn="errorHandling"/>

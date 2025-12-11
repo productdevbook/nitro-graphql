@@ -1,8 +1,18 @@
 import { defineConfig } from 'vitepress'
+import { withMermaid } from 'vitepress-plugin-mermaid'
 import llmstxt from 'vitepress-plugin-llms'
+import { join } from 'node:path'
+import { ContributorsPlugin, ChangelogPlugin, MetadataPlugin } from './plugins'
+
+// Pass metadata file paths instead of loaded data
+// This allows plugins to load data lazily at build time
+const metadataDir = join(__dirname, '../metadata')
+const metadataIndexPath = join(metadataDir, 'index.json')
+const contributorsDataPath = join(metadataDir, 'contributors.json')
+const changelogDataPath = join(metadataDir, 'changelog.json')
 
 // https://vitepress.dev/reference/site-config
-export default defineConfig({
+export default withMermaid(defineConfig({
   title: 'Nitro GraphQL',
   description: 'The easiest way to add GraphQL to any Nitro application. Auto-discovery, type generation, and zero config setup.',
   lang: 'en-US',
@@ -11,7 +21,12 @@ export default defineConfig({
   ignoreDeadLinks: true,
 
   vite: {
-    plugins: [llmstxt()],
+    plugins: [
+      llmstxt(),
+      MetadataPlugin(metadataIndexPath),
+      ContributorsPlugin(contributorsDataPath),
+      ChangelogPlugin(changelogDataPath),
+    ],
   },
 
   head: [
@@ -35,10 +50,8 @@ export default defineConfig({
     nav: [
       { text: 'Guide', link: '/guide/introduction', activeMatch: '/guide/' },
       { text: 'API', link: '/api/configuration', activeMatch: '/api/' },
-      { text: 'Recipes', link: '/recipes/crud-operations', activeMatch: '/recipes/' },
-      { text: 'Examples', link: '/examples/nitro-basic', activeMatch: '/examples/' },
       {
-        text: 'v1.5.1',
+        text: 'v2.0.0-beta.26',
         items: [
           { text: 'Changelog', link: 'https://github.com/productdevbook/nitro-graphql/releases' },
           { text: 'Contributing', link: '/contributing/development-setup' },
@@ -103,24 +116,6 @@ export default defineConfig({
           ],
         },
       ],
-      '/recipes/': [
-        {
-          text: 'Recipes',
-          items: [
-            { text: 'CRUD Operations', link: '/recipes/crud-operations' },
-            { text: 'Authentication', link: '/recipes/authentication' },
-            { text: 'Authorization', link: '/recipes/authorization' },
-            { text: 'Database Integration', link: '/recipes/database-integration' },
-            { text: 'Pagination', link: '/recipes/pagination' },
-            { text: 'File Uploads', link: '/recipes/file-uploads' },
-            { text: 'Real-time Data', link: '/recipes/real-time-data' },
-            { text: 'External API Integration', link: '/recipes/external-api-integration' },
-            { text: 'Caching Strategies', link: '/recipes/caching-strategies' },
-            { text: 'Rate Limiting', link: '/recipes/rate-limiting' },
-            { text: 'Error Tracking', link: '/recipes/error-tracking' },
-          ],
-        },
-      ],
       '/api/': [
         {
           text: 'API Reference',
@@ -131,19 +126,6 @@ export default defineConfig({
             { text: 'Virtual Imports', link: '/api/virtual-imports' },
             { text: 'Apollo Utilities', link: '/api/apollo-utilities' },
             { text: 'Hooks', link: '/api/hooks' },
-          ],
-        },
-      ],
-      '/examples/': [
-        {
-          text: 'Examples',
-          items: [
-            { text: 'Basic Nitro Server', link: '/examples/nitro-basic' },
-            { text: 'Full-Stack Nuxt App', link: '/examples/nuxt-fullstack' },
-            { text: 'Federation Subgraph', link: '/examples/federation-subgraph' },
-            { text: 'External Services', link: '/examples/external-services' },
-            { text: 'E-Commerce API', link: '/examples/e-commerce-api' },
-            { text: 'Social App', link: '/examples/social-app' },
           ],
         },
       ],
@@ -230,4 +212,4 @@ export default defineConfig({
   sitemap: {
     hostname: 'https://nitro-graphql.dev',
   },
-})
+}))

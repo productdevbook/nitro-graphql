@@ -1,4 +1,10 @@
+---
+category: Troubleshooting
+---
+
 # Performance Issues
+
+<FunctionInfo fn="performanceIssues"/>
 
 Troubleshooting and optimizing GraphQL performance in Nitro GraphQL.
 
@@ -25,7 +31,7 @@ Troubleshooting and optimizing GraphQL performance in Nitro GraphQL.
 The N+1 problem occurs when fetching related data:
 ```typescript
 // ❌ N+1 Problem - Queries database for each user
-export const postResolvers = defineType('Post', {
+export const postResolvers = defineField('Post', {
   author: async (parent) => {
     // This runs once per post!
     return await db.user.findUnique({ where: { id: parent.authorId } })
@@ -58,7 +64,7 @@ export function createUserLoader() {
 // server/graphql/context.ts
 import { createUserLoader } from './loaders/user.loader'
 
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     loaders: {
       user: ReturnType<typeof createUserLoader>
@@ -82,7 +88,7 @@ export default defineGraphQLConfig({
 
 ```typescript
 // ✅ Optimized - Batches database queries
-export const postResolvers = defineType('Post', {
+export const postResolvers = defineField('Post', {
   author: async (parent, _, context) => {
     return await context.loaders.user.load(parent.authorId)
   }
@@ -400,7 +406,7 @@ pnpm build
 4. **Optimize Dependencies:**
 ```typescript
 // Instead of:
-import { defineMutation, defineQuery, defineType } from 'nitro-graphql'
+import { defineMutation, defineQuery, defineField } from 'nitro-graphql'
 // Only import what you need
 import { defineQuery } from 'nitro-graphql/define'
 ```
@@ -705,3 +711,14 @@ useResponseCache({
 - [Type Generation Issues](/troubleshooting/type-generation-issues) - Type-specific problems
 - [Debug Mode](/troubleshooting/debug-mode) - Using the debug dashboard
 - [Performance Guide](/guide/performance) - Best practices
+
+---
+
+## Source
+<SourceLinks fn="performanceIssues"/>
+
+## Contributors
+<Contributors fn="performanceIssues"/>
+
+## Changelog
+<Changelog fn="performanceIssues"/>

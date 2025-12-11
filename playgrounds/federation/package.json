@@ -2,7 +2,7 @@
   "name": "nitro-graphql-federation-playground",
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@10.21.0",
+  "packageManager": "pnpm@10.24.0",
   "scripts": {
     "build": "nitro build",
     "build:apollo": "nitro build --config nitro.config.apollo.ts",
@@ -16,7 +16,6 @@
     "@apollo/server": "catalog:",
     "@apollo/subgraph": "catalog:",
     "graphql": "catalog:",
-    "h3": "catalog:",
     "nitro": "catalog:",
     "nitro-graphql": "link:../"
   }

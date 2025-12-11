@@ -1,4 +1,10 @@
+---
+category: Contributing
+---
+
 # Documentation
+
+<FunctionInfo fn="documentation"/>
 
 This guide covers how to contribute to Nitro GraphQL documentation, including writing guides, API references, and examples.
 
@@ -618,15 +624,27 @@ yarn add nitro-graphql
 
 ```typescript [Nitro]
 // nitro.config.ts
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
-  modules: ['nitro-graphql']
+  modules: [
+    graphql({
+      framework: 'graphql-yoga',
+    }),
+  ],
 })
 ```
 
 ```typescript [Nuxt]
 // nuxt.config.ts
 export default defineNuxtConfig({
-  modules: ['nitro-graphql']
+  modules: ['nitro-graphql/nuxt'],
+  nitro: {
+    graphql: {
+      framework: 'graphql-yoga',
+    },
+  },
 })
 ```
 
@@ -746,3 +764,14 @@ Before submitting large documentation changes:
 - Review [Development Setup](/contributing/development-setup)
 - Understand [Architecture](/contributing/architecture)
 - Learn about [Adding Features](/contributing/adding-features)
+
+---
+
+## Source
+<SourceLinks fn="documentation"/>
+
+## Contributors
+<Contributors fn="documentation"/>
+
+## Changelog
+<Changelog fn="documentation"/>

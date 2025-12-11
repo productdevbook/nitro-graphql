@@ -6,102 +6,22 @@ import { resolvers } from '#nitro-graphql/server-resolvers'
 import { schemas } from '#nitro-graphql/server-schemas'
 import { ApolloServer } from '@apollo/server'
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default'
-import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge'
-import { makeExecutableSchema } from '@graphql-tools/schema'
-import { consola } from 'consola'
 import defu from 'defu'
-import { parse } from 'graphql'
-import { defineEventHandler } from 'h3'
 import { startServerAndCreateH3Handler } from 'nitro-graphql/utils/apollo'
-
-// Conditional imports for federation support - use dynamic import inside function
-let buildSubgraphSchema: any = null
-
-async function loadFederationSupport() {
-  if (buildSubgraphSchema !== null)
-    return buildSubgraphSchema
-
-  try {
-    // Try to import @apollo/subgraph for federation support
-    const apolloSubgraph = await import('@apollo/subgraph')
-    buildSubgraphSchema = apolloSubgraph.buildSubgraphSchema
-  }
-  catch {
-    // @apollo/subgraph is optional, continue without federation
-    buildSubgraphSchema = false
-  }
-
-  return buildSubgraphSchema
-}
-
-async function createMergedSchema() {
-  try {
-    const mergedSchemas = schemas.map(schema => schema.def).join('\n\n')
-    const typeDefs = mergeTypeDefs([mergedSchemas], {
-      throwOnConflict: true,
-      commentDescriptions: true,
-      sort: true,
-    })
-    const mergedResolvers = mergeResolvers(resolvers.map(r => r.resolver))
-
-    // Check if federation is enabled via config
-    const federationEnabled = moduleConfig.federation?.enabled
-
-    let schema
-
-    if (federationEnabled) {
-      // Load federation support dynamically
-      const buildSubgraph = await loadFederationSupport()
-
-      if (buildSubgraph) {
-        // Use Apollo Federation buildSubgraphSchema
-        // buildSubgraphSchema requires DocumentNode, convert string if needed
-        const typeDefsDoc = typeof typeDefs === 'string' ? parse(typeDefs) : typeDefs
-
-        schema = buildSubgraph({
-          typeDefs: typeDefsDoc,
-          resolvers: mergedResolvers,
-        })
-      }
-      else {
-        console.warn('Federation enabled but @apollo/subgraph not available, falling back to regular schema')
-        schema = makeExecutableSchema({
-          typeDefs,
-          resolvers: mergedResolvers,
-        })
-      }
-    }
-    else {
-      // Use regular schema builder
-      schema = makeExecutableSchema({
-        typeDefs,
-        resolvers: mergedResolvers,
-      })
-    }
-
-    // Apply directives if any
-    if (directives && directives.length > 0) {
-      for (const { directive } of directives) {
-        if (directive.transformer) {
-          schema = directive.transformer(schema)
-        }
-      }
-    }
-
-    return schema
-  }
-  catch (error) {
-    consola.error('Schema merge error:', error)
-    throw error
-  }
-}
+import { defineEventHandler } from 'nitro/h3'
+import { createMergedSchema } from '../utils/schema-builder'
 
 let apolloServer: ApolloServer<BaseContext> | null = null
 let serverStarted = false
 
 async function createApolloServer() {
   if (!apolloServer) {
-    const schema = await createMergedSchema()
+    const schema = await createMergedSchema({
+      schemas,
+      resolvers,
+      directives,
+      moduleConfig,
+    })
 
     apolloServer = new ApolloServer<BaseContext>(defu({
       schema,

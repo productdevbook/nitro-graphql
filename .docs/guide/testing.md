@@ -1,4 +1,11 @@
+---
+title: Testing
+category: Guide
+---
+
 # Testing
+
+<FunctionInfo fn="testing"/>
 
 Test your GraphQL resolvers and integration tests.
 
@@ -66,3 +73,17 @@ const mockContext = {
 - [Resolvers](/guide/resolvers)
 - [Context](/guide/context)
 - [Error Handling](/guide/error-handling)
+
+---
+
+## Source
+
+<SourceLinks fn="testing"/>
+
+## Contributors
+
+<Contributors fn="testing"/>
+
+## Changelog
+
+<Changelog fn="testing"/>

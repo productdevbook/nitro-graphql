@@ -1,0 +1,49 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build output
+dist
+.output
+.nuxt
+.nitro
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Version control
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+# Testing
+coverage
+.nyc_output
+
+# Temp files
+*.tmp
+.cache
+.temp
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore

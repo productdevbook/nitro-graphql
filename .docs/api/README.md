@@ -40,7 +40,7 @@ Complete reference for resolver definition utilities:
 - **defineQuery()** - Define query-only resolvers
 - **defineMutation()** - Define mutation-only resolvers
 - **defineSubscription()** - Define subscription-only resolvers
-- **defineType()** - Define custom type field resolvers
+- **defineField()** - Define custom type field resolvers
 - **defineDirective()** - Define custom GraphQL directives
 - **defineGraphQLConfig()** - Define GraphQL server configuration
 - **defineSchema()** - Define schema with validation (Standard Schema)

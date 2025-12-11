@@ -1,4 +1,10 @@
+---
+category: Troubleshooting
+---
+
 # Common Issues
+
+<FunctionInfo fn="commonIssues"/>
 
 Frequently encountered problems and their solutions when working with Nitro GraphQL.
 
@@ -314,11 +320,15 @@ pnpm dev
 For Nitro:
 ```typescript
 // nitro.config.ts
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
-  modules: ['nitro-graphql'], // ✅ Must be registered
-  graphql: {
-    framework: 'graphql-yoga'
-  }
+  modules: [
+    graphql({
+      framework: 'graphql-yoga', // ✅ Must be registered
+    }),
+  ],
 })
 ```
 
@@ -326,10 +336,12 @@ For Nuxt:
 ```typescript
 // nuxt.config.ts
 export default defineNuxtConfig({
-  modules: ['nitro-graphql'], // ✅ Must be registered
-  graphql: {
-    framework: 'graphql-yoga'
-  }
+  modules: ['nitro-graphql/nuxt'], // ✅ Must be registered (Nuxt uses different pattern)
+  nitro: {
+    graphql: {
+      framework: 'graphql-yoga',
+    },
+  },
 })
 ```
 
@@ -387,11 +399,17 @@ http://localhost:3000/api/graphql/debug
 
 1. **Verify Playground is Enabled:**
 ```typescript
-// nitro.config.ts or nuxt.config.ts
+// nitro.config.ts
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
-  graphql: {
-    playground: true // ✅ Must be true in development
-  }
+  modules: [
+    graphql({
+      framework: 'graphql-yoga',
+      playground: true, // ✅ Must be true in development
+    }),
+  ],
 })
 ```
 
@@ -458,9 +476,9 @@ const user = await context.db.user.findUnique()
 1. **Define Context Types:**
 ```typescript
 // server/graphql/context.ts
-import type { H3Event } from 'h3'
+import type { H3Event } from 'nitro/h3'
 
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     db: Database
     user?: User
@@ -585,7 +603,7 @@ Error: Cannot find module 'graphql'
 pnpm add graphql h3 nitropack
 
 # For Apollo Server
-pnpm add @apollo/server @apollo/utils.withrequired graphql
+pnpm add @apollo/server graphql
 ```
 
 2. **Check Version Compatibility:**
@@ -629,3 +647,14 @@ pnpm install
 - [Performance Issues](/troubleshooting/performance-issues) - Optimization guide
 - [Debug Mode](/troubleshooting/debug-mode) - Using the debug dashboard
 - [Migration Guide](/troubleshooting/migration-guide) - Upgrading between versions
+
+---
+
+## Source
+<SourceLinks fn="commonIssues"/>
+
+## Contributors
+<Contributors fn="commonIssues"/>
+
+## Changelog
+<Changelog fn="commonIssues"/>

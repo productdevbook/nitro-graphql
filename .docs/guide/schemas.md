@@ -1,4 +1,11 @@
+---
+title: GraphQL Schemas
+category: Guide
+---
+
 # GraphQL Schemas
+
+<FunctionInfo fn="schemas"/>
 
 Learn how to define and organize GraphQL schemas in your Nitro GraphQL application.
 
@@ -125,6 +132,8 @@ type User {
 Usage in resolvers:
 
 ```ts
+import { defineQuery } from 'nitro-graphql/define'
+
 export const userQueries = defineQuery({
   usersByRole: (_, { role }) => {
     // role is typed as 'ADMIN' | 'MODERATOR' | 'USER' | 'GUEST'
@@ -305,6 +314,8 @@ type Query {
 Resolver:
 
 ```ts
+import { defineQuery, defineField } from 'nitro-graphql/define'
+
 export const nodeResolver = defineQuery({
   node: (_, { id }) => {
     // Return User or Post
@@ -312,7 +323,7 @@ export const nodeResolver = defineQuery({
   },
 })
 
-export const nodeTypes = defineType({
+export const nodeTypes = defineField({
   Node: {
     __resolveType(obj) {
       if ('email' in obj)
@@ -340,7 +351,9 @@ type Query {
 Resolver:
 
 ```ts
-export const searchTypes = defineType({
+import { defineField } from 'nitro-graphql/define'
+
+export const searchTypes = defineField({
   SearchResult: {
     __resolveType(obj) {
       if ('email' in obj)
@@ -826,3 +839,17 @@ type User {
   }
 }
 </style>
+
+---
+
+## Source
+
+<SourceLinks fn="schemas"/>
+
+## Contributors
+
+<Contributors fn="schemas"/>
+
+## Changelog
+
+<Changelog fn="schemas"/>

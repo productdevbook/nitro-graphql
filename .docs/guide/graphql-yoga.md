@@ -1,4 +1,11 @@
+---
+title: GraphQL Yoga
+category: Guide
+---
+
 # GraphQL Yoga
+
+<FunctionInfo fn="graphqlYoga"/>
 
 Complete guide to using GraphQL Yoga with Nitro GraphQL.
 
@@ -13,18 +20,22 @@ GraphQL Yoga is a modern, batteries-included GraphQL server with:
 ## Installation
 
 ```bash
-pnpm add nitro-graphql graphql-yoga graphql
+pnpm add nitro-graphql@beta graphql-yoga graphql graphql-config
 ```
 
 ## Configuration
 
 ```ts
 // nitro.config.ts
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
-  modules: ['nitro-graphql'],
-  graphql: {
-    framework: 'graphql-yoga',
-  },
+  modules: [
+    graphql({
+      framework: 'graphql-yoga',
+    }),
+  ],
 })
 ```
 
@@ -51,6 +62,8 @@ type Mutation {
 WebSocket subscriptions included:
 
 ```ts
+import { defineSubscription } from 'nitro-graphql/define'
+
 export const messageSubscriptions = defineSubscription({
   messageAdded: {
     subscribe: (_, __, { pubsub }) => pubsub.asyncIterator(['MESSAGE_ADDED']),
@@ -62,6 +75,8 @@ export const messageSubscriptions = defineSubscription({
 
 ```ts
 // server/graphql/config.ts
+import { defineGraphQLConfig } from 'nitro-graphql/define'
+
 export default defineGraphQLConfig({
   plugins: [
     // Add custom plugins
@@ -75,3 +90,17 @@ export default defineGraphQLConfig({
 - [Apollo Server](/guide/apollo-server) - Alternative framework
 - [Framework Comparison](/guide/framework-comparison)
 - [Configuration Reference](/reference/config)
+
+---
+
+## Source
+
+<SourceLinks fn="graphqlYoga"/>
+
+## Contributors
+
+<Contributors fn="graphqlYoga"/>
+
+## Changelog
+
+<Changelog fn="graphqlYoga"/>

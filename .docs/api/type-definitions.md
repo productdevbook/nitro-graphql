@@ -1,4 +1,16 @@
+---
+title: Type Definitions
+category: API
+related:
+  - resolver-functions
+  - virtual-imports
+  - configuration
+description: Complete reference for TypeScript types generated and used by Nitro GraphQL.
+---
+
 # Type Definitions API Reference
+
+<FunctionInfo fn="typeDefinitions"/>
 
 Complete reference for TypeScript types generated and used by Nitro GraphQL.
 
@@ -162,7 +174,7 @@ For each GraphQL type in your schema, a specific resolver type is generated:
 ```typescript
 import type { PostResolvers, UserResolvers } from '#graphql/server'
 
-export const userTypeResolvers: UserResolvers = defineType({
+export const userTypeResolvers: UserResolvers = defineField({
   User: {
     fullName: parent => `${parent.firstName} ${parent.lastName}`,
     posts: async (parent, _args, context) => {
@@ -171,7 +183,7 @@ export const userTypeResolvers: UserResolvers = defineType({
   }
 })
 
-export const postTypeResolvers: PostResolvers = defineType({
+export const postTypeResolvers: PostResolvers = defineField({
   Post: {
     author: async (parent, _args, context) => {
       return await context.db.users.findById(parent.authorId)
@@ -337,7 +349,7 @@ The context type is automatically inferred from your context augmentation:
 // server/graphql/context.ts
 import type { Database } from '../utils/useDb'
 
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     db: Database
     auth?: {
@@ -816,7 +828,7 @@ Define your context once and get full type safety:
 
 ```typescript
 // server/graphql/context.ts
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     db: Database
     auth?: AuthContext
@@ -911,3 +923,14 @@ export default defineNitroConfig({
   }
 })
 ```
+
+---
+
+## Source
+<SourceLinks fn="typeDefinitions"/>
+
+## Contributors
+<Contributors fn="typeDefinitions"/>
+
+## Changelog
+<Changelog fn="typeDefinitions"/>

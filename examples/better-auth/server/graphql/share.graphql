@@ -1,0 +1,6 @@
+scalar JSON
+scalar Timestamp
+scalar Decimal
+
+type Query
+type Mutation

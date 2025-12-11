@@ -1,4 +1,10 @@
+---
+category: Contributing
+---
+
 # Architecture
+
+<FunctionInfo fn="architecture"/>
 
 This guide provides a deep dive into the Nitro GraphQL architecture, helping you understand how the module works internally.
 
@@ -141,7 +147,7 @@ The default GraphQL server implementation:
 
 ```typescript
 import { createYoga } from 'graphql-yoga'
-import { defineEventHandler } from 'h3'
+import { defineEventHandler } from 'nitro/h3'
 
 export default defineEventHandler(async (event) => {
   const yoga = createYoga({
@@ -193,7 +199,7 @@ export function defineQuery(query: QueryResolvers): Resolvers
 export function defineMutation(mutation: MutationResolvers): Resolvers
 
 // Define custom type resolvers
-export function defineType<T>(type: T): T
+export function defineField<T>(type: T): T
 
 // Define custom directives
 export function defineDirective(directive: DirectiveConfig): DirectiveConfig
@@ -386,7 +392,7 @@ export default defineConfig({
     // External dependencies that shouldn't be bundled
     'nitropack',
     'graphql',
-    'h3',
+    'nitro/h3',
     // ...
   ]
 })
@@ -449,7 +455,7 @@ export default defineQuery({
 Extend H3 context in `server/graphql/context.ts`:
 
 ```typescript
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     user?: User
     session?: Session
@@ -534,3 +540,14 @@ To add new virtual modules:
 - Learn about [Adding Features](/contributing/adding-features)
 - Understand the [Development Setup](/contributing/development-setup)
 - Contribute to [Documentation](/contributing/documentation)
+
+---
+
+## Source
+<SourceLinks fn="architecture"/>
+
+## Contributors
+<Contributors fn="architecture"/>
+
+## Changelog
+<Changelog fn="architecture"/>

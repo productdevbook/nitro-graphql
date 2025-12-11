@@ -1,4 +1,11 @@
+---
+title: Framework Comparison
+category: Guide
+---
+
 # Framework Comparison
+
+<FunctionInfo fn="frameworkComparison"/>
 
 Detailed comparison between GraphQL Yoga and Apollo Server.
 
@@ -44,3 +51,17 @@ graphql: {
 
 - [GraphQL Yoga Guide](/guide/graphql-yoga)
 - [Apollo Server Guide](/guide/apollo-server)
+
+---
+
+## Source
+
+<SourceLinks fn="frameworkComparison"/>
+
+## Contributors
+
+<Contributors fn="frameworkComparison"/>
+
+## Changelog
+
+<Changelog fn="frameworkComparison"/>

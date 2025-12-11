@@ -56,12 +56,12 @@
 
 **GraphQL Yoga (recommended):**
 ```bash
-pnpm add nitro-graphql graphql-yoga graphql
+pnpm add nitro-graphql@beta graphql-yoga graphql graphql-config
 ```
 
 **Apollo Server:**
 ```bash
-pnpm add nitro-graphql @apollo/server @apollo/utils.withrequired graphql
+pnpm add nitro-graphql@beta @apollo/server graphql graphql-config
 ```
 
 ### 2. Configure
@@ -71,13 +71,15 @@ pnpm add nitro-graphql @apollo/server @apollo/utils.withrequired graphql
 
 ```ts
 // nitro.config.ts
+import graphql from 'nitro-graphql'
 import { defineNitroConfig } from 'nitro/config'
 
 export default defineNitroConfig({
-  modules: ['nitro-graphql'],
-  graphql: {
-    framework: 'graphql-yoga', // or 'apollo-server'
-  },
+  modules: [
+    graphql({
+      framework: 'graphql-yoga', // or 'apollo-server'
+    }),
+  ],
 })
 ```
 
@@ -90,18 +92,20 @@ export default defineNitroConfig({
 // vite.config.ts
 import { defineConfig } from 'vite'
 import { nitro } from 'nitro/vite'
-import { graphql } from 'nitro-graphql/vite'
+import graphql from 'nitro-graphql'
+import { graphql as graphqlVite } from 'nitro-graphql/vite'
 
 export default defineConfig({
   plugins: [
-    graphql(), // ⚠️ Must be before nitro()
+    graphqlVite(), // ⚠️ Must be before nitro()
     nitro(),
   ],
   nitro: {
-    modules: ['nitro-graphql'],
-    graphql: {
-      framework: 'graphql-yoga',
-    },
+    modules: [
+      graphql({
+        framework: 'graphql-yoga',
+      }),
+    ],
   },
 })
 ```
@@ -145,6 +149,8 @@ type Mutation {
 
 ```ts
 // server/graphql/hello.resolver.ts
+import { defineResolver } from 'nitro-graphql/define'
+
 export const helloResolver = defineResolver({
   Query: {
     hello: () => 'Hello from GraphQL!',
@@ -175,6 +181,7 @@ Try these working examples:
 | [**Vite + Nitro**](./playgrounds/vite/) | Vite with Nitro GraphQL integration | `cd playgrounds/vite && pnpm dev` |
 | [**Nuxt Integration**](./playgrounds/nuxt/) | Full Nuxt app with client types | `pnpm playground:nuxt` |
 | [**Apollo Federation**](./playgrounds/federation/) | Federated GraphQL services | `pnpm playground:federation` |
+| [**Drizzle ORM**](./examples/drizzle-orm/) | Drizzle ORM + Zod validation integration | `cd examples/drizzle-orm && pnpm dev` |
 
 ### 🧪 Test Projects
 
@@ -215,6 +222,8 @@ extend type Mutation {
 ### 2. Create Resolvers
 ```ts
 // server/graphql/users/user.resolver.ts
+import { defineQuery, defineMutation } from 'nitro-graphql/define'
+
 export const userQueries = defineQuery({
   users: async (_, __, { storage }) => {
     return await storage.getItem('users') || []
@@ -276,12 +285,17 @@ Disable all scaffold files for library/module development:
 
 ```ts
 // nitro.config.ts
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
-  graphql: {
-    framework: 'graphql-yoga',
-    scaffold: false,        // Disable all scaffold files
-    clientUtils: false,     // Disable client utilities
-  }
+  modules: [
+    graphql({
+      framework: 'graphql-yoga',
+      scaffold: false,        // Disable all scaffold files
+      clientUtils: false,     // Disable client utilities
+    }),
+  ],
 })
 ```
 
@@ -290,37 +304,42 @@ export default defineNitroConfig({
 Control each file individually:
 
 ```ts
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
-  graphql: {
-    framework: 'graphql-yoga',
+  modules: [
+    graphql({
+      framework: 'graphql-yoga',
 
-    // Scaffold files
-    scaffold: {
-      graphqlConfig: false,     // Don't generate graphql.config.ts
-      serverSchema: true,       // Generate server/graphql/schema.ts
-      serverConfig: true,       // Generate server/graphql/config.ts
-      serverContext: false,     // Don't generate server/graphql/context.ts
-    },
+      // Scaffold files
+      scaffold: {
+        graphqlConfig: false,     // Don't generate graphql.config.ts
+        serverSchema: true,       // Generate server/graphql/schema.ts
+        serverConfig: true,       // Generate server/graphql/config.ts
+        serverContext: false,     // Don't generate server/graphql/context.ts
+      },
 
-    // Client utilities (Nuxt only)
-    clientUtils: {
-      index: true,              // Generate app/graphql/index.ts
-      ofetch: false,            // Don't generate ofetch wrappers
-    },
+      // Client utilities (Nuxt only)
+      clientUtils: {
+        index: true,              // Generate app/graphql/index.ts
+        ofetch: false,            // Don't generate ofetch wrappers
+      },
 
-    // SDK files
-    sdk: {
-      main: true,               // Generate default SDK
-      external: true,           // Generate external service SDKs
-    },
+      // SDK files
+      sdk: {
+        main: true,               // Generate default SDK
+        external: true,           // Generate external service SDKs
+      },
 
-    // Type files
-    types: {
-      server: true,             // Generate server types
-      client: true,             // Generate client types
-      external: true,           // Generate external service types
-    }
-  }
+      // Type files
+      types: {
+        server: true,             // Generate server types
+        client: true,             // Generate client types
+        external: true,           // Generate external service types
+      },
+    }),
+  ],
 })
 ```
 
@@ -329,34 +348,39 @@ export default defineNitroConfig({
 Customize where files are generated:
 
 ```ts
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
-  graphql: {
-    framework: 'graphql-yoga',
+  modules: [
+    graphql({
+      framework: 'graphql-yoga',
 
-    // Method 1: Global paths (affects all files)
-    paths: {
-      serverGraphql: 'src/server/graphql',
-      clientGraphql: 'src/client/graphql',
-      buildDir: '.build',
-      typesDir: '.build/types',
-    },
+      // Method 1: Global paths (affects all files)
+      paths: {
+        serverGraphql: 'src/server/graphql',
+        clientGraphql: 'src/client/graphql',
+        buildDir: '.build',
+        typesDir: '.build/types',
+      },
 
-    // Method 2: Specific file paths
-    scaffold: {
-      serverSchema: 'lib/graphql/schema.ts',
-      serverConfig: 'lib/graphql/config.ts',
-    },
+      // Method 2: Specific file paths
+      scaffold: {
+        serverSchema: 'lib/graphql/schema.ts',
+        serverConfig: 'lib/graphql/config.ts',
+      },
 
-    sdk: {
-      main: 'app/graphql/organization/sdk.ts',
-      external: 'app/graphql/{serviceName}/client-sdk.ts',
-    },
+      sdk: {
+        main: 'app/graphql/organization/sdk.ts',
+        external: 'app/graphql/{serviceName}/client-sdk.ts',
+      },
 
-    types: {
-      server: 'types/graphql-server.d.ts',
-      client: 'types/graphql-client.d.ts',
-    }
-  }
+      types: {
+        server: 'types/graphql-server.d.ts',
+        client: 'types/graphql-client.d.ts',
+      },
+    }),
+  ],
 })
 ```
 
@@ -512,6 +536,8 @@ Create reusable GraphQL directives:
 
 ```ts
 // server/graphql/directives/auth.directive.ts
+import { defineDirective } from 'nitro-graphql/define'
+
 export const authDirective = defineDirective({
   name: 'auth',
   locations: ['FIELD_DEFINITION'],
@@ -569,14 +595,19 @@ Build federated GraphQL services:
 
 ```ts
 // nitro.config.ts
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
-  graphql: {
-    framework: 'apollo-server',
-    federation: {
-      enabled: true,
-      serviceName: 'users-service'
-    }
-  }
+  modules: [
+    graphql({
+      framework: 'apollo-server',
+      federation: {
+        enabled: true,
+        serviceName: 'users-service',
+      },
+    }),
+  ],
 })
 ```
 
@@ -586,15 +617,24 @@ export default defineNitroConfig({
 
 ### Core Utilities
 
-All utilities are auto-imported in resolver files:
+> **⚠️ Breaking Change**: Utilities are **NOT auto-imported**. You must explicitly import them from `nitro-graphql/define`:
+
+```typescript
+import { defineResolver, defineQuery, defineMutation, defineField, defineDirective } from 'nitro-graphql/define'
+```
 
 | Function | Purpose | Example |
 |----------|---------|---------|
 | `defineResolver` | Complete resolvers | `defineResolver({ Query: {...}, Mutation: {...} })` |
 | `defineQuery` | Query-only resolvers | `defineQuery({ users: () => [...] })` |
 | `defineMutation` | Mutation-only resolvers | `defineMutation({ createUser: (...) => {...} })` |
-| `defineType` | Custom type resolvers | `defineType({ User: { posts: (parent) => [...] } })` |
+| `defineField` | Custom type resolvers | `defineField({ User: { posts: (parent) => [...] } })` |
 | `defineDirective` | Custom directives | `defineDirective({ name: 'auth', ... })` |
+| `defineGraphQLConfig` | GraphQL server config | `defineGraphQLConfig({ maskedErrors: {...} })` |
+| `defineSchema` | Schema with Zod integration | `defineSchema({ Book: selectBookSchema })` |
+
+**Additional Utilities** from `nitro-graphql/utils`:
+- `createDefaultMaskError()` - Error handler for ZodError and HTTPError (use in `defineGraphQLConfig`)
 
 ### Type Generation
 
@@ -648,9 +688,18 @@ server/
 - ✅ Check file naming: `*.graphql`, `*.resolver.ts`
 - ✅ Verify exports are named exports
 
-**Import errors**
-- ✅ Use correct path: `nitro-graphql/define`
+**Import errors / "defineQuery is not defined"**
+- ✅ **Requires explicit imports**: Add `import { defineQuery } from 'nitro-graphql/define'` to resolver files
+- ✅ Use correct import path: `nitro-graphql/define` (not `nitro-graphql`)
 - ✅ Use named exports in resolvers
+
+Example fix:
+```typescript
+// Add this to the top of your resolver file
+import { defineQuery, defineMutation } from 'nitro-graphql/define'
+
+export const myQueries = defineQuery({ ... })
+```
 
 **Vite: "Parse failure: Expected ';', '}' or <eof>" on GraphQL files**
 - ✅ Add `graphql()` plugin from `nitro-graphql/vite`
@@ -728,7 +777,7 @@ This error occurs when the resolver scanner can't find the expected export in yo
   - `defineResolver` - Complete resolver with Query, Mutation, etc.
   - `defineQuery` - Query-only resolvers
   - `defineMutation` - Mutation-only resolvers
-  - `defineType` - Custom type resolvers
+  - `defineField` - Custom type resolvers
   - `defineSubscription` - Subscription resolvers
   - `defineDirective` - Directive resolvers
 - Only exports using these functions are included in the virtual module
@@ -747,448 +796,6 @@ This error occurs when the resolver scanner can't find the expected export in yo
 This package powers production applications:
 
 - [**Nitroping**](https://github.com/productdevbook/nitroping) - Self-hosted push notification service
-
-## 🤖 Using Claude Code
-
-Speed up development with [Claude Code](https://claude.ai/code) — AI-powered assistance for setting up and building with nitro-graphql.
-
-### Quick Setup Prompts
-
-Copy and paste these prompts into Claude Code to scaffold a complete GraphQL API.
-
-**💡 Tip**: After pasting, Claude Code will execute step-by-step and validate each action.
-
-<details>
-<summary>🟢 <strong>Nuxt Project</strong></summary>
-
-```
-## GOAL
-Set up nitro-graphql in this Nuxt project with a User management GraphQL API.
-
-## PREREQUISITES
-Check if this is a Nuxt project by looking for nuxt.config.ts in the root.
-
-## STEP 1: INSTALL DEPENDENCIES
-Action: Run this command
-Command: pnpm add nitro-graphql graphql-yoga graphql
-Validation: Check package.json contains these packages
-
-## STEP 2: CONFIGURE NUXT
-File: nuxt.config.ts
-Action: EDIT (add to existing config, don't replace)
-Add these properties:
-
-export default defineNuxtConfig({
-  modules: ['nitro-graphql/nuxt'],  // Add this module
-  nitro: {
-    graphql: {
-      framework: 'graphql-yoga',
-    },
-  },
-})
-
-Validation: Check the file has modules array and nitro.graphql config
-
-## STEP 3: CREATE SCHEMA
-File: server/graphql/schema.graphql
-Action: CREATE NEW FILE (create server/graphql/ directory if needed)
-Content:
-
-type User {
-  id: ID!
-  name: String!
-  email: String!
-}
-
-type Query {
-  users: [User!]!
-  user(id: ID!): User
-}
-
-type Mutation {
-  _empty: String
-}
-
-Validation: File should be in server/graphql/ directory
-
-## STEP 4: CREATE CONTEXT (Optional but recommended)
-File: server/graphql/context.ts
-Action: CREATE NEW FILE (auto-generated on first run, but create manually for clarity)
-Content:
-
-// Extend H3 event context with custom properties
-declare module 'h3' {
-  interface H3EventContext {
-    // Add your custom context properties here
-    // Example:
-    // db?: Database
-    // auth?: { userId: string }
-  }
-}
-
-Note: This file lets you add custom properties to resolver context
-Validation: File exists in server/graphql/
-
-## STEP 5: CREATE CONFIG (Optional)
-File: server/graphql/config.ts
-Action: CREATE NEW FILE (auto-generated, customize if needed)
-Content:
-
-// Custom GraphQL Yoga configuration
-export default defineGraphQLConfig({
-  // Custom context enhancer, plugins, etc.
-  // See: https://the-guild.dev/graphql/yoga-server/docs
-})
-
-Note: Use this to customize GraphQL Yoga options
-Validation: File exists in server/graphql/
-
-## STEP 6: CREATE RESOLVERS
-File: server/graphql/users.resolver.ts
-Action: CREATE NEW FILE
-Content:
-
-// ⚠️ CRITICAL: Use NAMED EXPORTS (not default export)
-export const userQueries = defineQuery({
-  users: async (_, __, context) => {
-    // context is H3EventContext - access event, storage, etc.
-    return [
-      { id: '1', name: 'John Doe', email: 'john@example.com' },
-      { id: '2', name: 'Jane Smith', email: 'jane@example.com' }
-    ]
-  },
-  user: async (_, { id }, context) => {
-    // Third parameter is context (H3EventContext)
-    const users = [
-      { id: '1', name: 'John Doe', email: 'john@example.com' },
-      { id: '2', name: 'Jane Smith', email: 'jane@example.com' }
-    ]
-    return users.find(u => u.id === id) || null
-  }
-})
-
-Validation: File ends with .resolver.ts and uses named export
-
-## STEP 7: START DEV SERVER
-Command: pnpm dev
-Expected Output: Server starts on http://localhost:3000
-Wait for: "Nitro built in X ms" message
-Note: context.ts and config.ts will auto-generate if you skipped steps 4-5
-
-## VALIDATION CHECKLIST
-- [ ] Navigate to http://localhost:3000/api/graphql - should show GraphQL playground
-- [ ] Health check: http://localhost:3000/api/graphql/health - should return OK
-- [ ] Run this query in playground:
-  ```graphql
-  query {
-    users {
-      id
-      name
-      email
-    }
-  }
-  ```
-  Expected: Returns 2 users
-- [ ] Check .nuxt/types/nitro-graphql-server.d.ts exists (types auto-generated)
-
-## FILE STRUCTURE CREATED
-```
-server/
-  graphql/
-    schema.graphql          ← GraphQL type definitions
-    context.ts              ← H3 event context augmentation (optional)
-    config.ts               ← GraphQL Yoga config (optional)
-    users.resolver.ts       ← Query resolvers
-.nuxt/
-  types/
-    nitro-graphql-server.d.ts  ← Auto-generated types
-graphql.config.ts           ← Auto-generated (for IDE tooling)
-```
-
-## CRITICAL RULES (MUST FOLLOW)
-❌ DO NOT use default exports in resolvers
-   Wrong: export default defineQuery({...})
-   Right: export const userQueries = defineQuery({...})
-
-❌ DO NOT name files without .resolver.ts extension
-   Wrong: users.ts or user-resolver.ts
-   Right: users.resolver.ts or user.resolver.ts
-
-✅ DO use named exports for all resolvers
-✅ DO place files in server/graphql/ directory
-✅ DO restart dev server if types don't generate
-
-## TROUBLESHOOTING
-Issue: "GraphQL endpoint returns 404"
-Fix: Ensure 'nitro-graphql/nuxt' is in modules array (not just 'nitro-graphql')
-
-Issue: "defineQuery is not defined"
-Fix: Restart dev server - auto-imports need to regenerate
-
-Issue: "Types not generating"
-Fix: Check .nuxt/types/nitro-graphql-server.d.ts exists, if not restart dev server
-
-Issue: "Module not found: nitro-graphql"
-Fix: Run pnpm install again, check package.json has the package
-
-## NEXT STEPS (After Setup Works)
-1. Add mutations: "Add createUser and deleteUser mutations with H3 storage"
-2. Extend context: "Add database connection to context.ts and use it in resolvers"
-3. Use types: "Import and use TypeScript types from #graphql/server in resolvers"
-4. Add auth: "Add authentication middleware using context in resolvers"
-5. Custom config: "Configure GraphQL Yoga plugins in config.ts"
-
-Now implement this setup step-by-step.
-```
-
-</details>
-
-<details>
-<summary>⚡ <strong>Nitro Project</strong></summary>
-
-```
-Set up nitro-graphql in this Nitro project following these exact specifications:
-
-INSTALLATION:
-1. Run: pnpm add nitro-graphql graphql-yoga graphql
-
-CONFIGURATION (nitro.config.ts):
-import { defineNitroConfig } from 'nitro/config'
-
-export default defineNitroConfig({
-  modules: ['nitro-graphql'],
-  graphql: {
-    framework: 'graphql-yoga',
-  },
-})
-
-SCHEMA (server/graphql/schema.graphql):
-type Product {
-  id: ID!
-  name: String!
-  price: Float!
-}
-
-input CreateProductInput {
-  name: String!
-  price: Float!
-}
-
-type Query {
-  products: [Product!]!
-  product(id: ID!): Product
-}
-
-type Mutation {
-  createProduct(input: CreateProductInput!): Product!
-}
-
-RESOLVERS (server/graphql/products.resolver.ts):
-// Use NAMED EXPORTS only
-export const productQueries = defineQuery({
-  products: async (_, __, context) => {
-    // Access H3 event context
-    const products = await context.storage?.getItem('products') || []
-    return products
-  },
-  product: async (_, { id }, context) => {
-    const products = await context.storage?.getItem('products') || []
-    return products.find(p => p.id === id)
-  }
-})
-
-export const productMutations = defineMutation({
-  createProduct: async (_, { input }, context) => {
-    const products = await context.storage?.getItem('products') || []
-    const product = {
-      id: Date.now().toString(),
-      ...input
-    }
-    products.push(product)
-    await context.storage?.setItem('products', products)
-    return product
-  }
-})
-
-KEY RULES:
-- Files: *.graphql for schemas, *.resolver.ts for resolvers
-- MUST use named exports (not default export)
-- defineQuery and defineMutation are auto-imported
-- Context is the third parameter (access H3 event context)
-- Endpoint: http://localhost:3000/api/graphql
-
-Now implement this setup.
-```
-
-</details>
-
-<details>
-<summary>🎮 <strong>Apollo Server Setup</strong></summary>
-
-```
-Set up nitro-graphql with Apollo Server following these exact specifications:
-
-INSTALLATION:
-1. Run: pnpm add nitro-graphql @apollo/server @apollo/utils.withrequired graphql
-
-CONFIGURATION (nitro.config.ts):
-import { defineNitroConfig } from 'nitro/config'
-
-export default defineNitroConfig({
-  modules: ['nitro-graphql'],
-  graphql: {
-    framework: 'apollo-server',
-  },
-})
-
-SCHEMA (server/graphql/schema.graphql):
-type Book {
-  id: ID!
-  title: String!
-  author: String!
-}
-
-type Query {
-  books: [Book!]!
-  book(id: ID!): Book
-}
-
-type Mutation {
-  addBook(title: String!, author: String!): Book!
-}
-
-RESOLVERS (server/graphql/books.resolver.ts):
-// IMPORTANT: Use NAMED EXPORTS
-export const bookResolver = defineResolver({
-  Query: {
-    books: async () => {
-      return [
-        { id: '1', title: '1984', author: 'George Orwell' }
-      ]
-    },
-    book: async (_, { id }) => {
-      return { id, title: '1984', author: 'George Orwell' }
-    }
-  },
-  Mutation: {
-    addBook: async (_, { title, author }) => {
-      return {
-        id: Date.now().toString(),
-        title,
-        author
-      }
-    }
-  }
-})
-
-KEY RULES:
-- framework: 'apollo-server' in config
-- defineResolver for complete resolver maps
-- Named exports required (export const name = ...)
-- Apollo Sandbox: http://localhost:3000/api/graphql
-- Supports Apollo Federation with federation: { enabled: true }
-
-Now implement this setup.
-```
-
-</details>
-
-<details>
-<summary>🔄 <strong>Add Feature to Existing Setup</strong></summary>
-
-```
-Add a complete blog posts feature to my nitro-graphql API following these specifications:
-
-SCHEMA (server/graphql/posts/post.graphql):
-type Post {
-  id: ID!
-  title: String!
-  content: String!
-  authorId: ID!
-  createdAt: String!
-}
-
-input CreatePostInput {
-  title: String!
-  content: String!
-  authorId: ID!
-}
-
-input UpdatePostInput {
-  title: String
-  content: String
-}
-
-extend type Query {
-  posts(limit: Int = 10, offset: Int = 0): [Post!]!
-  post(id: ID!): Post
-}
-
-extend type Mutation {
-  createPost(input: CreatePostInput!): Post!
-  updatePost(id: ID!, input: UpdatePostInput!): Post
-  deletePost(id: ID!): Boolean!
-}
-
-RESOLVERS (server/graphql/posts/post.resolver.ts):
-// Use NAMED EXPORTS
-export const postQueries = defineQuery({
-  posts: async (_, { limit, offset }, context) => {
-    const posts = await context.storage?.getItem('posts') || []
-    return posts.slice(offset, offset + limit)
-  },
-  post: async (_, { id }, context) => {
-    const posts = await context.storage?.getItem('posts') || []
-    return posts.find(p => p.id === id) || null
-  }
-})
-
-export const postMutations = defineMutation({
-  createPost: async (_, { input }, context) => {
-    const posts = await context.storage?.getItem('posts') || []
-    const post = {
-      id: Date.now().toString(),
-      ...input,
-      createdAt: new Date().toISOString()
-    }
-    posts.push(post)
-    await context.storage?.setItem('posts', posts)
-    return post
-  },
-  updatePost: async (_, { id, input }, context) => {
-    const posts = await context.storage?.getItem('posts') || []
-    const index = posts.findIndex(p => p.id === id)
-    if (index === -1) return null
-    posts[index] = { ...posts[index], ...input }
-    await context.storage?.setItem('posts', posts)
-    return posts[index]
-  },
-  deletePost: async (_, { id }, context) => {
-    const posts = await context.storage?.getItem('posts') || []
-    const filtered = posts.filter(p => p.id !== id)
-    await context.storage?.setItem('posts', filtered)
-    return filtered.length < posts.length
-  }
-})
-
-TYPE USAGE:
-After dev server restarts, types are auto-generated in:
-- .nitro/types/nitro-graphql-server.d.ts (server types)
-- .nuxt/types/nitro-graphql-server.d.ts (for Nuxt)
-
-Import types:
-import type { Post, CreatePostInput } from '#graphql/server'
-
-KEY RULES:
-- Use "extend type" to add to existing Query/Mutation
-- Named exports required
-- Context has H3 event properties
-- Types auto-generate on file changes
-
-Now implement this feature.
-```
-
-</details>
 
 ### Working with Your GraphQL API
 

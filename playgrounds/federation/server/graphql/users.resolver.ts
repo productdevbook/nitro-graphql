@@ -33,7 +33,7 @@ export const userMutations = defineMutation({
 })
 
 // Federation: Entity resolver for User type
-export const userTypeResolver = defineType({
+export const userTypeResolver = defineField({
   User: {
     __resolveReference: (user: { id: string }) => {
       return users.find(u => u.id === user.id) || null

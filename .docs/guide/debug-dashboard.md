@@ -1,4 +1,11 @@
+---
+title: Debug Dashboard
+category: Guide
+---
+
 # Debug Dashboard
+
+<FunctionInfo fn="debugDashboard"/>
 
 Use the built-in debug dashboard to inspect your GraphQL schema, resolvers, and VFS.
 
@@ -37,3 +44,17 @@ Use the dashboard to:
 
 - [Auto-Discovery](/guide/auto-discovery)
 - [Type Generation](/guide/type-generation)
+
+---
+
+## Source
+
+<SourceLinks fn="debugDashboard"/>
+
+## Contributors
+
+<Contributors fn="debugDashboard"/>
+
+## Changelog
+
+<Changelog fn="debugDashboard"/>

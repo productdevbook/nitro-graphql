@@ -1,4 +1,10 @@
+---
+category: Contributing
+---
+
 # Adding Features
+
+<FunctionInfo fn="addingFeatures"/>
 
 This guide walks you through the process of adding new features to Nitro GraphQL, from initial development to submitting a pull request.
 
@@ -192,13 +198,18 @@ Brief description of what your feature does.
 
 \`\`\`typescript
 // Code example
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
-  modules: ['nitro-graphql'],
-  graphql: {
-    myFeature: {
-      option1: 'value'
-    }
-  }
+  modules: [
+    graphql({
+      framework: 'graphql-yoga',
+      myFeature: {
+        option1: 'value',
+      },
+    }),
+  ],
 })
 \`\`\`
 
@@ -524,7 +535,7 @@ export default defineNitroModule({
 
 ```typescript
 // src/routes/my-endpoint.ts
-import { defineEventHandler } from 'h3'
+import { defineEventHandler } from 'nitro/h3'
 
 export default defineEventHandler((event) => {
   return {
@@ -601,3 +612,14 @@ If you need help while developing:
 - Review the [Architecture](/contributing/architecture) guide
 - Learn about [Documentation](/contributing/documentation) standards
 - Check out [existing PRs](https://github.com/productdevbook/nitro-graphql/pulls) for examples
+
+---
+
+## Source
+<SourceLinks fn="addingFeatures"/>
+
+## Contributors
+<Contributors fn="addingFeatures"/>
+
+## Changelog
+<Changelog fn="addingFeatures"/>

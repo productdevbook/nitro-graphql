@@ -1,4 +1,16 @@
+---
+title: Installation
+category: Getting Started
+related:
+  - quick-start-nitro
+  - quick-start-nuxt
+  - introduction
+description: Learn how to install Nitro GraphQL in your Nitro or Nuxt project with pnpm, npm, or yarn.
+---
+
 # Installation
+
+<FunctionInfo fn="installation"/>
 
 ## Prerequisites
 
@@ -33,11 +45,11 @@ Choose your GraphQL framework and install the required dependencies:
 ::: code-group
 
 ```bash [GraphQL Yoga (Recommended)]
-pnpm add nitro-graphql graphql-yoga graphql
+pnpm add nitro-graphql@beta graphql-yoga graphql graphql-config
 ```
 
 ```bash [Apollo Server]
-pnpm add nitro-graphql @apollo/server @apollo/utils.withrequired graphql
+pnpm add nitro-graphql@beta @apollo/server graphql graphql-config
 ```
 
 :::
@@ -60,13 +72,15 @@ Add Nitro GraphQL to your `nitro.config.ts`:
 
 ```typescript
 // nitro.config.ts
-import { defineNitroConfig } from 'nitropack/config'
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
 
 export default defineNitroConfig({
-  modules: ['nitro-graphql'],
-  graphql: {
-    framework: 'graphql-yoga', // or 'apollo-server'
-  },
+  modules: [
+    graphql({
+      framework: 'graphql-yoga', // or 'apollo-server'
+    }),
+  ],
 })
 ```
 
@@ -219,7 +233,7 @@ Import these types in your resolvers:
 import type { User } from '#graphql/server'
 
 export const userQueries = defineQuery({
-  user: async (_, { id }): Promise<User | null> => {
+  user: async (parent, { id }): Promise<User | null> => {
     // Fully typed!
     return await db.user.findUnique({ where: { id } })
   },
@@ -325,14 +339,18 @@ If port 3000 is already in use:
 
 ```typescript
 // nitro.config.ts
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
   dev: {
     port: 3001, // Use a different port
   },
-  modules: ['nitro-graphql'],
-  graphql: {
-    framework: 'graphql-yoga',
-  },
+  modules: [
+    graphql({
+      framework: 'graphql-yoga',
+    }),
+  ],
 })
 ```
 
@@ -368,3 +386,17 @@ export default defineNitroConfig({
   color: var(--vp-c-brand-2);
 }
 </style>
+
+---
+
+## Source
+
+<SourceLinks fn="installation"/>
+
+## Contributors
+
+<Contributors fn="installation"/>
+
+## Changelog
+
+<Changelog fn="installation"/>

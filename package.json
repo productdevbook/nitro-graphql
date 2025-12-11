@@ -1,10 +1,14 @@
 {
   "name": "nitro-graphql",
   "type": "module",
-  "version": "2.0.0-beta.23",
-  "packageManager": "pnpm@10.21.0",
+  "version": "2.0.0-beta.34",
+  "packageManager": "pnpm@10.24.0",
   "description": "GraphQL integration for Nitro",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/productdevbook/nitro-graphql"
+  },
   "sideEffects": false,
   "imports": {
     "#graphql/server": {
@@ -60,6 +64,10 @@
     "./vite": {
       "types": "./dist/vite.d.mts",
       "import": "./dist/vite.mjs"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.mts",
+      "import": "./dist/types/index.mjs"
     }
   },
   "module": "./dist/index.mjs",
@@ -72,31 +80,30 @@
     "build": "tsdown",
     "dev": "tsdown --watch",
     "bumpp": "bumpp package.json",
-    "release": "pnpm build && pnpm bumpp && pnpm publish --no-git-checks --access public",
+    "release": "pnpm build && pnpm bumpp",
     "playground:nitro": "cd playgrounds/nitro && pnpm install && pnpm dev",
     "playground:nuxt": "cd playgrounds/nuxt && pnpm install && pnpm dev",
     "playground:federation": "cd playgrounds/federation && pnpm install && pnpm dev",
-    "docs:dev": "cd .docs && pnpm install && pnpm dev",
-    "docs:build": "cd .docs && pnpm install && pnpm build",
+    "docs:dev": "cd .docs && pnpm install && pnpm update:metadata && pnpm dev",
+    "docs:build": "cd .docs && pnpm install && pnpm update:metadata && pnpm build",
     "docs:preview": "cd .docs && pnpm preview",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:types": "tsc --noEmit"
   },
   "peerDependencies": {
     "@apollo/server": "^5.0.0",
-    "@apollo/utils.withrequired": "^3.0.0",
     "graphql": "^16.11.0",
     "graphql-sse": "^2.6.0",
     "graphql-ws": "^6.0.6",
-    "h3": "^2.0.1-rc.2",
     "nitro": "^3.0.1-alpha.0"
   },
   "peerDependenciesMeta": {
     "@apollo/server": {
-      "optional": true
-    },
-    "@apollo/utils.withrequired": {
       "optional": true
     },
     "graphql-sse": {
@@ -138,6 +145,7 @@
     "@nuxt/schema": "catalog:",
     "@types/node": "catalog:",
     "@vitejs/devtools": "catalog:",
+    "@vitest/ui": "catalog:",
     "bumpp": "catalog:",
     "changelogen": "catalog:",
     "crossws": "catalog:",
@@ -146,18 +154,12 @@
     "graphql-sse": "catalog:",
     "graphql-ws": "catalog:",
     "graphql-yoga": "catalog:",
-    "h3": "catalog:",
     "nitro": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
-    "vitepress-plugin-llms": "catalog:"
-  },
-  "pnpm": {
-    "overrides": {
-      "nitro": "npm:nitro-nightly@latest",
-      "vite": "npm:rolldown-vite@latest"
-    }
+    "vitepress-plugin-llms": "catalog:",
+    "vitest": "catalog:"
   },
   "resolutions": {
     "nitro-graphql": "link:."

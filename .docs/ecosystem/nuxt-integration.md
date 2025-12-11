@@ -1,4 +1,10 @@
+---
+category: Ecosystem
+---
+
 # Nuxt Integration
+
+<FunctionInfo fn="nuxtIntegration"/>
 
 Nitro GraphQL provides first-class integration with Nuxt 3, offering seamless full-stack GraphQL development with automatic type generation for both server and client code.
 
@@ -9,15 +15,15 @@ Install the required dependencies:
 ::: code-group
 
 ```bash [pnpm]
-pnpm add nitro-graphql graphql-yoga graphql
+pnpm add nitro-graphql@beta graphql-yoga graphql graphql-config
 ```
 
 ```bash [npm]
-npm install nitro-graphql graphql-yoga graphql
+npm install nitro-graphql@beta graphql-yoga graphql graphql-config
 ```
 
 ```bash [yarn]
-yarn add nitro-graphql graphql-yoga graphql
+yarn add nitro-graphql@beta graphql-yoga graphql graphql-config
 ```
 
 :::
@@ -70,7 +76,7 @@ Auto-imported utilities include:
 - `defineQuery`
 - `defineMutation`
 - `defineSubscription`
-- `defineType`
+- `defineField`
 - `defineGraphQLConfig`
 - `defineSchema`
 - `defineDirective`
@@ -351,9 +357,9 @@ Here's a complete example integrating authentication:
 
 ```ts
 // server/graphql/context.ts
-import type { H3Event } from 'h3'
+import type { H3Event } from 'nitro/h3'
 
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     user?: {
       id: string
@@ -510,3 +516,14 @@ pnpm install
 - [Client Usage](/ecosystem/client-usage) - Frontend GraphQL patterns
 - [Context](/guide/context) - Request context and middleware
 - [External Services](/guide/external-services) - Third-party GraphQL APIs
+
+---
+
+## Source
+<SourceLinks fn="nuxtIntegration"/>
+
+## Contributors
+<Contributors fn="nuxtIntegration"/>
+
+## Changelog
+<Changelog fn="nuxtIntegration"/>

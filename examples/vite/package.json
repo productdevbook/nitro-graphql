@@ -1,0 +1,21 @@
+{
+  "name": "nitro-app",
+  "type": "module",
+  "private": true,
+  "packageManager": "pnpm@10.24.0",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite dev",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "graphql": "catalog:",
+    "graphql-yoga": "catalog:",
+    "nitro-graphql": "catalog:",
+    "rolldown": "catalog:"
+  },
+  "devDependencies": {
+    "nitro": "catalog:",
+    "vite": "catalog:"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "name": "example-drizzle-orm",
+  "private": true,
+  "scripts": {
+    "dev": "nitro dev",
+    "build": "nitro build",
+    "preview": "npx srvx .output/server/index.mjs",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
+  },
+  "devDependencies": {
+    "@types/pg": "catalog:",
+    "drizzle-kit": "catalog:",
+    "drizzle-orm": "catalog:",
+    "drizzle-zod": "catalog:",
+    "graphql": "catalog:",
+    "graphql-yoga": "catalog:",
+    "nitro": "catalog:",
+    "nitro-graphql": "catalog:",
+    "pg": "catalog:",
+    "rolldown": "catalog:",
+    "tsx": "catalog:",
+    "uuid": "catalog:",
+    "zod": "catalog:"
+  }
+}

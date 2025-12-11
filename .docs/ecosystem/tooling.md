@@ -1,4 +1,10 @@
+---
+category: Ecosystem
+---
+
 # Tooling
+
+<FunctionInfo fn="tooling"/>
 
 Enhance your GraphQL development experience with IDE extensions, debugging tools, and GraphQL Config integration.
 
@@ -708,3 +714,14 @@ Don't commit generated files (add to `.gitignore`):
 - [Testing](/guide/testing) - Testing strategies
 - [Performance](/guide/performance) - Performance optimization
 - [Error Handling](/guide/error-handling) - Error handling patterns
+
+---
+
+## Source
+<SourceLinks fn="tooling"/>
+
+## Contributors
+<Contributors fn="tooling"/>
+
+## Changelog
+<Changelog fn="tooling"/>

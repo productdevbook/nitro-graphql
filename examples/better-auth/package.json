@@ -1,0 +1,32 @@
+{
+  "name": "example-better-auth",
+  "private": true,
+  "scripts": {
+    "dev": "nitro dev",
+    "build": "nitro build",
+    "preview": "npx srvx .output/server/index.mjs",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "better:init": "npx @better-auth/cli@latest generate --config ./server/utils/auth.ts"
+  },
+  "devDependencies": {
+    "@better-auth/cli": "catalog:",
+    "@graphql-tools/utils": "catalog:",
+    "@types/pg": "catalog:",
+    "better-auth": "catalog:",
+    "drizzle-kit": "catalog:",
+    "drizzle-orm": "catalog:",
+    "drizzle-zod": "catalog:",
+    "graphql": "catalog:",
+    "graphql-yoga": "catalog:",
+    "nitro": "catalog:",
+    "nitro-graphql": "catalog:",
+    "pg": "catalog:",
+    "rolldown": "catalog:",
+    "tsx": "catalog:",
+    "uuid": "catalog:",
+    "zod": "catalog:"
+  }
+}

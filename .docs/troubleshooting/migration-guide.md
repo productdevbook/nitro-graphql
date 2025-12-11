@@ -1,4 +1,10 @@
+---
+category: Troubleshooting
+---
+
 # Migration Guide
+
+<FunctionInfo fn="migrationGuide"/>
 
 Guide for upgrading Nitro GraphQL between major versions.
 
@@ -27,7 +33,7 @@ Version 2.0 will bring Nitro v3 and H3 v2 compatibility with several breaking ch
 **Before (v1.x with H3 v1):**
 ```typescript
 // server/graphql/context.ts
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     db: Database
   }
@@ -37,9 +43,9 @@ declare module 'h3' {
 **After (v2.x with H3 v2):**
 ```typescript
 // server/graphql/context.ts
-import type { H3Event } from 'h3'
+import type { H3Event } from 'nitro/h3'
 
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     db: Database
   }
@@ -136,37 +142,47 @@ Enhanced configuration with new file generation control options.
 
 **Before (v1.x):**
 ```typescript
+// nitro.config.ts
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
+  modules: ['nitro-graphql'],
   graphql: {
     framework: 'graphql-yoga',
-    playground: true
-  }
+    playground: true,
+  },
 })
 ```
 
 **After (v2.x):**
 ```typescript
+// nitro.config.ts
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
-  graphql: {
-    framework: 'graphql-yoga',
-    playground: true,
+  modules: [
+    graphql({
+      framework: 'graphql-yoga',
+      playground: true,
 
-    // New: Fine-grained file generation control
-    scaffold: {
-      enabled: true,
-      graphqlConfig: true,
-      serverSchema: true,
-      serverConfig: true,
-      serverContext: true
-    },
+      // New: Fine-grained file generation control
+      scaffold: {
+        enabled: true,
+        graphqlConfig: true,
+        serverSchema: true,
+        serverConfig: true,
+        serverContext: true,
+      },
 
-    // New: Custom path configuration
-    paths: {
-      serverGraphql: 'server/graphql',
-      clientGraphql: 'app/graphql',
-      typesDir: '.nitro/types'
-    }
-  }
+      // New: Custom path configuration
+      paths: {
+        serverGraphql: 'server/graphql',
+        clientGraphql: 'app/graphql',
+        typesDir: '.nitro/types',
+      },
+    }),
+  ],
 })
 ```
 
@@ -236,15 +252,21 @@ Control which files are auto-generated.
 
 **Example:**
 ```typescript
+import graphql from 'nitro-graphql'
+import { defineNitroConfig } from 'nitro/config'
+
 export default defineNitroConfig({
-  graphql: {
-    scaffold: {
-      graphqlConfig: false, // Don't generate graphql.config.ts
-      serverSchema: true, // Generate server/graphql/schema.ts
-      serverConfig: true, // Generate server/graphql/config.ts
-      serverContext: false // Don't generate context.ts
-    }
-  }
+  modules: [
+    graphql({
+      framework: 'graphql-yoga',
+      scaffold: {
+        graphqlConfig: false, // Don't generate graphql.config.ts
+        serverSchema: true, // Generate server/graphql/schema.ts
+        serverConfig: true, // Generate server/graphql/config.ts
+        serverContext: false, // Don't generate context.ts
+      },
+    }),
+  ],
 })
 ```
 
@@ -417,7 +439,13 @@ Settings not taking effect
 **Solution:**
 1. Verify module is registered:
 ```typescript
-modules: ['nitro-graphql']
+import graphql from 'nitro-graphql'
+
+export default defineNitroConfig({
+  modules: [
+    graphql({ framework: 'graphql-yoga' }),
+  ],
+})
 ```
 
 2. Check configuration syntax
@@ -647,3 +675,14 @@ pnpm dev
 - [Type Generation Issues](/troubleshooting/type-generation-issues) - Type-specific problems
 - [Debug Mode](/troubleshooting/debug-mode) - Using the debug dashboard
 - [Installation Guide](/guide/installation) - Fresh installation guide
+
+---
+
+## Source
+<SourceLinks fn="migrationGuide"/>
+
+## Contributors
+<Contributors fn="migrationGuide"/>
+
+## Changelog
+<Changelog fn="migrationGuide"/>

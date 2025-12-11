@@ -2,7 +2,7 @@ import type { NPMConfig } from '#graphql/server'
 import type { ApolloServerOptions } from '@apollo/server'
 import type { GraphQLSchema } from 'graphql'
 import type { YogaServerOptions } from 'graphql-yoga'
-import type { H3Event } from 'h3'
+import type { H3Event } from 'nitro/h3'
 
 export type Flatten<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
 

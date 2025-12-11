@@ -1,4 +1,11 @@
+---
+title: Subscriptions
+category: Guide
+---
+
 # Subscriptions
+
+<FunctionInfo fn="subscriptions"/>
 
 Real-time GraphQL subscriptions with WebSocket support.
 
@@ -22,14 +29,14 @@ type Message {
 ```ts
 export const messageSubscriptions = defineSubscription({
   messageAdded: {
-    subscribe: (_, { channelId }, context) => {
+    subscribe: (parent, { channelId }, context) => {
       return context.pubsub.asyncIterator([`MESSAGE_${channelId}`])
     },
     resolve: payload => payload,
   },
 
   userTyping: {
-    subscribe: (_, { channelId }, context) => {
+    subscribe: (parent, { channelId }, context) => {
       return context.pubsub.asyncIterator([`TYPING_${channelId}`])
     },
   },
@@ -40,7 +47,7 @@ export const messageSubscriptions = defineSubscription({
 
 ```ts
 export const messageMutations = defineMutation({
-  sendMessage: async (_, { input }, context) => {
+  sendMessage: async (parent, { input }, context) => {
     const message = await context.db.message.create({
       data: input
     })
@@ -77,3 +84,17 @@ const { data } = await useAsyncData(
 
 - [Resolvers](/guide/resolvers)
 - [GraphQL Yoga](/guide/graphql-yoga)
+
+---
+
+## Source
+
+<SourceLinks fn="subscriptions"/>
+
+## Contributors
+
+<Contributors fn="subscriptions"/>
+
+## Changelog
+
+<Changelog fn="subscriptions"/>

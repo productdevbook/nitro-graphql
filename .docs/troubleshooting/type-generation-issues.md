@@ -1,4 +1,10 @@
+---
+category: Troubleshooting
+---
+
 # Type Generation Issues
+
+<FunctionInfo fn="typeGenerationIssues"/>
 
 Troubleshooting TypeScript type generation problems in Nitro GraphQL.
 
@@ -425,9 +431,9 @@ const user = await context.db.user.findUnique()
 1. **Define Context Types:**
 ```typescript
 // server/graphql/context.ts
-import type { H3Event } from 'h3'
+import type { H3Event } from 'nitro/h3'
 
-declare module 'h3' {
+declare module 'nitro/h3' {
   interface H3EventContext {
     db: Database
     user?: User
@@ -660,7 +666,7 @@ export default defineGraphQLConfig({
 
 4. **Verify Entity Resolvers:**
 ```typescript
-export const userResolvers = defineType('User', {
+export const userResolvers = defineField('User', {
   __resolveReference: async (reference) => {
     return await db.user.findUnique({ where: { id: reference.id } })
   }
@@ -681,3 +687,14 @@ export const userResolvers = defineType('User', {
 - [Debug Mode](/troubleshooting/debug-mode) - Using the debug dashboard
 - [Performance Issues](/troubleshooting/performance-issues) - Optimization guide
 - [Type Generation Guide](/guide/type-generation) - Learn about type generation
+
+---
+
+## Source
+<SourceLinks fn="typeGenerationIssues"/>
+
+## Contributors
+<Contributors fn="typeGenerationIssues"/>
+
+## Changelog
+<Changelog fn="typeGenerationIssues"/>

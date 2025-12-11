@@ -1,7 +1,7 @@
 {
   "name": "docs",
   "version": "1.0.0",
-  "packageManager": "pnpm@10.18.3",
+  "packageManager": "pnpm@10.22.0",
   "description": "",
   "author": "",
   "license": "ISC",
@@ -10,14 +10,21 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "vitepress dev",
-    "build": "vitepress build",
-    "preview": "vitepress preview"
+    "build": "tsx scripts/update-metadata.ts && vitepress build",
+    "preview": "vitepress preview",
+    "update:metadata": "tsx scripts/update-metadata.ts"
   },
   "dependencies": {
-    "gsap": "^3.13.0",
-    "shiki": "^3.14.0"
+    "dayjs": "catalog:",
+    "gray-matter": "catalog:",
+    "gsap": "catalog:",
+    "shiki": "catalog:"
   },
   "devDependencies": {
-    "vitepress": "2.0.0-alpha.12"
+    "@types/node": "catalog:",
+    "mermaid": "catalog:",
+    "tsx": "catalog:",
+    "vitepress": "catalog:",
+    "vitepress-plugin-mermaid": "catalog:"
   }
 }

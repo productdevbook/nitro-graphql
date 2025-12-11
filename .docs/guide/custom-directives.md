@@ -1,4 +1,11 @@
+---
+title: Custom Directives
+category: Guide
+---
+
 # Custom Directives
+
+<FunctionInfo fn="customDirectives"/>
 
 Create reusable GraphQL directives for authentication, caching, validation, and more.
 
@@ -20,6 +27,8 @@ type Query {
 
 ```ts
 // server/graphql/directives/auth.directive.ts
+import { defineDirective } from 'nitro-graphql/define'
+
 export const authDirective = defineDirective({
   name: 'auth',
   locations: ['FIELD_DEFINITION'],
@@ -48,6 +57,8 @@ export const authDirective = defineDirective({
 ### With Arguments
 
 ```ts
+import { defineDirective } from 'nitro-graphql/define'
+
 export const cacheDirective = defineDirective({
   name: 'cache',
   locations: ['FIELD_DEFINITION'],
@@ -77,3 +88,17 @@ See the [playgrounds/nitro/server/graphql/directives/](https://github.com/produc
 - [Schemas](/guide/schemas)
 - [Context](/guide/context)
 - [Resolvers](/guide/resolvers)
+
+---
+
+## Source
+
+<SourceLinks fn="customDirectives"/>
+
+## Contributors
+
+<Contributors fn="customDirectives"/>
+
+## Changelog
+
+<Changelog fn="customDirectives"/>

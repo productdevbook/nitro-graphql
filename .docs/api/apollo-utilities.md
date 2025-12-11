@@ -1,4 +1,15 @@
+---
+title: Apollo Utilities
+category: API
+related:
+  - configuration
+  - resolver-functions
+description: Complete reference for Apollo Server integration and Apollo Federation utilities.
+---
+
 # Apollo Utilities API Reference
+
+<FunctionInfo fn="apolloUtilities"/>
 
 Complete reference for Apollo Server integration and Apollo Federation utilities.
 
@@ -62,7 +73,7 @@ Returns an H3 `EventHandler` that can be used with Nitro routes.
 
 ```typescript
 import { ApolloServer } from '@apollo/server'
-import { defineEventHandler } from 'h3'
+import { defineEventHandler } from 'nitro/h3'
 import { startServerAndCreateH3Handler } from 'nitro-graphql/utils/apollo'
 
 const server = new ApolloServer({
@@ -355,7 +366,7 @@ interface ReferenceResolver<TContext> {
 ```typescript
 import type { UserResolvers } from '#graphql/server'
 
-export const userResolvers: UserResolvers = defineType({
+export const userResolvers: UserResolvers = defineField({
   User: {
     __resolveReference: async (reference, context) => {
       // reference contains fields marked with @key
@@ -572,7 +583,7 @@ const server = new ApolloServer({
 Always implement `__resolveReference` for federated types:
 
 ```typescript
-export const userResolvers = defineType({
+export const userResolvers = defineField({
   User: {
     __resolveReference: async (reference, context) => {
       // Resolve entity from its key fields
@@ -587,7 +598,7 @@ export const userResolvers = defineType({
 When referencing types from other subgraphs, return a reference object:
 
 ```typescript
-export const postResolvers = defineType({
+export const postResolvers = defineField({
   Post: {
     author: (post) => {
       // Don't resolve the entire user, return a reference
@@ -683,3 +694,14 @@ export default defineNitroConfig({
 2. Ensure context returns correct shape
 3. Check H3 event context is properly set up
 4. Verify middleware is running before GraphQL handler
+
+---
+
+## Source
+<SourceLinks fn="apolloUtilities"/>
+
+## Contributors
+<Contributors fn="apolloUtilities"/>
+
+## Changelog
+<Changelog fn="apolloUtilities"/>

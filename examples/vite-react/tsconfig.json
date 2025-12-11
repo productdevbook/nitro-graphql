@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    // Module resolution
+    "target": "ESNext",
+    // JSX
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "paths": {
+      "#graphql/server": [
+        "./.graphql/nitro-graphql-server.d.ts"
+      ],
+      "#graphql/client": [
+        "./.graphql/nitro-graphql-client.d.ts"
+      ],
+      "#graphql/schema": [
+        "./server/graphql/schema.ts"
+      ]
+    },
+    "resolveJsonModule": true,
+    "types": [
+      "vite/client",
+      "nitro-graphql",
+      "nitro/h3"
+    ],
+    // Core checks
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "useUnknownInCatchVariables": true,
+    "noEmit": true,
+    "allowSyntheticDefaultImports": true,
+    // Additional safety
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
+  }
+}

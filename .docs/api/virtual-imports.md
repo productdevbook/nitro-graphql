@@ -1,4 +1,16 @@
+---
+title: Virtual Imports
+category: API
+related:
+  - type-definitions
+  - resolver-functions
+  - configuration
+description: Complete reference for virtual module imports provided by Nitro GraphQL.
+---
+
 # Virtual Imports API Reference
+
+<FunctionInfo fn="virtualImports"/>
 
 Complete reference for virtual module imports provided by Nitro GraphQL.
 
@@ -99,7 +111,7 @@ export const mutations: MutationResolvers = defineMutation({
 ```typescript
 import type { PostResolvers, UserResolvers } from '#graphql/server'
 
-export const userTypes: UserResolvers = defineType({
+export const userTypes: UserResolvers = defineField({
   User: {
     fullName: parent => `${parent.firstName} ${parent.lastName}`,
     posts: async (parent, _args, context) => {
@@ -660,3 +672,14 @@ pnpm exec tsc --noEmit
 # Watch mode
 pnpm exec tsc --noEmit --watch
 ```
+
+---
+
+## Source
+<SourceLinks fn="virtualImports"/>
+
+## Contributors
+<Contributors fn="virtualImports"/>
+
+## Changelog
+<Changelog fn="virtualImports"/>

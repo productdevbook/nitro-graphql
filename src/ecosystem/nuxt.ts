@@ -78,8 +78,10 @@ export default defineNuxtModule<ModuleOptions>({
         if (externalTypesPath) {
           const relativePath = relativeWithDot(tsconfigDir, externalTypesPath)
           options.references.push({ path: relativePath })
-          options.tsConfig.compilerOptions.paths[`#graphql/client/${service.name}`] = [relativePath]
-          options.tsConfig.include.push(relativePath)
+          if (options.tsConfig.compilerOptions)
+            options.tsConfig.compilerOptions.paths[`#graphql/client/${service.name}`] = [relativePath]
+          if (options.tsConfig.include)
+            options.tsConfig.include.push(relativePath)
         }
       }
     })

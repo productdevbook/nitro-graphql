@@ -1,4 +1,16 @@
+---
+title: Configuration
+category: API
+related:
+  - resolver-functions
+  - type-definitions
+  - hooks
+description: Complete reference for all configuration options available in Nitro GraphQL.
+---
+
 # Configuration API Reference
+
+<FunctionInfo fn="configuration"/>
 
 Complete reference for all configuration options available in Nitro GraphQL.
 
@@ -789,3 +801,14 @@ export default defineNitroConfig({
   }
 })
 ```
+
+---
+
+## Source
+<SourceLinks fn="configuration"/>
+
+## Contributors
+<Contributors fn="configuration"/>
+
+## Changelog
+<Changelog fn="configuration"/>
