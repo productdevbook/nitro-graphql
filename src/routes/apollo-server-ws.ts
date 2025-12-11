@@ -329,7 +329,9 @@ async function cleanupSubscriptions(peer: Peer, sendComplete = false) {
 }
 
 // Schema creation
-let buildSubgraphSchema: ((options: unknown) => GraphQLSchema) | false | null = null
+// Type for buildSubgraphSchema - optional @apollo/subgraph dependency
+type BuildSubgraphSchemaFn = typeof import('@apollo/subgraph').buildSubgraphSchema
+let buildSubgraphSchema: BuildSubgraphSchemaFn | false | null = null
 
 async function loadFederationSupport() {
   if (buildSubgraphSchema !== null)
@@ -363,7 +365,7 @@ async function createMergedSchema(): Promise<GraphQLSchema> {
 
     if (buildSubgraph) {
       const typeDefsDoc = typeof typeDefs === 'string' ? parse(typeDefs) : typeDefs
-      schema = buildSubgraph({ typeDefs: typeDefsDoc, resolvers: mergedResolvers })
+      schema = buildSubgraph({ typeDefs: typeDefsDoc, resolvers: mergedResolvers as any })
     }
     else {
       console.warn('[Apollo WS] Federation enabled but @apollo/subgraph not available')
