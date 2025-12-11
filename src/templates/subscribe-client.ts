@@ -216,28 +216,13 @@ export function createSubscription<TData = unknown, TVariables = Record<string, 
     }
 
     ws.onmessage = (event: MessageEvent) => {
-      try {
-        const data = typeof event.data === 'string' ? event.data : String(event.data)
-        const message: GraphQLWSMessage = JSON.parse(data)
-        handleMessage(message)
-      } catch (e) {
-        // For SSE, try to parse as GraphQL response directly
-        if (transport === 'sse') {
-          try {
-            const data = typeof event.data === 'string' ? event.data : String(event.data)
-            const response = JSON.parse(data)
-            if (response.data) {
-              const subscriptionData = Object.values(response.data)[0]
-              options.onData?.(subscriptionData as TData)
-            } else if (response.errors) {
-              options.onError?.(new Error(response.errors[0]?.message || 'GraphQL Error'))
-            }
-          } catch {
-            // Ignore parse errors
-          }
-        } else {
-          options.onError?.(e instanceof Error ? e : new Error('Failed to parse message'))
-        }
+      const data = typeof event.data === 'string' ? event.data : String(event.data)
+
+      // SSE uses direct GraphQL response format, WebSocket uses graphql-ws protocol
+      if (transport === 'sse') {
+        handleSSEMessage(data)
+      } else {
+        handleWebSocketMessage(data)
       }
     }
 
@@ -265,6 +250,31 @@ export function createSubscription<TData = unknown, TVariables = Record<string, 
       }
 
       scheduleReconnect()
+    }
+  }
+
+  // SSE message parser - handles direct GraphQL response format
+  function handleSSEMessage(data: string) {
+    try {
+      const response = JSON.parse(data) as { data?: Record<string, unknown>; errors?: Array<{ message: string }> }
+      if (response.errors && response.errors.length > 0) {
+        options.onError?.(new Error(response.errors[0]?.message || 'GraphQL Error'))
+      } else if (response.data) {
+        const subscriptionData = Object.values(response.data)[0]
+        options.onData?.(subscriptionData as TData)
+      }
+    } catch {
+      // Ignore parse errors for SSE (may be heartbeat or malformed data)
+    }
+  }
+
+  // WebSocket message parser - handles graphql-ws protocol
+  function handleWebSocketMessage(data: string) {
+    try {
+      const message: GraphQLWSMessage = JSON.parse(data)
+      handleMessage(message)
+    } catch (e) {
+      options.onError?.(e instanceof Error ? e : new Error('Failed to parse WebSocket message'))
     }
   }
 

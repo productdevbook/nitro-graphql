@@ -297,13 +297,24 @@ async function handleComplete(
   }
 }
 
-async function cleanupSubscriptions(peer: Peer) {
+async function cleanupSubscriptions(peer: Peer, sendComplete = false) {
   const subscriptions = peer.context.subscriptions as Map<string, TrackedSubscription> | undefined
   if (!subscriptions)
     return
 
-  // S2: Abort all subscriptions first, then cleanup iterators
+  // Graceful shutdown: send complete messages before cleanup
   for (const [id, tracked] of subscriptions.entries()) {
+    // Try to send complete message (may fail if connection already closed)
+    if (sendComplete) {
+      try {
+        sendCompleteMessage(peer, id)
+      }
+      catch {
+        // Ignore send errors during cleanup
+      }
+    }
+
+    // S2: Abort to stop iteration, then return iterator
     tracked.abortController.abort()
     if (typeof tracked.iterator.return === 'function') {
       try {
@@ -430,7 +441,8 @@ export default defineWebSocketHandler({
   async close(peer, details) {
     devLog('[Apollo WS] Client disconnected:', details)
     stopKeepAlive(peer)
-    await cleanupSubscriptions(peer)
+    // Graceful shutdown: try to send complete messages before cleanup
+    await cleanupSubscriptions(peer, true)
   },
 
   async error(_peer, error) {
