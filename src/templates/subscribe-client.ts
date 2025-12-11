@@ -45,8 +45,10 @@ export interface SubscriptionOptions<TVariables = Record<string, unknown>> {
   onData?: (data: unknown) => void
   /** Callback when an error occurs */
   onError?: (error: Error) => void
-  /** Callback when connection is established */
+  /** Callback when connection is established (first time) */
   onConnected?: () => void
+  /** Callback when connection is re-established after reconnect */
+  onReconnected?: () => void
   /** Callback when connection is closed */
   onDisconnected?: () => void
   /** Callback when retrying connection */
@@ -91,6 +93,8 @@ interface GraphQLWSMessage {
 const DEFAULT_CONNECTION_TIMEOUT_MS = 10000
 const DEFAULT_MAX_RETRIES = 5
 const MAX_BACKOFF_MS = 30000
+const DEFAULT_PING_INTERVAL_MS = 25000
+const DEFAULT_PONG_TIMEOUT_MS = 5000
 
 /**
  * Create a GraphQL subscription
@@ -108,8 +112,11 @@ export function createSubscription<TData = unknown, TVariables = Record<string, 
   let retryCount = 0
   let subscriptionId: string | null = null
   let intentionalClose = false
+  let hasConnectedBefore = false
   let reconnectTimeout: ReturnType<typeof setTimeout> | null = null
   let connectionTimeout: ReturnType<typeof setTimeout> | null = null
+  let pingInterval: ReturnType<typeof setInterval> | null = null
+  let pongTimeout: ReturnType<typeof setTimeout> | null = null
 
   const maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES
   const connectionTimeoutMs = options.connectionTimeoutMs ?? DEFAULT_CONNECTION_TIMEOUT_MS
@@ -117,6 +124,35 @@ export function createSubscription<TData = unknown, TVariables = Record<string, 
   function setState(state: ConnectionState) {
     connectionState = state
     options.onStateChange?.(state)
+  }
+
+  // Client-initiated keep-alive ping
+  function startPing() {
+    stopPing() // Clear any existing ping
+
+    pingInterval = setInterval(() => {
+      if (!isConnected) return
+
+      sendMessage({ type: 'ping' })
+
+      // Set timeout for pong response
+      pongTimeout = setTimeout(() => {
+        options.onError?.(new Error('Server not responding to ping'))
+        cleanupConnection()
+        scheduleReconnect()
+      }, DEFAULT_PONG_TIMEOUT_MS)
+    }, DEFAULT_PING_INTERVAL_MS)
+  }
+
+  function stopPing() {
+    if (pingInterval) {
+      clearInterval(pingInterval)
+      pingInterval = null
+    }
+    if (pongTimeout) {
+      clearTimeout(pongTimeout)
+      pongTimeout = null
+    }
   }
 
   function connect() {
@@ -277,8 +313,18 @@ export function createSubscription<TData = unknown, TVariables = Record<string, 
         isConnected = true
         retryCount = 0
         setState('connected')
-        options.onConnected?.()
-        // Subscribe after connection acknowledged
+
+        // Call appropriate callback based on whether this is a reconnection
+        if (hasConnectedBefore) {
+          options.onReconnected?.()
+        } else {
+          hasConnectedBefore = true
+          options.onConnected?.()
+        }
+
+        // Start client-initiated keep-alive ping
+        startPing()
+        // Subscribe after connection acknowledged (auto-resubscribe on reconnect)
         subscribe()
         break
 
@@ -319,6 +365,14 @@ export function createSubscription<TData = unknown, TVariables = Record<string, 
       case 'ping':
         sendMessage({ type: 'pong' })
         break
+
+      case 'pong':
+        // Clear pong timeout - server responded to our ping
+        if (pongTimeout) {
+          clearTimeout(pongTimeout)
+          pongTimeout = null
+        }
+        break
     }
   }
 
@@ -335,6 +389,7 @@ export function createSubscription<TData = unknown, TVariables = Record<string, 
   }
 
   function cleanupConnection() {
+    stopPing()
     if (ws) {
       if (subscriptionId) {
         sendMessage({ id: subscriptionId, type: 'complete' })
@@ -350,6 +405,7 @@ export function createSubscription<TData = unknown, TVariables = Record<string, 
     intentionalClose = true
 
     // Clear all timers
+    stopPing()
     if (reconnectTimeout) {
       clearTimeout(reconnectTimeout)
       reconnectTimeout = null

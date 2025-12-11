@@ -1,5 +1,6 @@
 import type { Peer } from 'crossws'
-import type { GraphQLSchema } from 'graphql'
+import type { DocumentNode, ExecutionResult, GraphQLSchema, SourceLocation } from 'graphql'
+import { importedConfig } from '#nitro-internal-virtual/graphql-config'
 import { moduleConfig } from '#nitro-internal-virtual/module-config'
 import { directives } from '#nitro-internal-virtual/server-directives'
 import { resolvers } from '#nitro-internal-virtual/server-resolvers'
@@ -12,35 +13,55 @@ import { defineWebSocketHandler } from 'h3'
 // Development-only logging
 const isDev = process.env.NODE_ENV === 'development'
 
-function devLog(message: string, ...args: any[]) {
+function devLog(message: string, ...args: unknown[]) {
   if (isDev)
     // eslint-disable-next-line no-console
     console.log(message, ...args)
 }
 
 // ============================================================================
-// Configuration
+// Types
 // ============================================================================
 
 const DEFAULT_MAX_SUBSCRIPTIONS_PER_PEER = 20
+const DEFAULT_PING_INTERVAL_MS = 15000
+const DEFAULT_PONG_TIMEOUT_MS = 5000
 
 // GraphQL-WS protocol message types
+interface SubscribePayload {
+  query: string | DocumentNode
+  variables?: Record<string, unknown>
+  operationName?: string
+}
+
 interface GraphQLWSMessage {
   id?: string
   type: string
-  payload?: any
+  payload?: SubscribePayload | Record<string, unknown>
+}
+
+interface GraphQLWSError {
+  message: string
+  locations?: readonly SourceLocation[]
+  path?: readonly (string | number)[]
+}
+
+// Tracked subscription with AbortController for proper cleanup
+interface TrackedSubscription {
+  iterator: AsyncIterator<ExecutionResult>
+  abortController: AbortController
 }
 
 // Message sending utilities
-function sendMessage(peer: Peer, message: Record<string, any>) {
+function sendMessage(peer: Peer, message: Record<string, unknown>) {
   peer.send(JSON.stringify(message))
 }
 
-function sendErrorMessage(peer: Peer, id: string | undefined, errors: Array<{ message: string, locations?: any, path?: any }>) {
+function sendErrorMessage(peer: Peer, id: string | undefined, errors: GraphQLWSError[]) {
   sendMessage(peer, { id, type: 'error', payload: errors })
 }
 
-function sendNextMessage(peer: Peer, id: string, payload: any) {
+function sendNextMessage(peer: Peer, id: string, payload: ExecutionResult) {
   sendMessage(peer, { id, type: 'next', payload })
 }
 
@@ -49,15 +70,91 @@ function sendCompleteMessage(peer: Peer, id: string) {
 }
 
 // Protocol handlers
-function handleConnectionInit(peer: Peer, payload?: Record<string, unknown>) {
+async function handleConnectionInit(peer: Peer, payload?: Record<string, unknown>) {
   if (payload) {
     peer.context.connectionParams = payload
   }
+
+  // S5: onConnect validation callback (async supported)
+  const onConnect = importedConfig?.websocket?.onConnect
+  if (onConnect) {
+    try {
+      const connectionContext = {
+        connectionParams: payload || {},
+        headers: Object.fromEntries(peer.request.headers.entries()),
+        peerId: peer.id,
+        remoteAddress: peer.remoteAddress,
+      }
+
+      const result = await onConnect(connectionContext)
+
+      // If onConnect returns false or throws, reject the connection
+      if (result === false) {
+        sendMessage(peer, {
+          type: 'connection_error',
+          payload: { message: 'Connection rejected by server' },
+        })
+        peer.close()
+        return
+      }
+
+      // If onConnect returns an object, merge it into connection context
+      if (result && typeof result === 'object') {
+        peer.context.connectionContext = result
+      }
+    }
+    catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Connection validation failed'
+      sendMessage(peer, {
+        type: 'connection_error',
+        payload: { message: errorMessage },
+      })
+      peer.close()
+      return
+    }
+  }
+
   sendMessage(peer, { type: 'connection_ack' })
+  // Start server-initiated keep-alive
+  startKeepAlive(peer)
 }
 
 function handlePing(peer: Peer) {
   sendMessage(peer, { type: 'pong' })
+}
+
+function handlePong(peer: Peer) {
+  // Client responded to our ping - clear timeout
+  if (peer.context.pongTimeout) {
+    clearTimeout(peer.context.pongTimeout as ReturnType<typeof setTimeout>)
+    peer.context.pongTimeout = null
+  }
+}
+
+// Server-initiated keep-alive
+function startKeepAlive(peer: Peer) {
+  stopKeepAlive(peer) // Clear any existing
+
+  peer.context.pingInterval = setInterval(() => {
+    sendMessage(peer, { type: 'ping' })
+
+    // Set timeout for pong response
+    peer.context.pongTimeout = setTimeout(() => {
+      devLog('[Apollo WS] Peer did not respond to ping, closing connection')
+      peer.close()
+    }, DEFAULT_PONG_TIMEOUT_MS)
+  }, DEFAULT_PING_INTERVAL_MS)
+}
+
+function stopKeepAlive(peer: Peer) {
+  if (peer.context.pingInterval) {
+    clearInterval(peer.context.pingInterval as ReturnType<typeof setInterval>)
+    peer.context.pingInterval = null
+  }
+  if (peer.context.pongTimeout) {
+    clearTimeout(peer.context.pongTimeout as ReturnType<typeof setTimeout>)
+    peer.context.pongTimeout = null
+  }
 }
 
 async function handleSubscribe(
@@ -70,8 +167,9 @@ async function handleSubscribe(
     return
   }
 
-  const subscriptions = peer.context.subscriptions as Map<string, AsyncIterator<any>>
+  const subscriptions = peer.context.subscriptions as Map<string, TrackedSubscription>
   const connectionParams = peer.context.connectionParams as Record<string, unknown> | undefined
+  const connectionContext = peer.context.connectionContext as Record<string, unknown> | undefined
 
   // Check for duplicate subscription ID
   if (subscriptions.has(msg.id)) {
@@ -86,7 +184,8 @@ async function handleSubscribe(
   }
 
   try {
-    const { query, variables, operationName } = msg.payload
+    const payload = msg.payload as SubscribePayload
+    const { query, variables, operationName } = payload
     const document = typeof query === 'string' ? parse(query) : query
     const validationErrors = validate(schema, document)
 
@@ -99,9 +198,10 @@ async function handleSubscribe(
       return
     }
 
-    // Build context with connectionParams and HTTP headers from upgrade request
+    // Build context with connectionParams, connectionContext, and HTTP headers
     const contextValue: Record<string, unknown> = {
       connectionParams,
+      ...connectionContext, // Spread onConnect result
       headers: Object.fromEntries(peer.request.headers.entries()),
       authorization: peer.request.headers.get('authorization') || connectionParams?.authorization,
       peerId: peer.id,
@@ -117,22 +217,50 @@ async function handleSubscribe(
     })
 
     if (Symbol.asyncIterator in result) {
-      subscriptions.set(msg.id, result)
+      // S2: Create AbortController to track this subscription
+      const abortController = new AbortController()
+      const trackedSub: TrackedSubscription = {
+        iterator: result,
+        abortController,
+      }
+      subscriptions.set(msg.id, trackedSub)
 
-      ;(async () => {
+      // S2: Tracked async iteration with AbortController
+      const iterateSubscription = async () => {
+        const subscriptionId = msg.id!
+        const signal = abortController.signal
+
         try {
           for await (const value of result) {
-            sendNextMessage(peer, msg.id!, value)
+            // Check if aborted before sending
+            if (signal.aborted) {
+              break
+            }
+            sendNextMessage(peer, subscriptionId, value)
           }
-          sendCompleteMessage(peer, msg.id!)
-          subscriptions.delete(msg.id!)
+
+          // Only send complete if not aborted
+          if (!signal.aborted) {
+            sendCompleteMessage(peer, subscriptionId)
+          }
         }
         catch (error) {
+          // Ignore abort errors
+          if (signal.aborted) {
+            return
+          }
           console.error('[Apollo WS] Subscription error:', error)
-          sendErrorMessage(peer, msg.id!, [{ message: error instanceof Error ? error.message : 'Subscription error' }])
-          subscriptions.delete(msg.id!)
+          sendErrorMessage(peer, subscriptionId, [{
+            message: error instanceof Error ? error.message : 'Subscription error',
+          }])
         }
-      })()
+        finally {
+          subscriptions.delete(subscriptionId)
+        }
+      }
+
+      // Start iteration (tracked, not fire-and-forget)
+      iterateSubscription()
     }
     else {
       sendNextMessage(peer, msg.id, result)
@@ -152,23 +280,34 @@ async function handleComplete(
   if (!msg.id)
     return
 
-  const subscriptions = peer.context.subscriptions as Map<string, AsyncIterator<any>>
-  const iterator = subscriptions.get(msg.id)
-  if (iterator && typeof iterator.return === 'function') {
-    await iterator.return()
+  const subscriptions = peer.context.subscriptions as Map<string, TrackedSubscription>
+  const tracked = subscriptions.get(msg.id)
+  if (tracked) {
+    // S2: Abort first to stop iteration, then return iterator
+    tracked.abortController.abort()
+    if (typeof tracked.iterator.return === 'function') {
+      try {
+        await tracked.iterator.return()
+      }
+      catch {
+        // Ignore errors during cleanup
+      }
+    }
+    subscriptions.delete(msg.id)
   }
-  subscriptions.delete(msg.id)
 }
 
 async function cleanupSubscriptions(peer: Peer) {
-  const subscriptions = peer.context.subscriptions as Map<string, AsyncIterator<any>> | undefined
+  const subscriptions = peer.context.subscriptions as Map<string, TrackedSubscription> | undefined
   if (!subscriptions)
     return
 
-  for (const [id, iterator] of subscriptions.entries()) {
-    if (typeof iterator.return === 'function') {
+  // S2: Abort all subscriptions first, then cleanup iterators
+  for (const [id, tracked] of subscriptions.entries()) {
+    tracked.abortController.abort()
+    if (typeof tracked.iterator.return === 'function') {
       try {
-        await iterator.return()
+        await tracked.iterator.return()
       }
       catch (error) {
         console.error(`[Apollo WS] Error cleaning up subscription ${id}:`, error)
@@ -179,7 +318,7 @@ async function cleanupSubscriptions(peer: Peer) {
 }
 
 // Schema creation
-let buildSubgraphSchema: any = null
+let buildSubgraphSchema: ((options: unknown) => GraphQLSchema) | false | null = null
 
 async function loadFederationSupport() {
   if (buildSubgraphSchema !== null)
@@ -249,7 +388,7 @@ async function getSchema(): Promise<GraphQLSchema> {
 export default defineWebSocketHandler({
   async open(peer) {
     devLog('[Apollo WS] Client connected')
-    peer.context.subscriptions = new Map<string, AsyncIterator<any>>()
+    peer.context.subscriptions = new Map<string, TrackedSubscription>()
   },
 
   async message(peer, message) {
@@ -261,10 +400,13 @@ export default defineWebSocketHandler({
 
       switch (msg.type) {
         case 'connection_init':
-          handleConnectionInit(peer, msg.payload)
+          await handleConnectionInit(peer, msg.payload as Record<string, unknown> | undefined)
           break
         case 'ping':
           handlePing(peer)
+          break
+        case 'pong':
+          handlePong(peer)
           break
         case 'subscribe':
           await handleSubscribe(peer, msg, currentSchema)
@@ -287,6 +429,7 @@ export default defineWebSocketHandler({
 
   async close(peer, details) {
     devLog('[Apollo WS] Client disconnected:', details)
+    stopKeepAlive(peer)
     await cleanupSubscriptions(peer)
   },
 
