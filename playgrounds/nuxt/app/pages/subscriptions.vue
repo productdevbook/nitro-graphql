@@ -136,7 +136,7 @@ const {
         <div class="bg-white rounded-lg shadow-lg p-6 border-2 border-dashed border-orange-300">
           <h2 class="text-xl font-semibold mb-4">
             SSE Countdown
-            <span class="text-xs text-orange-500 block">{ sse: true }</span>
+            <span class="text-xs text-orange-500 block">{{ sseTransport }} transport</span>
           </h2>
           <div class="text-6xl font-mono text-center my-8 text-orange-600">
             {{ sseCountdown ?? '-' }}

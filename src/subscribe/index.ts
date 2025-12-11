@@ -1240,7 +1240,8 @@ function createSseDedicatedSubscription<TData = unknown, TVariables = Record<str
       }
     }
 
-    es.onmessage = (event) => {
+    // Handle SSE data - GraphQL Yoga sends "event: next" for subscription data
+    function handleSseData(event: MessageEvent) {
       try {
         const response = JSON.parse(event.data) as { data?: Record<string, unknown>, errors?: Array<{ message: string }> }
         if (response.errors && response.errors.length > 0) {
@@ -1257,6 +1258,11 @@ function createSseDedicatedSubscription<TData = unknown, TVariables = Record<str
         // Ignore parse errors
       }
     }
+
+    // Listen for "next" event type (GraphQL over SSE standard)
+    es.addEventListener('next', handleSseData)
+    // Also listen for default message event (fallback)
+    es.onmessage = handleSseData
 
     es.onerror = () => {
       // EventSource handles reconnection automatically
