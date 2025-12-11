@@ -300,6 +300,7 @@ export async function generateClientTypes(
   outputPath?: string,
   serviceName?: string,
   virtualTypesPath?: string,
+  subscriptionsEnabled?: boolean,
 ) {
   // For external services, allow schema-only generation (no documents required)
   if (docs.length === 0 && !serviceName) {
@@ -434,8 +435,8 @@ export function getSdk(requester: Requester): Sdk {
 
     const sdkContent = results[0]?.content || ''
 
-    // Generate subscription builder if there are subscriptions
-    const subscriptionBuilder = generateSubscriptionBuilder(docs)
+    // Generate subscription builder if there are subscriptions and subscriptions are enabled
+    const subscriptionBuilder = generateSubscriptionBuilder(docs, subscriptionsEnabled ?? false)
 
     // Combine SDK with subscription builder
     const finalSdkContent = subscriptionBuilder
@@ -465,7 +466,7 @@ export async function generateExternalClientTypes(
   const config = service.codegen?.client || {}
   const sdkConfig = service.codegen?.clientSDK || {}
 
-  return generateClientTypes(schema, docs, config, sdkConfig, undefined, service.name, virtualTypesPath)
+  return generateClientTypes(schema, docs, config, sdkConfig, undefined, service.name, virtualTypesPath, false)
 }
 
 /**
@@ -523,7 +524,11 @@ export function extractSubscriptions(docs: Source[]): SubscriptionInfo[] {
 /**
  * Generate subscription builder code (Drizzle-style API) + Vue Composables
  */
-export function generateSubscriptionBuilder(docs: Source[]): string {
+export function generateSubscriptionBuilder(docs: Source[], subscriptionsEnabled: boolean): string {
+  // Skip if subscriptions are not enabled in config
+  if (!subscriptionsEnabled)
+    return ''
+
   const subscriptions = extractSubscriptions(docs)
   if (subscriptions.length === 0)
     return ''

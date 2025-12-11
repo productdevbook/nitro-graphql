@@ -494,7 +494,16 @@ async function generateMainClientTypes(nitro: Nitro) {
       }])
     : buildSchema(graphqlString)
 
-  const types = await generateClientTypes(schema, loadDocs, nitro.options.graphql?.codegen?.client ?? {}, nitro.options.graphql?.codegen?.clientSDK ?? {})
+  const types = await generateClientTypes(
+    schema,
+    loadDocs,
+    nitro.options.graphql?.codegen?.client ?? {},
+    nitro.options.graphql?.codegen?.clientSDK ?? {},
+    undefined,
+    undefined,
+    undefined,
+    nitro.options.graphql?.subscriptions?.enabled ?? false,
+  )
   if (types === false) {
     return
   }
