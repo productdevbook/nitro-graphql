@@ -470,18 +470,10 @@ export async function generateExternalClientTypes(
 }
 
 /**
- * Convert PascalCase to camelCase
- */
-function toCamelCase(str: string): string {
-  return str.charAt(0).toLowerCase() + str.slice(1)
-}
-
-/**
  * Extract subscription info from documents
  */
 export interface SubscriptionInfo {
   name: string
-  methodName: string
   fieldName: string
   hasVariables: boolean
 }
@@ -510,7 +502,6 @@ export function extractSubscriptions(docs: Source[]): SubscriptionInfo[] {
 
         subscriptions.push({
           name,
-          methodName: toCamelCase(name),
           fieldName,
           hasVariables,
         })
@@ -654,13 +645,13 @@ export const subscription = {
   // Generate Drizzle-style subscription methods
   for (const sub of subscriptions) {
     if (sub.hasVariables) {
-      output += `  ${sub.methodName}(variables: Types.${sub.name}SubscriptionVariables): SubscriptionBuilder<Types.${sub.name}Subscription['${sub.fieldName}']> {
+      output += `  ${sub.name}(variables: Types.${sub.name}SubscriptionVariables): SubscriptionBuilder<Types.${sub.name}Subscription['${sub.fieldName}']> {
     return createSubscriptionBuilder<Types.${sub.name}Subscription['${sub.fieldName}']>(${sub.name}Document, variables)
   },
 `
     }
     else {
-      output += `  ${sub.methodName}(): SubscriptionBuilder<Types.${sub.name}Subscription['${sub.fieldName}']> {
+      output += `  ${sub.name}(): SubscriptionBuilder<Types.${sub.name}Subscription['${sub.fieldName}']> {
     return createSubscriptionBuilder<Types.${sub.name}Subscription['${sub.fieldName}']>(${sub.name}Document, undefined)
   },
 `
