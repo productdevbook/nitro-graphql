@@ -34,9 +34,63 @@ type Mutation {
     email: String! @validate(pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
     age: Int! @validate(min: 18, max: 100)
   ): User
-  
+
   updateBio(
     userId: ID!
     bio: String! @validate(maxLength: 500) @transform(trim: true)
   ): User
+
+  """Send a message to a channel"""
+  sendMessage(channel: String!, content: String!, author: String!): Message!
+
+  """Join a channel"""
+  joinChannel(channel: String!, username: String!): UserEvent!
+
+  """Leave a channel"""
+  leaveChannel(channel: String!, username: String!): UserEvent!
+
+  """Send typing indicator"""
+  startTyping(channel: String!, username: String!): UserEvent!
+
+  """Stop typing indicator"""
+  stopTyping(channel: String!, username: String!): UserEvent!
+}
+
+type Subscription {
+  """Simple counter that increments every second"""
+  countdown(from: Int!): Int!
+
+  """Receives a greeting message every 2 seconds"""
+  greetings: String!
+
+  """Current server time updated every second"""
+  serverTime: DateTime!
+
+  """Listen for new messages in a channel"""
+  onMessage(channel: String!): Message!
+
+  """Listen for user events (join/leave/typing)"""
+  onUserEvent(channel: String!): UserEvent!
+}
+
+type Message {
+  id: ID!
+  channel: String!
+  content: String!
+  author: String!
+  createdAt: DateTime!
+}
+
+type UserEvent {
+  type: UserEventType!
+  channel: String!
+  username: String!
+  timestamp: DateTime!
+}
+
+enum UserEventType {
+  JOINED
+  LEFT
+  TYPING
+  STOPPED_TYPING
 }

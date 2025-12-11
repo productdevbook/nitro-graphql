@@ -90,6 +90,7 @@ export default defineNitroModule({
       endpoint: {
         graphql: '/api/graphql',
         healthCheck: '/api/graphql/health',
+        ws: '/api/graphql/ws',
       },
       playground: true,
     } as NitroGraphQLOptions)
@@ -319,6 +320,33 @@ export default defineNitroModule({
       handler: join(runtime, 'health'),
       method: 'get',
     })
+
+    // WebSocket subscription endpoint (if enabled)
+    if (nitro.options.graphql?.subscriptions?.enabled) {
+      // Enable experimental websocket feature for Nitro v2
+      nitro.options.experimental ||= {}
+      nitro.options.experimental.websocket = true
+
+      const wsEndpoint = nitro.options.runtimeConfig.graphql?.endpoint?.ws
+        || nitro.options.graphql?.subscriptions?.endpoint
+        || '/api/graphql/ws'
+
+      if (nitro.options.graphql?.framework === 'graphql-yoga') {
+        nitro.options.handlers.push({
+          route: wsEndpoint,
+          handler: join(runtime, 'graphql-yoga-ws'),
+        })
+      }
+
+      if (nitro.options.graphql?.framework === 'apollo-server') {
+        nitro.options.handlers.push({
+          route: wsEndpoint,
+          handler: join(runtime, 'apollo-server-ws'),
+        })
+      }
+
+      consola.info(`[nitro-graphql] WebSocket subscriptions enabled at: ${wsEndpoint}`)
+    }
 
     // Debug endpoint (development only)
     if (nitro.options.dev) {

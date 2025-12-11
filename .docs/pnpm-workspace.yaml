@@ -1,0 +1,4 @@
+catalog:
+  gsap: ^3.13.0
+  shiki: ^3.14.0
+  vitepress: 2.0.0-alpha.12
