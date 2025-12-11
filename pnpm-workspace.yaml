@@ -2,9 +2,9 @@ packages:
   - playgrounds/*
 
 catalog:
-  '@antfu/eslint-config': ^6.3.0
+  '@antfu/eslint-config': ^6.6.1
   '@apollo/server': 5.0.0
-  '@apollo/subgraph': ^2.12.1
+  '@apollo/subgraph': ^2.12.2
   '@apollo/utils.withrequired': ^3.0.0
   '@as-integrations/h3': 2.0.0
   '@graphql-codegen/core': ^5.0.0
@@ -20,10 +20,10 @@ catalog:
   '@graphql-tools/schema': ^10.0.30
   '@graphql-tools/url-loader': ^9.0.5
   '@graphql-tools/utils': ^10.11.0
-  '@nuxt/kit': ^4.2.1
-  '@nuxt/schema': ^4.2.1
+  '@nuxt/kit': ^4.2.2
+  '@nuxt/schema': ^4.2.2
   '@nuxtjs/tailwindcss': 7.0.0-beta.0
-  '@types/node': ^24.10.1
+  '@types/node': ^24.10.3
   bumpp: ^10.3.2
   changelogen: ^0.6.2
   chokidar: ^5.0.0
@@ -38,15 +38,15 @@ catalog:
   h3: 1.15.3
   knitwork: ^1.3.0
   nitropack: ^2.12.9
-  nuxt: ^4.2.1
+  nuxt: ^4.2.2
   ohash: ^2.0.11
-  oxc-parser: ^0.101.0
+  oxc-parser: ^0.102.0
   pathe: ^2.0.3
-  tailwindcss: ^4.1.17
+  tailwindcss: ^4.1.18
   tinyglobby: ^0.2.15
-  tsdown: ^0.16.8
+  tsdown: ^0.17.2
   typescript: ^5.9.3
   vitepress-plugin-llms: ^1.9.3
   vue: ^3.5.25
-  vue-router: ^4.6.3
+  vue-router: ^4.6.4
   zod: ^4.1.13

@@ -14,10 +14,10 @@
     "preview": "vitepress preview"
   },
   "dependencies": {
-    "gsap": "^3.13.0",
-    "shiki": "^3.14.0"
+    "gsap": "catalog:",
+    "shiki": "catalog:"
   },
   "devDependencies": {
-    "vitepress": "2.0.0-alpha.12"
+    "vitepress": "catalog:"
   }
 }

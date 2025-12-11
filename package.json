@@ -2,7 +2,7 @@
   "name": "nitro-graphql",
   "type": "module",
   "version": "1.6.1",
-  "packageManager": "pnpm@10.24.0",
+  "packageManager": "pnpm@10.25.0",
   "description": "GraphQL integration for Nitro",
   "license": "MIT",
   "repository": {
@@ -143,7 +143,7 @@
     "nitropack": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
-    "vitepress-plugin-llms": "^1.9.3"
+    "vitepress-plugin-llms": "catalog:"
   },
   "resolutions": {
     "nitro-graphql": "link:."
