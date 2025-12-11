@@ -29,6 +29,7 @@ import {
   resolveFilePath,
   shouldGenerateScaffold,
 } from './utils/path-resolver'
+import { subscribeClientTemplate } from './templates/subscribe-client'
 import { clientTypeGeneration, serverTypeGeneration } from './utils/type-generation'
 
 export type * from './types'
@@ -657,6 +658,23 @@ declare module 'h3' {
       if (existsSync(join(nitro.graphql.serverDir, 'context.d.ts'))) {
         consola.warn('nitro-graphql: Found context.d.ts file. Please rename it to context.ts for the new structure.')
         consola.info('The context file should now be context.ts instead of context.d.ts')
+      }
+
+      // 5. graphql/subscribe.ts - Subscription client (if subscriptions are enabled)
+      if (nitro.options.graphql?.subscriptions?.enabled) {
+        // Ensure client directory exists
+        if (!existsSync(nitro.graphql.clientDir)) {
+          mkdirSync(nitro.graphql.clientDir, { recursive: true })
+        }
+
+        // Generate subscribe.ts in the client directory (e.g., graphql/default/subscribe.ts)
+        const defaultDir = resolve(nitro.graphql.clientDir, 'default')
+        if (!existsSync(defaultDir)) {
+          mkdirSync(defaultDir, { recursive: true })
+        }
+
+        const subscribeClientPath = resolve(defaultDir, 'subscribe.ts')
+        writeFileIfNotExists(subscribeClientPath, subscribeClientTemplate, 'subscribe.ts')
       }
     }
     else {
