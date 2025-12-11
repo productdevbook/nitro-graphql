@@ -532,12 +532,12 @@ export function generateSubscriptionBuilder(docs: Source[]): string {
 // === Subscription Imports ===
 import { ref, onUnmounted, computed } from 'vue'
 import type { Ref } from 'vue'
-import {
-  subscriptionClient,
-  type SubscriptionHandle,
-  type SubscriptionSession,
-  type ConnectionState,
-} from './subscribe'
+import type {
+  ConnectionState,
+  SubscriptionHandle,
+  SubscriptionSession,
+} from 'nitro-graphql/subscribe'
+import { subscriptionClient } from './subscribe'
 
 // === Subscription Types ===
 export type { ConnectionState, SubscriptionHandle, SubscriptionSession }

@@ -53,11 +53,15 @@ function generateGraphQLIndexFile(
     let indexContent = `// This file is auto-generated once by nitro-graphql for quick start
 // You can modify this file according to your needs
 //
-// Export your main GraphQL service (auto-generated)
+// === Query/Mutation Client ===
 export * from './default/ofetch'
 
-// Export external GraphQL services (auto-generated for existing services)
-// When you add new external services, don't forget to add their exports here:
+// === Subscription Composables (Vue) ===
+// Export useCountdown, useGreetings, useSubscriptionSession, etc.
+export * from './default/sdk'
+
+// === External GraphQL Services ===
+// When you add new external services, add their exports here:
 // export * from './yourServiceName/ofetch'
 `
 

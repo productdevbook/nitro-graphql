@@ -19,6 +19,7 @@ export default defineConfig({
     'src/routes/**',
     'src/graphql.d.ts',
     'src/ecosystem/**',
+    'src/subscribe/**',
   ],
   format: ['esm'],
   dts: true,

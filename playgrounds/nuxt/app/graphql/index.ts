@@ -1,10 +1,11 @@
-// Export external GraphQL services (auto-generated for existing services)
-// When you add new external services, don't forget to add their exports here:
-// export * from './yourServiceName/ofetch'
+// === External GraphQL Services ===
 export * from './countries/ofetch'
-
 // This file is auto-generated once by nitro-graphql for quick start
 // You can modify this file according to your needs
 //
-// Export your main GraphQL service (auto-generated)
+// === Main GraphQL Service ===
+// Query/Mutation client
 export * from './default/ofetch'
+
+// Subscription composables (useCountdown, useGreetings, useSubscriptionSession, etc.)
+export * from './default/sdk'

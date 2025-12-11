@@ -56,6 +56,10 @@
     "./nuxt": {
       "types": "./dist/ecosystem/nuxt.d.mts",
       "import": "./dist/ecosystem/nuxt.mjs"
+    },
+    "./subscribe": {
+      "types": "./dist/subscribe/index.d.mts",
+      "import": "./dist/subscribe/index.mjs"
     }
   },
   "module": "./dist/index.mjs",
