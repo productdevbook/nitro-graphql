@@ -1,6 +1,6 @@
 import type { LoadSchemaOptions, UnnormalizedTypeDefPointer } from '@graphql-tools/load'
 import type { Source } from '@graphql-tools/utils'
-import type { GraphQLSchema, OperationDefinitionNode, SelectionNode, FieldNode } from 'graphql'
+import type { FieldNode, GraphQLSchema, OperationDefinitionNode, SelectionNode } from 'graphql'
 import type { CodegenClientConfig, ExternalGraphQLService, GenericSdkConfig } from '../types'
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'

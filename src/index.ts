@@ -9,6 +9,7 @@ import defu from 'defu'
 import { defineNitroModule } from 'nitropack/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { rollupConfig } from './rollup'
+import { subscribeClientTemplate } from './templates/subscribe-client'
 import {
   generateDirectiveSchemas,
   generateLayerIgnorePatterns,
@@ -29,7 +30,6 @@ import {
   resolveFilePath,
   shouldGenerateScaffold,
 } from './utils/path-resolver'
-import { subscribeClientTemplate } from './templates/subscribe-client'
 import { clientTypeGeneration, serverTypeGeneration } from './utils/type-generation'
 
 export type * from './types'

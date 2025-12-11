@@ -84,7 +84,8 @@ export function createSubscription<TData = unknown, TVariables = Record<string, 
         bidir: true,
         stream: true,
       })
-    } else {
+    }
+    else {
       // Use native WebSocket
       const wsUrl = endpoint.replace(/^http/, 'ws')
       ws = new WebSocket(wsUrl, 'graphql-transport-ws')
@@ -94,7 +95,8 @@ export function createSubscription<TData = unknown, TVariables = Record<string, 
       if (transport === 'websocket') {
         // Send connection_init for WebSocket
         sendMessage({ type: 'connection_init' })
-      } else {
+      }
+      else {
         // SSE doesn't need handshake, directly connected
         isConnected = true
         retryCount = 0
@@ -107,7 +109,8 @@ export function createSubscription<TData = unknown, TVariables = Record<string, 
         const data = typeof event.data === 'string' ? event.data : String(event.data)
         const message: GraphQLWSMessage = JSON.parse(data)
         handleMessage(message)
-      } catch (e) {
+      }
+      catch (e) {
         // For SSE, try to parse as GraphQL response directly
         if (transport === 'sse') {
           try {
@@ -116,13 +119,16 @@ export function createSubscription<TData = unknown, TVariables = Record<string, 
             if (response.data) {
               const subscriptionData = Object.values(response.data)[0]
               options.onData?.(subscriptionData as TData)
-            } else if (response.errors) {
+            }
+            else if (response.errors) {
               options.onError?.(new Error(response.errors[0]?.message || 'GraphQL Error'))
             }
-          } catch {
+          }
+          catch {
             // Ignore parse errors
           }
-        } else {
+        }
+        else {
           options.onError?.(e instanceof Error ? e : new Error('Failed to parse message'))
         }
       }
@@ -140,9 +146,10 @@ export function createSubscription<TData = unknown, TVariables = Record<string, 
       // Reconnect with exponential backoff
       if (retryCount < maxRetries) {
         retryCount++
-        const delay = Math.min(1000 * Math.pow(2, retryCount), 30000)
+        const delay = Math.min(1000 * 2 ** retryCount, 30000)
         setTimeout(connect, delay)
-      } else {
+      }
+      else {
         options.onError?.(new Error('Max reconnection attempts reached'))
       }
     }
@@ -166,10 +173,11 @@ export function createSubscription<TData = unknown, TVariables = Record<string, 
 
       case 'next':
         if (message.payload && typeof message.payload === 'object') {
-          const payload = message.payload as { data?: unknown; errors?: Array<{ message: string }> }
+          const payload = message.payload as { data?: unknown, errors?: Array<{ message: string }> }
           if (payload.errors) {
             options.onError?.(new Error(payload.errors[0]?.message || 'GraphQL Error'))
-          } else if (payload.data) {
+          }
+          else if (payload.data) {
             const subscriptionData = Object.values(payload.data as Record<string, unknown>)[0]
             options.onData?.(subscriptionData as TData)
           }
@@ -250,8 +258,10 @@ export function createSubscriptionClient(config: SubscriptionClientConfig = {}) 
   const configTransport = config.transport ?? 'auto'
 
   function getTransport(): 'websocket' | 'sse' {
-    if (configTransport === 'websocket') return 'websocket'
-    if (configTransport === 'sse') return 'sse'
+    if (configTransport === 'websocket')
+      return 'websocket'
+    if (configTransport === 'sse')
+      return 'sse'
     // Auto: prefer WebSocket
     return 'websocket'
   }

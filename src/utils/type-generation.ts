@@ -1,5 +1,6 @@
-import type { Nitro } from 'nitropack'
+import type { Source } from '@graphql-tools/utils'
 
+import type { Nitro } from 'nitropack'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { buildSubgraphSchema } from '@apollo/subgraph'
 import { loadFilesSync } from '@graphql-tools/load-files'
@@ -8,7 +9,6 @@ import { printSchemaWithDirectives } from '@graphql-tools/utils'
 import consola from 'consola'
 import { buildSchema, parse } from 'graphql'
 import { basename, dirname, join, resolve } from 'pathe'
-import type { Source } from '@graphql-tools/utils'
 import { downloadAndSaveSchema, extractSubscriptions, generateClientTypes, generateExternalClientTypes, loadExternalSchema, loadGraphQLDocuments } from './client-codegen'
 import { writeFileIfNotExists } from './file-generator'
 import {

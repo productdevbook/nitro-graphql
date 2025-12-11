@@ -1,6 +1,6 @@
 export const subscriptionResolvers = defineSubscription({
   countdown: {
-    subscribe: async function* (_parent, { from }: { from: number }) {
+    async* subscribe(_parent, { from }: { from: number }) {
       for (let i = from; i >= 0; i--) {
         yield { countdown: i }
         await new Promise(resolve => setTimeout(resolve, 1000))
@@ -9,7 +9,7 @@ export const subscriptionResolvers = defineSubscription({
   },
 
   greetings: {
-    subscribe: async function* () {
+    async* subscribe() {
       const greetings = ['Hello!', 'Merhaba!', 'Bonjour!', 'Hola!', 'Ciao!', 'Hallo!']
       let index = 0
 
@@ -26,7 +26,7 @@ export const subscriptionResolvers = defineSubscription({
   },
 
   serverTime: {
-    subscribe: async function* () {
+    async* subscribe() {
       for (let i = 0; i < 30; i++) {
         yield { serverTime: new Date().toISOString() }
         await new Promise(resolve => setTimeout(resolve, 1000))

@@ -1,15 +1,11 @@
-import type { BaseContext } from '@apollo/server'
 import type { Peer } from 'crossws'
 import type { GraphQLSchema } from 'graphql'
-import { importedConfig } from '#nitro-internal-virtual/graphql-config'
 import { moduleConfig } from '#nitro-internal-virtual/module-config'
 import { directives } from '#nitro-internal-virtual/server-directives'
 import { resolvers } from '#nitro-internal-virtual/server-resolvers'
 import { schemas } from '#nitro-internal-virtual/server-schemas'
-import { ApolloServer } from '@apollo/server'
 import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge'
 import { makeExecutableSchema } from '@graphql-tools/schema'
-import defu from 'defu'
 import { parse, subscribe, validate } from 'graphql'
 import { defineWebSocketHandler } from 'h3'
 
@@ -47,7 +43,10 @@ function sendCompleteMessage(peer: Peer, id: string) {
 }
 
 // Protocol handlers
-function handleConnectionInit(peer: Peer) {
+function handleConnectionInit(peer: Peer, payload?: Record<string, unknown>) {
+  if (payload) {
+    peer.context.connectionParams = payload
+  }
   sendMessage(peer, { type: 'connection_ack' })
 }
 
@@ -59,12 +58,14 @@ async function handleSubscribe(
   peer: Peer,
   msg: GraphQLWSMessage,
   schema: GraphQLSchema,
-  subscriptions: Map<string, AsyncIterator<any>>,
 ) {
   if (!msg.id || !msg.payload) {
     sendErrorMessage(peer, msg.id, [{ message: 'Invalid subscribe message' }])
     return
   }
+
+  const subscriptions = peer.context.subscriptions as Map<string, AsyncIterator<any>>
+  const connectionParams = peer.context.connectionParams as Record<string, unknown> | undefined
 
   try {
     const { query, variables, operationName } = msg.payload
@@ -80,12 +81,21 @@ async function handleSubscribe(
       return
     }
 
+    // Build context with connectionParams and HTTP headers from upgrade request
+    const contextValue: Record<string, unknown> = {
+      connectionParams,
+      headers: Object.fromEntries(peer.request.headers.entries()),
+      authorization: peer.request.headers.get('authorization') || connectionParams?.authorization,
+      peerId: peer.id,
+      remoteAddress: peer.remoteAddress,
+    }
+
     const result = await subscribe({
       schema,
       document,
       variableValues: variables,
       operationName,
-      contextValue: {},
+      contextValue,
     })
 
     if (Symbol.asyncIterator in result) {
@@ -118,12 +128,13 @@ async function handleSubscribe(
 }
 
 async function handleComplete(
+  peer: Peer,
   msg: GraphQLWSMessage,
-  subscriptions: Map<string, AsyncIterator<any>>,
 ) {
   if (!msg.id)
     return
 
+  const subscriptions = peer.context.subscriptions as Map<string, AsyncIterator<any>>
   const iterator = subscriptions.get(msg.id)
   if (iterator && typeof iterator.return === 'function') {
     await iterator.return()
@@ -131,7 +142,11 @@ async function handleComplete(
   subscriptions.delete(msg.id)
 }
 
-async function cleanupSubscriptions(subscriptions: Map<string, AsyncIterator<any>>) {
+async function cleanupSubscriptions(peer: Peer) {
+  const subscriptions = peer.context.subscriptions as Map<string, AsyncIterator<any>> | undefined
+  if (!subscriptions)
+    return
+
   for (const [id, iterator] of subscriptions.entries()) {
     if (typeof iterator.return === 'function') {
       try {
@@ -204,29 +219,18 @@ async function createMergedSchema(): Promise<GraphQLSchema> {
 
 // Handler state
 let schema: GraphQLSchema
-let apolloServer: ApolloServer<BaseContext> | null = null
 
 async function getSchema() {
   if (!schema) {
     schema = await createMergedSchema()
-
-    if (!apolloServer) {
-      apolloServer = new ApolloServer<BaseContext>(defu({
-        schema,
-        introspection: true,
-      }, importedConfig))
-      await apolloServer.start()
-    }
   }
   return schema
 }
 
-const peerSubscriptions = new WeakMap<Peer, Map<string, AsyncIterator<any>>>()
-
 export default defineWebSocketHandler({
   async open(peer) {
     devLog('[Apollo WS] Client connected')
-    peerSubscriptions.set(peer, new Map())
+    peer.context.subscriptions = new Map<string, AsyncIterator<any>>()
   },
 
   async message(peer, message) {
@@ -235,25 +239,19 @@ export default defineWebSocketHandler({
       const msg: GraphQLWSMessage = JSON.parse(data)
 
       const currentSchema = await getSchema()
-      const subscriptions = peerSubscriptions.get(peer)
-
-      if (!subscriptions) {
-        console.error('[Apollo WS] No subscriptions map found for peer')
-        return
-      }
 
       switch (msg.type) {
         case 'connection_init':
-          handleConnectionInit(peer)
+          handleConnectionInit(peer, msg.payload)
           break
         case 'ping':
           handlePing(peer)
           break
         case 'subscribe':
-          await handleSubscribe(peer, msg, currentSchema, subscriptions)
+          await handleSubscribe(peer, msg, currentSchema)
           break
         case 'complete':
-          await handleComplete(msg, subscriptions)
+          await handleComplete(peer, msg)
           break
         default:
           devLog('[Apollo WS] Unknown message type:', msg.type)
@@ -270,15 +268,10 @@ export default defineWebSocketHandler({
 
   async close(peer, details) {
     devLog('[Apollo WS] Client disconnected:', details)
-
-    const subscriptions = peerSubscriptions.get(peer)
-    if (subscriptions) {
-      await cleanupSubscriptions(subscriptions)
-    }
-    peerSubscriptions.delete(peer)
+    await cleanupSubscriptions(peer)
   },
 
-  async error(peer, error) {
+  async error(_peer, error) {
     console.error('[Apollo WS] WebSocket error:', error)
   },
 })
