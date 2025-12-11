@@ -536,11 +536,13 @@ import type {
   ConnectionState,
   SubscriptionHandle,
   SubscriptionSession,
+  SubscriptionTransport,
+  TransportOptions,
 } from 'nitro-graphql/subscribe'
 import { subscriptionClient } from './subscribe'
 
 // === Subscription Types ===
-export type { ConnectionState, SubscriptionHandle, SubscriptionSession }
+export type { ConnectionState, SubscriptionHandle, SubscriptionSession, SubscriptionTransport, TransportOptions }
 
 // Forward declaration for UseSubscriptionSessionReturn (defined below)
 export interface UseSubscriptionSessionReturn {
@@ -584,6 +586,10 @@ export interface UseSubscriptionOptions<T> {
   onStateChange?: (state: ConnectionState) => void
   /** Use existing session for multiplexing (pass result from useSubscriptionSession) */
   session?: UseSubscriptionSessionReturn
+  /** Use SSE transport instead of WebSocket (shorthand for transport: 'sse') */
+  sse?: boolean
+  /** Transport type: 'websocket' (default), 'sse', or 'auto' (WS first, SSE fallback) */
+  transport?: SubscriptionTransport
 }
 
 export interface UseSubscriptionReturn<T> {
@@ -595,6 +601,8 @@ export interface UseSubscriptionReturn<T> {
   isActive: Ref<boolean>
   /** Connection state */
   state: Ref<ConnectionState>
+  /** Active transport type ('websocket' | 'sse') */
+  transport: Ref<'websocket' | 'sse'>
   /** Start subscription */
   start: () => void
   /** Stop subscription */
@@ -767,7 +775,14 @@ function createUseSubscription<TData, TVariables = undefined>(
     const error = ref<Error | null>(null)
     const isActive = ref(false)
     const state = ref<ConnectionState>('idle')
+    const transport = ref<'websocket' | 'sse'>('websocket')
     let handle: SubscriptionHandle | null = null
+
+    // Resolve transport options
+    const transportOptions: TransportOptions = {
+      sse: options.sse,
+      transport: options.transport,
+    }
 
     function start() {
       stop()
@@ -778,7 +793,7 @@ function createUseSubscription<TData, TVariables = undefined>(
       const variables = getVariables()
 
       if (options.session) {
-        // Use existing session for multiplexing
+        // Use existing session for multiplexing (WebSocket only)
         handle = options.session.subscribe<TData>(
           query,
           variables,
@@ -791,8 +806,9 @@ function createUseSubscription<TData, TVariables = undefined>(
             options.onError?.(e)
           },
         )
+        transport.value = 'websocket'
       } else {
-        // Create dedicated connection
+        // Create dedicated connection with transport selection
         handle = subscriptionClient.subscribe<TData>(
           query,
           variables,
@@ -804,7 +820,10 @@ function createUseSubscription<TData, TVariables = undefined>(
             error.value = e
             options.onError?.(e)
           },
+          transportOptions,
         )
+        // Update transport ref from handle
+        transport.value = handle.transport
       }
     }
 
@@ -828,7 +847,7 @@ function createUseSubscription<TData, TVariables = undefined>(
 
     onUnmounted(stop)
 
-    return { data, error, isActive, state, start, stop, restart }
+    return { data, error, isActive, state, transport, start, stop, restart }
   }
 }
 

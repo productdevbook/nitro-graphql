@@ -1,8 +1,52 @@
 /**
  * GraphQL Subscription Client
- * Framework-agnostic WebSocket subscription client using graphql-ws protocol
+ * Framework-agnostic subscription client supporting WebSocket and SSE transports
  *
- * Uses native browser WebSocket API for maximum compatibility.
+ * Uses native browser WebSocket API and EventSource for maximum compatibility.
+ *
+ * @example WebSocket (default)
+ * ```typescript
+ * import { createSubscriptionClient } from 'nitro-graphql/subscribe'
+ *
+ * const client = createSubscriptionClient({ wsEndpoint: '/api/graphql/ws' })
+ *
+ * // Simple subscription
+ * client.subscribe(
+ *   'subscription { countdown(from: 10) }',
+ *   {},
+ *   (data) => console.log(data),
+ *   (error) => console.error(error)
+ * )
+ *
+ * // Multiplexed session (multiple subscriptions, single connection)
+ * const session = client.createSession()
+ * session.subscribe(query1, vars1, onData1)
+ * session.subscribe(query2, vars2, onData2)
+ * ```
+ *
+ * @example SSE Transport (same API, different transport)
+ * ```typescript
+ * // Use SSE when WebSocket is blocked (corporate firewalls, etc.)
+ * client.subscribe(
+ *   'subscription { countdown(from: 10) }',
+ *   {},
+ *   (data) => console.log(data),
+ *   (error) => console.error(error),
+ *   { transport: 'sse' }
+ * )
+ * ```
+ *
+ * @example Auto Transport (WebSocket first, SSE fallback)
+ * ```typescript
+ * // Automatically fallback to SSE if WebSocket fails
+ * client.subscribe(
+ *   'subscription { countdown(from: 10) }',
+ *   {},
+ *   (data) => console.log(data),
+ *   (error) => console.error(error),
+ *   { transport: 'auto' }
+ * )
+ * ```
  *
  * @module nitro-graphql/subscribe
  */
@@ -12,6 +56,17 @@
 // ============================================================================
 
 export type ConnectionState = 'idle' | 'connecting' | 'connected' | 'reconnecting' | 'disconnected' | 'error'
+
+/** Transport type for subscriptions */
+export type SubscriptionTransport = 'websocket' | 'sse' | 'auto'
+
+/** Transport options for subscribe calls */
+export interface TransportOptions {
+  /** Transport type: 'websocket' (default), 'sse', or 'auto' (WS first, SSE fallback) */
+  transport?: SubscriptionTransport
+  /** Shorthand for { transport: 'sse' } */
+  sse?: boolean
+}
 
 export interface SubscriptionOptions<TVariables = Record<string, unknown>> {
   query: string
@@ -34,6 +89,8 @@ export interface SubscriptionHandle {
   readonly isConnected: boolean
   readonly state: ConnectionState
   readonly id: string
+  /** The active transport type */
+  readonly transport: 'websocket' | 'sse'
 }
 
 // ============================================================================
@@ -471,6 +528,7 @@ function createDedicatedSubscription<TData = unknown, TVariables = Record<string
       return connectionState
     },
     id,
+    transport: 'websocket' as const,
   }
 }
 
@@ -893,6 +951,7 @@ function createSession(
           return connectionState
         },
         id,
+        transport: 'websocket' as const,
       }
     },
 
@@ -922,9 +981,15 @@ function createSession(
 // ============================================================================
 
 export interface SubscriptionClientConfig {
+  /** WebSocket endpoint (default: '/api/graphql/ws') */
   wsEndpoint?: string
+  /** SSE endpoint for SSE transport (default: '/api/graphql') */
+  sseEndpoint?: string
+  /** Connection parameters for WebSocket handshake */
   connectionParams?: Record<string, unknown> | (() => Record<string, unknown> | Promise<Record<string, unknown>>)
+  /** Connection timeout in ms (default: 10000) */
   connectionTimeoutMs?: number
+  /** Maximum retry attempts (default: 5) */
   maxRetries?: number
 }
 
@@ -934,15 +999,28 @@ export interface SubscriptionClient {
     variables?: TVariables,
     onData?: (data: TData) => void,
     onError?: (error: Error) => void,
+    transportOptions?: TransportOptions,
   ) => SubscriptionHandle
-  subscribeAsync: <TData = unknown, TVariables = Record<string, unknown>>(
+  subscribeAsync: <_TData = unknown, TVariables = Record<string, unknown>>(
     options: SubscriptionOptions<TVariables>,
+    transportOptions?: TransportOptions,
   ) => Promise<SubscriptionHandle>
   createSession: () => SubscriptionSession
 }
 
+/**
+ * Resolve transport type from options
+ */
+function resolveTransport(options?: TransportOptions): SubscriptionTransport {
+  if (options?.sse) {
+    return 'sse'
+  }
+  return options?.transport ?? 'websocket'
+}
+
 export function createSubscriptionClient(config: SubscriptionClientConfig = {}): SubscriptionClient {
   const wsEndpoint = config.wsEndpoint ?? '/api/graphql/ws'
+  const sseEndpoint = config.sseEndpoint ?? '/api/graphql'
   const configConnectionParams = config.connectionParams
   const connectionTimeoutMs = config.connectionTimeoutMs ?? DEFAULT_CONNECTION_TIMEOUT_MS
   const maxRetries = config.maxRetries ?? DEFAULT_MAX_RETRIES
@@ -968,23 +1046,34 @@ export function createSubscriptionClient(config: SubscriptionClientConfig = {}):
       variables?: TVariables,
       onData?: (data: TData) => void,
       onError?: (error: Error) => void,
+      transportOptions?: TransportOptions,
     ): SubscriptionHandle {
-      return createDedicatedSubscription<TData, TVariables>(
-        wsEndpoint,
-        {
-          query,
-          variables,
-          onData: onData as (data: unknown) => void,
-          onError,
-          connectionParams: getConnectionParams(),
-          connectionTimeoutMs,
-          maxRetries,
-        },
-      )
+      const transport = resolveTransport(transportOptions)
+      const subscriptionOptions: SubscriptionOptions<TVariables> = {
+        query,
+        variables,
+        onData: onData as (data: unknown) => void,
+        onError,
+        connectionParams: getConnectionParams(),
+        connectionTimeoutMs,
+        maxRetries,
+      }
+
+      if (transport === 'sse') {
+        return createSseDedicatedSubscription<TData, TVariables>(sseEndpoint, subscriptionOptions)
+      }
+
+      if (transport === 'auto') {
+        return createAutoSubscription<TData, TVariables>(wsEndpoint, sseEndpoint, subscriptionOptions)
+      }
+
+      // Default: WebSocket
+      return createDedicatedSubscription<TData, TVariables>(wsEndpoint, subscriptionOptions)
     },
 
     async subscribeAsync<TData = unknown, TVariables = Record<string, unknown>>(
       options: SubscriptionOptions<TVariables>,
+      transportOptions?: TransportOptions,
     ): Promise<SubscriptionHandle> {
       let connectionParams = options.connectionParams
       if (!connectionParams && configConnectionParams) {
@@ -993,19 +1082,341 @@ export function createSubscriptionClient(config: SubscriptionClientConfig = {}):
           : configConnectionParams
       }
 
-      return createDedicatedSubscription<TData, TVariables>(
-        wsEndpoint,
-        {
-          ...options,
-          connectionParams,
-          connectionTimeoutMs: options.connectionTimeoutMs ?? connectionTimeoutMs,
-          maxRetries: options.maxRetries ?? maxRetries,
-        },
-      )
+      const transport = resolveTransport(transportOptions)
+      const subscriptionOptions: SubscriptionOptions<TVariables> = {
+        ...options,
+        connectionParams,
+        connectionTimeoutMs: options.connectionTimeoutMs ?? connectionTimeoutMs,
+        maxRetries: options.maxRetries ?? maxRetries,
+      }
+
+      if (transport === 'sse') {
+        return createSseDedicatedSubscription<TData, TVariables>(sseEndpoint, subscriptionOptions)
+      }
+
+      if (transport === 'auto') {
+        return createAutoSubscription<TData, TVariables>(wsEndpoint, sseEndpoint, subscriptionOptions)
+      }
+
+      // Default: WebSocket
+      return createDedicatedSubscription<TData, TVariables>(wsEndpoint, subscriptionOptions)
     },
 
     createSession(): SubscriptionSession {
       return createSession(wsEndpoint, getConnectionParams(), maxRetries, connectionTimeoutMs)
+    },
+  }
+}
+
+// ============================================================================
+// SSE Subscription (alternative transport)
+// ============================================================================
+
+export interface SseSubscriptionOptions<TVariables = Record<string, unknown>> {
+  query: string
+  variables?: TVariables
+  onData?: (data: unknown) => void
+  onError?: (error: Error) => void
+  onConnected?: () => void
+  onReconnected?: () => void
+  onDisconnected?: () => void
+  onStateChange?: (state: ConnectionState) => void
+}
+
+export interface SseSubscriptionHandle {
+  close: () => void
+}
+
+/**
+ * Create an SSE subscription using native EventSource (legacy API)
+ * Use this when WebSocket is blocked (corporate firewalls, etc.)
+ *
+ * @deprecated Use the unified client with { transport: 'sse' } instead
+ *
+ * @example
+ * ```typescript
+ * const handle = createSseSubscription('/api/graphql', {
+ *   query: 'subscription { countdown(from: 10) }',
+ *   onData: (data) => console.log(data),
+ * })
+ *
+ * // Later...
+ * handle.close()
+ * ```
+ */
+export function createSseSubscription<TData = unknown, TVariables = Record<string, unknown>>(
+  endpoint: string,
+  options: SseSubscriptionOptions<TVariables>,
+): SseSubscriptionHandle {
+  const url = new URL(endpoint, typeof window !== 'undefined' ? window.location.origin : 'http://localhost')
+  url.searchParams.set('query', options.query)
+  if (options.variables) {
+    url.searchParams.set('variables', JSON.stringify(options.variables))
+  }
+
+  const es = new EventSource(url.toString())
+
+  es.onmessage = (event) => {
+    try {
+      const response = JSON.parse(event.data) as { data?: Record<string, unknown>, errors?: Array<{ message: string }> }
+      if (response.errors && response.errors.length > 0) {
+        options.onError?.(new Error(response.errors[0]?.message || 'SSE Error'))
+      }
+      else if (response.data) {
+        const value = Object.values(response.data)[0] as TData
+        options.onData?.(value)
+      }
+    }
+    catch {
+      // Ignore parse errors
+    }
+  }
+
+  es.onerror = () => {
+    options.onError?.(new Error('SSE connection error'))
+    es.close()
+  }
+
+  return {
+    close: () => es.close(),
+  }
+}
+
+// ============================================================================
+// SSE Dedicated Subscription (with full state management)
+// ============================================================================
+
+/**
+ * Create an SSE subscription with full state management (matching WebSocket API)
+ * Uses native EventSource which handles reconnection automatically.
+ */
+function createSseDedicatedSubscription<TData = unknown, TVariables = Record<string, unknown>>(
+  endpoint: string,
+  options: SubscriptionOptions<TVariables>,
+): SubscriptionHandle {
+  // State
+  let es: EventSource | null = null
+  let connectionState: ConnectionState = 'idle'
+  let hasConnectedBefore = false
+  let intentionalClose = false
+  const id = generateSubscriptionId()
+
+  // State management
+  function setState(state: ConnectionState): void {
+    connectionState = state
+    options.onStateChange?.(state)
+  }
+
+  // Build URL with query and variables
+  function buildUrl(): string {
+    const url = new URL(endpoint, typeof window !== 'undefined' ? window.location.origin : 'http://localhost')
+    url.searchParams.set('query', options.query)
+    if (options.variables) {
+      url.searchParams.set('variables', JSON.stringify(options.variables))
+    }
+    return url.toString()
+  }
+
+  // Connection
+  function connect(): void {
+    if (typeof EventSource === 'undefined') {
+      options.onError?.(new Error('EventSource not available'))
+      setState('error')
+      return
+    }
+
+    setState('connecting')
+    es = new EventSource(buildUrl())
+
+    es.onopen = () => {
+      setState('connected')
+
+      if (hasConnectedBefore) {
+        options.onReconnected?.()
+      }
+      else {
+        hasConnectedBefore = true
+        options.onConnected?.()
+      }
+    }
+
+    es.onmessage = (event) => {
+      try {
+        const response = JSON.parse(event.data) as { data?: Record<string, unknown>, errors?: Array<{ message: string }> }
+        if (response.errors && response.errors.length > 0) {
+          options.onError?.(new Error(response.errors[0]?.message || 'SSE Error'))
+        }
+        else if (response.data) {
+          const value = extractDataValue<TData>(response.data)
+          if (value !== undefined) {
+            options.onData?.(value)
+          }
+        }
+      }
+      catch {
+        // Ignore parse errors
+      }
+    }
+
+    es.onerror = () => {
+      // EventSource handles reconnection automatically
+      // readyState: 0 = CONNECTING, 1 = OPEN, 2 = CLOSED
+      if (es?.readyState === EventSource.CONNECTING) {
+        setState('reconnecting')
+        options.onRetrying?.(1, 999) // EventSource retries indefinitely
+      }
+      else if (es?.readyState === EventSource.CLOSED) {
+        if (!intentionalClose) {
+          options.onError?.(new Error('SSE connection closed'))
+          setState('error')
+        }
+      }
+    }
+  }
+
+  // Disconnect
+  function disconnect(): void {
+    intentionalClose = true
+    if (es) {
+      es.close()
+      es = null
+    }
+    options.onDisconnected?.()
+    setState('disconnected')
+  }
+
+  // Initialize
+  connect()
+
+  return {
+    unsubscribe: disconnect,
+    get isConnected() {
+      return connectionState === 'connected'
+    },
+    get state() {
+      return connectionState
+    },
+    id,
+    transport: 'sse' as const,
+  }
+}
+
+// ============================================================================
+// Auto Transport (WebSocket first, SSE fallback)
+// ============================================================================
+
+/**
+ * Create a subscription with auto transport selection
+ * Tries WebSocket first, falls back to SSE if WebSocket fails to connect
+ */
+function createAutoSubscription<TData = unknown, TVariables = Record<string, unknown>>(
+  wsEndpoint: string,
+  sseEndpoint: string,
+  options: SubscriptionOptions<TVariables>,
+): SubscriptionHandle {
+  let activeHandle: SubscriptionHandle | null = null
+  let activeTransport: 'websocket' | 'sse' = 'websocket'
+  let connectionState: ConnectionState = 'idle'
+  const id = generateSubscriptionId()
+
+  // Track whether we've notified about connection
+  let hasNotifiedConnect = false
+
+  // Wrapper callbacks that update our state
+  const wrappedOptions: SubscriptionOptions<TVariables> = {
+    ...options,
+    onStateChange: (state) => {
+      connectionState = state
+      options.onStateChange?.(state)
+    },
+    onConnected: () => {
+      if (!hasNotifiedConnect) {
+        hasNotifiedConnect = true
+        options.onConnected?.()
+      }
+    },
+    onReconnected: () => {
+      options.onReconnected?.()
+    },
+  }
+
+  // Try WebSocket first
+  function tryWebSocket(): void {
+    if (!isWebSocketAvailable()) {
+      // WebSocket not available, go straight to SSE
+      trySSE()
+      return
+    }
+
+    activeTransport = 'websocket'
+    let wsConnectionTimeout: ReturnType<typeof setTimeout> | null = null
+    let wsConnected = false
+
+    const wsOptions: SubscriptionOptions<TVariables> = {
+      ...wrappedOptions,
+      onConnected: () => {
+        wsConnected = true
+        if (wsConnectionTimeout) {
+          clearTimeout(wsConnectionTimeout)
+          wsConnectionTimeout = null
+        }
+        wrappedOptions.onConnected?.()
+      },
+      onError: (error) => {
+        // If we haven't connected yet, try SSE
+        if (!wsConnected && !hasNotifiedConnect) {
+          activeHandle?.unsubscribe()
+          trySSE()
+        }
+        else {
+          options.onError?.(error)
+        }
+      },
+      onMaxRetriesReached: () => {
+        // If WS exhausted retries without ever connecting, try SSE
+        if (!wsConnected && !hasNotifiedConnect) {
+          activeHandle?.unsubscribe()
+          trySSE()
+        }
+        else {
+          options.onMaxRetriesReached?.()
+        }
+      },
+    }
+
+    activeHandle = createDedicatedSubscription<TData, TVariables>(wsEndpoint, wsOptions)
+
+    // Set a connection timeout to fallback to SSE
+    wsConnectionTimeout = setTimeout(() => {
+      if (!wsConnected && !hasNotifiedConnect) {
+        activeHandle?.unsubscribe()
+        trySSE()
+      }
+    }, options.connectionTimeoutMs ?? DEFAULT_CONNECTION_TIMEOUT_MS)
+  }
+
+  // Fallback to SSE
+  function trySSE(): void {
+    activeTransport = 'sse'
+    activeHandle = createSseDedicatedSubscription<TData, TVariables>(sseEndpoint, wrappedOptions)
+  }
+
+  // Start with WebSocket
+  tryWebSocket()
+
+  return {
+    unsubscribe: () => {
+      activeHandle?.unsubscribe()
+    },
+    get isConnected() {
+      return activeHandle?.isConnected ?? false
+    },
+    get state() {
+      return connectionState
+    },
+    id,
+    get transport() {
+      return activeTransport
     },
   }
 }

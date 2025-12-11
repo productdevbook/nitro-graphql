@@ -4,10 +4,10 @@
 // === Query/Mutation Client ===
 export * from './ofetch'
 
-// === Subscription Client (low-level) ===
-// Export subscriptionClient for direct WebSocket access
-export * from './subscribe'
-
 // === Subscription Composables (Vue) ===
 // Export useCountdown, useGreetings, useSubscriptionSession, etc.
 export * from './sdk'
+
+// === Subscription Client (low-level) ===
+// Export subscriptionClient for direct WebSocket access
+export * from './subscribe'
