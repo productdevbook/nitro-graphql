@@ -7,6 +7,7 @@ const isDev = process.env.NODE_ENV === 'development'
 
 export function devLog(message: string, ...args: any[]) {
   if (isDev)
+    // eslint-disable-next-line no-console
     console.log(message, ...args)
 }
 
