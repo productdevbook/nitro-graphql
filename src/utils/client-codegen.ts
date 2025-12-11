@@ -1,6 +1,6 @@
 import type { LoadSchemaOptions, UnnormalizedTypeDefPointer } from '@graphql-tools/load'
 import type { Source } from '@graphql-tools/utils'
-import type { GraphQLSchema } from 'graphql'
+import type { GraphQLSchema, OperationDefinitionNode, SelectionNode, FieldNode } from 'graphql'
 import type { CodegenClientConfig, ExternalGraphQLService, GenericSdkConfig } from '../types'
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
@@ -15,7 +15,7 @@ import { UrlLoader } from '@graphql-tools/url-loader'
 import { printSchemaWithDirectives } from '@graphql-tools/utils'
 import { consola } from 'consola'
 import { defu } from 'defu'
-import { parse } from 'graphql'
+import { Kind, parse } from 'graphql'
 import { CurrencyResolver, DateTimeISOResolver, DateTimeResolver, JSONObjectResolver, JSONResolver, NonEmptyStringResolver, UUIDResolver } from 'graphql-scalars'
 import { dirname, resolve } from 'pathe'
 
@@ -434,11 +434,17 @@ export function getSdk(requester: Requester): Sdk {
 
     const sdkContent = results[0]?.content || ''
 
-    // No renaming needed since files will be in separate folders
+    // Generate subscription builder if there are subscriptions
+    const subscriptionBuilder = generateSubscriptionBuilder(docs)
+
+    // Combine SDK with subscription builder
+    const finalSdkContent = subscriptionBuilder
+      ? sdkContent + subscriptionBuilder
+      : sdkContent
 
     return {
       types: output,
-      sdk: sdkContent,
+      sdk: finalSdkContent,
     }
   }
   catch (error) {
@@ -460,4 +466,123 @@ export async function generateExternalClientTypes(
   const sdkConfig = service.codegen?.clientSDK || {}
 
   return generateClientTypes(schema, docs, config, sdkConfig, undefined, service.name, virtualTypesPath)
+}
+
+/**
+ * Convert PascalCase to camelCase
+ */
+function toCamelCase(str: string): string {
+  return str.charAt(0).toLowerCase() + str.slice(1)
+}
+
+/**
+ * Extract subscription info from documents
+ */
+export interface SubscriptionInfo {
+  name: string
+  methodName: string
+  fieldName: string
+  hasVariables: boolean
+}
+
+export function extractSubscriptions(docs: Source[]): SubscriptionInfo[] {
+  const subscriptions: SubscriptionInfo[] = []
+
+  for (const doc of docs) {
+    if (!doc.document)
+      continue
+
+    for (const def of doc.document.definitions) {
+      if (def.kind === Kind.OPERATION_DEFINITION && def.operation === 'subscription') {
+        const operationDef = def as OperationDefinitionNode
+        const name = operationDef.name?.value
+        if (!name)
+          continue
+
+        // Get the first field selection to determine the subscription field name
+        const firstSelection = operationDef.selectionSet.selections[0] as SelectionNode
+        if (firstSelection.kind !== Kind.FIELD)
+          continue
+
+        const fieldName = (firstSelection as FieldNode).name.value
+        const hasVariables = (operationDef.variableDefinitions?.length || 0) > 0
+
+        subscriptions.push({
+          name,
+          methodName: toCamelCase(name),
+          fieldName,
+          hasVariables,
+        })
+      }
+    }
+  }
+
+  return subscriptions
+}
+
+/**
+ * Generate subscription builder code (Drizzle-style API)
+ */
+export function generateSubscriptionBuilder(docs: Source[]): string {
+  const subscriptions = extractSubscriptions(docs)
+  if (subscriptions.length === 0)
+    return ''
+
+  let output = `
+// === Subscription Builder (Drizzle-style API) ===
+import { subscriptionClient, type SubscriptionClient } from './subscribe'
+
+interface SubscriptionBuilder<TData> {
+  onData(fn: (data: TData) => void): SubscriptionBuilder<TData>
+  onError(fn: (error: Error) => void): SubscriptionBuilder<TData>
+  start(): SubscriptionClient
+  subscribe(fn: (data: TData) => void): SubscriptionClient
+}
+
+function createSubscriptionBuilder<TData>(query: string, variables: unknown): SubscriptionBuilder<TData> {
+  let onDataFn: ((data: TData) => void) | undefined
+  let onErrorFn: ((error: Error) => void) | undefined
+
+  const builder: SubscriptionBuilder<TData> = {
+    onData(fn: (data: TData) => void) {
+      onDataFn = fn
+      return builder
+    },
+    onError(fn: (error: Error) => void) {
+      onErrorFn = fn
+      return builder
+    },
+    start(): SubscriptionClient {
+      return subscriptionClient.subscribe(query, variables, onDataFn, onErrorFn)
+    },
+    subscribe(fn: (data: TData) => void): SubscriptionClient {
+      return subscriptionClient.subscribe(query, variables, fn, undefined)
+    },
+  }
+
+  return builder
+}
+
+export const subscription = {
+`
+
+  for (const sub of subscriptions) {
+    if (sub.hasVariables) {
+      output += `  ${sub.methodName}(variables: Types.${sub.name}SubscriptionVariables): SubscriptionBuilder<Types.${sub.name}Subscription['${sub.fieldName}']> {
+    return createSubscriptionBuilder<Types.${sub.name}Subscription['${sub.fieldName}']>(${sub.name}Document, variables)
+  },
+`
+    }
+    else {
+      output += `  ${sub.methodName}(): SubscriptionBuilder<Types.${sub.name}Subscription['${sub.fieldName}']> {
+    return createSubscriptionBuilder<Types.${sub.name}Subscription['${sub.fieldName}']>(${sub.name}Document, undefined)
+  },
+`
+    }
+  }
+
+  output += `}
+`
+
+  return output
 }
