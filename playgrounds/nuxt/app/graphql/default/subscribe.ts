@@ -4,22 +4,27 @@
 //
 // Usage Examples:
 // ---------------
-// Basic subscription:
+// Basic subscription (dedicated connection per subscription):
 //   const sub = subscriptionClient.subscribe(query, variables, onData, onError)
 //   sub.unsubscribe()
+//
+// Multiplexed subscriptions (shared connection via session):
+//   const session = subscriptionClient.createSession()
+//   const sub1 = session.subscribe(query1, vars1, onData1)
+//   const sub2 = session.subscribe(query2, vars2, onData2)
+//   // Both use the same WebSocket connection
+//   sub1.unsubscribe() // Connection stays open for sub2
+//   sub2.unsubscribe() // Connection closes (no more subscriptions)
+//   // Or close all at once:
+//   session.close()
 //
 // With authentication (connectionParams):
 //   const authClient = createSubscriptionClient({
 //     connectionParams: () => ({
 //       authorization: `Bearer ${getToken()}`,
-//       // or any custom auth data
 //       userId: getCurrentUserId(),
 //     })
 //   })
-//   authClient.subscribe(query, variables, onData, onError)
-//
-// The connectionParams are sent with the 'connection_init' message
-// and can be accessed on the server via the WebSocket context.
 
 import WebSocket from 'crossws/websocket'
 import { WebSocketSSE } from 'crossws/websocket/sse'
@@ -28,36 +33,45 @@ import { WebSocketSSE } from 'crossws/websocket/sse'
 // Types
 // ============================================================================
 
+export type ConnectionState = 'idle' | 'connecting' | 'connected' | 'reconnecting' | 'disconnected' | 'error'
+
 export interface SubscriptionOptions<TVariables = Record<string, unknown>> {
-  /** GraphQL subscription query string */
   query: string
-  /** Variables for the subscription */
   variables?: TVariables
-  /** Callback when data is received */
   onData?: (data: unknown) => void
-  /** Callback when an error occurs */
   onError?: (error: Error) => void
-  /** Callback when connection is established */
   onConnected?: () => void
-  /** Callback when connection is closed */
+  onReconnected?: () => void
   onDisconnected?: () => void
-  /** Maximum number of reconnection attempts (default: 5) */
+  onRetrying?: (attempt: number, maxAttempts: number) => void
+  onMaxRetriesReached?: () => void
+  onStateChange?: (state: ConnectionState) => void
   maxRetries?: number
-  /** Connection parameters for authentication (sent with connection_init) */
+  connectionTimeoutMs?: number
   connectionParams?: Record<string, unknown>
 }
 
-export interface SubscriptionClient {
-  /** Unsubscribe and close the connection */
+export interface SubscriptionHandle {
   unsubscribe: () => void
-  /** Current connection state */
   readonly isConnected: boolean
+  readonly state: ConnectionState
+  readonly id: string
 }
 
 export type SubscriptionTransport = 'websocket' | 'sse' | 'auto'
 
 // ============================================================================
-// GraphQL-WS Protocol Implementation
+// Constants
+// ============================================================================
+
+const DEFAULT_CONNECTION_TIMEOUT_MS = 10000
+const DEFAULT_MAX_RETRIES = 5
+const MAX_BACKOFF_MS = 30000
+const DEFAULT_PING_INTERVAL_MS = 25000
+const DEFAULT_PONG_TIMEOUT_MS = 5000
+
+// ============================================================================
+// GraphQL-WS Protocol
 // ============================================================================
 
 interface GraphQLWSMessage {
@@ -66,118 +80,94 @@ interface GraphQLWSMessage {
   payload?: unknown
 }
 
-let messageId = 0
+// ============================================================================
+// Dedicated Connection (one subscription per connection)
+// ============================================================================
 
-/**
- * Create a GraphQL subscription
- * Uses graphql-ws protocol over WebSocket or SSE (via WebSocketSSE)
- */
-export function createSubscription<TData = unknown, TVariables = Record<string, unknown>>(
+function createDedicatedSubscription<TData = unknown, TVariables = Record<string, unknown>>(
   endpoint: string,
   options: SubscriptionOptions<TVariables>,
-  transport: 'websocket' | 'sse' = 'websocket',
-): SubscriptionClient {
+  transport: 'websocket' | 'sse',
+): SubscriptionHandle {
   let ws: WebSocket | InstanceType<typeof WebSocketSSE> | null = null
   let isConnected = false
+  let connectionState: ConnectionState = 'idle'
   let retryCount = 0
   let subscriptionId: string | null = null
   let intentionalClose = false
-  const maxRetries = options.maxRetries ?? 5
+  let hasConnectedBefore = false
+  let reconnectTimeout: ReturnType<typeof setTimeout> | null = null
+  let connectionTimeout: ReturnType<typeof setTimeout> | null = null
+  let pingInterval: ReturnType<typeof setInterval> | null = null
+  let pongTimeout: ReturnType<typeof setTimeout> | null = null
+  let messageIdCounter = 0
 
-  // ============================================================================
-  // 🔐 AUTHENTICATION CONTEXT - Customize here!
-  // ============================================================================
-  // The connectionParams are sent with the WebSocket 'connection_init' message.
-  // On the server, these can be accessed via the WebSocket context.
-  //
-  // Example: Add global auth context for all subscriptions
-  // const connectionParams = {
-  //   ...options.connectionParams,
-  //   authorization: `Bearer ${localStorage.getItem('token')}`,
-  //   userId: getCurrentUserId(),
-  // }
-  //
-  // Or use the connectionParams from createSubscriptionClient() config for cleaner code.
-  // ============================================================================
-  // Örnek: Global auth ekle
-  const connectionParams = {
-    ...options.connectionParams,
-    authorization: `Bearer ${localStorage.getItem('token')}`,
-    userId: '124123123',
+  const maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES
+  const connectionTimeoutMs = options.connectionTimeoutMs ?? DEFAULT_CONNECTION_TIMEOUT_MS
+  const id = String(Date.now()) + '-' + Math.random().toString(36).substr(2, 9)
+
+  function setState(state: ConnectionState) {
+    connectionState = state
+    options.onStateChange?.(state)
+  }
+
+  function startPing() {
+    stopPing()
+    pingInterval = setInterval(() => {
+      if (!isConnected) return
+      sendMessage({ type: 'ping' })
+      pongTimeout = setTimeout(() => {
+        options.onError?.(new Error('Server not responding to ping'))
+        cleanupConnection()
+        scheduleReconnect()
+      }, DEFAULT_PONG_TIMEOUT_MS)
+    }, DEFAULT_PING_INTERVAL_MS)
+  }
+
+  function stopPing() {
+    if (pingInterval) { clearInterval(pingInterval); pingInterval = null }
+    if (pongTimeout) { clearTimeout(pongTimeout); pongTimeout = null }
   }
 
   function connect() {
-    if (typeof window === 'undefined' && typeof globalThis.WebSocket === 'undefined') {
-      // SSR without WebSocket support - skip
-      return
-    }
-
-    // Close existing connection
-    disconnect()
+    if (typeof window === 'undefined' && typeof globalThis.WebSocket === 'undefined') return
+    if (reconnectTimeout) { clearTimeout(reconnectTimeout); reconnectTimeout = null }
+    cleanupConnection()
+    setState('connecting')
 
     if (transport === 'sse') {
-      // Use WebSocketSSE for SSE transport
-      // Build URL with query parameters for SSE
       const url = new URL(endpoint, typeof window !== 'undefined' ? window.location.origin : 'http://localhost')
       url.searchParams.set('query', options.query)
-      if (options.variables) {
-        url.searchParams.set('variables', JSON.stringify(options.variables))
-      }
-
-      ws = new WebSocketSSE(url.toString(), {
-        bidir: true,
-        stream: true,
-      })
-    }
-    else {
-      // Use native WebSocket
+      if (options.variables) url.searchParams.set('variables', JSON.stringify(options.variables))
+      ws = new WebSocketSSE(url.toString(), { bidir: true, stream: true })
+    } else {
       const wsUrl = endpoint.replace(/^http/, 'ws')
       ws = new WebSocket(wsUrl, 'graphql-transport-ws')
     }
 
     ws.onopen = () => {
       if (transport === 'websocket') {
-        // Send connection_init for WebSocket with auth payload
-        sendMessage({
-          type: 'connection_init',
-          payload: connectionParams,
-        })
-      }
-      else {
-        // SSE doesn't need handshake, directly connected
+        connectionTimeout = setTimeout(() => {
+          options.onError?.(new Error('Connection timeout'))
+          setState('error')
+          cleanupConnection()
+          scheduleReconnect()
+        }, connectionTimeoutMs)
+        sendMessage({ type: 'connection_init', payload: options.connectionParams || {} })
+      } else {
         isConnected = true
         retryCount = 0
+        setState('connected')
         options.onConnected?.()
       }
     }
 
     ws.onmessage = (event: MessageEvent) => {
-      try {
-        const data = typeof event.data === 'string' ? event.data : String(event.data)
-        const message: GraphQLWSMessage = JSON.parse(data)
-        handleMessage(message)
-      }
-      catch (e) {
-        // For SSE, try to parse as GraphQL response directly
-        if (transport === 'sse') {
-          try {
-            const data = typeof event.data === 'string' ? event.data : String(event.data)
-            const response = JSON.parse(data)
-            if (response.data) {
-              const subscriptionData = Object.values(response.data)[0]
-              options.onData?.(subscriptionData as TData)
-            }
-            else if (response.errors) {
-              options.onError?.(new Error(response.errors[0]?.message || 'GraphQL Error'))
-            }
-          }
-          catch {
-            // Ignore parse errors
-          }
-        }
-        else {
-          options.onError?.(e instanceof Error ? e : new Error('Failed to parse message'))
-        }
+      const data = typeof event.data === 'string' ? event.data : String(event.data)
+      if (transport === 'sse') {
+        handleSSEMessage(data)
+      } else {
+        handleWebSocketMessage(data)
       }
     }
 
@@ -188,90 +178,98 @@ export function createSubscription<TData = unknown, TVariables = Record<string, 
     ws.onclose = () => {
       isConnected = false
       subscriptionId = null
+      if (connectionTimeout) { clearTimeout(connectionTimeout); connectionTimeout = null }
       options.onDisconnected?.()
+      if (intentionalClose) { intentionalClose = false; setState('disconnected'); return }
+      scheduleReconnect()
+    }
+  }
 
-      // Don't reconnect if intentionally closed
-      if (intentionalClose) {
-        intentionalClose = false
-        return
+  function handleSSEMessage(data: string) {
+    try {
+      const response = JSON.parse(data) as { data?: Record<string, unknown>; errors?: Array<{ message: string }> }
+      if (response.errors?.length) {
+        options.onError?.(new Error(response.errors[0]?.message || 'GraphQL Error'))
+      } else if (response.data) {
+        options.onData?.(Object.values(response.data)[0] as TData)
       }
+    } catch {}
+  }
 
-      // Reconnect with exponential backoff
-      if (retryCount < maxRetries) {
-        retryCount++
-        const delay = Math.min(1000 * 2 ** retryCount, 30000)
-        setTimeout(connect, delay)
+  function handleWebSocketMessage(data: string) {
+    try {
+      const message: GraphQLWSMessage = JSON.parse(data)
+      switch (message.type) {
+        case 'connection_ack':
+          if (connectionTimeout) { clearTimeout(connectionTimeout); connectionTimeout = null }
+          isConnected = true
+          retryCount = 0
+          setState('connected')
+          if (hasConnectedBefore) { options.onReconnected?.() } else { hasConnectedBefore = true; options.onConnected?.() }
+          startPing()
+          subscribe()
+          break
+        case 'connection_error':
+          if (connectionTimeout) { clearTimeout(connectionTimeout); connectionTimeout = null }
+          const errPayload = message.payload as { message?: string } | undefined
+          options.onError?.(new Error(errPayload?.message || 'Connection rejected'))
+          setState('error')
+          break
+        case 'next':
+          if (message.payload && typeof message.payload === 'object') {
+            const payload = message.payload as { data?: unknown; errors?: Array<{ message: string }> }
+            if (payload.errors) { options.onError?.(new Error(payload.errors[0]?.message || 'GraphQL Error')) }
+            else if (payload.data) { options.onData?.(Object.values(payload.data as Record<string, unknown>)[0] as TData) }
+          }
+          break
+        case 'error':
+          if (Array.isArray(message.payload)) {
+            options.onError?.(new Error((message.payload as Array<{ message: string }>)[0]?.message || 'Subscription error'))
+          }
+          break
+        case 'complete':
+          subscriptionId = null
+          break
+        case 'ping':
+          sendMessage({ type: 'pong' })
+          break
+        case 'pong':
+          if (pongTimeout) { clearTimeout(pongTimeout); pongTimeout = null }
+          break
       }
-      else {
-        options.onError?.(new Error('Max reconnection attempts reached'))
-      }
+    } catch (e) {
+      options.onError?.(e instanceof Error ? e : new Error('Failed to parse message'))
+    }
+  }
+
+  function scheduleReconnect() {
+    if (reconnectTimeout) { clearTimeout(reconnectTimeout); reconnectTimeout = null }
+    if (retryCount < maxRetries) {
+      retryCount++
+      setState('reconnecting')
+      options.onRetrying?.(retryCount, maxRetries)
+      const delay = Math.min(1000 * Math.pow(2, retryCount), MAX_BACKOFF_MS) + Math.random() * 1000
+      reconnectTimeout = setTimeout(connect, delay)
+    } else {
+      setState('error')
+      options.onMaxRetriesReached?.()
+      options.onError?.(new Error('Max reconnection attempts reached'))
     }
   }
 
   function sendMessage(message: GraphQLWSMessage) {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify(message))
-    }
-  }
-
-  function handleMessage(message: GraphQLWSMessage) {
-    switch (message.type) {
-      case 'connection_ack':
-        isConnected = true
-        retryCount = 0
-        options.onConnected?.()
-        // Subscribe after connection acknowledged
-        subscribe()
-        break
-
-      case 'next':
-        if (message.payload && typeof message.payload === 'object') {
-          const payload = message.payload as { data?: unknown, errors?: Array<{ message: string }> }
-          if (payload.errors) {
-            options.onError?.(new Error(payload.errors[0]?.message || 'GraphQL Error'))
-          }
-          else if (payload.data) {
-            const subscriptionData = Object.values(payload.data as Record<string, unknown>)[0]
-            options.onData?.(subscriptionData as TData)
-          }
-        }
-        break
-
-      case 'error':
-        if (message.payload && Array.isArray(message.payload)) {
-          const errors = message.payload as Array<{ message: string }>
-          options.onError?.(new Error(errors[0]?.message || 'Subscription error'))
-        }
-        break
-
-      case 'complete':
-        subscriptionId = null
-        break
-
-      case 'ping':
-        sendMessage({ type: 'pong' })
-        break
-    }
+    if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(message))
   }
 
   function subscribe() {
-    subscriptionId = String(++messageId)
-    sendMessage({
-      id: subscriptionId,
-      type: 'subscribe',
-      payload: {
-        query: options.query,
-        variables: options.variables,
-      },
-    })
+    subscriptionId = String(++messageIdCounter)
+    sendMessage({ id: subscriptionId, type: 'subscribe', payload: { query: options.query, variables: options.variables } })
   }
 
-  function disconnect() {
-    intentionalClose = true
+  function cleanupConnection() {
+    stopPing()
     if (ws) {
-      if (subscriptionId) {
-        sendMessage({ id: subscriptionId, type: 'complete' })
-      }
+      if (subscriptionId) sendMessage({ id: subscriptionId, type: 'complete' })
       ws.close()
       ws = null
       isConnected = false
@@ -279,14 +277,294 @@ export function createSubscription<TData = unknown, TVariables = Record<string, 
     }
   }
 
-  // Start connection
+  function disconnect() {
+    intentionalClose = true
+    stopPing()
+    if (reconnectTimeout) { clearTimeout(reconnectTimeout); reconnectTimeout = null }
+    if (connectionTimeout) { clearTimeout(connectionTimeout); connectionTimeout = null }
+    cleanupConnection()
+    setState('disconnected')
+  }
+
   connect()
 
   return {
     unsubscribe: disconnect,
-    get isConnected() {
-      return isConnected
+    get isConnected() { return isConnected },
+    get state() { return connectionState },
+    id,
+  }
+}
+
+// ============================================================================
+// Session (multiplexed connection)
+// ============================================================================
+
+interface SubscriptionEntry {
+  id: string
+  query: string
+  variables?: Record<string, unknown>
+  onData?: (data: unknown) => void
+  onError?: (error: Error) => void
+  onConnected?: () => void
+  onReconnected?: () => void
+  onDisconnected?: () => void
+  onRetrying?: (attempt: number, maxAttempts: number) => void
+  onMaxRetriesReached?: () => void
+  onStateChange?: (state: ConnectionState) => void
+  hasNotifiedConnect: boolean
+}
+
+export interface SubscriptionSession {
+  subscribe<TData = unknown, TVariables = Record<string, unknown>>(
+    query: string,
+    variables?: TVariables,
+    onData?: (data: TData) => void,
+    onError?: (error: Error) => void,
+  ): SubscriptionHandle
+  readonly state: ConnectionState
+  readonly isConnected: boolean
+  readonly subscriptionCount: number
+  close(): void
+}
+
+function createSession(
+  endpoint: string,
+  connectionParams: Record<string, unknown>,
+  maxRetries: number,
+  connectionTimeoutMs: number,
+): SubscriptionSession {
+  let ws: WebSocket | null = null
+  let connectionState: ConnectionState = 'idle'
+  let retryCount = 0
+  let hasConnectedBefore = false
+  let intentionalClose = false
+  let reconnectTimeout: ReturnType<typeof setTimeout> | null = null
+  let connectionTimeout: ReturnType<typeof setTimeout> | null = null
+  let pingInterval: ReturnType<typeof setInterval> | null = null
+  let pongTimeout: ReturnType<typeof setTimeout> | null = null
+
+  const subscriptions = new Map<string, SubscriptionEntry>()
+  const pendingSubscriptions: SubscriptionEntry[] = []
+  let messageIdCounter = 0
+
+  function setState(state: ConnectionState) {
+    connectionState = state
+    for (const sub of subscriptions.values()) sub.onStateChange?.(state)
+  }
+
+  function generateId(): string { return String(++messageIdCounter) }
+
+  function connect(): void {
+    if (connectionState === 'connected' || connectionState === 'connecting') return
+    if (typeof window === 'undefined' && typeof globalThis.WebSocket === 'undefined') return
+    if (reconnectTimeout) { clearTimeout(reconnectTimeout); reconnectTimeout = null }
+
+    setState('connecting')
+    const wsUrl = endpoint.replace(/^http/, 'ws')
+    ws = new WebSocket(wsUrl, 'graphql-transport-ws')
+
+    ws.onopen = () => {
+      connectionTimeout = setTimeout(() => {
+        notifyAllError(new Error('Connection timeout'))
+        setState('error')
+        cleanupConnection()
+        scheduleReconnect()
+      }, connectionTimeoutMs)
+      sendMessage({ type: 'connection_init', payload: connectionParams })
+    }
+
+    ws.onmessage = (event: MessageEvent) => {
+      handleMessage(typeof event.data === 'string' ? event.data : String(event.data))
+    }
+
+    ws.onerror = () => notifyAllError(new Error('WebSocket connection error'))
+
+    ws.onclose = () => {
+      if (connectionTimeout) { clearTimeout(connectionTimeout); connectionTimeout = null }
+      for (const sub of subscriptions.values()) sub.onDisconnected?.()
+      if (intentionalClose) { intentionalClose = false; setState('disconnected'); return }
+      scheduleReconnect()
+    }
+  }
+
+  function handleMessage(data: string) {
+    try {
+      const message: GraphQLWSMessage = JSON.parse(data)
+      switch (message.type) {
+        case 'connection_ack':
+          if (connectionTimeout) { clearTimeout(connectionTimeout); connectionTimeout = null }
+          retryCount = 0
+          setState('connected')
+          startPing()
+          const isReconnect = hasConnectedBefore
+          hasConnectedBefore = true
+          for (const sub of pendingSubscriptions) subscribeInternal(sub)
+          pendingSubscriptions.length = 0
+          if (isReconnect) {
+            for (const sub of subscriptions.values()) { sub.onReconnected?.(); sendSubscribe(sub) }
+          } else {
+            for (const sub of subscriptions.values()) {
+              if (!sub.hasNotifiedConnect) { sub.hasNotifiedConnect = true; sub.onConnected?.() }
+            }
+          }
+          break
+        case 'connection_error':
+          if (connectionTimeout) { clearTimeout(connectionTimeout); connectionTimeout = null }
+          notifyAllError(new Error((message.payload as { message?: string })?.message || 'Connection rejected'))
+          setState('error')
+          break
+        case 'next':
+          if (message.id) {
+            const sub = subscriptions.get(message.id)
+            if (sub && message.payload && typeof message.payload === 'object') {
+              const payload = message.payload as { data?: unknown; errors?: Array<{ message: string }> }
+              if (payload.errors) sub.onError?.(new Error(payload.errors[0]?.message || 'GraphQL Error'))
+              else if (payload.data) sub.onData?.(Object.values(payload.data as Record<string, unknown>)[0])
+            }
+          }
+          break
+        case 'error':
+          if (message.id) {
+            const sub = subscriptions.get(message.id)
+            if (sub && Array.isArray(message.payload)) {
+              sub.onError?.(new Error((message.payload as Array<{ message: string }>)[0]?.message || 'Subscription error'))
+            }
+          }
+          break
+        case 'complete':
+          if (message.id) subscriptions.delete(message.id)
+          break
+        case 'ping':
+          sendMessage({ type: 'pong' })
+          break
+        case 'pong':
+          if (pongTimeout) { clearTimeout(pongTimeout); pongTimeout = null }
+          break
+      }
+    } catch (e) {
+      notifyAllError(e instanceof Error ? e : new Error('Failed to parse message'))
+    }
+  }
+
+  function notifyAllError(error: Error) {
+    for (const sub of subscriptions.values()) sub.onError?.(error)
+  }
+
+  function startPing() {
+    stopPing()
+    pingInterval = setInterval(() => {
+      if (connectionState !== 'connected') return
+      sendMessage({ type: 'ping' })
+      pongTimeout = setTimeout(() => {
+        notifyAllError(new Error('Server not responding to ping'))
+        cleanupConnection()
+        scheduleReconnect()
+      }, DEFAULT_PONG_TIMEOUT_MS)
+    }, DEFAULT_PING_INTERVAL_MS)
+  }
+
+  function stopPing() {
+    if (pingInterval) { clearInterval(pingInterval); pingInterval = null }
+    if (pongTimeout) { clearTimeout(pongTimeout); pongTimeout = null }
+  }
+
+  function scheduleReconnect() {
+    if (reconnectTimeout) { clearTimeout(reconnectTimeout); reconnectTimeout = null }
+    if (retryCount < maxRetries) {
+      retryCount++
+      setState('reconnecting')
+      for (const sub of subscriptions.values()) sub.onRetrying?.(retryCount, maxRetries)
+      const delay = Math.min(1000 * Math.pow(2, retryCount), MAX_BACKOFF_MS) + Math.random() * 1000
+      reconnectTimeout = setTimeout(() => connect(), delay)
+    } else {
+      setState('error')
+      for (const sub of subscriptions.values()) {
+        sub.onMaxRetriesReached?.()
+        sub.onError?.(new Error('Max reconnection attempts reached'))
+      }
+    }
+  }
+
+  function sendMessage(message: GraphQLWSMessage) {
+    if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(message))
+  }
+
+  function sendSubscribe(sub: SubscriptionEntry) {
+    sendMessage({ id: sub.id, type: 'subscribe', payload: { query: sub.query, variables: sub.variables } })
+  }
+
+  function subscribeInternal(sub: SubscriptionEntry): void {
+    subscriptions.set(sub.id, sub)
+    if (connectionState === 'connected') {
+      sendSubscribe(sub)
+      if (!sub.hasNotifiedConnect) { sub.hasNotifiedConnect = true; sub.onConnected?.() }
+    }
+  }
+
+  function unsubscribe(id: string): void {
+    const sub = subscriptions.get(id)
+    if (sub) {
+      if (connectionState === 'connected') sendMessage({ id, type: 'complete' })
+      subscriptions.delete(id)
+    }
+    const pendingIdx = pendingSubscriptions.findIndex(s => s.id === id)
+    if (pendingIdx !== -1) pendingSubscriptions.splice(pendingIdx, 1)
+    if (subscriptions.size === 0 && pendingSubscriptions.length === 0) close()
+  }
+
+  function cleanupConnection() {
+    stopPing()
+    if (ws) { ws.close(); ws = null }
+  }
+
+  function close(): void {
+    intentionalClose = true
+    stopPing()
+    if (reconnectTimeout) { clearTimeout(reconnectTimeout); reconnectTimeout = null }
+    if (connectionTimeout) { clearTimeout(connectionTimeout); connectionTimeout = null }
+    if (connectionState === 'connected') {
+      for (const sub of subscriptions.values()) sendMessage({ id: sub.id, type: 'complete' })
+    }
+    subscriptions.clear()
+    pendingSubscriptions.length = 0
+    cleanupConnection()
+    setState('disconnected')
+  }
+
+  return {
+    subscribe<TData = unknown, TVariables = Record<string, unknown>>(
+      query: string,
+      variables?: TVariables,
+      onData?: (data: TData) => void,
+      onError?: (error: Error) => void,
+    ): SubscriptionHandle {
+      const id = generateId()
+      const entry: SubscriptionEntry = {
+        id, query, variables,
+        onData: onData as (data: unknown) => void,
+        onError,
+        hasNotifiedConnect: false,
+      }
+
+      if (connectionState === 'connected') {
+        subscribeInternal(entry)
+      } else {
+        pendingSubscriptions.push(entry)
+        connect()
+      }
+
+      return {
+        unsubscribe: () => unsubscribe(id),
+        get isConnected() { return connectionState === 'connected' },
+        get state() { return connectionState },
+        id,
+      }
     },
+    get state() { return connectionState },
+    get isConnected() { return connectionState === 'connected' },
+    get subscriptionCount() { return subscriptions.size },
+    close,
   }
 }
 
@@ -295,43 +573,34 @@ export function createSubscription<TData = unknown, TVariables = Record<string, 
 // ============================================================================
 
 export interface SubscriptionClientConfig {
-  /** WebSocket endpoint for subscriptions (default: '/api/graphql/ws') */
   wsEndpoint?: string
-  /** HTTP endpoint for SSE subscriptions (default: '/api/graphql') */
   httpEndpoint?: string
-  /** Transport to use: 'websocket', 'sse', or 'auto' (default: 'auto') */
   transport?: SubscriptionTransport
-  /** Connection parameters for authentication (sent with connection_init) */
   connectionParams?: Record<string, unknown> | (() => Record<string, unknown> | Promise<Record<string, unknown>>)
+  connectionTimeoutMs?: number
+  maxRetries?: number
 }
 
-/**
- * Create a subscription client factory
- */
 export function createSubscriptionClient(config: SubscriptionClientConfig = {}) {
   const wsEndpoint = config.wsEndpoint ?? '/api/graphql/ws'
   const httpEndpoint = config.httpEndpoint ?? '/api/graphql'
   const configTransport = config.transport ?? 'auto'
   const configConnectionParams = config.connectionParams
+  const connectionTimeoutMs = config.connectionTimeoutMs ?? DEFAULT_CONNECTION_TIMEOUT_MS
+  const maxRetries = config.maxRetries ?? DEFAULT_MAX_RETRIES
 
   function getTransport(): 'websocket' | 'sse' {
-    if (configTransport === 'websocket')
-      return 'websocket'
-    if (configTransport === 'sse')
-      return 'sse'
-    // Auto: prefer WebSocket
+    if (configTransport === 'websocket') return 'websocket'
+    if (configTransport === 'sse') return 'sse'
     return 'websocket'
   }
 
   function getConnectionParams(): Record<string, unknown> {
-    if (!configConnectionParams)
-      return {}
+    if (!configConnectionParams) return {}
     if (typeof configConnectionParams === 'function') {
       const result = configConnectionParams()
-      // If it returns a promise, we can't use it synchronously
-      // In that case, user should use subscribeWithOptions
       if (result instanceof Promise) {
-        console.warn('[nitro-graphql] Async connectionParams not supported in subscribe(), use subscribeWithOptions() instead')
+        console.warn('[nitro-graphql] Async connectionParams not supported in subscribe(), use subscribeAsync()')
         return {}
       }
       return result
@@ -341,51 +610,53 @@ export function createSubscriptionClient(config: SubscriptionClientConfig = {}) 
 
   return {
     /**
-     * Subscribe to a GraphQL subscription
+     * Subscribe with a dedicated connection (default behavior)
      */
     subscribe<TData = unknown, TVariables = Record<string, unknown>>(
       query: string,
       variables?: TVariables,
       onData?: (data: TData) => void,
       onError?: (error: Error) => void,
-    ): SubscriptionClient {
+    ): SubscriptionHandle {
       const transport = getTransport()
       const endpoint = transport === 'websocket' ? wsEndpoint : httpEndpoint
-      const connectionParams = getConnectionParams()
-
-      return createSubscription<TData, TVariables>(
+      return createDedicatedSubscription<TData, TVariables>(
         endpoint,
-        {
-          query,
-          variables,
-          onData: onData as (data: unknown) => void,
-          onError,
-          connectionParams,
-        },
+        { query, variables, onData: onData as (data: unknown) => void, onError, connectionParams: getConnectionParams(), connectionTimeoutMs, maxRetries },
         transport,
       )
     },
 
     /**
-     * Subscribe with full options (supports async connectionParams)
+     * Subscribe with full options (dedicated connection)
      */
     async subscribeAsync<TData = unknown, TVariables = Record<string, unknown>>(
       options: SubscriptionOptions<TVariables> & { transport?: SubscriptionTransport },
-    ): Promise<SubscriptionClient> {
-      const transport = options.transport === 'auto' || !options.transport ? getTransport() : options.transport
+    ): Promise<SubscriptionHandle> {
+      const transport = options.transport ?? getTransport()
       const endpoint = transport === 'websocket' ? wsEndpoint : httpEndpoint
 
       let connectionParams = options.connectionParams
       if (!connectionParams && configConnectionParams) {
-        if (typeof configConnectionParams === 'function') {
-          connectionParams = await configConnectionParams()
-        }
-        else {
-          connectionParams = configConnectionParams
-        }
+        connectionParams = typeof configConnectionParams === 'function' ? await configConnectionParams() : configConnectionParams
       }
 
-      return createSubscription<TData, TVariables>(endpoint, { ...options, connectionParams }, transport)
+      return createDedicatedSubscription<TData, TVariables>(
+        endpoint,
+        { ...options, connectionParams, connectionTimeoutMs: options.connectionTimeoutMs ?? connectionTimeoutMs, maxRetries: options.maxRetries ?? maxRetries },
+        transport,
+      )
+    },
+
+    /**
+     * Create a multiplexed session - all subscriptions share one connection
+     */
+    createSession(): SubscriptionSession {
+      const transport = getTransport()
+      if (transport === 'sse') {
+        console.warn('[nitro-graphql] SSE does not support multiplexing, falling back to dedicated connections')
+      }
+      return createSession(wsEndpoint, getConnectionParams(), maxRetries, connectionTimeoutMs)
     },
   }
 }

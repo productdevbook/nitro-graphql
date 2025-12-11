@@ -540,8 +540,8 @@ async function generateMainClientTypes(nitro: Nitro) {
     const externalServices = nitro.options.graphql?.externalServices || []
     generateGraphQLIndexFile(nitro, nitro.graphql.clientDir, externalServices)
 
-    // Generate subscription composables for Nuxt
-    generateNuxtSubscriptionComposables(nitro, loadDocs, 'default')
+    // Note: Subscription composables are now generated directly in sdk.ts
+    // The generateNuxtSubscriptionComposables function is deprecated
   }
 }
 

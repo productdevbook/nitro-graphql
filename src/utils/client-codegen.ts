@@ -521,7 +521,7 @@ export function extractSubscriptions(docs: Source[]): SubscriptionInfo[] {
 }
 
 /**
- * Generate subscription builder code (Drizzle-style API)
+ * Generate subscription builder code (Drizzle-style API) + Vue Composables
  */
 export function generateSubscriptionBuilder(docs: Source[]): string {
   const subscriptions = extractSubscriptions(docs)
@@ -529,14 +529,86 @@ export function generateSubscriptionBuilder(docs: Source[]): string {
     return ''
 
   let output = `
-// === Subscription Builder (Drizzle-style API) ===
-import { subscriptionClient, type SubscriptionClient } from './subscribe'
+// === Subscription Imports ===
+import { ref, onUnmounted, computed } from 'vue'
+import type { Ref } from 'vue'
+import {
+  subscriptionClient,
+  type SubscriptionHandle,
+  type SubscriptionSession,
+  type ConnectionState,
+} from './subscribe'
 
+// === Subscription Types ===
+export type { ConnectionState, SubscriptionHandle, SubscriptionSession }
+
+// Forward declaration for UseSubscriptionSessionReturn (defined below)
+export interface UseSubscriptionSessionReturn {
+  /** The underlying session object */
+  session: SubscriptionSession
+  /** Subscribe using the shared session (updates reactive refs) */
+  subscribe: <TData = unknown>(
+    query: string,
+    variables: unknown,
+    onData?: (data: TData) => void,
+    onError?: (error: Error) => void,
+  ) => SubscriptionHandle
+  /** Close all subscriptions and the connection */
+  close: () => void
+  /** Is the session connected (reactive) */
+  isConnected: Ref<boolean>
+  /** Current connection state (reactive) */
+  state: Ref<ConnectionState>
+  /** Number of active subscriptions (reactive) */
+  subscriptionCount: Ref<number>
+}
+
+export interface UseSubscriptionOptions<T> {
+  /** Auto-start subscription on mount (default: false) */
+  immediate?: boolean
+  /** Callback when subscription starts */
+  onStart?: () => void
+  /** Callback when subscription stops */
+  onStop?: () => void
+  /** Callback when data is received */
+  onData?: (data: T) => void
+  /** Callback when error occurs */
+  onError?: (error: Error) => void
+  /** Callback when WebSocket connects */
+  onConnected?: () => void
+  /** Callback when WebSocket reconnects */
+  onReconnected?: () => void
+  /** Callback when WebSocket disconnects */
+  onDisconnected?: () => void
+  /** Callback when connection state changes */
+  onStateChange?: (state: ConnectionState) => void
+  /** Use existing session for multiplexing (pass result from useSubscriptionSession) */
+  session?: UseSubscriptionSessionReturn
+}
+
+export interface UseSubscriptionReturn<T> {
+  /** Reactive subscription data */
+  data: Ref<T | null>
+  /** Reactive error state */
+  error: Ref<Error | null>
+  /** Is subscription active */
+  isActive: Ref<boolean>
+  /** Connection state */
+  state: Ref<ConnectionState>
+  /** Start subscription */
+  start: () => void
+  /** Stop subscription */
+  stop: () => void
+  /** Restart subscription */
+  restart: () => void
+}
+
+// === Subscription Builder (Drizzle-style API) ===
 interface SubscriptionBuilder<TData> {
   onData(fn: (data: TData) => void): SubscriptionBuilder<TData>
   onError(fn: (error: Error) => void): SubscriptionBuilder<TData>
-  start(): SubscriptionClient
-  subscribe(fn: (data: TData) => void): SubscriptionClient
+  start(): SubscriptionHandle
+  subscribe(fn: (data: TData) => void): SubscriptionHandle
 }
 
 function createSubscriptionBuilder<TData>(query: string, variables: unknown): SubscriptionBuilder<TData> {
@@ -552,10 +624,10 @@ function createSubscriptionBuilder<TData>(query: string, variables: unknown): Su
       onErrorFn = fn
       return builder
     },
-    start(): SubscriptionClient {
+    start(): SubscriptionHandle {
       return subscriptionClient.subscribe(query, variables, onDataFn, onErrorFn)
     },
-    subscribe(fn: (data: TData) => void): SubscriptionClient {
+    subscribe(fn: (data: TData) => void): SubscriptionHandle {
       return subscriptionClient.subscribe(query, variables, fn, undefined)
     },
   }
@@ -566,6 +638,7 @@ function createSubscriptionBuilder<TData>(query: string, variables: unknown): Su
 export const subscription = {
 `
 
+  // Generate Drizzle-style subscription methods
   for (const sub of subscriptions) {
     if (sub.hasVariables) {
       output += `  ${sub.methodName}(variables: Types.${sub.name}SubscriptionVariables): SubscriptionBuilder<Types.${sub.name}Subscription['${sub.fieldName}']> {
@@ -582,7 +655,187 @@ export const subscription = {
   }
 
   output += `}
+
+// === useSubscriptionSession Hook (Multiplexing) ===
+export interface UseSubscriptionSessionReturn {
+  /** The underlying session object */
+  session: SubscriptionSession
+  /** Subscribe using the shared session */
+  subscribe: <TData = unknown>(
+    query: string,
+    variables: unknown,
+    onData?: (data: TData) => void,
+    onError?: (error: Error) => void,
+  ) => SubscriptionHandle
+  /** Close all subscriptions and the connection */
+  close: () => void
+  /** Is the session connected */
+  isConnected: Ref<boolean>
+  /** Current connection state */
+  state: Ref<ConnectionState>
+  /** Number of active subscriptions */
+  subscriptionCount: Ref<number>
+}
+
+export function useSubscriptionSession(): UseSubscriptionSessionReturn {
+  const session = subscriptionClient.createSession()
+
+  // Use refs for reactivity (session getters are not reactive)
+  const isConnected = ref(session.isConnected)
+  const state = ref<ConnectionState>(session.state)
+  const subscriptionCount = ref(session.subscriptionCount)
+
+  // Update refs periodically and on subscribe/unsubscribe
+  function updateRefs() {
+    isConnected.value = session.isConnected
+    state.value = session.state
+    subscriptionCount.value = session.subscriptionCount
+  }
+
+  function subscribe<TData = unknown>(
+    query: string,
+    variables: unknown,
+    onData?: (data: TData) => void,
+    onError?: (error: Error) => void,
+  ): SubscriptionHandle {
+    const handle = session.subscribe(query, variables, onData as (data: unknown) => void, onError)
+    updateRefs()
+
+    // Wrap unsubscribe to update refs
+    const originalUnsubscribe = handle.unsubscribe
+    handle.unsubscribe = () => {
+      originalUnsubscribe()
+      updateRefs()
+    }
+
+    return handle
+  }
+
+  function close() {
+    session.close()
+    updateRefs()
+  }
+
+  onUnmounted(close)
+
+  return {
+    session,
+    subscribe,
+    close,
+    isConnected,
+    state,
+    subscriptionCount,
+  }
+}
+
+// === Vue Composables ===
+function createUseSubscription<TData, TVariables = undefined>(
+  query: string,
+  getVariables: () => TVariables,
+): (options?: UseSubscriptionOptions<TData>) => UseSubscriptionReturn<TData> {
+  return (options: UseSubscriptionOptions<TData> = {}): UseSubscriptionReturn<TData> => {
+    const data = ref<TData | null>(null) as Ref<TData | null>
+    const error = ref<Error | null>(null)
+    const isActive = ref(false)
+    const state = ref<ConnectionState>('idle')
+    let handle: SubscriptionHandle | null = null
+
+    function start() {
+      stop()
+      isActive.value = true
+      error.value = null
+      options.onStart?.()
+
+      const variables = getVariables()
+
+      if (options.session) {
+        // Use existing session for multiplexing
+        handle = options.session.subscribe<TData>(
+          query,
+          variables,
+          (d: TData) => {
+            data.value = d
+            options.onData?.(d)
+          },
+          (e: Error) => {
+            error.value = e
+            options.onError?.(e)
+          },
+        )
+      } else {
+        // Create dedicated connection
+        handle = subscriptionClient.subscribe<TData>(
+          query,
+          variables,
+          (d: TData) => {
+            data.value = d
+            options.onData?.(d)
+          },
+          (e: Error) => {
+            error.value = e
+            options.onError?.(e)
+          },
+        )
+      }
+    }
+
+    function stop() {
+      if (handle) {
+        handle.unsubscribe()
+        handle = null
+        isActive.value = false
+        options.onStop?.()
+      }
+    }
+
+    function restart() {
+      stop()
+      start()
+    }
+
+    if (options.immediate) {
+      start()
+    }
+
+    onUnmounted(stop)
+
+    return { data, error, isActive, state, start, stop, restart }
+  }
+}
+
 `
+
+  // Generate individual composables for each subscription
+  for (const sub of subscriptions) {
+    const typeName = `Types.${sub.name}Subscription['${sub.fieldName}']`
+    const varsType = `Types.${sub.name}SubscriptionVariables`
+
+    if (sub.hasVariables) {
+      output += `export function use${sub.name}(
+  variables: ${varsType},
+  options?: UseSubscriptionOptions<${typeName}>,
+): UseSubscriptionReturn<${typeName}> {
+  return createUseSubscription<${typeName}, ${varsType}>(
+    ${sub.name}Document,
+    () => variables,
+  )(options)
+}
+
+`
+    }
+    else {
+      output += `export function use${sub.name}(
+  options?: UseSubscriptionOptions<${typeName}>,
+): UseSubscriptionReturn<${typeName}> {
+  return createUseSubscription<${typeName}, undefined>(
+    ${sub.name}Document,
+    () => undefined,
+  )(options)
+}
+
+`
+    }
+  }
 
   return output
 }

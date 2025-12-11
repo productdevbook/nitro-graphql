@@ -1,6 +1,6 @@
 <script setup lang="ts">
-// Using generated Vue composables - no boilerplate needed!
-import { useCountdown, useGreetings, useServerTime } from '~/graphql/default/composables'
+// Using generated Vue composables from sdk.ts - no boilerplate needed!
+import { useCountdown, useGreetings, useServerTime } from '~/graphql/default/sdk'
 
 // All state management and cleanup is handled by composables
 const {
