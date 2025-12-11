@@ -656,7 +656,27 @@ export const subscription = {
 
   output += `}
 
-// === useSubscriptionSession Hook (Multiplexing) ===
+// === Framework-Agnostic Session (for non-Vue usage) ===
+/**
+ * Create a multiplexed subscription session (framework-agnostic)
+ * All subscriptions share a single WebSocket connection.
+ *
+ * @example
+ * // Vanilla JS / Node.js / React / etc.
+ * const session = createSubscriptionSession()
+ * const sub1 = session.subscribe(query1, vars1, onData1)
+ * const sub2 = session.subscribe(query2, vars2, onData2)
+ * // Both use the same WebSocket connection
+ * sub1.unsubscribe()
+ * session.close() // Close all
+ *
+ * @returns SubscriptionSession - Framework-agnostic session object
+ */
+export function createSubscriptionSession(): SubscriptionSession {
+  return subscriptionClient.createSession()
+}
+
+// === Vue Composable: useSubscriptionSession (Multiplexing) ===
 export interface UseSubscriptionSessionReturn {
   /** The underlying session object */
   session: SubscriptionSession
@@ -669,14 +689,26 @@ export interface UseSubscriptionSessionReturn {
   ) => SubscriptionHandle
   /** Close all subscriptions and the connection */
   close: () => void
-  /** Is the session connected */
+  /** Is the session connected (reactive) */
   isConnected: Ref<boolean>
-  /** Current connection state */
+  /** Current connection state (reactive) */
   state: Ref<ConnectionState>
-  /** Number of active subscriptions */
+  /** Number of active subscriptions (reactive) */
   subscriptionCount: Ref<number>
 }
 
+/**
+ * Vue composable for multiplexed subscription session
+ * Provides reactive state and automatic cleanup on unmount.
+ *
+ * @example
+ * // Vue 3 component
+ * const session = useSubscriptionSession()
+ * const { data } = useCountdown({ from: 10 }, { session })
+ * // Session auto-closes on component unmount
+ *
+ * @returns UseSubscriptionSessionReturn - Vue-reactive session wrapper
+ */
 export function useSubscriptionSession(): UseSubscriptionSessionReturn {
   const session = subscriptionClient.createSession()
 
@@ -685,12 +717,17 @@ export function useSubscriptionSession(): UseSubscriptionSessionReturn {
   const state = ref<ConnectionState>(session.state)
   const subscriptionCount = ref(session.subscriptionCount)
 
-  // Update refs periodically and on subscribe/unsubscribe
+  // Update refs when session state changes
   function updateRefs() {
     isConnected.value = session.isConnected
     state.value = session.state
     subscriptionCount.value = session.subscriptionCount
   }
+
+  // Subscribe to session state changes for automatic reactivity
+  const unsubscribeStateChange = session.onStateChange(() => {
+    updateRefs()
+  })
 
   function subscribe<TData = unknown>(
     query: string,
@@ -698,25 +735,17 @@ export function useSubscriptionSession(): UseSubscriptionSessionReturn {
     onData?: (data: TData) => void,
     onError?: (error: Error) => void,
   ): SubscriptionHandle {
-    const handle = session.subscribe(query, variables, onData as (data: unknown) => void, onError)
-    updateRefs()
-
-    // Wrap unsubscribe to update refs
-    const originalUnsubscribe = handle.unsubscribe
-    handle.unsubscribe = () => {
-      originalUnsubscribe()
-      updateRefs()
-    }
-
-    return handle
+    return session.subscribe(query, variables, onData as (data: unknown) => void, onError)
   }
 
   function close() {
     session.close()
-    updateRefs()
   }
 
-  onUnmounted(close)
+  onUnmounted(() => {
+    unsubscribeStateChange()
+    close()
+  })
 
   return {
     session,
@@ -803,6 +832,19 @@ function createUseSubscription<TData, TVariables = undefined>(
   }
 }
 
+// === Subscription Return Types ===
+`
+
+  // Generate type aliases for each subscription composable
+  for (const sub of subscriptions) {
+    const typeName = `Types.${sub.name}Subscription['${sub.fieldName}']`
+    output += `/** Return type for use${sub.name} composable */
+export type Use${sub.name}Return = UseSubscriptionReturn<${typeName}>
+`
+  }
+
+  output += `
+// === Vue Composables ===
 `
 
   // Generate individual composables for each subscription
@@ -811,10 +853,16 @@ function createUseSubscription<TData, TVariables = undefined>(
     const varsType = `Types.${sub.name}SubscriptionVariables`
 
     if (sub.hasVariables) {
-      output += `export function use${sub.name}(
+      output += `/**
+ * Vue composable for ${sub.name} subscription
+ * @param variables - Subscription variables
+ * @param options - Subscription options (immediate, onData, onError, session, etc.)
+ * @returns Reactive subscription state: { data, error, isActive, state, start, stop, restart }
+ */
+export function use${sub.name}(
   variables: ${varsType},
   options?: UseSubscriptionOptions<${typeName}>,
-): UseSubscriptionReturn<${typeName}> {
+): Use${sub.name}Return {
   return createUseSubscription<${typeName}, ${varsType}>(
     ${sub.name}Document,
     () => variables,
@@ -824,9 +872,14 @@ function createUseSubscription<TData, TVariables = undefined>(
 `
     }
     else {
-      output += `export function use${sub.name}(
+      output += `/**
+ * Vue composable for ${sub.name} subscription
+ * @param options - Subscription options (immediate, onData, onError, session, etc.)
+ * @returns Reactive subscription state: { data, error, isActive, state, start, stop, restart }
+ */
+export function use${sub.name}(
   options?: UseSubscriptionOptions<${typeName}>,
-): UseSubscriptionReturn<${typeName}> {
+): Use${sub.name}Return {
   return createUseSubscription<${typeName}, undefined>(
     ${sub.name}Document,
     () => undefined,

@@ -8,17 +8,19 @@ import {
 } from '~/graphql/default/sdk'
 
 // Method 1: Using useSubscriptionSession hook (multiplexing)
-const { session, isConnected, state, subscriptionCount, close } = useSubscriptionSession()
+// Keep the whole session object to pass to composables (don't destructure 'session' property)
+const subscriptionSession = useSubscriptionSession()
+const { isConnected, state, subscriptionCount } = subscriptionSession
 
 // All composables share the same session (1 WebSocket connection)
 const { data: countdown, isActive: isCountdownActive, start: startCountdown, stop: stopCountdown } =
-  useCountdown({ from: 10 }, { session })
+  useCountdown({ from: 10 }, { session: subscriptionSession })
 
 const { data: greeting, isActive: isGreetingActive, start: startGreetings, stop: stopGreetings } =
-  useGreetings({ session })
+  useGreetings({ session: subscriptionSession })
 
 const { data: serverTimeRaw, isActive: isTimeActive, start: startServerTime, stop: stopServerTime } =
-  useServerTime({ session })
+  useServerTime({ session: subscriptionSession })
 
 const serverTime = computed(() =>
   serverTimeRaw.value ? new Date(serverTimeRaw.value).toLocaleTimeString() : '',
@@ -116,16 +118,17 @@ function stopAll() {
       <h3 class="text-lg font-semibold mb-2">New API (from sdk.ts):</h3>
       <pre class="text-sm text-gray-300 overflow-x-auto"><code>import { useCountdown, useSubscriptionSession } from '~/graphql/default/sdk'
 
-// Create shared session
-const { session, isConnected, subscriptionCount } = useSubscriptionSession()
+// Create shared session (keep the whole object for passing to composables)
+const subscriptionSession = useSubscriptionSession()
+const { isConnected, subscriptionCount } = subscriptionSession
 
 // All composables share 1 WebSocket
-const { data: count } = useCountdown({ from: 10 }, { session })
-const { data: time } = useServerTime({ session })
+const { data: count } = useCountdown({ from: 10 }, { session: subscriptionSession })
+const { data: time } = useServerTime({ session: subscriptionSession })
 
 // With callbacks
 const { data } = useCountdown({ from: 10 }, {
-  session,
+  session: subscriptionSession,
   immediate: true,
   onStart: () => console.log('Started'),
   onData: (count) => console.log('Count:', count),

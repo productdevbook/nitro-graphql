@@ -152,6 +152,27 @@ import {
 // === Subscription Types ===
 export type { ConnectionState, SubscriptionHandle, SubscriptionSession }
 
+// Forward declaration for UseSubscriptionSessionReturn (defined below)
+export interface UseSubscriptionSessionReturn {
+  /** The underlying session object */
+  session: SubscriptionSession
+  /** Subscribe using the shared session (updates reactive refs) */
+  subscribe: <TData = unknown>(
+    query: string,
+    variables: unknown,
+    onData?: (data: TData) => void,
+    onError?: (error: Error) => void,
+  ) => SubscriptionHandle
+  /** Close all subscriptions and the connection */
+  close: () => void
+  /** Is the session connected (reactive) */
+  isConnected: Ref<boolean>
+  /** Current connection state (reactive) */
+  state: Ref<ConnectionState>
+  /** Number of active subscriptions (reactive) */
+  subscriptionCount: Ref<number>
+}
+
 export interface UseSubscriptionOptions<T> {
   /** Auto-start subscription on mount (default: false) */
   immediate?: boolean
@@ -171,8 +192,8 @@ export interface UseSubscriptionOptions<T> {
   onDisconnected?: () => void
   /** Callback when connection state changes */
   onStateChange?: (state: ConnectionState) => void
-  /** Use existing session for multiplexing */
-  session?: SubscriptionSession
+  /** Use existing session for multiplexing (pass result from useSubscriptionSession) */
+  session?: UseSubscriptionSessionReturn
 }
 
 export interface UseSubscriptionReturn<T> {
@@ -236,7 +257,27 @@ export const subscription = {
   },
 }
 
-// === useSubscriptionSession Hook (Multiplexing) ===
+// === Framework-Agnostic Session (for non-Vue usage) ===
+/**
+ * Create a multiplexed subscription session (framework-agnostic)
+ * All subscriptions share a single WebSocket connection.
+ *
+ * @example
+ * // Vanilla JS / Node.js / React / etc.
+ * const session = createSubscriptionSession()
+ * const sub1 = session.subscribe(query1, vars1, onData1)
+ * const sub2 = session.subscribe(query2, vars2, onData2)
+ * // Both use the same WebSocket connection
+ * sub1.unsubscribe()
+ * session.close() // Close all
+ *
+ * @returns SubscriptionSession - Framework-agnostic session object
+ */
+export function createSubscriptionSession(): SubscriptionSession {
+  return subscriptionClient.createSession()
+}
+
+// === Vue Composable: useSubscriptionSession (Multiplexing) ===
 export interface UseSubscriptionSessionReturn {
   /** The underlying session object */
   session: SubscriptionSession
@@ -249,20 +290,45 @@ export interface UseSubscriptionSessionReturn {
   ) => SubscriptionHandle
   /** Close all subscriptions and the connection */
   close: () => void
-  /** Is the session connected */
+  /** Is the session connected (reactive) */
   isConnected: Ref<boolean>
-  /** Current connection state */
+  /** Current connection state (reactive) */
   state: Ref<ConnectionState>
-  /** Number of active subscriptions */
+  /** Number of active subscriptions (reactive) */
   subscriptionCount: Ref<number>
 }
 
+/**
+ * Vue composable for multiplexed subscription session
+ * Provides reactive state and automatic cleanup on unmount.
+ *
+ * @example
+ * // Vue 3 component
+ * const session = useSubscriptionSession()
+ * const { data } = useCountdown({ from: 10 }, { session })
+ * // Session auto-closes on component unmount
+ *
+ * @returns UseSubscriptionSessionReturn - Vue-reactive session wrapper
+ */
 export function useSubscriptionSession(): UseSubscriptionSessionReturn {
   const session = subscriptionClient.createSession()
 
-  const isConnected = computed(() => session.isConnected)
-  const state = computed(() => session.state)
-  const subscriptionCount = computed(() => session.subscriptionCount)
+  // Use refs for reactivity (session getters are not reactive)
+  const isConnected = ref(session.isConnected)
+  const state = ref<ConnectionState>(session.state)
+  const subscriptionCount = ref(session.subscriptionCount)
+
+  // Update refs when session state changes
+  function updateRefs() {
+    isConnected.value = session.isConnected
+    state.value = session.state
+    subscriptionCount.value = session.subscriptionCount
+  }
+
+  // Subscribe to session state changes for automatic reactivity
+  const unsubscribeStateChange = session.onStateChange(() => {
+    updateRefs()
+  })
 
   function subscribe<TData = unknown>(
     query: string,
@@ -277,7 +343,10 @@ export function useSubscriptionSession(): UseSubscriptionSessionReturn {
     session.close()
   }
 
-  onUnmounted(close)
+  onUnmounted(() => {
+    unsubscribeStateChange()
+    close()
+  })
 
   return {
     session,
@@ -364,28 +433,53 @@ function createUseSubscription<TData, TVariables = undefined>(
   }
 }
 
+// === Subscription Return Types ===
+/** Return type for useCountdown composable */
+export type UseCountdownReturn = UseSubscriptionReturn<Types.CountdownSubscription['countdown']>
+/** Return type for useGreetings composable */
+export type UseGreetingsReturn = UseSubscriptionReturn<Types.GreetingsSubscription['greetings']>
+/** Return type for useServerTime composable */
+export type UseServerTimeReturn = UseSubscriptionReturn<Types.ServerTimeSubscription['serverTime']>
+
+// === Vue Composables ===
+/**
+ * Vue composable for Countdown subscription
+ * @param variables - Subscription variables
+ * @param options - Subscription options (immediate, onData, onError, session, etc.)
+ * @returns Reactive subscription state: { data, error, isActive, state, start, stop, restart }
+ */
 export function useCountdown(
   variables: Types.CountdownSubscriptionVariables,
   options?: UseSubscriptionOptions<Types.CountdownSubscription['countdown']>,
-): UseSubscriptionReturn<Types.CountdownSubscription['countdown']> {
+): UseCountdownReturn {
   return createUseSubscription<Types.CountdownSubscription['countdown'], Types.CountdownSubscriptionVariables>(
     CountdownDocument,
     () => variables,
   )(options)
 }
 
+/**
+ * Vue composable for Greetings subscription
+ * @param options - Subscription options (immediate, onData, onError, session, etc.)
+ * @returns Reactive subscription state: { data, error, isActive, state, start, stop, restart }
+ */
 export function useGreetings(
   options?: UseSubscriptionOptions<Types.GreetingsSubscription['greetings']>,
-): UseSubscriptionReturn<Types.GreetingsSubscription['greetings']> {
+): UseGreetingsReturn {
   return createUseSubscription<Types.GreetingsSubscription['greetings'], undefined>(
     GreetingsDocument,
     () => undefined,
   )(options)
 }
 
+/**
+ * Vue composable for ServerTime subscription
+ * @param options - Subscription options (immediate, onData, onError, session, etc.)
+ * @returns Reactive subscription state: { data, error, isActive, state, start, stop, restart }
+ */
 export function useServerTime(
   options?: UseSubscriptionOptions<Types.ServerTimeSubscription['serverTime']>,
-): UseSubscriptionReturn<Types.ServerTimeSubscription['serverTime']> {
+): UseServerTimeReturn {
   return createUseSubscription<Types.ServerTimeSubscription['serverTime'], undefined>(
     ServerTimeDocument,
     () => undefined,
