@@ -470,10 +470,20 @@ export async function generateExternalClientTypes(
 }
 
 /**
+ * Convert first character to uppercase (PascalCase)
+ */
+function toPascalCase(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+/**
  * Extract subscription info from documents
  */
 export interface SubscriptionInfo {
+  /** Original operation name from GraphQL document (used for method names) */
   name: string
+  /** PascalCase version for type references (matches GraphQL codegen output) */
+  typeName: string
   fieldName: string
   hasVariables: boolean
 }
@@ -502,6 +512,7 @@ export function extractSubscriptions(docs: Source[]): SubscriptionInfo[] {
 
         subscriptions.push({
           name,
+          typeName: toPascalCase(name),
           fieldName,
           hasVariables,
         })
@@ -582,8 +593,6 @@ export interface UseSubscriptionOptions<T> {
   onStateChange?: (state: ConnectionState) => void
   /** Use existing session for multiplexing (pass result from useSubscriptionSession) */
   session?: UseSubscriptionSessionReturn
-  /** Use SSE transport instead of WebSocket (shorthand for transport: 'sse') */
-  sse?: boolean
   /** Transport type: 'websocket' (default), 'sse', or 'auto' (WS first, SSE fallback) */
   transport?: SubscriptionTransport
 }
@@ -645,14 +654,14 @@ export const subscription = {
   // Generate Drizzle-style subscription methods
   for (const sub of subscriptions) {
     if (sub.hasVariables) {
-      output += `  ${sub.name}(variables: Types.${sub.name}SubscriptionVariables): SubscriptionBuilder<Types.${sub.name}Subscription['${sub.fieldName}']> {
-    return createSubscriptionBuilder<Types.${sub.name}Subscription['${sub.fieldName}']>(${sub.name}Document, variables)
+      output += `  ${sub.typeName}(variables: Types.${sub.typeName}SubscriptionVariables): SubscriptionBuilder<Types.${sub.typeName}Subscription['${sub.fieldName}']> {
+    return createSubscriptionBuilder<Types.${sub.typeName}Subscription['${sub.fieldName}']>(${sub.typeName}Document, variables)
   },
 `
     }
     else {
-      output += `  ${sub.name}(): SubscriptionBuilder<Types.${sub.name}Subscription['${sub.fieldName}']> {
-    return createSubscriptionBuilder<Types.${sub.name}Subscription['${sub.fieldName}']>(${sub.name}Document, undefined)
+      output += `  ${sub.typeName}(): SubscriptionBuilder<Types.${sub.typeName}Subscription['${sub.fieldName}']> {
+    return createSubscriptionBuilder<Types.${sub.typeName}Subscription['${sub.fieldName}']>(${sub.typeName}Document, undefined)
   },
 `
     }
@@ -776,7 +785,6 @@ function createUseSubscription<TData, TVariables = undefined>(
 
     // Resolve transport options
     const transportOptions: TransportOptions = {
-      sse: options.sse,
       transport: options.transport,
     }
 
@@ -852,9 +860,9 @@ function createUseSubscription<TData, TVariables = undefined>(
 
   // Generate type aliases for each subscription composable
   for (const sub of subscriptions) {
-    const typeName = `Types.${sub.name}Subscription['${sub.fieldName}']`
-    output += `/** Return type for use${sub.name} composable */
-export type Use${sub.name}Return = UseSubscriptionReturn<${typeName}>
+    const typeName = `Types.${sub.typeName}Subscription['${sub.fieldName}']`
+    output += `/** Return type for use${sub.typeName} composable */
+export type Use${sub.typeName}Return = UseSubscriptionReturn<${typeName}>
 `
   }
 
@@ -864,22 +872,22 @@ export type Use${sub.name}Return = UseSubscriptionReturn<${typeName}>
 
   // Generate individual composables for each subscription
   for (const sub of subscriptions) {
-    const typeName = `Types.${sub.name}Subscription['${sub.fieldName}']`
-    const varsType = `Types.${sub.name}SubscriptionVariables`
+    const typeName = `Types.${sub.typeName}Subscription['${sub.fieldName}']`
+    const varsType = `Types.${sub.typeName}SubscriptionVariables`
 
     if (sub.hasVariables) {
       output += `/**
- * Vue composable for ${sub.name} subscription
+ * Vue composable for ${sub.typeName} subscription
  * @param variables - Subscription variables
  * @param options - Subscription options (immediate, onData, onError, session, etc.)
  * @returns Reactive subscription state: { data, error, isActive, state, start, stop, restart }
  */
-export function use${sub.name}(
+export function use${sub.typeName}(
   variables: ${varsType},
   options?: UseSubscriptionOptions<${typeName}>,
-): Use${sub.name}Return {
+): Use${sub.typeName}Return {
   return createUseSubscription<${typeName}, ${varsType}>(
-    ${sub.name}Document,
+    ${sub.typeName}Document,
     () => variables,
   )(options)
 }
@@ -888,15 +896,15 @@ export function use${sub.name}(
     }
     else {
       output += `/**
- * Vue composable for ${sub.name} subscription
+ * Vue composable for ${sub.typeName} subscription
  * @param options - Subscription options (immediate, onData, onError, session, etc.)
  * @returns Reactive subscription state: { data, error, isActive, state, start, stop, restart }
  */
-export function use${sub.name}(
+export function use${sub.typeName}(
   options?: UseSubscriptionOptions<${typeName}>,
-): Use${sub.name}Return {
+): Use${sub.typeName}Return {
   return createUseSubscription<${typeName}, undefined>(
-    ${sub.name}Document,
+    ${sub.typeName}Document,
     () => undefined,
   )(options)
 }

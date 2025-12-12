@@ -64,8 +64,6 @@ export type SubscriptionTransport = 'websocket' | 'sse' | 'auto'
 export interface TransportOptions {
   /** Transport type: 'websocket' (default), 'sse', or 'auto' (WS first, SSE fallback) */
   transport?: SubscriptionTransport
-  /** Shorthand for { transport: 'sse' } */
-  sse?: boolean
 }
 
 export interface SubscriptionOptions<TVariables = Record<string, unknown>> {
@@ -148,6 +146,21 @@ function extractDataValue<T>(data: Record<string, unknown> | undefined): T | und
 
 function isWebSocketAvailable(): boolean {
   return typeof globalThis.WebSocket !== 'undefined'
+}
+
+/**
+ * Detect if running in Safari browser
+ * Safari has known issues with SSE (EventSource):
+ * 1. Safari 18+ has a keep-alive bug that causes "network connection lost" errors
+ * 2. Safari buffers SSE data and doesn't show it until ~2KB is received
+ * @see https://discussions.apple.com/thread/256112607
+ * @see https://github.com/EventSource/eventsource/issues/72
+ */
+function isSafari(): boolean {
+  if (typeof navigator === 'undefined') return false
+  const ua = navigator.userAgent
+  // Safari but not Chrome/Chromium-based browsers (they also include Safari in UA)
+  return ua.includes('Safari') && !ua.includes('Chrome') && !ua.includes('Chromium')
 }
 
 function toWebSocketUrl(httpUrl: string): string {
@@ -1012,9 +1025,6 @@ export interface SubscriptionClient {
  * Resolve transport type from options
  */
 function resolveTransport(options?: TransportOptions): SubscriptionTransport {
-  if (options?.sse) {
-    return 'sse'
-  }
   return options?.transport ?? 'websocket'
 }
 
