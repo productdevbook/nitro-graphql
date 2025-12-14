@@ -4,7 +4,8 @@ cleanupUnusedCatalogs: true
 ignoreWorkspaceRootCheck: true
 
 shellEmulator: true
-trustPolicy: allow-all
+
+trustPolicy: no-downgrade
 
 packages:
   - playgrounds/*
