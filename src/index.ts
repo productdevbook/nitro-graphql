@@ -346,6 +346,10 @@ export default defineNitroModule({
         })
       }
 
+      // Register runtime plugin for graceful WebSocket shutdown
+      nitro.options.plugins ??= []
+      nitro.options.plugins.push(join(runtime, 'ws-shutdown'))
+
       consola.info(`[nitro-graphql] WebSocket subscriptions enabled at: ${wsEndpoint}`)
     }
 

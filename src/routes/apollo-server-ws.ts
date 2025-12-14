@@ -20,6 +20,61 @@ function devLog(message: string, ...args: unknown[]) {
 }
 
 // ============================================================================
+// Global WebSocket State (for graceful shutdown)
+// ============================================================================
+
+interface WsState {
+  activePeers: Set<Peer>
+  cleanupFns: Map<Peer, () => Promise<void>>
+}
+
+const WS_STATE_KEY = '__nitro_graphql_ws_apollo__'
+
+function getWsState(): WsState {
+  if (!(globalThis as any)[WS_STATE_KEY]) {
+    (globalThis as any)[WS_STATE_KEY] = {
+      activePeers: new Set<Peer>(),
+      cleanupFns: new Map<Peer, () => Promise<void>>(),
+    }
+  }
+  return (globalThis as any)[WS_STATE_KEY]
+}
+
+/**
+ * Gracefully shutdown all WebSocket connections.
+ * Called by the Nitro runtime plugin on server close.
+ */
+export async function shutdownAllConnections() {
+  const state = getWsState()
+  const peers = Array.from(state.activePeers)
+
+  if (peers.length > 0) {
+    devLog(`[Apollo WS] Shutting down ${peers.length} connection(s)...`)
+  }
+
+  for (const peer of peers) {
+    const cleanup = state.cleanupFns.get(peer)
+    if (cleanup) {
+      try {
+        await cleanup()
+      }
+      catch {
+        // Ignore cleanup errors during shutdown
+      }
+    }
+    try {
+      peer.close(1012, 'Service Restart')
+    }
+    catch {
+      // Ignore close errors during shutdown
+    }
+  }
+
+  state.activePeers.clear()
+  state.cleanupFns.clear()
+}
+
+// ============================================================================
 // Types
 // ============================================================================
 
@@ -400,6 +455,14 @@ async function getSchema(): Promise<GraphQLSchema> {
 
 export default defineWebSocketHandler({
   async open(peer) {
+    // Register peer in global state for graceful shutdown
+    const state = getWsState()
+    state.activePeers.add(peer)
+    state.cleanupFns.set(peer, async () => {
+      stopKeepAlive(peer)
+      await cleanupSubscriptions(peer, true)
+    })
+
     devLog('[Apollo WS] Client connected')
     peer.context.subscriptions = new Map<string, TrackedSubscription>()
   },
@@ -441,6 +504,11 @@ export default defineWebSocketHandler({
   },
 
   async close(peer, details) {
+    // Remove peer from global state
+    const state = getWsState()
+    state.activePeers.delete(peer)
+    state.cleanupFns.delete(peer)
+
     devLog('[Apollo WS] Client disconnected:', details)
     stopKeepAlive(peer)
     // Graceful shutdown: try to send complete messages before cleanup
