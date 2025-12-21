@@ -1,17 +1,23 @@
+catalogMode: prefer
+
+shellEmulator: true
+
+trustPolicy: no-downgrade
+
 packages:
   - playgrounds/*
 
 catalog:
-  '@antfu/eslint-config': ^6.7.1
+  '@antfu/eslint-config': ^6.7.2
   '@apollo/server': 5.0.0
   '@apollo/subgraph': ^2.12.2
   '@apollo/utils.withrequired': ^3.0.0
   '@as-integrations/h3': 2.0.0
   '@graphql-codegen/core': ^5.0.0
   '@graphql-codegen/import-types-preset': ^3.0.1
+  '@graphql-codegen/typed-document-node': ^6.1.5
   '@graphql-codegen/typescript': ^5.0.7
   '@graphql-codegen/typescript-generic-sdk': ^4.0.2
-  '@graphql-codegen/typed-document-node': ^6.1.5
   '@graphql-codegen/typescript-operations': ^5.0.7
   '@graphql-codegen/typescript-resolvers': ^5.1.5
   '@graphql-tools/graphql-file-loader': ^8.1.8
@@ -47,6 +53,7 @@ catalog:
   tinyglobby: ^0.2.15
   tsdown: ^0.18.2
   typescript: ^5.9.3
+  vitepress-plugin-llms: ^1.9.3
   vue: ^3.5.26
   vue-router: ^4.6.4
   zod: ^4.2.1

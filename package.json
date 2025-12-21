@@ -139,7 +139,7 @@
     "nitropack": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
-    "vitepress-plugin-llms": "^1.9.3"
+    "vitepress-plugin-llms": "catalog:"
   },
   "resolutions": {
     "nitro-graphql": "link:."
