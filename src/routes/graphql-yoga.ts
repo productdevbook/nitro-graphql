@@ -119,13 +119,32 @@ let yoga: YogaServerInstance<object, object>
 export default defineEventHandler(async (event) => {
   if (!yoga) {
     const schema = await createMergedSchema()
-    // Yoga instance'ı henüz oluşturulmadıysa, oluştur
-    yoga = createYoga(defu({
+    const securityConfig = moduleConfig.security || {
+      introspection: true,
+      playground: true,
+      maskErrors: false,
+      disableSuggestions: false,
+    }
+
+    // Build Yoga config with security settings
+    const yogaConfig = {
       schema,
       graphqlEndpoint: '/api/graphql',
-      landingPage: false,
-      renderGraphiQL: () => apolloSandboxHtml,
-    }, importedConfig))
+      // Disable landing page when playground is disabled
+      landingPage: securityConfig.playground,
+      // Only render GraphiQL when playground is enabled
+      graphiql: securityConfig.playground
+        ? {
+            defaultQuery: '# Welcome to the GraphQL Playground',
+          }
+        : false,
+      // Render Apollo Sandbox when playground is enabled
+      renderGraphiQL: securityConfig.playground ? () => apolloSandboxHtml : undefined,
+      // Error masking for production
+      maskedErrors: securityConfig.maskErrors,
+    }
+
+    yoga = createYoga(defu(yogaConfig, importedConfig))
   }
   const request = toWebRequest(event)
   const response = await yoga.handleRequest(request, event)
