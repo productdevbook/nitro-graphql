@@ -12,6 +12,9 @@ export default defineNuxtConfig({
     // GraphQL Yoga configuration
     graphql: {
       framework: 'graphql-yoga',
+      subscriptions: {
+        enabled: true,
+      },
       // Example external services configuration (commented out by default)
       externalServices: [
         {

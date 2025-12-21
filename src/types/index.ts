@@ -215,6 +215,18 @@ export interface PathsConfig {
 }
 
 /**
+ * WebSocket subscriptions configuration
+ */
+export interface SubscriptionsConfig {
+  /** Enable WebSocket subscriptions support */
+  enabled?: boolean
+  /** WebSocket endpoint path (default: '/api/graphql/ws') */
+  endpoint?: string
+  /** WebSocket protocol (currently only graphql-ws is supported) */
+  protocol?: 'graphql-ws'
+}
+
+/**
  * Security configuration for production environments
  * All options auto-detect based on NODE_ENV when not explicitly set
  */
@@ -248,7 +260,11 @@ export interface NitroGraphQLOptions {
   endpoint?: {
     graphql?: string
     healthCheck?: string
+    /** WebSocket endpoint path (default: '/api/graphql/ws') */
+    ws?: string
   }
+  /** WebSocket subscriptions configuration */
+  subscriptions?: SubscriptionsConfig
   playground?: boolean
   typedefs?: string[]
   resolvers?: Array<IResolvers<any, any>>

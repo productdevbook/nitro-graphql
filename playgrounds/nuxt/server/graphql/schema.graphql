@@ -9,3 +9,14 @@ type Query {
 type Mutation {
   _empty: String
 }
+
+type Subscription {
+  """Simple counter that increments every second"""
+  countdown(from: Int!): Int!
+
+  """Receives a greeting message every 2 seconds"""
+  greetings: String!
+
+  """Current server time updated every second"""
+  serverTime: DateTime!
+}

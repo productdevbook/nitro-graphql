@@ -7,6 +7,9 @@ export default defineNitroConfig({
   compatibilityDate: '2025-07-01',
   graphql: {
     framework: 'graphql-yoga',
+    subscriptions: {
+      enabled: true,
+    },
   },
   esbuild: {
     options: {

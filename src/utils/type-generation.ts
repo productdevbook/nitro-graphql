@@ -1,5 +1,4 @@
 import type { Nitro } from 'nitropack'
-
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { buildSubgraphSchema } from '@apollo/subgraph'
 import { loadFilesSync } from '@graphql-tools/load-files'
@@ -52,11 +51,15 @@ function generateGraphQLIndexFile(
     let indexContent = `// This file is auto-generated once by nitro-graphql for quick start
 // You can modify this file according to your needs
 //
-// Export your main GraphQL service (auto-generated)
+// === Query/Mutation Client ===
 export * from './default/ofetch'
 
-// Export external GraphQL services (auto-generated for existing services)
-// When you add new external services, don't forget to add their exports here:
+// === Subscription Composables (Vue) ===
+// Export useCountdown, useGreetings, useSubscriptionSession, etc.
+export * from './default/sdk'
+
+// === External GraphQL Services ===
+// When you add new external services, add their exports here:
 // export * from './yourServiceName/ofetch'
 `
 
@@ -491,7 +494,16 @@ async function generateMainClientTypes(nitro: Nitro) {
       }])
     : buildSchema(graphqlString)
 
-  const types = await generateClientTypes(schema, loadDocs, nitro.options.graphql?.codegen?.client ?? {}, nitro.options.graphql?.codegen?.clientSDK ?? {})
+  const types = await generateClientTypes(
+    schema,
+    loadDocs,
+    nitro.options.graphql?.codegen?.client ?? {},
+    nitro.options.graphql?.codegen?.clientSDK ?? {},
+    undefined,
+    undefined,
+    undefined,
+    nitro.options.graphql?.subscriptions?.enabled ?? false,
+  )
   if (types === false) {
     return
   }

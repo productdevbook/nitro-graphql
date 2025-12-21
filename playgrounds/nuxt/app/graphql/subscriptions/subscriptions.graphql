@@ -1,0 +1,11 @@
+subscription Countdown($from: Int!) {
+  countdown(from: $from)
+}
+
+subscription Greetings {
+  greetings
+}
+
+subscription ServerTime {
+  serverTime
+}

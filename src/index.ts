@@ -9,6 +9,7 @@ import defu from 'defu'
 import { defineNitroModule } from 'nitropack/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { rollupConfig } from './rollup'
+import { subscribeClientTemplate } from './templates/subscribe-client'
 import {
   generateDirectiveSchemas,
   generateLayerIgnorePatterns,
@@ -108,6 +109,7 @@ export default defineNitroModule({
       endpoint: {
         graphql: '/api/graphql',
         healthCheck: '/api/graphql/health',
+        ws: '/api/graphql/ws',
       },
       playground: securityConfig.playground, // Use resolved security config
       security: securityConfig, // Pass full security config to routes
@@ -348,6 +350,37 @@ export default defineNitroModule({
       handler: join(runtime, 'health'),
       method: 'get',
     })
+
+    // WebSocket subscription endpoint (if enabled)
+    if (nitro.options.graphql?.subscriptions?.enabled) {
+      // Enable experimental websocket feature for Nitro v2
+      nitro.options.experimental ||= {}
+      nitro.options.experimental.websocket = true
+
+      const wsEndpoint = nitro.options.runtimeConfig.graphql?.endpoint?.ws
+        || nitro.options.graphql?.subscriptions?.endpoint
+        || '/api/graphql/ws'
+
+      if (nitro.options.graphql?.framework === 'graphql-yoga') {
+        nitro.options.handlers.push({
+          route: wsEndpoint,
+          handler: join(runtime, 'graphql-yoga-ws'),
+        })
+      }
+
+      if (nitro.options.graphql?.framework === 'apollo-server') {
+        nitro.options.handlers.push({
+          route: wsEndpoint,
+          handler: join(runtime, 'apollo-server-ws'),
+        })
+      }
+
+      // Register runtime plugin for graceful WebSocket shutdown
+      nitro.options.plugins ??= []
+      nitro.options.plugins.push(join(runtime, 'ws-shutdown'))
+
+      consola.info(`[nitro-graphql] WebSocket subscriptions enabled at: ${wsEndpoint}`)
+    }
 
     // Debug endpoint (development only)
     if (nitro.options.dev) {
@@ -658,6 +691,23 @@ declare module 'h3' {
       if (existsSync(join(nitro.graphql.serverDir, 'context.d.ts'))) {
         consola.warn('nitro-graphql: Found context.d.ts file. Please rename it to context.ts for the new structure.')
         consola.info('The context file should now be context.ts instead of context.d.ts')
+      }
+
+      // 5. graphql/subscribe.ts - Subscription client (if subscriptions are enabled)
+      if (nitro.options.graphql?.subscriptions?.enabled) {
+        // Ensure client directory exists
+        if (!existsSync(nitro.graphql.clientDir)) {
+          mkdirSync(nitro.graphql.clientDir, { recursive: true })
+        }
+
+        // Generate subscribe.ts in the client directory (e.g., graphql/default/subscribe.ts)
+        const defaultDir = resolve(nitro.graphql.clientDir, 'default')
+        if (!existsSync(defaultDir)) {
+          mkdirSync(defaultDir, { recursive: true })
+        }
+
+        const subscribeClientPath = resolve(defaultDir, 'subscribe.ts')
+        writeFileIfNotExists(subscribeClientPath, subscribeClientTemplate, 'subscribe.ts')
       }
     }
     else {
