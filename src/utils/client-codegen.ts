@@ -6,6 +6,7 @@ import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { codegen } from '@graphql-codegen/core'
 import { preset } from '@graphql-codegen/import-types-preset'
+import { plugin as typedDocumentNodePlugin } from '@graphql-codegen/typed-document-node'
 import { plugin as typescriptPlugin } from '@graphql-codegen/typescript'
 import { plugin as typescriptGenericSdk } from '@graphql-codegen/typescript-generic-sdk'
 import { plugin as typescriptOperations } from '@graphql-codegen/typescript-operations'
@@ -389,22 +390,36 @@ export function getSdk(requester: Requester): Sdk {
       }
     }
 
+    // Check if typedDocumentNode is enabled
+    const enableTypedDocumentNode = config.typedDocumentNode === true
+
+    // Build plugins array based on config
+    const plugins: Array<Record<string, object>> = [
+      { pluginContent: {} },
+      { typescript: {} },
+      { typescriptOperations: {} },
+    ]
+
+    const pluginMap: Record<string, { plugin: typeof typescriptPlugin }> = {
+      pluginContent: { plugin: pluginContent },
+      typescript: { plugin: typescriptPlugin },
+      typescriptOperations: { plugin: typescriptOperations },
+    }
+
+    // Add typed-document-node plugin if enabled
+    if (enableTypedDocumentNode) {
+      plugins.push({ typedDocumentNode: {} })
+      pluginMap.typedDocumentNode = { plugin: typedDocumentNodePlugin }
+    }
+
     // Full generation with documents
     const output = await codegen({
       filename: outputPath || 'client-types.generated.ts',
       schema: parse(printSchemaWithDirectives(schema)),
       documents: [...docs],
       config: mergedConfig,
-      plugins: [
-        { pluginContent: {} },
-        { typescript: {} },
-        { typescriptOperations: {} },
-      ],
-      pluginMap: {
-        pluginContent: { plugin: pluginContent },
-        typescript: { plugin: typescriptPlugin },
-        typescriptOperations: { plugin: typescriptOperations },
-      },
+      plugins,
+      pluginMap,
     })
 
     // Use provided virtual import path, or fall back to default convention

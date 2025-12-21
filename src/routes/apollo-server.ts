@@ -5,6 +5,7 @@ import { directives } from '#nitro-internal-virtual/server-directives'
 import { resolvers } from '#nitro-internal-virtual/server-resolvers'
 import { schemas } from '#nitro-internal-virtual/server-schemas'
 import { ApolloServer } from '@apollo/server'
+import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled'
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default'
 import { mergeResolvers, mergeTypeDefs } from '@graphql-tools/merge'
 import { makeExecutableSchema } from '@graphql-tools/schema'
@@ -102,13 +103,51 @@ let serverStarted = false
 async function createApolloServer() {
   if (!apolloServer) {
     const schema = await createMergedSchema()
+    const securityConfig = moduleConfig.security || {
+      introspection: true,
+      playground: true,
+      maskErrors: false,
+      disableSuggestions: false,
+    }
+
+    // Build plugins array based on security config
+    const plugins: any[] = []
+    if (securityConfig.playground) {
+      plugins.push(ApolloServerPluginLandingPageLocalDefault({ embed: true }))
+    }
+    else {
+      plugins.push(ApolloServerPluginLandingPageDisabled())
+    }
 
     apolloServer = new ApolloServer<BaseContext>(defu({
       schema,
-      introspection: true,
-      plugins: [
-        ApolloServerPluginLandingPageLocalDefault({ embed: true }),
-      ],
+      introspection: securityConfig.introspection,
+      plugins,
+      // Error masking for production
+      formatError: securityConfig.maskErrors
+        ? (formattedError: any, _error: any) => {
+            // Preserve user-facing errors with specific codes
+            const code = formattedError?.extensions?.code
+            const userFacingCodes = [
+              'BAD_USER_INPUT',
+              'GRAPHQL_VALIDATION_FAILED',
+              'UNAUTHENTICATED',
+              'FORBIDDEN',
+              'BAD_REQUEST',
+            ]
+            if (code && userFacingCodes.includes(code)) {
+              return formattedError
+            }
+
+            // Mask internal errors
+            return {
+              message: 'Internal server error',
+              extensions: {
+                code: 'INTERNAL_SERVER_ERROR',
+              },
+            }
+          }
+        : undefined,
     }, importedConfig))
 
     // Start the server only once after creation

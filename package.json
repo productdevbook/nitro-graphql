@@ -1,8 +1,8 @@
 {
   "name": "nitro-graphql",
   "type": "module",
-  "version": "1.7.0-beta.5",
-  "packageManager": "pnpm@10.25.0",
+  "version": "1.6.1",
+  "packageManager": "pnpm@10.26.1",
   "description": "GraphQL integration for Nitro",
   "license": "MIT",
   "repository": {
@@ -56,10 +56,6 @@
     "./nuxt": {
       "types": "./dist/ecosystem/nuxt.d.mts",
       "import": "./dist/ecosystem/nuxt.mjs"
-    },
-    "./subscribe": {
-      "types": "./dist/subscribe/index.d.mts",
-      "import": "./dist/subscribe/index.mjs"
     }
   },
   "module": "./dist/index.mjs",
@@ -80,8 +76,7 @@
     "docs:build": "cd .docs && pnpm install && pnpm build",
     "docs:preview": "cd .docs && pnpm preview",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "typecheck": "tsc --noEmit"
+    "lint:fix": "eslint . --fix"
   },
   "peerDependencies": {
     "@apollo/server": "^5.0.0",
@@ -106,6 +101,7 @@
     "@apollo/subgraph": "catalog:",
     "@graphql-codegen/core": "catalog:",
     "@graphql-codegen/import-types-preset": "catalog:",
+    "@graphql-codegen/typed-document-node": "catalog:",
     "@graphql-codegen/typescript": "catalog:",
     "@graphql-codegen/typescript-generic-sdk": "catalog:",
     "@graphql-codegen/typescript-operations": "catalog:",
