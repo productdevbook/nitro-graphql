@@ -20,6 +20,13 @@ export type GenericSdkConfig = Omit<Parameters<typeof typescriptGenericSdk>[2], 
 
 export type CodegenClientConfig = TypeScriptPluginConfig & TypeScriptDocumentsPluginConfig & {
   endpoint?: string
+  /**
+   * Generate TypedDocumentNode exports for urql/Apollo Client compatibility.
+   * When enabled, generates typed document constants that can be used with
+   * any GraphQL client that supports TypedDocumentNode.
+   * @default false
+   */
+  typedDocumentNode?: boolean
 }
 
 interface IESMImport {
