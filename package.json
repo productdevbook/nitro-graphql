@@ -2,7 +2,7 @@
   "name": "nitro-graphql",
   "type": "module",
   "version": "1.6.1",
-  "packageManager": "pnpm@10.24.0",
+  "packageManager": "pnpm@10.26.1",
   "description": "GraphQL integration for Nitro",
   "license": "MIT",
   "repository": {
@@ -101,6 +101,7 @@
     "@apollo/subgraph": "catalog:",
     "@graphql-codegen/core": "catalog:",
     "@graphql-codegen/import-types-preset": "catalog:",
+    "@graphql-codegen/typed-document-node": "catalog:",
     "@graphql-codegen/typescript": "catalog:",
     "@graphql-codegen/typescript-generic-sdk": "catalog:",
     "@graphql-codegen/typescript-operations": "catalog:",
