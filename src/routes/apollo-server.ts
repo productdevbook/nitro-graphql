@@ -125,7 +125,7 @@ async function createApolloServer() {
       plugins,
       // Error masking for production
       formatError: securityConfig.maskErrors
-        ? (formattedError: any, error: any) => {
+        ? (formattedError: any, _error: any) => {
             // Preserve user-facing errors with specific codes
             const code = formattedError?.extensions?.code
             const userFacingCodes = [
