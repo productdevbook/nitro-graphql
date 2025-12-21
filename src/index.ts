@@ -1,5 +1,5 @@
 import type { Nitro } from 'nitropack/types'
-import type { NitroGraphQLOptions } from './types'
+import type { NitroGraphQLOptions, SecurityConfig } from './types'
 import { existsSync, mkdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { watch } from 'chokidar'
@@ -32,6 +32,21 @@ import {
 import { clientTypeGeneration, serverTypeGeneration } from './utils/type-generation'
 
 export type * from './types'
+
+/**
+ * Resolve security config with environment-aware defaults
+ * In production: introspection off, playground off, errors masked, suggestions disabled
+ * In development: introspection on, playground on, errors shown, suggestions enabled
+ */
+export function resolveSecurityConfig(config?: SecurityConfig): Required<SecurityConfig> {
+  const isProd = process.env.NODE_ENV === 'production'
+  return {
+    introspection: config?.introspection ?? !isProd,
+    playground: config?.playground ?? !isProd,
+    maskErrors: config?.maskErrors ?? isProd,
+    disableSuggestions: config?.disableSuggestions ?? isProd,
+  }
+}
 
 export default defineNitroModule({
   name: 'nitro-graphql',
@@ -86,12 +101,16 @@ export default defineNitroModule({
       }
     })
 
+    // Resolve security config with environment-aware defaults
+    const securityConfig = resolveSecurityConfig(nitro.options.graphql?.security)
+
     nitro.options.runtimeConfig.graphql = defu(nitro.options.runtimeConfig.graphql || {}, {
       endpoint: {
         graphql: '/api/graphql',
         healthCheck: '/api/graphql/health',
       },
-      playground: true,
+      playground: securityConfig.playground, // Use resolved security config
+      security: securityConfig, // Pass full security config to routes
     } as NitroGraphQLOptions)
 
     // Log federation status if enabled
@@ -214,19 +233,29 @@ export default defineNitroModule({
 
       // Validate resolver setup and provide helpful diagnostics (only in dev)
       if (nitro.options.dev) {
+        const runtimeSecurityConfig = nitro.options.runtimeConfig.graphql?.security as Required<SecurityConfig> | undefined
+        const isProd = process.env.NODE_ENV === 'production'
+
         consola.box({
           title: 'Nitro GraphQL',
           message: [
             `Framework: ${nitro.options.graphql?.framework || 'Not configured'}`,
+            `Environment: ${isProd ? 'production' : 'development'}`,
             `Schemas: ${schemas.length}`,
             `Resolvers: ${resolvers.length}`,
             `Directives: ${directives.length}`,
             `Documents: ${docs.length}`,
             '',
+            'Security:',
+            `├─ Introspection: ${runtimeSecurityConfig?.introspection ? 'enabled' : 'disabled'}`,
+            `├─ Playground: ${runtimeSecurityConfig?.playground ? 'enabled' : 'disabled'}`,
+            `├─ Error Masking: ${runtimeSecurityConfig?.maskErrors ? 'enabled' : 'disabled'}`,
+            `└─ Field Suggestions: ${runtimeSecurityConfig?.disableSuggestions ? 'disabled' : 'enabled'}`,
+            '',
             'Debug Dashboard: /_nitro/graphql/debug',
           ].join('\n'),
           style: {
-            borderColor: 'cyan',
+            borderColor: isProd ? 'yellow' : 'cyan',
             borderStyle: 'rounded',
           },
         })

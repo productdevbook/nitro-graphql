@@ -314,7 +314,12 @@ export { importedConfig }
 export function virtualModuleConfig(app: Nitro) {
   app.options.virtual ??= {}
   app.options.virtual['#nitro-internal-virtual/module-config'] = () => {
-    const moduleConfig = app.options.graphql || {}
+    // Merge graphql options with runtime config (includes resolved security)
+    const moduleConfig = {
+      ...app.options.graphql,
+      // Get resolved security config from runtime config
+      security: app.options.runtimeConfig.graphql?.security,
+    }
 
     return `export const moduleConfig = ${JSON.stringify(moduleConfig, null, 2)};`
   }
