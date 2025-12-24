@@ -156,8 +156,9 @@ function isWebSocketAvailable(): boolean {
  * @see https://discussions.apple.com/thread/256112607
  * @see https://github.com/EventSource/eventsource/issues/72
  */
-function isSafari(): boolean {
-  if (typeof navigator === 'undefined') return false
+function _isSafari(): boolean {
+  if (typeof navigator === 'undefined')
+    return false
   const ua = navigator.userAgent
   // Safari but not Chrome/Chromium-based browsers (they also include Safari in UA)
   return ua.includes('Safari') && !ua.includes('Chrome') && !ua.includes('Chromium')

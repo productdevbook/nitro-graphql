@@ -555,7 +555,6 @@ async function generateExternalServicesTypes(nitro: Nitro) {
 
   for (const service of externalServices) {
     try {
-
       // Download and save schema if enabled
       await downloadAndSaveSchema(service, nitro.options.buildDir)
 
