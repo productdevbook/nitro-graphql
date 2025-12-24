@@ -262,45 +262,7 @@ export default defineNitroModule({
           },
         })
 
-        if (resolvers.length > 0) {
-          const totalExports = resolvers.reduce((sum, r) => sum + r.imports.length, 0)
-
-          // Show breakdown by type for better visibility
-          const typeCount = {
-            query: 0,
-            mutation: 0,
-            resolver: 0,
-            type: 0,
-            subscription: 0,
-            directive: 0,
-          }
-          for (const resolver of resolvers) {
-            for (const imp of resolver.imports) {
-              if (imp.type in typeCount) {
-                typeCount[imp.type as keyof typeof typeCount]++
-              }
-            }
-          }
-
-          const breakdown: string[] = []
-          if (typeCount.query > 0)
-            breakdown.push(`${typeCount.query} query`)
-          if (typeCount.mutation > 0)
-            breakdown.push(`${typeCount.mutation} mutation`)
-          if (typeCount.resolver > 0)
-            breakdown.push(`${typeCount.resolver} resolver`)
-          if (typeCount.type > 0)
-            breakdown.push(`${typeCount.type} type`)
-          if (typeCount.subscription > 0)
-            breakdown.push(`${typeCount.subscription} subscription`)
-          if (typeCount.directive > 0)
-            breakdown.push(`${typeCount.directive} directive`)
-
-          if (breakdown.length > 0) {
-            consola.success(`[nitro-graphql] ${totalExports} resolver export(s): ${breakdown.join(', ')}`)
-          }
-        }
-        else {
+        if (resolvers.length === 0) {
           consola.warn('[nitro-graphql] No resolvers found. Check /_nitro/graphql/debug for details.')
         }
       }
@@ -389,7 +351,6 @@ export default defineNitroModule({
         handler: join(runtime, 'debug'),
         method: 'get',
       })
-      consola.info('[nitro-graphql] Debug dashboard available at: /_nitro/graphql/debug')
     }
 
     // Auto-import utilities

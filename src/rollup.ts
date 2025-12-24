@@ -117,11 +117,6 @@ ${schemaArray.join(',\n')}
 ];
     `
 
-      // Log virtual module generation in dev mode
-      if (app.options.dev) {
-        app.logger.success(`[nitro-graphql] Generated virtual schema module: ${imports.length} schema(s)`)
-      }
-
       return code
     }
     catch (error) {
@@ -203,12 +198,6 @@ export function virtualResolvers(app: Nitro) {
 
       const code = content.join('\n')
 
-      // Log virtual module generation in dev mode
-      if (app.options.dev) {
-        const totalExports = imports.reduce((sum, r) => sum + r.imports.length, 0)
-        app.logger.success(`[nitro-graphql] Generated virtual resolver module: ${totalExports} export(s) from ${imports.length} file(s)`)
-      }
-
       return code
     }
     catch (error) {
@@ -284,11 +273,6 @@ export function virtualDirectives(app: Nitro) {
       ]
 
       const code = content.join('\n')
-
-      if (app.options.dev) {
-        const totalExports = imports.reduce((sum, d) => sum + d.imports.length, 0)
-        app.logger.success(`[nitro-graphql] Generated virtual directive module: ${totalExports} directive(s) from ${imports.length} file(s)`)
-      }
 
       return code
     }

@@ -412,7 +412,6 @@ export async function serverTypeGeneration(app: Nitro) {
     if (serverTypesPath) {
       mkdirSync(dirname(serverTypesPath), { recursive: true })
       writeFileSync(serverTypesPath, data, 'utf-8')
-      consola.success(`[nitro-graphql] Generated server types at: ${serverTypesPath}`)
     }
   }
   catch (error) {
@@ -525,7 +524,6 @@ async function generateMainClientTypes(nitro: Nitro) {
   if (clientTypesPath) {
     mkdirSync(dirname(clientTypesPath), { recursive: true })
     writeFileSync(clientTypesPath, types.types, 'utf-8')
-    consola.success(`[nitro-graphql] Generated client types at: ${clientTypesPath}`)
   }
 
   // 2. Generate SDK file
@@ -540,7 +538,6 @@ async function generateMainClientTypes(nitro: Nitro) {
   if (sdkPath) {
     mkdirSync(dirname(sdkPath), { recursive: true })
     writeFileSync(sdkPath, types.sdk, 'utf-8')
-    consola.success(`[nitro-graphql] Generated SDK at: ${sdkPath}`)
   }
 
   // Generate ofetch client for Nuxt framework
@@ -558,7 +555,6 @@ async function generateExternalServicesTypes(nitro: Nitro) {
 
   for (const service of externalServices) {
     try {
-      consola.info(`[graphql:${service.name}] Processing external service`)
 
       // Download and save schema if enabled
       await downloadAndSaveSchema(service, nitro.options.buildDir)
@@ -618,7 +614,6 @@ async function generateExternalServicesTypes(nitro: Nitro) {
       if (serviceTypesPath) {
         mkdirSync(dirname(serviceTypesPath), { recursive: true })
         writeFileSync(serviceTypesPath, types.types, 'utf-8')
-        consola.success(`[graphql:${service.name}] Generated types at: ${serviceTypesPath}`)
       }
 
       // 2. Generate external service SDK
@@ -633,15 +628,12 @@ async function generateExternalServicesTypes(nitro: Nitro) {
       if (serviceSdkPath) {
         mkdirSync(dirname(serviceSdkPath), { recursive: true })
         writeFileSync(serviceSdkPath, types.sdk, 'utf-8')
-        consola.success(`[graphql:${service.name}] Generated SDK at: ${serviceSdkPath}`)
       }
 
       // Generate ofetch client for Nuxt framework
       if (nitro.options.framework?.name === 'nuxt') {
         generateExternalOfetchClient(nitro, service, service.endpoint)
       }
-
-      consola.success(`[graphql:${service.name}] External service types generated successfully`)
     }
     catch (error) {
       consola.error(`[graphql:${service.name}] External service generation failed:`, error)
