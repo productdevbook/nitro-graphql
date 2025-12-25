@@ -359,9 +359,7 @@ export function validateExternalServices(services: unknown[]): string[] {
       serviceNames.add(service.name)
     }
 
-    if (!('schema' in service) || !service.schema) {
-      errors.push(`${prefix}.schema is required`)
-    }
+    // schema is optional - defaults to endpoint if not specified
 
     if (!('endpoint' in service) || typeof service.endpoint !== 'string') {
       errors.push(`${prefix}.endpoint is required and must be a string`)
