@@ -20,6 +20,13 @@ export type GenericSdkConfig = Omit<Parameters<typeof typescriptGenericSdk>[2], 
 
 export type CodegenClientConfig = TypeScriptPluginConfig & TypeScriptDocumentsPluginConfig & {
   endpoint?: string
+  /**
+   * Generate TypedDocumentNode exports for urql/Apollo Client compatibility.
+   * When enabled, generates typed document constants that can be used with
+   * any GraphQL client that supports TypedDocumentNode.
+   * @default false
+   */
+  typedDocumentNode?: boolean
 }
 
 interface IESMImport {
@@ -84,10 +91,13 @@ export interface ExternalServicePaths {
 export interface ExternalGraphQLService {
   /** Unique name for this service (used for file naming and type generation) */
   name: string
-  /** Schema source - can be URL(s) for remote schemas or file path(s) for local schemas */
-  schema: string | string[]
-  /** GraphQL endpoint for this service */
+  /** GraphQL endpoint for this service (also used as schema source if `schema` is not specified) */
   endpoint: string
+  /**
+   * Schema source - can be URL(s) for remote schemas or file path(s) for local schemas
+   * @default Uses `endpoint` for introspection if not specified
+   */
+  schema?: string | string[]
   /** Optional headers for schema introspection and client requests */
   headers?: Record<string, string> | (() => Record<string, string>)
   /** Optional: specific document patterns for this service */
@@ -207,8 +217,44 @@ export interface PathsConfig {
   typesDir?: string
 }
 
+/**
+ * Security configuration for production environments
+ * All options auto-detect based on NODE_ENV when not explicitly set
+ */
+export interface SecurityConfig {
+  /**
+   * Enable GraphQL introspection queries
+   * @default true in development, false in production
+   */
+  introspection?: boolean
+  /**
+   * Enable GraphQL playground/sandbox UI
+   * @default true in development, false in production
+   */
+  playground?: boolean
+  /**
+   * Mask internal error details in responses
+   * When enabled, internal errors show "Internal server error" instead of actual message
+   * @default false in development, true in production
+   */
+  maskErrors?: boolean
+  /**
+   * Disable "Did you mean X?" field suggestions in error messages
+   * Prevents attackers from discovering field names via brute force
+   * @default false in development, true in production
+   */
+  disableSuggestions?: boolean
+}
+
 export interface NitroGraphQLOptions {
   framework?: 'graphql-yoga' | 'apollo-server'
+  /**
+   * Enable/disable GraphQL server functionality
+   * When set to false, only external services client types will be generated
+   * Server routes, resolvers, schemas, and directives will not be processed
+   * @default true
+   */
+  server?: boolean
   endpoint?: {
     graphql?: string
     healthCheck?: string
@@ -261,4 +307,9 @@ export interface NitroGraphQLOptions {
    * Customize base directories for file generation
    */
   paths?: PathsConfig
+  /**
+   * Security configuration for production environments
+   * Auto-detects NODE_ENV and applies secure defaults in production
+   */
+  security?: SecurityConfig
 }
