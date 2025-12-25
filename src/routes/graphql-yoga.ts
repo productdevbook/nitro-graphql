@@ -38,12 +38,27 @@ export default defineEventHandler(async (event) => {
       directives,
       moduleConfig,
     })
+
+    // Get security config from module config (resolved with environment defaults)
+    const securityConfig = moduleConfig.security || {
+      introspection: true,
+      playground: true,
+      maskErrors: false,
+      disableSuggestions: false,
+    }
+
     // Yoga instance'ı henüz oluşturulmadıysa, oluştur
     yoga = createYoga(defu({
       schema,
       graphqlEndpoint: '/api/graphql',
-      landingPage: false,
-      renderGraphiQL: () => apolloSandboxHtml,
+      // Apply security settings
+      landingPage: securityConfig.playground,
+      graphiql: securityConfig.playground
+        ? { defaultQuery: '# Welcome to GraphQL\n#\n# Try running a query!\n' }
+        : false,
+      renderGraphiQL: securityConfig.playground ? () => apolloSandboxHtml : undefined,
+      // Mask errors in production
+      maskedErrors: securityConfig.maskErrors,
     }, importedConfig))
   }
   const response = await yoga.handleRequest(event.req, event as unknown as Record<string, unknown>)
