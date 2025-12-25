@@ -87,7 +87,9 @@ export async function graphQLLoadSchemaSync(
 export async function loadExternalSchema(service: ExternalGraphQLService, buildDir?: string): Promise<GraphQLSchema | undefined> {
   try {
     const headers = typeof service.headers === 'function' ? service.headers() : service.headers || {}
-    const schemas = Array.isArray(service.schema) ? service.schema : [service.schema]
+    // Use endpoint as schema source if schema is not specified
+    const schemaSource = service.schema ?? service.endpoint
+    const schemas = Array.isArray(schemaSource) ? schemaSource : [schemaSource]
 
     // If downloadSchema is enabled and buildDir is provided, try to use downloaded schema first
     if (service.downloadSchema && buildDir) {
@@ -148,7 +150,13 @@ function isUrl(path: string): boolean {
  * Download and save schema from external service
  */
 export async function downloadAndSaveSchema(service: ExternalGraphQLService, buildDir: string): Promise<string | undefined> {
-  const downloadMode = service.downloadSchema
+  // Use endpoint as schema source if schema is not specified
+  const schemaSource = service.schema ?? service.endpoint
+  const schemas = Array.isArray(schemaSource) ? schemaSource : [schemaSource]
+  const hasUrlSchemas = schemas.some(schema => isUrl(schema))
+
+  // Default downloadSchema to true if schema source is a URL and not explicitly set
+  const downloadMode = service.downloadSchema ?? (hasUrlSchemas ? true : false)
 
   // Skip if downloading is disabled or manual
   if (!downloadMode || downloadMode === 'manual') {
@@ -161,10 +169,6 @@ export async function downloadAndSaveSchema(service: ExternalGraphQLService, bui
 
   try {
     const headers = typeof service.headers === 'function' ? service.headers() : service.headers || {}
-    const schemas = Array.isArray(service.schema) ? service.schema : [service.schema]
-
-    // Check if any schemas are local files vs URLs
-    const hasUrlSchemas = schemas.some(schema => isUrl(schema))
     const hasLocalSchemas = schemas.some(schema => !isUrl(schema))
 
     // Determine download behavior based on mode

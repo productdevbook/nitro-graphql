@@ -91,10 +91,13 @@ export interface ExternalServicePaths {
 export interface ExternalGraphQLService {
   /** Unique name for this service (used for file naming and type generation) */
   name: string
-  /** Schema source - can be URL(s) for remote schemas or file path(s) for local schemas */
-  schema: string | string[]
-  /** GraphQL endpoint for this service */
+  /** GraphQL endpoint for this service (also used as schema source if `schema` is not specified) */
   endpoint: string
+  /**
+   * Schema source - can be URL(s) for remote schemas or file path(s) for local schemas
+   * @default Uses `endpoint` for introspection if not specified
+   */
+  schema?: string | string[]
   /** Optional headers for schema introspection and client requests */
   headers?: Record<string, string> | (() => Record<string, string>)
   /** Optional: specific document patterns for this service */
@@ -257,6 +260,13 @@ export interface SecurityConfig {
 
 export interface NitroGraphQLOptions {
   framework: 'graphql-yoga' | 'apollo-server'
+  /**
+   * Enable/disable GraphQL server functionality
+   * When set to false, only external services client types will be generated
+   * Server routes, resolvers, schemas, and directives will not be processed
+   * @default true
+   */
+  server?: boolean
   endpoint?: {
     graphql?: string
     healthCheck?: string

@@ -52,7 +52,10 @@ export function resolveSecurityConfig(config?: SecurityConfig): Required<Securit
 export default defineNitroModule({
   name: 'nitro-graphql',
   async setup(nitro: Nitro) {
-    if (!nitro.options.graphql?.framework) {
+    // Check if server mode is enabled (default: true)
+    const serverEnabled = nitro.options.graphql?.server !== false
+
+    if (serverEnabled && !nitro.options.graphql?.framework) {
       consola.warn('No GraphQL framework specified. Please set graphql.framework to "graphql-yoga" or "apollo-server".')
     }
 
@@ -202,22 +205,8 @@ export default defineNitroModule({
     )
     const tsconfigDir = dirname(tsConfigPath)
 
-    const schemas = await scanSchemas(nitro)
-    nitro.scanSchemas = schemas
-
-    const docs = await scanDocs(nitro)
-    nitro.scanDocuments = docs
-
-    const resolvers = await scanResolvers(nitro)
-    nitro.scanResolvers = resolvers
-
-    const directives = await scanDirectives(nitro)
-    nitro.scanDirectives = directives
-
-    // Generate directive schemas file using clean parser
-    await generateDirectiveSchemas(nitro, directives)
-
-    nitro.hooks.hook('dev:start', async () => {
+    // Only scan server-side files if server mode is enabled
+    if (serverEnabled) {
       const schemas = await scanSchemas(nitro)
       nitro.scanSchemas = schemas
 
@@ -227,8 +216,38 @@ export default defineNitroModule({
       const directives = await scanDirectives(nitro)
       nitro.scanDirectives = directives
 
-      // Regenerate directive schemas using clean parser
+      // Generate directive schemas file using clean parser
       await generateDirectiveSchemas(nitro, directives)
+    }
+    else {
+      // Initialize empty arrays for client-only mode
+      nitro.scanSchemas = []
+      nitro.scanResolvers = []
+      nitro.scanDirectives = []
+    }
+
+    const docs = await scanDocs(nitro)
+    nitro.scanDocuments = docs
+
+    nitro.hooks.hook('dev:start', async () => {
+      let schemas: string[] = []
+      let resolvers: typeof nitro.scanResolvers = []
+      let directives: typeof nitro.scanDirectives = []
+
+      // Only scan server-side files if server mode is enabled
+      if (serverEnabled) {
+        schemas = await scanSchemas(nitro)
+        nitro.scanSchemas = schemas
+
+        resolvers = await scanResolvers(nitro)
+        nitro.scanResolvers = resolvers
+
+        directives = await scanDirectives(nitro)
+        nitro.scanDirectives = directives
+
+        // Regenerate directive schemas using clean parser
+        await generateDirectiveSchemas(nitro, directives)
+      }
 
       const docs = await scanDocs(nitro)
       nitro.scanDocuments = docs
@@ -238,123 +257,156 @@ export default defineNitroModule({
         const runtimeSecurityConfig = nitro.options.runtimeConfig.graphql?.security as Required<SecurityConfig> | undefined
         const isProd = process.env.NODE_ENV === 'production'
 
-        consola.box({
-          title: 'Nitro GraphQL',
-          message: [
-            `Framework: ${nitro.options.graphql?.framework || 'Not configured'}`,
-            `Environment: ${isProd ? 'production' : 'development'}`,
-            `Schemas: ${schemas.length}`,
-            `Resolvers: ${resolvers.length}`,
-            `Directives: ${directives.length}`,
-            `Documents: ${docs.length}`,
-            '',
-            'Security:',
-            `├─ Introspection: ${runtimeSecurityConfig?.introspection ? 'enabled' : 'disabled'}`,
-            `├─ Playground: ${runtimeSecurityConfig?.playground ? 'enabled' : 'disabled'}`,
-            `├─ Error Masking: ${runtimeSecurityConfig?.maskErrors ? 'enabled' : 'disabled'}`,
-            `└─ Field Suggestions: ${runtimeSecurityConfig?.disableSuggestions ? 'disabled' : 'enabled'}`,
-            '',
-            'Debug Dashboard: /_nitro/graphql/debug',
-          ].join('\n'),
-          style: {
-            borderColor: isProd ? 'yellow' : 'cyan',
-            borderStyle: 'rounded',
-          },
-        })
+        if (serverEnabled) {
+          consola.box({
+            title: 'Nitro GraphQL',
+            message: [
+              `Framework: ${nitro.options.graphql?.framework || 'Not configured'}`,
+              `Environment: ${isProd ? 'production' : 'development'}`,
+              `Schemas: ${schemas.length}`,
+              `Resolvers: ${resolvers.length}`,
+              `Directives: ${directives.length}`,
+              `Documents: ${docs.length}`,
+              '',
+              'Security:',
+              `├─ Introspection: ${runtimeSecurityConfig?.introspection ? 'enabled' : 'disabled'}`,
+              `├─ Playground: ${runtimeSecurityConfig?.playground ? 'enabled' : 'disabled'}`,
+              `├─ Error Masking: ${runtimeSecurityConfig?.maskErrors ? 'enabled' : 'disabled'}`,
+              `└─ Field Suggestions: ${runtimeSecurityConfig?.disableSuggestions ? 'disabled' : 'enabled'}`,
+              '',
+              'Debug Dashboard: /_nitro/graphql/debug',
+            ].join('\n'),
+            style: {
+              borderColor: isProd ? 'yellow' : 'cyan',
+              borderStyle: 'rounded',
+            },
+          })
 
-        if (resolvers.length === 0) {
-          consola.warn('[nitro-graphql] No resolvers found. Check /_nitro/graphql/debug for details.')
+          if (resolvers.length === 0) {
+            consola.warn('[nitro-graphql] No resolvers found. Check /_nitro/graphql/debug for details.')
+          }
+        }
+        else {
+          const externalServicesCount = nitro.options.graphql?.externalServices?.length || 0
+          consola.box({
+            title: 'Nitro GraphQL (Client Only)',
+            message: [
+              'Server mode: disabled',
+              `External Services: ${externalServicesCount}`,
+              `Documents: ${docs.length}`,
+            ].join('\n'),
+            style: {
+              borderColor: 'blue',
+              borderStyle: 'rounded',
+            },
+          })
         }
       }
     })
 
-    await rollupConfig(nitro)
-
-    // Generate server and client types
-    await serverTypeGeneration(nitro)
-    await clientTypeGeneration(nitro)
-
-    nitro.hooks.hook('close', async () => {
-      await serverTypeGeneration(nitro)
-      await clientTypeGeneration(nitro)
-    })
-
-    const runtime = fileURLToPath(
-      new URL('routes', import.meta.url),
-    )
-    // Main GraphQL endpoint
-    const methods = ['get', 'post', 'options'] as const
-    if (nitro.options.graphql?.framework === 'graphql-yoga') {
-      // Register the GraphQL Yoga handler for all methods
-      for (const method of methods) {
-        nitro.options.handlers.push({
-          route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
-          handler: join(runtime, 'graphql-yoga'),
-          method,
-        })
-      }
+    // Only configure rollup for server if server mode is enabled
+    if (serverEnabled) {
+      await rollupConfig(nitro)
     }
-
-    if (nitro.options.graphql?.framework === 'apollo-server') {
-      // Register the Apollo Server handler for all methods
-      for (const method of methods) {
-        nitro.options.handlers.push({
-          route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
-          handler: join(runtime, 'apollo-server'),
-          method,
-        })
-      }
-    }
-
-    // Health check endpoint
-    nitro.options.handlers.push({
-      route: nitro.options.runtimeConfig.graphql?.endpoint?.healthCheck || '/api/graphql/health',
-      handler: join(runtime, 'health'),
-      method: 'get',
-    })
-
-    // WebSocket subscription endpoint (if enabled)
-    if (nitro.options.graphql?.subscriptions?.enabled) {
-      // Enable experimental websocket feature for Nitro v2
-      nitro.options.experimental ||= {}
-      nitro.options.experimental.websocket = true
-
-      const wsEndpoint = nitro.options.runtimeConfig.graphql?.endpoint?.ws
-        || nitro.options.graphql?.subscriptions?.endpoint
-        || '/api/graphql/ws'
-
-      if (nitro.options.graphql?.framework === 'graphql-yoga') {
-        nitro.options.handlers.push({
-          route: wsEndpoint,
-          handler: join(runtime, 'graphql-yoga-ws'),
-        })
-      }
-
-      if (nitro.options.graphql?.framework === 'apollo-server') {
-        nitro.options.handlers.push({
-          route: wsEndpoint,
-          handler: join(runtime, 'apollo-server-ws'),
-        })
-      }
-
-      // Register runtime plugin for graceful WebSocket shutdown
-      nitro.options.plugins ??= []
-      nitro.options.plugins.push(join(runtime, 'ws-shutdown'))
-
-      consola.info(`[nitro-graphql] WebSocket subscriptions enabled at: ${wsEndpoint}`)
-    }
-
-    // Debug endpoint (development only)
-    if (nitro.options.dev) {
-      nitro.options.handlers.push({
-        route: '/_nitro/graphql/debug',
-        handler: join(runtime, 'debug'),
-        method: 'get',
+    else {
+      // For client-only mode, register dev:reload hook for client type regeneration
+      nitro.hooks.hook('dev:reload', async () => {
+        await clientTypeGeneration(nitro)
       })
     }
 
-    // Auto-import utilities
-    if (nitro.options.imports) {
+    // Generate server and client types
+    if (serverEnabled) {
+      await serverTypeGeneration(nitro)
+    }
+    await clientTypeGeneration(nitro)
+
+    nitro.hooks.hook('close', async () => {
+      if (serverEnabled) {
+        await serverTypeGeneration(nitro)
+      }
+      await clientTypeGeneration(nitro)
+    })
+
+    // Only register route handlers if server mode is enabled
+    if (serverEnabled) {
+      const runtime = fileURLToPath(
+        new URL('routes', import.meta.url),
+      )
+      // Main GraphQL endpoint
+      const methods = ['get', 'post', 'options'] as const
+      if (nitro.options.graphql?.framework === 'graphql-yoga') {
+        // Register the GraphQL Yoga handler for all methods
+        for (const method of methods) {
+          nitro.options.handlers.push({
+            route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
+            handler: join(runtime, 'graphql-yoga'),
+            method,
+          })
+        }
+      }
+
+      if (nitro.options.graphql?.framework === 'apollo-server') {
+        // Register the Apollo Server handler for all methods
+        for (const method of methods) {
+          nitro.options.handlers.push({
+            route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
+            handler: join(runtime, 'apollo-server'),
+            method,
+          })
+        }
+      }
+
+      // Health check endpoint
+      nitro.options.handlers.push({
+        route: nitro.options.runtimeConfig.graphql?.endpoint?.healthCheck || '/api/graphql/health',
+        handler: join(runtime, 'health'),
+        method: 'get',
+      })
+
+      // WebSocket subscription endpoint (if enabled)
+      if (nitro.options.graphql?.subscriptions?.enabled) {
+        // Enable experimental websocket feature for Nitro v2
+        nitro.options.experimental ||= {}
+        nitro.options.experimental.websocket = true
+
+        const wsEndpoint = nitro.options.runtimeConfig.graphql?.endpoint?.ws
+          || nitro.options.graphql?.subscriptions?.endpoint
+          || '/api/graphql/ws'
+
+        if (nitro.options.graphql?.framework === 'graphql-yoga') {
+          nitro.options.handlers.push({
+            route: wsEndpoint,
+            handler: join(runtime, 'graphql-yoga-ws'),
+          })
+        }
+
+        if (nitro.options.graphql?.framework === 'apollo-server') {
+          nitro.options.handlers.push({
+            route: wsEndpoint,
+            handler: join(runtime, 'apollo-server-ws'),
+          })
+        }
+
+        // Register runtime plugin for graceful WebSocket shutdown
+        nitro.options.plugins ??= []
+        nitro.options.plugins.push(join(runtime, 'ws-shutdown'))
+
+        consola.info(`[nitro-graphql] WebSocket subscriptions enabled at: ${wsEndpoint}`)
+      }
+
+      // Debug endpoint (development only)
+      if (nitro.options.dev) {
+        nitro.options.handlers.push({
+          route: '/_nitro/graphql/debug',
+          handler: join(runtime, 'debug'),
+          method: 'get',
+        })
+      }
+    }
+
+    // Auto-import utilities (only if server mode is enabled)
+    if (serverEnabled && nitro.options.imports) {
       nitro.options.imports.presets ??= []
       nitro.options.imports.presets.push({
         from: fileURLToPath(new URL('utils/define', import.meta.url)),
@@ -372,47 +424,49 @@ export default defineNitroModule({
       })
     }
 
-    // Access the internal rollup config and add our prefix
-    nitro.hooks.hook('rollup:before', (_, rollupConfig) => {
-      const manualChunks = rollupConfig.output?.manualChunks
-      const chunkFiles = rollupConfig.output?.chunkFileNames
+    // Access the internal rollup config and add our prefix (only if server mode is enabled)
+    if (serverEnabled) {
+      nitro.hooks.hook('rollup:before', (_, rollupConfig) => {
+        const manualChunks = rollupConfig.output?.manualChunks
+        const chunkFiles = rollupConfig.output?.chunkFileNames
 
-      if (!rollupConfig.output.inlineDynamicImports) {
-        rollupConfig.output.manualChunks = (id, meta) => {
-          if (id.endsWith('.graphql') || id.endsWith('.gql')) {
-            return 'schemas'
+        if (!rollupConfig.output.inlineDynamicImports) {
+          rollupConfig.output.manualChunks = (id, meta) => {
+            if (id.endsWith('.graphql') || id.endsWith('.gql')) {
+              return 'schemas'
+            }
+
+            // resolsvers and schemas are not in the same directory, so we need to check both
+            if (id.endsWith('.resolver.ts')) {
+              return 'resolvers'
+            }
+
+            if (typeof manualChunks === 'function') {
+              return manualChunks(id, meta)
+            }
+            // If manualChunks is not a function, do not call it
+            return undefined
           }
-
-          // resolsvers and schemas are not in the same directory, so we need to check both
-          if (id.endsWith('.resolver.ts')) {
-            return 'resolvers'
-          }
-
-          if (typeof manualChunks === 'function') {
-            return manualChunks(id, meta)
-          }
-          // If manualChunks is not a function, do not call it
-          return undefined
-        }
-      }
-
-      rollupConfig.output.chunkFileNames = (chunkInfo) => {
-        // Check for GraphQL files
-        if (chunkInfo.moduleIds && chunkInfo.moduleIds.some(id =>
-          id.endsWith('.graphql') || id.endsWith('.resolver.ts') || id.endsWith('.gql'),
-        )) {
-          return `chunks/graphql/[name].mjs`
         }
 
-        // Use original logic for other chunks
-        if (typeof chunkFiles === 'function') {
-          return chunkFiles(chunkInfo)
-        }
+        rollupConfig.output.chunkFileNames = (chunkInfo) => {
+          // Check for GraphQL files
+          if (chunkInfo.moduleIds && chunkInfo.moduleIds.some(id =>
+            id.endsWith('.graphql') || id.endsWith('.resolver.ts') || id.endsWith('.gql'),
+          )) {
+            return `chunks/graphql/[name].mjs`
+          }
 
-        // Unknown path
-        return `chunks/_/[name].mjs`
-      }
-    })
+          // Use original logic for other chunks
+          if (typeof chunkFiles === 'function') {
+            return chunkFiles(chunkInfo)
+          }
+
+          // Unknown path
+          return `chunks/_/[name].mjs`
+        }
+      })
+    }
 
     nitro.options.typescript.strict = true
 
@@ -426,17 +480,25 @@ export default defineNitroModule({
       const placeholders = getDefaultPaths(nitro)
       const typesConfig = getTypesConfig(nitro)
 
-      // Resolve server types path
-      const serverTypesPath = resolveFilePath(
-        typesConfig.server,
-        typesConfig.enabled,
-        true,
-        '{typesDir}/nitro-graphql-server.d.ts',
-        placeholders,
-      )
-      if (serverTypesPath) {
-        types.tsConfig.compilerOptions.paths['#graphql/server'] = [
-          relativeWithDot(tsconfigDir, serverTypesPath),
+      // Resolve server types path (only if server mode is enabled)
+      let serverTypesPath: string | null = null
+      if (serverEnabled) {
+        serverTypesPath = resolveFilePath(
+          typesConfig.server,
+          typesConfig.enabled,
+          true,
+          '{typesDir}/nitro-graphql-server.d.ts',
+          placeholders,
+        )
+        if (serverTypesPath) {
+          types.tsConfig.compilerOptions.paths['#graphql/server'] = [
+            relativeWithDot(tsconfigDir, serverTypesPath),
+          ]
+        }
+
+        // Schema path (only if server mode is enabled)
+        types.tsConfig.compilerOptions.paths['#graphql/schema'] = [
+          relativeWithDot(tsconfigDir, join(nitro.graphql.serverDir, 'schema.ts')),
         ]
       }
 
@@ -453,11 +515,6 @@ export default defineNitroModule({
           relativeWithDot(tsconfigDir, clientTypesPath),
         ]
       }
-
-      // Schema path (always uses serverDir)
-      types.tsConfig.compilerOptions.paths['#graphql/schema'] = [
-        relativeWithDot(tsconfigDir, join(nitro.graphql.serverDir, 'schema.ts')),
-      ]
 
       // Add path mappings for external services
       if (nitro.options.graphql?.externalServices?.length) {
@@ -540,20 +597,21 @@ export default defineNitroModule({
       const placeholders = getDefaultPaths(nitro)
       const scaffoldConfig = getScaffoldConfig(nitro)
 
-      // 1. graphql.config.ts - GraphQL Config for IDE tooling
-      const graphqlConfigPath = resolveFilePath(
-        scaffoldConfig.graphqlConfig,
-        scaffoldConfig.enabled,
-        true,
-        'graphql.config.ts',
-        placeholders,
-      )
+      // 1. graphql.config.ts - GraphQL Config for IDE tooling (only if server mode is enabled)
+      if (serverEnabled) {
+        const graphqlConfigPath = resolveFilePath(
+          scaffoldConfig.graphqlConfig,
+          scaffoldConfig.enabled,
+          true,
+          'graphql.config.ts',
+          placeholders,
+        )
 
-      if (graphqlConfigPath) {
-        const schemaPath = relativeWithDot(nitro.options.rootDir, resolve(nitro.graphql.buildDir, 'schema.graphql'))
-        const documentsPath = relativeWithDot(nitro.options.rootDir, resolve(nitro.graphql.clientDir, '**/*.{graphql,js,ts,jsx,tsx}'))
+        if (graphqlConfigPath) {
+          const schemaPath = relativeWithDot(nitro.options.rootDir, resolve(nitro.graphql.buildDir, 'schema.graphql'))
+          const documentsPath = relativeWithDot(nitro.options.rootDir, resolve(nitro.graphql.clientDir, '**/*.{graphql,js,ts,jsx,tsx}'))
 
-        writeFileIfNotExists(graphqlConfigPath, `
+          writeFileIfNotExists(graphqlConfigPath, `
 import type { IGraphQLConfig } from 'graphql-config'
 
 export default <IGraphQLConfig> {
@@ -568,49 +626,49 @@ export default <IGraphQLConfig> {
       },
     },
 }`, 'graphql.config.ts')
-      }
-
-      // Ensure server GraphQL directory exists if any server files will be generated
-      const serverSchemaPath = resolveFilePath(
-        scaffoldConfig.serverSchema,
-        scaffoldConfig.enabled,
-        true,
-        '{serverGraphql}/schema.ts',
-        placeholders,
-      )
-      const serverConfigPath = resolveFilePath(
-        scaffoldConfig.serverConfig,
-        scaffoldConfig.enabled,
-        true,
-        '{serverGraphql}/config.ts',
-        placeholders,
-      )
-      const serverContextPath = resolveFilePath(
-        scaffoldConfig.serverContext,
-        scaffoldConfig.enabled,
-        true,
-        '{serverGraphql}/context.ts',
-        placeholders,
-      )
-
-      // Create server directory if any server scaffold files will be generated
-      if (serverSchemaPath || serverConfigPath || serverContextPath) {
-        if (!existsSync(nitro.graphql.serverDir)) {
-          mkdirSync(nitro.graphql.serverDir, { recursive: true })
         }
-      }
 
-      // 2. server/graphql/schema.ts - Schema definition file
-      if (serverSchemaPath) {
-        writeFileIfNotExists(serverSchemaPath, `export default defineSchema({
+        // Ensure server GraphQL directory exists if any server files will be generated
+        const serverSchemaPath = resolveFilePath(
+          scaffoldConfig.serverSchema,
+          scaffoldConfig.enabled,
+          true,
+          '{serverGraphql}/schema.ts',
+          placeholders,
+        )
+        const serverConfigPath = resolveFilePath(
+          scaffoldConfig.serverConfig,
+          scaffoldConfig.enabled,
+          true,
+          '{serverGraphql}/config.ts',
+          placeholders,
+        )
+        const serverContextPath = resolveFilePath(
+          scaffoldConfig.serverContext,
+          scaffoldConfig.enabled,
+          true,
+          '{serverGraphql}/context.ts',
+          placeholders,
+        )
+
+        // Create server directory if any server scaffold files will be generated
+        if (serverSchemaPath || serverConfigPath || serverContextPath) {
+          if (!existsSync(nitro.graphql.serverDir)) {
+            mkdirSync(nitro.graphql.serverDir, { recursive: true })
+          }
+        }
+
+        // 2. server/graphql/schema.ts - Schema definition file
+        if (serverSchemaPath) {
+          writeFileIfNotExists(serverSchemaPath, `export default defineSchema({
 
 })
 `, 'server schema.ts')
-      }
+        }
 
-      // 3. server/graphql/config.ts - GraphQL server configuration
-      if (serverConfigPath) {
-        writeFileIfNotExists(serverConfigPath, `// Example GraphQL config file please change it to your needs
+        // 3. server/graphql/config.ts - GraphQL server configuration
+        if (serverConfigPath) {
+          writeFileIfNotExists(serverConfigPath, `// Example GraphQL config file please change it to your needs
 // import * as tables from '../drizzle/schema/index'
 // import { useDatabase } from '../utils/useDb'
 
@@ -626,11 +684,11 @@ export default defineGraphQLConfig({
 // },
 })
 `, 'server config.ts')
-      }
+        }
 
-      // 4. server/graphql/context.ts - H3 context augmentation
-      if (serverContextPath) {
-        writeFileIfNotExists(serverContextPath, `// Example context definition - please change it to your needs
+        // 4. server/graphql/context.ts - H3 context augmentation
+        if (serverContextPath) {
+          writeFileIfNotExists(serverContextPath, `// Example context definition - please change it to your needs
 // import type { Database } from '../utils/useDb'
 
 declare module 'h3' {
@@ -646,29 +704,30 @@ declare module 'h3' {
     // }
   }
 }`, 'server context.ts')
-      }
-
-      // Check for old context.d.ts file and warn users to migrate
-      if (existsSync(join(nitro.graphql.serverDir, 'context.d.ts'))) {
-        consola.warn('nitro-graphql: Found context.d.ts file. Please rename it to context.ts for the new structure.')
-        consola.info('The context file should now be context.ts instead of context.d.ts')
-      }
-
-      // 5. graphql/subscribe.ts - Subscription client (if subscriptions are enabled)
-      if (nitro.options.graphql?.subscriptions?.enabled) {
-        // Ensure client directory exists
-        if (!existsSync(nitro.graphql.clientDir)) {
-          mkdirSync(nitro.graphql.clientDir, { recursive: true })
         }
 
-        // Generate subscribe.ts in the client directory (e.g., graphql/default/subscribe.ts)
-        const defaultDir = resolve(nitro.graphql.clientDir, 'default')
-        if (!existsSync(defaultDir)) {
-          mkdirSync(defaultDir, { recursive: true })
+        // Check for old context.d.ts file and warn users to migrate
+        if (existsSync(join(nitro.graphql.serverDir, 'context.d.ts'))) {
+          consola.warn('nitro-graphql: Found context.d.ts file. Please rename it to context.ts for the new structure.')
+          consola.info('The context file should now be context.ts instead of context.d.ts')
         }
 
-        const subscribeClientPath = resolve(defaultDir, 'subscribe.ts')
-        writeFileIfNotExists(subscribeClientPath, subscribeClientTemplate, 'subscribe.ts')
+        // 5. graphql/subscribe.ts - Subscription client (if subscriptions are enabled)
+        if (nitro.options.graphql?.subscriptions?.enabled) {
+          // Ensure client directory exists
+          if (!existsSync(nitro.graphql.clientDir)) {
+            mkdirSync(nitro.graphql.clientDir, { recursive: true })
+          }
+
+          // Generate subscribe.ts in the client directory (e.g., graphql/default/subscribe.ts)
+          const defaultDir = resolve(nitro.graphql.clientDir, 'default')
+          if (!existsSync(defaultDir)) {
+            mkdirSync(defaultDir, { recursive: true })
+          }
+
+          const subscribeClientPath = resolve(defaultDir, 'subscribe.ts')
+          writeFileIfNotExists(subscribeClientPath, subscribeClientTemplate, 'subscribe.ts')
+        }
       }
     }
     else {
