@@ -6,6 +6,7 @@ import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { codegen } from '@graphql-codegen/core'
 import { preset } from '@graphql-codegen/import-types-preset'
+import { plugin as typedDocumentNodePlugin } from '@graphql-codegen/typed-document-node'
 import { plugin as typescriptPlugin } from '@graphql-codegen/typescript'
 import { plugin as typescriptGenericSdk } from '@graphql-codegen/typescript-generic-sdk'
 import { plugin as typescriptOperations } from '@graphql-codegen/typescript-operations'
@@ -75,7 +76,9 @@ export async function graphQLLoadSchemaSync(
 export async function loadExternalSchema(service: ExternalGraphQLService, buildDir?: string): Promise<GraphQLSchema | undefined> {
   try {
     const headers = typeof service.headers === 'function' ? service.headers() : service.headers || {}
-    const schemas = Array.isArray(service.schema) ? service.schema : [service.schema]
+    // Use endpoint as schema source if schema is not specified
+    const schemaSource = service.schema ?? service.endpoint
+    const schemas = Array.isArray(schemaSource) ? schemaSource : [schemaSource]
 
     // If downloadSchema is enabled and buildDir is provided, try to use downloaded schema first
     if (service.downloadSchema && buildDir) {
@@ -149,7 +152,9 @@ export async function downloadAndSaveSchema(service: ExternalGraphQLService, bui
 
   try {
     const headers = typeof service.headers === 'function' ? service.headers() : service.headers || {}
-    const schemas = Array.isArray(service.schema) ? service.schema : [service.schema]
+    // Use endpoint as schema source if schema is not specified
+    const schemaSource = service.schema ?? service.endpoint
+    const schemas = Array.isArray(schemaSource) ? schemaSource : [schemaSource]
 
     // Check if any schemas are local files vs URLs
     const hasUrlSchemas = schemas.some(schema => isUrl(schema))
@@ -371,21 +376,34 @@ export function getSdk(requester: Requester): Sdk {
     }
 
     // Full generation with documents
+    // Check if typedDocumentNode is enabled
+    const enableTypedDocumentNode = config.typedDocumentNode === true
+
+    // Build plugins array dynamically
+    const plugins: Array<Record<string, object>> = [
+      { pluginContent: {} },
+      { typescript: {} },
+      { typescriptOperations: {} },
+    ]
+    const pluginMap: Record<string, { plugin: any }> = {
+      pluginContent: { plugin: pluginContent },
+      typescript: { plugin: typescriptPlugin },
+      typescriptOperations: { plugin: typescriptOperations },
+    }
+
+    // Add typedDocumentNode plugin if enabled
+    if (enableTypedDocumentNode) {
+      plugins.push({ typedDocumentNode: {} })
+      pluginMap.typedDocumentNode = { plugin: typedDocumentNodePlugin }
+    }
+
     const output = await codegen({
       filename: outputPath || 'client-types.generated.ts',
       schema: parse(printSchemaWithDirectives(schema)),
       documents: [...docs],
       config: mergedConfig,
-      plugins: [
-        { pluginContent: {} },
-        { typescript: {} },
-        { typescriptOperations: {} },
-      ],
-      pluginMap: {
-        pluginContent: { plugin: pluginContent },
-        typescript: { plugin: typescriptPlugin },
-        typescriptOperations: { plugin: typescriptOperations },
-      },
+      plugins,
+      pluginMap,
     })
 
     // Use provided virtual import path, or fall back to default convention

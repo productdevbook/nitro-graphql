@@ -5,6 +5,9 @@ import { readFile } from 'node:fs/promises'
 import defu from 'defu'
 import { setupNitroGraphQL } from './setup'
 
+// Re-export public utilities
+export { resolveSecurityConfig } from './setup'
+
 /**
  * Vite plugin to load GraphQL files as strings AND auto-register Nitro module
  * This prevents Vite from trying to parse .graphql/.gql files as JavaScript
