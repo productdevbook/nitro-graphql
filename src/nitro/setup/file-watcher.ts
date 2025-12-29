@@ -14,14 +14,14 @@ import {
   GRAPHQL_EXTENSIONS,
   LOG_TAG,
   RESOLVER_EXTENSIONS,
-} from '../../../core/constants'
-import { generateDirectiveSchemas } from '../../../core/utils/directive-parser'
+} from '../../core/constants'
+import { generateDirectiveSchemas } from '../../core/utils/directive-parser'
 import { NitroAdapter } from '../adapter'
 import { generateClientTypes, generateServerTypes } from '../codegen'
 import {
   DEFAULT_WATCHER_IGNORE_INITIAL,
   DEFAULT_WATCHER_PERSISTENT,
-} from '../config/defaults'
+} from '../config'
 
 const logger = consola.withTag(LOG_TAG)
 

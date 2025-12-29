@@ -3,13 +3,13 @@
  * Centralizing defaults makes them easier to find and modify
  */
 
-import type { NitroGraphQLOptions } from '../types'
+import type { NitroGraphQLOptions } from './types'
 import {
   DEFAULT_CLIENT_TYPES_PATH,
   DEFAULT_SERVER_TYPES_PATH,
   ENDPOINT_GRAPHQL,
   ENDPOINT_HEALTH,
-} from '../../../core/constants'
+} from '../core/constants'
 
 /**
  * Default type generation configuration

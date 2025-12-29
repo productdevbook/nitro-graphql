@@ -3,7 +3,7 @@ import type {
   FileGenerationConfig,
   SdkConfig,
   TypesConfig,
-} from '../types'
+} from './types'
 import { isAbsolute, resolve } from 'pathe'
 
 /**

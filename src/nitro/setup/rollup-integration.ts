@@ -12,7 +12,7 @@ import {
   CHUNK_PATH_UNKNOWN,
   GRAPHQL_EXTENSIONS,
   RESOLVER_EXTENSIONS,
-} from '../../../core/constants'
+} from '../../core/constants'
 
 /**
  * Setup Rollup/Rolldown chunking configuration for GraphQL files

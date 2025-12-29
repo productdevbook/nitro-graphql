@@ -5,12 +5,12 @@
 
 import type { Nitro, NitroTypes } from 'nitro/types'
 import { dirname, join, resolve } from 'pathe'
-import { relativeWithDot } from '../../../core'
+import { relativeWithDot } from '../../core'
 import {
   getDefaultPaths,
   getTypesConfig,
   resolveFilePath,
-} from '../utils/path-resolver'
+} from '../paths'
 
 /**
  * Setup TypeScript path aliases for GraphQL types

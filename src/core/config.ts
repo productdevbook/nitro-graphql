@@ -3,8 +3,8 @@
  * Factory functions and helpers for creating CoreConfig
  */
 
-import type { CoreConfig, CoreContext, CoreGraphQLOptions, CoreLogger } from '../types/config'
-import type { ScanContext } from '../types/scanning'
+import type { CoreConfig, CoreContext, CoreGraphQLOptions, CoreLogger } from './types/config'
+import type { ScanContext } from './types/scanning'
 import { relative, resolve } from 'pathe'
 import {
   DIR_APP_GRAPHQL,
@@ -12,8 +12,8 @@ import {
   DIR_CLIENT_GRAPHQL,
   DIR_SERVER_GRAPHQL,
   GRAPHQL_FRAMEWORK_YOGA,
-} from '../constants'
-import { createLogger } from '../utils/logger'
+} from './constants'
+import { createLogger } from './utils/logger'
 
 /**
  * Options for creating a CoreConfig

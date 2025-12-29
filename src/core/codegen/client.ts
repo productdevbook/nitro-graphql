@@ -3,7 +3,6 @@
  * Framework-agnostic GraphQL client type generation
  */
 
-import type { LoadSchemaOptions, UnnormalizedTypeDefPointer } from '@graphql-tools/load'
 import type { Source } from '@graphql-tools/utils'
 import type { GraphQLSchema } from 'graphql'
 import type {
@@ -12,33 +11,22 @@ import type {
   ClientCodegenResult,
   ExternalServiceCodegenConfig,
 } from '../types/codegen'
-import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { codegen } from '@graphql-codegen/core'
 import { preset } from '@graphql-codegen/import-types-preset'
 import { plugin as typedDocumentNodePlugin } from '@graphql-codegen/typed-document-node'
 import { plugin as typescriptPlugin } from '@graphql-codegen/typescript'
 import { plugin as typescriptGenericSdk } from '@graphql-codegen/typescript-generic-sdk'
 import { plugin as typescriptOperations } from '@graphql-codegen/typescript-operations'
-import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader'
-import { loadDocuments, loadSchemaSync } from '@graphql-tools/load'
-import { UrlLoader } from '@graphql-tools/url-loader'
 import { printSchemaWithDirectives } from '@graphql-tools/utils'
 import { defu } from 'defu'
 import { parse } from 'graphql'
-import { dirname, resolve } from 'pathe'
 import { DEFAULT_GRAPHQL_SCALARS } from '../constants'
 import { pluginContent } from './plugin'
 
-/**
- * Type definition pointer for GraphQL schemas
- */
-export type GraphQLTypeDefPointer = UnnormalizedTypeDefPointer | UnnormalizedTypeDefPointer[]
-
-/**
- * Options for loading GraphQL schemas
- */
-export type GraphQLLoadSchemaOptions = Partial<LoadSchemaOptions>
+// Re-export from split modules for backward compatibility
+export type { GraphQLLoadSchemaOptions, GraphQLTypeDefPointer } from './schema-loader'
+export { downloadAndSaveSchema, graphQLLoadSchemaSync, loadExternalSchema } from './schema-loader'
+export { loadGraphQLDocuments } from './document-loader'
 
 /**
  * Default client codegen configuration
@@ -58,228 +46,34 @@ export const DEFAULT_CLIENT_CODEGEN_CONFIG: ClientCodegenConfig = {
 }
 
 /**
- * Load GraphQL schema synchronously
+ * Generate generic SDK content for schema-only generation
  */
-export function graphQLLoadSchemaSync(
-  schemaPointers: GraphQLTypeDefPointer,
-  data: GraphQLLoadSchemaOptions = {},
-): GraphQLSchema | undefined {
-  const pointers = Array.isArray(schemaPointers) ? schemaPointers : [schemaPointers]
-  const filteredPointers = [
-    ...pointers,
-    '!**/vfs/**',
-  ]
+function generateGenericSdkContent(): string {
+  return `// THIS FILE IS GENERATED, DO NOT EDIT!
+/* eslint-disable eslint-comments/no-unlimited-disable */
+/* tslint:disable */
+/* eslint-disable */
+/* prettier-ignore */
 
-  try {
-    return loadSchemaSync(filteredPointers, {
-      ...data,
-      loaders: [
-        new GraphQLFileLoader(),
-        new UrlLoader(),
-        ...(data.loaders || []),
-      ],
-    })
-  }
-  catch (e: unknown) {
-    const error = e as Error
-    if (
-      (error.message || '').includes(
-        'Unable to find any GraphQL type definitions for the following pointers:',
-      )
-    ) {
-      return undefined
-    }
-    throw e
-  }
+import type { GraphQLResolveInfo } from 'graphql'
+export type RequireFields<T, K extends keyof T> = Omit<T, K> & { [P in K]-?: NonNullable<T[P]> }
+
+export interface Requester<C = {}, E = unknown> {
+  <R, V>(doc: string, vars?: V, options?: C): Promise<R> | AsyncIterable<R>
 }
 
-/**
- * Check if a path is a URL
- */
-function isUrl(path: string): boolean {
-  return path.startsWith('http://') || path.startsWith('https://')
+export type Sdk = {
+  request: <R, V = Record<string, any>>(document: string, variables?: V) => Promise<R>
 }
 
-/**
- * Load schema from external GraphQL service
- */
-export async function loadExternalSchema(
-  service: ExternalServiceCodegenConfig,
-  buildDir?: string,
-): Promise<GraphQLSchema | undefined> {
-  try {
-    const headers = typeof service.headers === 'function' ? service.headers() : service.headers || {}
-    const schemaSource = service.schema ?? service.endpoint
-    const schemas = Array.isArray(schemaSource) ? schemaSource : [schemaSource]
-
-    if (service.downloadSchema && buildDir) {
-      const defaultPath = resolve(buildDir, 'graphql', 'schemas', `${service.name}.graphql`)
-      const schemaFilePath = service.downloadPath ? resolve(service.downloadPath) : defaultPath
-
-      if (existsSync(schemaFilePath)) {
-        try {
-          return loadSchemaSync([schemaFilePath], {
-            loaders: [new GraphQLFileLoader()],
-          })
-        }
-        catch {
-          // Cached schema invalid, continue to load from source
-        }
-      }
+export function getSdk(requester: Requester): Sdk {
+  return {
+    request: <R, V = Record<string, any>>(document: string, variables?: V): Promise<R> => {
+      return requester<R, V>(document, variables)
     }
-
-    const hasUrls = schemas.some(schema => isUrl(schema))
-    const hasLocalFiles = schemas.some(schema => !isUrl(schema))
-    const loaders = []
-    if (hasLocalFiles) {
-      loaders.push(new GraphQLFileLoader())
-    }
-    if (hasUrls) {
-      loaders.push(new UrlLoader())
-    }
-
-    if (loaders.length === 0) {
-      throw new Error('No appropriate loaders found for schema sources')
-    }
-
-    return loadSchemaSync(schemas, {
-      loaders,
-      ...(Object.keys(headers).length > 0 && { headers }),
-    })
-  }
-  catch {
-    return undefined
   }
 }
-
-/**
- * Download and save schema from external service
- */
-export async function downloadAndSaveSchema(
-  service: ExternalServiceCodegenConfig,
-  buildDir: string,
-): Promise<string | undefined> {
-  const downloadMode = service.downloadSchema
-
-  if (!downloadMode || downloadMode === 'manual') {
-    return undefined
-  }
-
-  const defaultPath = resolve(buildDir, 'graphql', 'schemas', `${service.name}.graphql`)
-  const schemaFilePath = service.downloadPath ? resolve(service.downloadPath) : defaultPath
-
-  try {
-    const headers = typeof service.headers === 'function' ? service.headers() : service.headers || {}
-    const schemaSource = service.schema ?? service.endpoint
-    const schemas = Array.isArray(schemaSource) ? schemaSource : [schemaSource]
-
-    const hasUrlSchemas = schemas.some(schema => isUrl(schema))
-    const hasLocalSchemas = schemas.some(schema => !isUrl(schema))
-
-    let shouldDownload = false
-    const fileExists = existsSync(schemaFilePath)
-
-    if (downloadMode === 'always') {
-      shouldDownload = true
-
-      if (fileExists && hasUrlSchemas) {
-        try {
-          const remoteSchema = loadSchemaSync(schemas.filter(isUrl), {
-            loaders: [new UrlLoader()],
-            ...(Object.keys(headers).length > 0 && { headers }),
-          })
-          const remoteSchemaString = printSchemaWithDirectives(remoteSchema)
-          const remoteHash = createHash('md5').update(remoteSchemaString).digest('hex')
-
-          const localSchemaString = readFileSync(schemaFilePath, 'utf-8')
-          const localHash = createHash('md5').update(localSchemaString).digest('hex')
-
-          if (remoteHash === localHash) {
-            shouldDownload = false
-          }
-        }
-        catch {
-          shouldDownload = true
-        }
-      }
-      else if (fileExists && hasLocalSchemas) {
-        const localFiles = schemas.filter(schema => !isUrl(schema))
-        let sourceIsNewer = false
-
-        for (const localFile of localFiles) {
-          if (existsSync(localFile)) {
-            const { statSync } = await import('node:fs')
-            const sourceStats = statSync(localFile)
-            const cachedStats = statSync(schemaFilePath)
-            if (sourceStats.mtime > cachedStats.mtime) {
-              sourceIsNewer = true
-              break
-            }
-          }
-        }
-
-        if (!sourceIsNewer) {
-          shouldDownload = false
-        }
-      }
-    }
-    else if (downloadMode === true || downloadMode === 'once') {
-      shouldDownload = !fileExists
-    }
-
-    if (shouldDownload) {
-      let schema: GraphQLSchema
-
-      if (hasUrlSchemas && hasLocalSchemas) {
-        schema = loadSchemaSync(schemas, {
-          loaders: [new GraphQLFileLoader(), new UrlLoader()],
-          ...(Object.keys(headers).length > 0 && { headers }),
-        })
-      }
-      else if (hasUrlSchemas) {
-        schema = loadSchemaSync(schemas, {
-          loaders: [new UrlLoader()],
-          ...(Object.keys(headers).length > 0 && { headers }),
-        })
-      }
-      else {
-        schema = loadSchemaSync(schemas, {
-          loaders: [new GraphQLFileLoader()],
-        })
-      }
-
-      const schemaString = printSchemaWithDirectives(schema)
-      mkdirSync(dirname(schemaFilePath), { recursive: true })
-      writeFileSync(schemaFilePath, schemaString, 'utf-8')
-    }
-
-    return schemaFilePath
-  }
-  catch {
-    return undefined
-  }
-}
-
-/**
- * Load GraphQL documents from files
- */
-export async function loadGraphQLDocuments(patterns: string | string[]): Promise<Source[]> {
-  try {
-    return await loadDocuments(patterns, {
-      loaders: [new GraphQLFileLoader()],
-    })
-  }
-  catch (e: unknown) {
-    const error = e as Error
-    if (
-      (error.message || '').includes(
-        'Unable to find any GraphQL type definitions for the following pointers:',
-      )
-    ) {
-      return []
-    }
-    throw e
-  }
+`
 }
 
 /**
@@ -396,37 +190,6 @@ export async function generateClientTypesCore(
   catch {
     return false
   }
-}
-
-/**
- * Generate generic SDK content for schema-only generation
- */
-function generateGenericSdkContent(): string {
-  return `// THIS FILE IS GENERATED, DO NOT EDIT!
-/* eslint-disable eslint-comments/no-unlimited-disable */
-/* tslint:disable */
-/* eslint-disable */
-/* prettier-ignore */
-
-import type { GraphQLResolveInfo } from 'graphql'
-export type RequireFields<T, K extends keyof T> = Omit<T, K> & { [P in K]-?: NonNullable<T[P]> }
-
-export interface Requester<C = {}, E = unknown> {
-  <R, V>(doc: string, vars?: V, options?: C): Promise<R> | AsyncIterable<R>
-}
-
-export type Sdk = {
-  request: <R, V = Record<string, any>>(document: string, variables?: V) => Promise<R>
-}
-
-export function getSdk(requester: Requester): Sdk {
-  return {
-    request: <R, V = Record<string, any>>(document: string, variables?: V): Promise<R> => {
-      return requester<R, V>(document, variables)
-    }
-  }
-}
-`
 }
 
 /**

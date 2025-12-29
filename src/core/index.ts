@@ -11,10 +11,10 @@
 // Codegen utilities
 export * from './codegen'
 
-// Configuration
+// Configuration (flattened from config/)
 export * from './config'
 
-// Constants
+// Constants (flattened from constants/)
 export * from './constants'
 
 // Scanning utilities

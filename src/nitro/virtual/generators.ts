@@ -7,7 +7,7 @@ import type { Nitro } from 'nitro/types'
 import type { GenImport } from '../types'
 import { genImport } from 'knitwork'
 import { resolve } from 'pathe'
-import { getImportId } from '../../../core'
+import { getImportId } from '../../core'
 
 // ============ HELPERS ============
 

@@ -5,7 +5,7 @@
 import type { Nitro } from 'nitro/types'
 import { fileURLToPath } from 'node:url'
 import { join } from 'pathe'
-import { ENDPOINT_DEBUG, GRAPHQL_HTTP_METHODS } from '../../../core/constants'
+import { ENDPOINT_DEBUG, GRAPHQL_HTTP_METHODS } from '../../core/constants'
 
 /**
  * Register GraphQL route handlers

@@ -6,7 +6,7 @@
 import type { ScanContext, ScanResult } from '../types/scanning'
 import { relative } from 'pathe'
 import { GRAPHQL_GLOB_PATTERN } from '../constants'
-import { deduplicateFiles, extractPaths, scanDirectory } from './common'
+import { extractPaths, scanWithLayers } from './common'
 
 /**
  * Scan for GraphQL schema files (.graphql) in server directory
@@ -16,20 +16,15 @@ export async function scanSchemasCore(ctx: ScanContext): Promise<ScanResult<stri
   const errors: string[] = []
 
   try {
-    // Scan from serverDir
     const serverDirRelative = relative(ctx.rootDir, ctx.serverDir)
-    const files = await scanDirectory(ctx, ctx.rootDir, serverDirRelative, GRAPHQL_GLOB_PATTERN)
-
-    // Also scan layer directories
-    const layerFiles = await Promise.all(
-      (ctx.layerServerDirs || []).map(layerServerDir =>
-        scanDirectory(ctx, layerServerDir, 'graphql', GRAPHQL_GLOB_PATTERN),
-      ),
-    ).then(r => r.flat())
-
-    // Combine and deduplicate
-    const allFiles = deduplicateFiles([...files, ...layerFiles])
-    const paths = extractPaths(allFiles)
+    const files = await scanWithLayers(ctx, {
+      mainDir: ctx.rootDir,
+      mainSubDir: serverDirRelative,
+      layerDirs: ctx.layerServerDirs,
+      layerSubDir: 'graphql',
+      pattern: GRAPHQL_GLOB_PATTERN,
+    })
+    const paths = extractPaths(files)
 
     return { items: paths, warnings, errors }
   }
@@ -47,20 +42,15 @@ export async function scanGraphqlCore(ctx: ScanContext): Promise<ScanResult<stri
   const errors: string[] = []
 
   try {
-    // Scan from serverDir
     const serverDirRelative = relative(ctx.rootDir, ctx.serverDir)
-    const files = await scanDirectory(ctx, ctx.rootDir, serverDirRelative, '**/*.{graphql,gql}')
-
-    // Also scan layer directories
-    const layerFiles = await Promise.all(
-      (ctx.layerServerDirs || []).map(layerServerDir =>
-        scanDirectory(ctx, layerServerDir, 'graphql', '**/*.{graphql,gql}'),
-      ),
-    ).then(r => r.flat())
-
-    // Combine and deduplicate
-    const allFiles = deduplicateFiles([...files, ...layerFiles])
-    const paths = extractPaths(allFiles)
+    const files = await scanWithLayers(ctx, {
+      mainDir: ctx.rootDir,
+      mainSubDir: serverDirRelative,
+      layerDirs: ctx.layerServerDirs,
+      layerSubDir: 'graphql',
+      pattern: '**/*.{graphql,gql}',
+    })
+    const paths = extractPaths(files)
 
     return { items: paths, warnings, errors }
   }

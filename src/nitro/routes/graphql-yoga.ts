@@ -7,7 +7,7 @@ import { schemas } from '#nitro-graphql/server-schemas'
 import defu from 'defu'
 import { createYoga } from 'graphql-yoga'
 import { defineEventHandler } from 'nitro/h3'
-import { createMergedSchema } from '../../../core/schema'
+import { createMergedSchema } from '../../core/schema'
 
 // Apollo Sandbox HTML with 1 week cache
 const apolloSandboxHtml = `<!DOCTYPE html>

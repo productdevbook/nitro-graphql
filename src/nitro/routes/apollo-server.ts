@@ -8,9 +8,9 @@ import { ApolloServer } from '@apollo/server'
 import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled'
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default'
 import defu from 'defu'
-import { startServerAndCreateH3Handler } from 'nitro-graphql/utils/apollo'
+import { startServerAndCreateH3Handler } from 'nitro-graphql/apollo'
 import { defineEventHandler } from 'nitro/h3'
-import { createMergedSchema } from '../../../core/schema'
+import { createMergedSchema } from '../../core/schema'
 
 let apolloServer: ApolloServer<BaseContext> | null = null
 let serverStarted = false

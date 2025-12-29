@@ -4,8 +4,8 @@
  */
 
 import type { Nitro } from 'nitro/types'
-import type { CoreConfig, CoreContext, CoreLogger, ScanContext, ScannedResolver, ScanResult } from '../../core/types'
-import type { FrameworkAdapter, ScanAdapter } from '../../core/types/adapter'
+import type { CoreConfig, CoreContext, CoreLogger, ScanContext, ScannedResolver, ScanResult } from '../core/types'
+import type { FrameworkAdapter, ScanAdapter } from '../core/types/adapter'
 import { join, relative } from 'pathe'
 import {
   scanDirectivesCore,
@@ -13,7 +13,7 @@ import {
   scanGraphqlCore,
   scanResolversCore,
   scanSchemasCore,
-} from '../../core/scanning'
+} from '../core/scanning'
 
 /**
  * Create a CoreLogger from Nitro's logger

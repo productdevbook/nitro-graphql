@@ -9,27 +9,27 @@ import type { Nitro } from 'nitro/types'
 import consola from 'consola'
 import defu from 'defu'
 import { relative, resolve } from 'pathe'
-import { validateExternalServices } from '../../core'
+import { validateExternalServices } from '../core'
 import {
   FRAMEWORK_NITRO,
   FRAMEWORK_NUXT,
   LOG_TAG,
-} from '../../core/constants'
-import { generateDirectiveSchemas } from '../../core/utils/directive-parser'
+} from '../core/constants'
+import { generateDirectiveSchemas } from '../core/utils/directive-parser'
 import { NitroAdapter } from './adapter'
 import { generateClientTypes, generateServerTypes } from './codegen'
 import {
   DEFAULT_RUNTIME_CONFIG,
   DEFAULT_TYPES_CONFIG,
   DEFAULT_TYPESCRIPT_STRICT,
-} from './config/defaults'
+} from './config'
 import { rollupConfig } from './rollup'
 import { getWatchDirectories, setupFileWatcher } from './setup/file-watcher'
 import { logStartupInfo, resolveSecurityConfig } from './setup/logging'
 import { setupRollupChunking, setupRollupExternals } from './setup/rollup-integration'
 import { registerRouteHandlers } from './setup/routes'
 import { setupTypeScriptPaths } from './setup/ts-config'
-import { getDefaultPaths } from './utils/path-resolver'
+import { getDefaultPaths } from './paths'
 
 const logger = consola.withTag(LOG_TAG)
 

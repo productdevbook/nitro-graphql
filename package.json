@@ -12,32 +12,32 @@
   "sideEffects": false,
   "imports": {
     "#graphql/server": {
-      "types": "./dist/graphql/server.d.mts",
-      "import": "./dist/graphql/server.mjs"
+      "types": "./dist/stubs/index.d.mts",
+      "import": "./dist/stubs/index.mjs"
     },
     "#nitro-graphql/graphql-config": {
-      "types": "./dist/ecosystem/nitro/virtual/stubs.d.mts",
-      "import": "./dist/ecosystem/nitro/virtual/stubs.mjs"
+      "types": "./dist/nitro/virtual/stubs.d.mts",
+      "import": "./dist/nitro/virtual/stubs.mjs"
     },
     "#nitro-graphql/server-schemas": {
-      "types": "./dist/ecosystem/nitro/virtual/stubs.d.mts",
-      "import": "./dist/ecosystem/nitro/virtual/stubs.mjs"
+      "types": "./dist/nitro/virtual/stubs.d.mts",
+      "import": "./dist/nitro/virtual/stubs.mjs"
     },
     "#nitro-graphql/server-resolvers": {
-      "types": "./dist/ecosystem/nitro/virtual/stubs.d.mts",
-      "import": "./dist/ecosystem/nitro/virtual/stubs.mjs"
+      "types": "./dist/nitro/virtual/stubs.d.mts",
+      "import": "./dist/nitro/virtual/stubs.mjs"
     },
     "#nitro-graphql/server-directives": {
-      "types": "./dist/ecosystem/nitro/virtual/stubs.d.mts",
-      "import": "./dist/ecosystem/nitro/virtual/stubs.mjs"
+      "types": "./dist/nitro/virtual/stubs.d.mts",
+      "import": "./dist/nitro/virtual/stubs.mjs"
     },
     "#nitro-graphql/module-config": {
-      "types": "./dist/ecosystem/nitro/virtual/stubs.d.mts",
-      "import": "./dist/ecosystem/nitro/virtual/stubs.mjs"
+      "types": "./dist/nitro/virtual/stubs.d.mts",
+      "import": "./dist/nitro/virtual/stubs.mjs"
     },
     "#nitro-graphql/debug-info": {
-      "types": "./dist/ecosystem/nitro/virtual/stubs.d.mts",
-      "import": "./dist/ecosystem/nitro/virtual/stubs.mjs"
+      "types": "./dist/nitro/virtual/stubs.d.mts",
+      "import": "./dist/nitro/virtual/stubs.mjs"
     }
   },
   "exports": {
@@ -57,21 +57,13 @@
       "types": "./dist/define.d.mts",
       "import": "./dist/define.mjs"
     },
-    "./utils/apollo": {
-      "types": "./dist/ecosystem/nitro/utils/apollo.d.mts",
-      "import": "./dist/ecosystem/nitro/utils/apollo.mjs"
-    },
-    "./nitro": {
-      "types": "./dist/ecosystem/nitro/index.d.mts",
-      "import": "./dist/ecosystem/nitro/index.mjs"
+    "./apollo": {
+      "types": "./dist/nitro/apollo.d.mts",
+      "import": "./dist/nitro/apollo.mjs"
     },
     "./nuxt": {
-      "types": "./dist/ecosystem/nuxt.d.mts",
-      "import": "./dist/ecosystem/nuxt.mjs"
-    },
-    "./types": {
-      "types": "./dist/ecosystem/nitro/types/index.d.mts",
-      "import": "./dist/ecosystem/nitro/types/index.mjs"
+      "types": "./dist/nuxt.d.mts",
+      "import": "./dist/nuxt.mjs"
     }
   },
   "module": "./dist/index.mjs",

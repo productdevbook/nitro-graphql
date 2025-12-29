@@ -2,7 +2,7 @@ import type { VueTSConfig } from '@nuxt/schema'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { defineNuxtModule, getLayerDirectories } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
-import { getDefaultPaths, getTypesConfig, resolveFilePath } from './nitro/utils/path-resolver'
+import { getDefaultPaths, getTypesConfig, resolveFilePath } from './nitro/paths'
 
 export interface ModuleOptions {}
 

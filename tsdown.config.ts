@@ -17,10 +17,12 @@ export default defineConfig({
     'src/core/**',
     // CLI
     'src/cli/**',
-    // Ecosystem (framework-specific)
-    'src/ecosystem/**',
-    // GraphQL type stubs
-    'src/graphql/**',
+    // Nitro integration
+    'src/nitro/**',
+    // Nuxt module
+    'src/nuxt.ts',
+    // Runtime type stubs
+    'src/stubs/**',
   ],
   format: ['esm'],
   dts: true,
@@ -43,7 +45,7 @@ export default defineConfig({
     '@nuxt/schema',
     '@apollo/server',
     '@apollo/server/plugin/landingPage/default',
-    'nitro-graphql/utils/apollo',
+    'nitro-graphql/apollo',
     'vite',
     '#graphql/server',
     ...Object.keys(dependencies || {}),

@@ -3,6 +3,36 @@
  * Centralizing these values prevents typos and makes refactoring easier
  */
 
+import {
+  CurrencyResolver,
+  DateTimeISOResolver,
+  DateTimeResolver,
+  JSONObjectResolver,
+  JSONResolver,
+  NonEmptyStringResolver,
+  UUIDResolver,
+} from 'graphql-scalars'
+
+// ==================== DEFAULT GRAPHQL SCALARS ====================
+
+/**
+ * Default scalar type mappings for GraphQL codegen
+ * These scalars are commonly used and have proper TypeScript type mappings
+ */
+export const DEFAULT_GRAPHQL_SCALARS = {
+  DateTime: DateTimeResolver.extensions.codegenScalarType as string,
+  DateTimeISO: DateTimeISOResolver.extensions.codegenScalarType as string,
+  UUID: UUIDResolver.extensions.codegenScalarType as string,
+  JSON: JSONResolver.extensions.codegenScalarType as string,
+  JSONObject: JSONObjectResolver.extensions.codegenScalarType as string,
+  NonEmptyString: NonEmptyStringResolver.extensions.codegenScalarType as string,
+  Currency: CurrencyResolver.extensions.codegenScalarType as string,
+  File: {
+    input: 'File',
+    output: 'File',
+  },
+} as const
+
 // ==================== FILE EXTENSIONS ====================
 
 /**
@@ -259,6 +289,3 @@ export const HTTP_STATUS_INTERNAL_ERROR = 500 as const
  * Default service directory name for main service
  */
 export const SERVICE_DEFAULT = 'default' as const
-
-// Re-export scalars
-export { DEFAULT_GRAPHQL_SCALARS } from './scalars'

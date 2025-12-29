@@ -5,13 +5,13 @@
 
 import type { GraphQLSchema } from 'graphql'
 import type { Nitro } from 'nitro/types'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { loadFilesSync } from '@graphql-tools/load-files'
 import { mergeTypeDefs } from '@graphql-tools/merge'
 import { printSchemaWithDirectives } from '@graphql-tools/utils'
 import consola from 'consola'
 import { buildSchema, parse, print } from 'graphql'
-import { dirname, join, resolve } from 'pathe'
+import { join, resolve } from 'pathe'
 import {
   downloadAndSaveSchema,
   generateClientTypesCore,
@@ -20,18 +20,13 @@ import {
   loadExternalSchema,
   loadGraphQLDocuments,
   validateNoDuplicateTypes,
-} from '../../core/codegen'
-import { LOG_TAG } from '../../core/constants'
-import { loadFederationSupport } from '../../core/schema'
-import { getDefaultPaths, getSdkConfig, getTypesConfig, resolveFilePath, shouldGenerateTypes } from './utils/path-resolver'
+} from '../core/codegen'
+import { LOG_TAG } from '../core/constants'
+import { loadFederationSupport } from '../core/schema'
+import { writeFile } from '../core/utils/file-io'
+import { getDefaultPaths, getSdkConfig, getTypesConfig, resolveFilePath, shouldGenerateTypes } from './paths'
 
 const logger = consola.withTag(LOG_TAG)
-
-// Helper: Write file with directory creation
-function writeFile(path: string, content: string): void {
-  mkdirSync(dirname(path), { recursive: true })
-  writeFileSync(path, content, 'utf-8')
-}
 
 // Helper: Build schema with optional federation support
 async function buildSchemaFromString(source: string, federation: boolean): Promise<GraphQLSchema> {

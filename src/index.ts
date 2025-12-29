@@ -1,21 +1,20 @@
 /**
  * nitro-graphql main entry point
- * Re-exports from ecosystem/nitro for backward compatibility
  */
 
 // Default export: Nitro/Vite plugin
-export { default } from './ecosystem/nitro'
+export { default } from './nitro'
 
 // Named exports
 export {
   NitroAdapter,
   resolveSecurityConfig,
   setupNitroGraphQL,
-} from './ecosystem/nitro'
+} from './nitro'
 
 // Type exports
 export type {
   ExternalGraphQLService,
   NitroGraphQLOptions,
   SecurityConfig,
-} from './ecosystem/nitro'
+} from './nitro'
