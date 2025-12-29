@@ -30,3 +30,10 @@ export {
 } from './server'
 // Validation
 export * from './validation'
+
+// Runtime code generation
+export {
+  generateResolverModule,
+  generateRuntimeIndex,
+  generateSchemaModule,
+} from './runtime'

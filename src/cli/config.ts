@@ -76,6 +76,21 @@ export interface CLIConfig {
     /** Debounce time in ms */
     debounce?: number
   }
+
+  /**
+   * Runtime file generation
+   * Generates resolvers.ts, schema.ts for standalone server usage
+   */
+  runtime?: boolean | {
+    /** Output directory for runtime files (defaults to '{buildDir}/runtime') */
+    outDir?: string
+    /** What to include in generation */
+    include?: {
+      resolvers?: boolean
+      schema?: boolean
+      index?: boolean
+    }
+  }
 }
 
 /**

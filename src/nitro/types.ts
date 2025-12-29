@@ -494,4 +494,43 @@ export interface NitroGraphQLOptions {
    * Auto-detects NODE_ENV and applies secure defaults in production
    */
   security?: SecurityConfig
+
+  /**
+   * Extend GraphQL server with external resolvers/schemas
+   * Use with CLI-generated packages or external npm packages
+   *
+   * Simple syntax - auto-appends /resolvers and /schema:
+   * @example extend: ['@myorg/graphql', './generated']
+   *
+   * Detailed syntax - explicit paths:
+   * @example
+   * ```typescript
+   * extend: {
+   *   resolvers: '@myorg/graphql/resolvers',
+   *   schemas: '@myorg/graphql/schema',
+   *   merge: false, // skip local scanning
+   * }
+   * ```
+   */
+  extend?: string | string[] | {
+    /**
+     * Path(s) to resolver modules to extend with
+     * Must export: { resolvers: Array<{ resolver: ResolverObject }> }
+     * @example './generated/resolvers' or '@myorg/graphql/resolvers'
+     */
+    resolvers?: string | string[]
+    /**
+     * Path(s) to schema modules to extend with
+     * Must export: { schemaString: string }
+     * @example './generated/schema' or '@myorg/graphql/schema'
+     */
+    schemas?: string | string[]
+    /**
+     * Merge extended files with locally scanned files
+     * When true (default), both extended and local files are combined
+     * When false, only extended files are used (skip local scanning)
+     * @default true
+     */
+    merge?: boolean
+  }
 }

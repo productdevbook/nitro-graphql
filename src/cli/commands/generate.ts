@@ -10,9 +10,13 @@ import consola from 'consola'
 import { dirname, join, relative } from 'pathe'
 import {
   generateClientTypesCore,
+  generateResolverModule,
+  generateRuntimeIndex,
+  generateSchemaModule,
   generateServerTypesCore,
   loadGraphQLDocuments,
 } from '../../core/codegen'
+import { scanResolversCore } from '../../core/scanning'
 import { LOG_TAG } from '../../core/constants'
 import {
   scanDocumentsCore,
@@ -45,14 +49,19 @@ function createScanContext(ctx: CLIContext): ScanContext {
 }
 
 /**
- * Generate all types (server + client)
+ * Generate all types (server + client + optional runtime)
  */
 export async function generateAll(
   ctx: CLIContext,
-  options: { silent?: boolean, watch?: boolean } = {},
+  options: { silent?: boolean, watch?: boolean, runtime?: boolean } = {},
 ): Promise<void> {
   await generateServer(ctx, options)
   await generateClient(ctx, options)
+
+  // Generate runtime files if enabled
+  if (options.runtime) {
+    await generateRuntimeFiles(ctx, options)
+  }
 
   if (options.watch) {
     await watchAndRegenerate(ctx, options)
@@ -187,6 +196,74 @@ export async function generateClient(
 
   if (!options.silent) {
     logger.success(`Generated client types: ${relative(ctx.config.rootDir, typesPath)}`)
+  }
+}
+
+/**
+ * Generate runtime files (resolvers.ts, schema.ts, index.ts)
+ */
+async function generateRuntimeFiles(
+  ctx: CLIContext,
+  options: { silent?: boolean } = {},
+): Promise<void> {
+  const scanCtx = createScanContext(ctx)
+
+  // Determine runtime output directory
+  const runtimeConfig = ctx.config.runtime
+  const runtimeDir = typeof runtimeConfig === 'object' && runtimeConfig.outDir
+    ? join(ctx.config.rootDir, runtimeConfig.outDir)
+    : join(ctx.config.buildDir, 'runtime')
+
+  mkdirSync(runtimeDir, { recursive: true })
+
+  // Check what to include
+  const include = typeof runtimeConfig === 'object' && runtimeConfig.include
+    ? runtimeConfig.include
+    : { resolvers: true, schema: true, index: true }
+
+  // Generate resolvers.ts
+  if (include.resolvers !== false) {
+    const resolversResult = await scanResolversCore(scanCtx)
+
+    if (resolversResult.items.length > 0) {
+      const resolverCode = generateResolverModule(resolversResult.items, runtimeDir)
+      writeFileSync(join(runtimeDir, 'resolvers.ts'), resolverCode, 'utf-8')
+
+      if (!options.silent) {
+        logger.success(`Generated runtime: ${relative(ctx.config.rootDir, join(runtimeDir, 'resolvers.ts'))}`)
+      }
+    }
+    else if (!options.silent) {
+      logger.info('No resolvers found for runtime generation')
+    }
+  }
+
+  // Generate schema.ts
+  if (include.schema !== false) {
+    const schemaPath = join(ctx.config.buildDir, 'schema.graphql')
+    if (existsSync(schemaPath)) {
+      const { readFileSync } = await import('node:fs')
+      const schemaString = readFileSync(schemaPath, 'utf-8')
+      const schemaCode = generateSchemaModule(schemaString)
+      writeFileSync(join(runtimeDir, 'schema.ts'), schemaCode, 'utf-8')
+
+      if (!options.silent) {
+        logger.success(`Generated runtime: ${relative(ctx.config.rootDir, join(runtimeDir, 'schema.ts'))}`)
+      }
+    }
+    else if (!options.silent) {
+      logger.info('Schema not found for runtime generation. Run generate first.')
+    }
+  }
+
+  // Generate index.ts
+  if (include.index !== false) {
+    const indexCode = generateRuntimeIndex()
+    writeFileSync(join(runtimeDir, 'index.ts'), indexCode, 'utf-8')
+
+    if (!options.silent) {
+      logger.success(`Generated runtime: ${relative(ctx.config.rootDir, join(runtimeDir, 'index.ts'))}`)
+    }
   }
 }
 

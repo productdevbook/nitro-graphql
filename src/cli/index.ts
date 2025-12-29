@@ -103,18 +103,24 @@ const generateCommand = defineCommand({
       alias: 'w',
       description: 'Watch mode',
     },
+    runtime: {
+      type: 'boolean',
+      alias: 'r',
+      description: 'Generate runtime files (resolvers.ts, schema.ts)',
+    },
   },
   async run({ args }) {
     const ctx = await createCLIContext({ cwd: args.cwd })
     const silent = Boolean(args.silent)
     const watch = Boolean(args.watch)
+    const runtime = Boolean(args.runtime) || Boolean(ctx.config.runtime)
 
     if (!silent) {
       logger.info('Generating GraphQL types...')
     }
 
     const { generateAll } = await import('./commands/generate')
-    await generateAll(ctx, { silent, watch })
+    await generateAll(ctx, { silent, watch, runtime })
 
     if (!silent) {
       logger.success('Type generation complete!')

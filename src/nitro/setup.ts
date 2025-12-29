@@ -250,6 +250,28 @@ function setupFileWatching(nitro: Nitro, serverEnabled: boolean): void {
  * Scan all GraphQL files (schemas, resolvers, directives, documents)
  */
 async function scanGraphQLFiles(nitro: Nitro, serverEnabled: boolean): Promise<void> {
+  const ext = nitro.options.graphql?.extend
+
+  // Check if using extend files in exclusive mode
+  const hasExtendResolvers = ext?.resolvers && (
+    Array.isArray(ext.resolvers) ? ext.resolvers.length > 0 : true
+  )
+
+  if (hasExtendResolvers && ext?.merge === false) {
+    const resolverPaths = Array.isArray(ext.resolvers) ? ext.resolvers : [ext.resolvers]
+    logger.info(`Using ${resolverPaths.length} extend resolver source(s), skipping scanning`)
+
+    // Initialize empty arrays (virtual modules will import from extend)
+    nitro.scanSchemas = []
+    nitro.scanResolvers = []
+    nitro.scanDirectives = []
+
+    // Still scan documents for client-side usage
+    const result = await NitroAdapter.scanDocuments(nitro)
+    nitro.scanDocuments = result.items
+    return
+  }
+
   if (serverEnabled) {
     // Full scan: schemas, resolvers, directives, and documents
     await scanAllGraphQLFiles(nitro)

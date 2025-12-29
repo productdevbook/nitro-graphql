@@ -6,8 +6,25 @@
 import type { Nitro } from 'nitro/types'
 import type { GenImport } from '../types'
 import { genImport } from 'knitwork'
-import { resolve } from 'pathe'
+import { isAbsolute, resolve } from 'pathe'
 import { getImportId } from '../../core'
+
+/**
+ * Resolve extend path to absolute path
+ * Supports: relative paths, absolute paths, package names
+ */
+function resolveExtendPath(nitro: Nitro, inputPath: string): string {
+  // Package name (starts with @ or doesn't start with . or /)
+  if (inputPath.startsWith('@') || (!inputPath.startsWith('.') && !inputPath.startsWith('/'))) {
+    return inputPath
+  }
+  // Absolute path
+  if (isAbsolute(inputPath)) {
+    return inputPath
+  }
+  // Relative path - resolve from root
+  return resolve(nitro.options.rootDir, inputPath)
+}
 
 // ============ HELPERS ============
 
@@ -46,6 +63,54 @@ function safeGenerateModuleCode(nitro: Nitro, moduleName: string): string {
 export const serverSchemas = {
   id: '#nitro-graphql/server-schemas',
   getCode: (nitro: Nitro): string => {
+    const ext = nitro.options.graphql?.extend
+
+    // Use extend schemas if provided
+    if (ext?.schemas) {
+      const rawPaths = Array.isArray(ext.schemas) ? ext.schemas : [ext.schemas]
+      const schemaPaths = rawPaths.map(p => resolveExtendPath(nitro, p))
+
+      // Check if we should merge with scanned schemas (merge: true is default)
+      const scannedSchemas = [...nitro.scanSchemas, ...(nitro.options.graphql?.typedefs ?? [])]
+      const shouldMergeWithScanned = ext.merge !== false && scannedSchemas.length > 0
+
+      if (shouldMergeWithScanned) {
+        // Merge extend + scanned schemas
+        const extImports = schemaPaths.map((p, i) =>
+          `import { schemaString as extSchema${i} } from '${p}'`,
+        )
+        const scannedImports = scannedSchemas.map(s => `import ${getImportId(s)} from '${s}';`)
+        const extDefs = schemaPaths.map((_, i) => `{ def: extSchema${i} }`)
+        const scannedDefs = scannedSchemas.map(s => `{ def: ${getImportId(s)} }`)
+
+        return `${extImports.join('\n')}
+${scannedImports.join('\n')}
+
+export const schemas = [
+${[...extDefs, ...scannedDefs].join(',\n')}
+]`
+      }
+
+      // Exclusive mode - only extend
+      if (schemaPaths.length === 1) {
+        return `import { schemaString, typeDefs } from '${schemaPaths[0]}'
+export { schemaString, typeDefs }
+export const schemas = [{ def: schemaString }]`
+      }
+
+      // Multiple extend sources
+      const imports = schemaPaths.map((p, i) =>
+        `import { schemaString as schema${i} } from '${p}'`,
+      )
+      const schemaVars = schemaPaths.map((_, i) => `schema${i}`)
+      const mergeCode = `export const schemaString = [${schemaVars.join(', ')}].join('\\n\\n')
+import { parse } from 'graphql'
+export const typeDefs = parse(schemaString)
+export const schemas = [${schemaVars.map(v => `{ def: ${v} }`).join(', ')}]`
+
+      return `${imports.join('\n')}\n\n${mergeCode}`
+    }
+
     const schemas = [...nitro.scanSchemas, ...(nitro.options.graphql?.typedefs ?? [])]
     if (!schemas.length) {
       if (nitro.options.dev) {
@@ -64,6 +129,39 @@ export const serverSchemas = {
 export const serverResolvers = {
   id: '#nitro-graphql/server-resolvers',
   getCode: (nitro: Nitro): string => {
+    const ext = nitro.options.graphql?.extend
+
+    // Use extend resolvers if provided
+    if (ext?.resolvers) {
+      const rawPaths = Array.isArray(ext.resolvers) ? ext.resolvers : [ext.resolvers]
+      const resolverPaths = rawPaths.map(p => resolveExtendPath(nitro, p))
+
+      // Import from all extend sources
+      const imports = resolverPaths.map((p, i) =>
+        `import { resolvers as resolvers${i} } from '${p}'`,
+      )
+
+      // Check if we should merge with scanned resolvers
+      if (ext.merge !== false && nitro.scanResolvers.length > 0) {
+        const scannedCode = generateImportModule(nitro.scanResolvers, 'scannedResolvers', 'resolver')
+        const spreadAll = [...resolverPaths.map((_, i) => `...resolvers${i}`), '...scannedResolvers']
+        return `${imports.join('\n')}
+${scannedCode}
+
+export const resolvers = [${spreadAll.join(', ')}]`
+      }
+
+      // Only extend (exclusive mode)
+      if (resolverPaths.length === 1) {
+        return `export { resolvers } from '${resolverPaths[0]}'`
+      }
+
+      const spreadAll = resolverPaths.map((_, i) => `...resolvers${i}`)
+      return `${imports.join('\n')}
+
+export const resolvers = [${spreadAll.join(', ')}]`
+    }
+
     const imports = [...nitro.scanResolvers]
     if (!imports.length) {
       if (nitro.options.dev) {

@@ -649,6 +649,9 @@ importers:
       '@apollo/server':
         specifier: 'catalog:'
         version: 5.2.0(graphql@16.12.0)
+      '@playground/cli-graphql':
+        specifier: workspace:*
+        version: link:../cli
       nitro-graphql:
         specifier: link:../..
         version: link:../..

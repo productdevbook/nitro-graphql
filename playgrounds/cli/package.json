@@ -1,9 +1,14 @@
 {
-  "name": "cli-playground",
+  "name": "@playground/cli-graphql",
   "type": "module",
   "version": "1.0.0",
   "private": true,
   "packageManager": "pnpm@10.25.0",
+  "exports": {
+    ".": "./.graphql/runtime/index.ts",
+    "./resolvers": "./.graphql/runtime/resolvers.ts",
+    "./schema": "./.graphql/runtime/schema.ts"
+  },
   "scripts": {
     "cli": "nitro-graphql",
     "gen": "nitro-graphql generate",
