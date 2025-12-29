@@ -52,6 +52,7 @@ catalog:
   bumpp: ^10.3.2
   changelogen: ^0.6.2
   chokidar: ^5.0.0
+  citty: ^0.1.6
   consola: ^3.4.2
   crossws: ^0.4.1
   defu: ^6.1.4

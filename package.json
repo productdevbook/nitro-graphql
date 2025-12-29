@@ -16,28 +16,28 @@
       "import": "./dist/graphql/server.mjs"
     },
     "#nitro-graphql/graphql-config": {
-      "types": "./dist/virtual/graphql-config.d.mts",
-      "import": "./dist/virtual/graphql-config.mjs"
+      "types": "./dist/ecosystem/nitro/virtual/stubs.d.mts",
+      "import": "./dist/ecosystem/nitro/virtual/stubs.mjs"
     },
     "#nitro-graphql/server-schemas": {
-      "types": "./dist/virtual/server-schemas.d.mts",
-      "import": "./dist/virtual/server-schemas.mjs"
+      "types": "./dist/ecosystem/nitro/virtual/stubs.d.mts",
+      "import": "./dist/ecosystem/nitro/virtual/stubs.mjs"
     },
     "#nitro-graphql/server-resolvers": {
-      "types": "./dist/virtual/server-resolvers.d.mts",
-      "import": "./dist/virtual/server-resolvers.mjs"
+      "types": "./dist/ecosystem/nitro/virtual/stubs.d.mts",
+      "import": "./dist/ecosystem/nitro/virtual/stubs.mjs"
     },
     "#nitro-graphql/server-directives": {
-      "types": "./dist/virtual/server-directives.d.mts",
-      "import": "./dist/virtual/server-directives.mjs"
+      "types": "./dist/ecosystem/nitro/virtual/stubs.d.mts",
+      "import": "./dist/ecosystem/nitro/virtual/stubs.mjs"
     },
     "#nitro-graphql/module-config": {
-      "types": "./dist/virtual/module-config.d.mts",
-      "import": "./dist/virtual/module-config.mjs"
+      "types": "./dist/ecosystem/nitro/virtual/stubs.d.mts",
+      "import": "./dist/ecosystem/nitro/virtual/stubs.mjs"
     },
     "#nitro-graphql/debug-info": {
-      "types": "./dist/virtual/debug-info.d.mts",
-      "import": "./dist/virtual/debug-info.mjs"
+      "types": "./dist/ecosystem/nitro/virtual/stubs.d.mts",
+      "import": "./dist/ecosystem/nitro/virtual/stubs.mjs"
     }
   },
   "exports": {
@@ -45,33 +45,40 @@
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
     },
-    "./utils": {
-      "types": "./dist/utils/index.d.mts",
-      "import": "./dist/utils/index.mjs"
+    "./core": {
+      "types": "./dist/core/index.d.mts",
+      "import": "./dist/core/index.mjs"
+    },
+    "./cli": {
+      "types": "./dist/cli/index.d.mts",
+      "import": "./dist/cli/index.mjs"
     },
     "./define": {
       "types": "./dist/define.d.mts",
       "import": "./dist/define.mjs"
     },
     "./utils/apollo": {
-      "types": "./dist/utils/apollo.d.mts",
-      "import": "./dist/utils/apollo.mjs"
+      "types": "./dist/ecosystem/nitro/utils/apollo.d.mts",
+      "import": "./dist/ecosystem/nitro/utils/apollo.mjs"
+    },
+    "./nitro": {
+      "types": "./dist/ecosystem/nitro/index.d.mts",
+      "import": "./dist/ecosystem/nitro/index.mjs"
     },
     "./nuxt": {
       "types": "./dist/ecosystem/nuxt.d.mts",
       "import": "./dist/ecosystem/nuxt.mjs"
     },
-    "./vite": {
-      "types": "./dist/vite.d.mts",
-      "import": "./dist/vite.mjs"
-    },
     "./types": {
-      "types": "./dist/types/index.d.mts",
-      "import": "./dist/types/index.mjs"
+      "types": "./dist/ecosystem/nitro/types/index.d.mts",
+      "import": "./dist/ecosystem/nitro/types/index.mjs"
     }
   },
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
+  "bin": {
+    "nitro-graphql": "./dist/cli/index.mjs"
+  },
   "files": [
     "dist"
   ],
@@ -122,6 +129,7 @@
     "@graphql-tools/url-loader": "catalog:",
     "@graphql-tools/utils": "catalog:",
     "chokidar": "catalog:",
+    "citty": "catalog:",
     "consola": "catalog:",
     "defu": "catalog:",
     "graphql-config": "catalog:",

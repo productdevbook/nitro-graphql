@@ -10,17 +10,17 @@ const playgroundPath = new URL(playgrounds, thisPath).pathname
 
 export default defineConfig({
   entry: [
-    'src/graphql/**',
+    // Main entry points
     'src/index.ts',
-    'src/rollup.ts',
-    'src/setup.ts',
-    'src/vite.ts',
     'src/define.ts',
-    'src/utils/**',
-    'src/routes/**',
-    'src/virtual/**',
+    // Core (framework-agnostic)
+    'src/core/**',
+    // CLI
+    'src/cli/**',
+    // Ecosystem (framework-specific)
     'src/ecosystem/**',
-    'src/types/**',
+    // GraphQL type stubs
+    'src/graphql/**',
   ],
   format: ['esm'],
   dts: true,
