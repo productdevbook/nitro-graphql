@@ -1,0 +1,20 @@
+# GraphQL Schema
+# Add your type definitions here
+
+type Query {
+  hello: String!
+}
+
+type Mutation {
+  # Add your mutations here
+  _empty: String
+}
+
+# test comment $(date)
+# changed at Mon Dec 29 16:53:41 +03 2025
+# test 1767016484
+# 1767016559
+# 1767016647
+# changed 1767016752
+# test
+# test

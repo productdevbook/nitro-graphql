@@ -114,6 +114,9 @@ catalogs:
     chokidar:
       specifier: ^5.0.0
       version: 5.0.0
+    citty:
+      specifier: ^0.1.6
+      version: 0.1.6
     consola:
       specifier: ^3.4.2
       version: 3.4.2
@@ -281,6 +284,9 @@ importers:
       chokidar:
         specifier: 'catalog:'
         version: 5.0.0
+      citty:
+        specifier: 'catalog:'
+        version: 0.1.6
       consola:
         specifier: 'catalog:'
         version: 3.4.2
@@ -613,6 +619,12 @@ importers:
       nitro:
         specifier: 'catalog:'
         version: 3.0.1-alpha.1(better-sqlite3@12.5.0)(chokidar@4.0.3)(drizzle-orm@0.45.1(@prisma/client@5.22.0)(@types/pg@8.16.0)(better-sqlite3@12.5.0)(kysely@0.28.9)(pg@8.16.3))(lru-cache@11.2.4)(rolldown@1.0.0-beta.53)(rollup@4.54.0)(vite@7.3.0(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2))
+
+  playgrounds/cli:
+    dependencies:
+      nitro-graphql:
+        specifier: link:../..
+        version: link:../..
 
   playgrounds/federation:
     dependencies:

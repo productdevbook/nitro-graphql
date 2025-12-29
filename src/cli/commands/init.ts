@@ -6,7 +6,7 @@
 import type { CLIContext } from '../index'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import consola from 'consola'
-import { join } from 'pathe'
+import { join, relative } from 'pathe'
 import { LOG_TAG } from '../../core/constants'
 
 const logger = consola.withTag(LOG_TAG)
@@ -20,12 +20,10 @@ export async function init(
 ): Promise<void> {
   const { force } = options
 
-  // Create directories
+  // Create directories (only server and client dirs, build dirs created on generate)
   const dirs = [
     ctx.config.serverDir,
     ctx.config.clientDir,
-    ctx.config.buildDir,
-    ctx.config.typesDir,
   ]
 
   for (const dir of dirs) {
@@ -38,12 +36,16 @@ export async function init(
   // Create config file
   const configPath = join(ctx.config.rootDir, 'nitro-graphql.config.ts')
   if (force || !existsSync(configPath)) {
+    // Use relative paths in config file
+    const relativeServerDir = relative(ctx.config.rootDir, ctx.config.serverDir) || 'server/graphql'
+    const relativeClientDir = relative(ctx.config.rootDir, ctx.config.clientDir) || 'graphql'
+
     const configContent = `import { defineConfig } from 'nitro-graphql/cli'
 
 export default defineConfig({
   framework: '${ctx.config.framework}',
-  serverDir: '${ctx.config.serverDir}',
-  clientDir: '${ctx.config.clientDir}',
+  serverDir: './${relativeServerDir}',
+  clientDir: './${relativeClientDir}',
 })
 `
     writeFileSync(configPath, configContent, 'utf-8')
@@ -51,6 +53,40 @@ export default defineConfig({
   }
   else {
     logger.info(`Config file already exists: ${configPath}`)
+  }
+
+  // Create tsconfig.json
+  const tsconfigPath = join(ctx.config.rootDir, 'tsconfig.json')
+  if (force || !existsSync(tsconfigPath)) {
+    const relativeBuildDir = relative(ctx.config.rootDir, ctx.config.buildDir) || '.graphql'
+    const relativeServerDir = relative(ctx.config.rootDir, ctx.config.serverDir) || 'server/graphql'
+
+    const tsconfigContent = `{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "#graphql/server": ["./${relativeBuildDir}/types/nitro-graphql-server.d.ts"],
+      "#graphql/client": ["./${relativeBuildDir}/types/nitro-graphql-client.d.ts"],
+      "#graphql/schema": ["./${relativeServerDir}/schema.ts"]
+    }
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "${relativeBuildDir}"]
+}
+`
+    writeFileSync(tsconfigPath, tsconfigContent, 'utf-8')
+    logger.success(`Created tsconfig.json: ${tsconfigPath}`)
+  }
+  else {
+    logger.info(`tsconfig.json already exists: ${tsconfigPath}`)
   }
 
   // Create example schema

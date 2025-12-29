@@ -86,6 +86,7 @@
     "docs:dev": "cd .docs && pnpm install && pnpm update:metadata && pnpm dev",
     "docs:build": "cd .docs && pnpm install && pnpm update:metadata && pnpm build",
     "docs:preview": "cd .docs && pnpm preview",
+    "cli": "node ./dist/cli/index.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest",

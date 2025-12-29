@@ -1,0 +1,17 @@
+{
+  "name": "cli-playground",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.25.0",
+  "scripts": {
+    "cli": "nitro-graphql",
+    "gen": "nitro-graphql generate",
+    "watch": "nitro-graphql generate --watch",
+    "validate": "nitro-graphql validate",
+    "scaffold": "nitro-graphql init"
+  },
+  "dependencies": {
+    "nitro-graphql": "link:../.."
+  }
+}

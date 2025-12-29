@@ -5,7 +5,7 @@ ignoreWorkspaceRootCheck: true
 
 shellEmulator: true
 
-trustPolicy: no-downgrade
+trustPolicy: allow-all
 
 packages:
   - playgrounds/*

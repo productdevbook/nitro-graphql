@@ -92,6 +92,6 @@ export const DEFAULT_CLI_CONFIG: CLIConfig = {
   framework: 'graphql-yoga',
   serverDir: 'server/graphql',
   clientDir: 'graphql',
-  buildDir: '.nitro-graphql',
+  buildDir: '.graphql',
   ignore: ['**/node_modules/**', '**/dist/**'],
 }

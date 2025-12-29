@@ -7,7 +7,7 @@ import type { ScanContext } from '../../core/types'
 import type { CLIContext } from '../index'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import consola from 'consola'
-import { dirname, join } from 'pathe'
+import { dirname, join, relative } from 'pathe'
 import {
   generateClientTypesCore,
   generateServerTypesCore,
@@ -110,7 +110,7 @@ export async function generateServer(
   writeFileSync(typesPath, result.types, 'utf-8')
 
   if (!options.silent) {
-    logger.success(`Generated server types at: ${typesPath}`)
+    logger.success(`Generated server types: ${relative(ctx.config.rootDir, typesPath)}`)
   }
 }
 
@@ -186,7 +186,7 @@ export async function generateClient(
   writeFileSync(sdkPath, result.sdk, 'utf-8')
 
   if (!options.silent) {
-    logger.success(`Generated client types at: ${typesPath}`)
+    logger.success(`Generated client types: ${relative(ctx.config.rootDir, typesPath)}`)
   }
 }
 
@@ -197,33 +197,50 @@ async function watchAndRegenerate(
   ctx: CLIContext,
   options: { silent?: boolean } = {},
 ): Promise<void> {
-  const chokidar = await import('chokidar')
+  const { watch } = await import('chokidar')
 
-  const watchPaths = [
-    join(ctx.config.serverDir, '**/*.graphql'),
-    join(ctx.config.serverDir, '**/*.resolver.ts'),
-    join(ctx.config.clientDir, '**/*.graphql'),
+  // Watch directories directly for better compatibility
+  const watchDirs = [
+    ctx.config.serverDir,
+    ctx.config.clientDir,
   ]
 
-  logger.info('Watching for changes...')
-
-  const watcher = chokidar.watch(watchPaths, {
+  const watcher = watch(watchDirs, {
     ignoreInitial: true,
-    ignored: ctx.config.ignore,
+    ignored: [
+      ...ctx.config.ignore || [],
+      /node_modules/,
+      /\.git/,
+    ],
+    persistent: true,
   })
+
+  // Wait for watcher to be ready
+  await new Promise<void>((resolve) => {
+    watcher.on('ready', resolve)
+    watcher.on('error', error => logger.error('Watcher error:', error))
+  })
+
+  const relPath = (p: string) => relative(ctx.config.rootDir, p) || '.'
+  logger.info(`Watching: ${watchDirs.map(relPath).join(', ')}`)
 
   let debounceTimer: ReturnType<typeof setTimeout> | null = null
   const debounceMs = ctx.config.watch?.debounce ?? 300
 
-  watcher.on('all', (event, path) => {
+  watcher.on('all', (event, filePath) => {
+    // Only handle graphql and resolver files
+    if (!filePath.endsWith('.graphql') && !filePath.endsWith('.resolver.ts')) {
+      return
+    }
+
     if (debounceTimer) {
       clearTimeout(debounceTimer)
     }
 
     debounceTimer = setTimeout(async () => {
-      logger.info(`File changed: ${path}`)
       try {
-        await generateAll(ctx, { ...options, watch: false })
+        await generateAll(ctx, { silent: true, watch: false })
+        logger.success(`Types regenerated (${relPath(filePath)})`)
       }
       catch (error) {
         logger.error('Regeneration failed:', error)
@@ -232,8 +249,10 @@ async function watchAndRegenerate(
   })
 
   // Keep process alive
-  process.on('SIGINT', () => {
-    watcher.close()
-    process.exit(0)
+  await new Promise<void>((resolve) => {
+    process.on('SIGINT', () => {
+      watcher.close()
+      resolve()
+    })
   })
 }
