@@ -3,6 +3,10 @@
  * Framework-agnostic file scanning utilities
  */
 
+// AST-based scanning
+export { scanWithAST } from './ast-scanner'
+export type { ASTScanConfig } from './ast-scanner'
+
 // Common utilities
 export {
   deduplicateFiles,
@@ -12,16 +16,10 @@ export {
 } from './common'
 
 // Directive scanning
-export {
-  scanDirectiveFilesCore,
-  scanDirectivesCore,
-} from './directives'
+export { scanDirectivesCore } from './directives'
 
 // Document scanning
-export {
-  scanDocumentsCore,
-  scanExternalServiceDocsCore,
-} from './documents'
+export { scanDocumentsCore } from './documents'
 
 export type { ScanDocumentsOptions } from './documents'
 

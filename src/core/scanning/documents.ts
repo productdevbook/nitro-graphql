@@ -6,7 +6,6 @@
 import type { CoreExternalService } from '../types/config'
 import type { ScanContext, ScanResult } from '../types/scanning'
 import { relative } from 'pathe'
-import { glob } from 'tinyglobby'
 import { GRAPHQL_GLOB_PATTERN } from '../constants'
 import { deduplicateFiles, scanDirectory } from './common'
 
@@ -79,42 +78,4 @@ export async function scanDocumentsCore(
     errors.push(`Document scanning error: ${error}`)
     return { items: [], warnings, errors }
   }
-}
-
-/**
- * Scan documents for a specific external service
- */
-export async function scanExternalServiceDocsCore(
-  ctx: ScanContext,
-  serviceName: string,
-  patterns: string[],
-): Promise<ScanResult<string>> {
-  const warnings: string[] = []
-  const errors: string[] = []
-
-  if (!patterns.length) {
-    return { items: [], warnings, errors }
-  }
-
-  const files: string[] = []
-
-  for (const pattern of patterns) {
-    try {
-      const serviceFiles = await glob(pattern, {
-        cwd: ctx.rootDir,
-        dot: true,
-        ignore: ctx.ignorePatterns,
-        absolute: true,
-      })
-      files.push(...serviceFiles)
-    }
-    catch (error) {
-      warnings.push(`[graphql:${serviceName}] Error scanning documents with pattern "${pattern}": ${error}`)
-    }
-  }
-
-  // Remove duplicates
-  const uniqueFiles = files.filter((file, index, self) => self.indexOf(file) === index)
-
-  return { items: uniqueFiles, warnings, errors }
 }

@@ -73,36 +73,4 @@ export interface ScannedResolver {
   imports: ResolverImport[]
 }
 
-/**
- * Scanned directive information
- */
-export interface ScannedDirective {
-  /** Absolute file path */
-  fullPath: string
-  /** Relative path */
-  path: string
-}
 
-/**
- * Scanned document (client GraphQL operation)
- */
-export interface ScannedDocument {
-  /** Absolute file path */
-  fullPath: string
-  /** Document content */
-  content?: string
-}
-
-/**
- * Complete scan results
- */
-export interface AllScanResults {
-  /** Schema file paths */
-  schemas: string[]
-  /** Resolver information */
-  resolvers: ScannedResolver[]
-  /** Directive files */
-  directives: ScannedDirective[]
-  /** Client document files */
-  documents: string[]
-}

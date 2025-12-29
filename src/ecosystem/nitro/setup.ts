@@ -6,17 +6,13 @@
  */
 
 import type { Nitro } from 'nitro/types'
-import type { SecurityConfig } from './types'
-import { fileURLToPath } from 'node:url'
 import consola from 'consola'
 import defu from 'defu'
-import { join, relative, resolve } from 'pathe'
+import { relative, resolve } from 'pathe'
 import { validateExternalServices } from '../../core'
 import {
-  ENDPOINT_DEBUG,
   FRAMEWORK_NITRO,
   FRAMEWORK_NUXT,
-  GRAPHQL_HTTP_METHODS,
   LOG_TAG,
 } from '../../core/constants'
 import { generateDirectiveSchemas } from '../../core/utils/directive-parser'
@@ -29,26 +25,16 @@ import {
 } from './config/defaults'
 import { rollupConfig } from './rollup'
 import { getWatchDirectories, setupFileWatcher } from './setup/file-watcher'
+import { logStartupInfo, resolveSecurityConfig } from './setup/logging'
 import { setupRollupChunking, setupRollupExternals } from './setup/rollup-integration'
+import { registerRouteHandlers } from './setup/routes'
 import { setupTypeScriptPaths } from './setup/ts-config'
 import { getDefaultPaths } from './utils/path-resolver'
 
 const logger = consola.withTag(LOG_TAG)
 
-/**
- * Resolves security configuration with environment-aware defaults
- * In production: introspection off, playground off, errors masked, suggestions disabled
- * In development: introspection on, playground on, errors shown, suggestions enabled
- */
-export function resolveSecurityConfig(config?: SecurityConfig): Required<SecurityConfig> {
-  const isProd = process.env.NODE_ENV === 'production'
-  return {
-    introspection: config?.introspection ?? !isProd,
-    playground: config?.playground ?? !isProd,
-    maskErrors: config?.maskErrors ?? isProd,
-    disableSuggestions: config?.disableSuggestions ?? isProd,
-  }
-}
+// Re-export for backward compatibility
+export { resolveSecurityConfig } from './setup/logging'
 
 /**
  * Scan all GraphQL files and update Nitro state
@@ -372,51 +358,6 @@ function setupCloseHooks(nitro: Nitro, serverEnabled: boolean): void {
 }
 
 /**
- * Register GraphQL route handlers
- */
-function registerRouteHandlers(nitro: Nitro): void {
-  const runtime = fileURLToPath(new URL('routes', import.meta.url))
-  const framework = nitro.options.graphql?.framework
-
-  // Main GraphQL endpoint
-  if (framework === 'graphql-yoga') {
-    for (const method of GRAPHQL_HTTP_METHODS) {
-      nitro.options.handlers.push({
-        route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
-        handler: join(runtime, 'graphql-yoga'),
-        method,
-      })
-    }
-  }
-
-  if (framework === 'apollo-server') {
-    for (const method of GRAPHQL_HTTP_METHODS) {
-      nitro.options.handlers.push({
-        route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
-        handler: join(runtime, 'apollo-server'),
-        method,
-      })
-    }
-  }
-
-  // Health check endpoint
-  nitro.options.handlers.push({
-    route: nitro.options.runtimeConfig.graphql?.endpoint?.healthCheck || '/api/graphql/health',
-    handler: join(runtime, 'health'),
-    method: 'GET',
-  })
-
-  // Debug endpoint (development only)
-  if (nitro.options.dev) {
-    nitro.options.handlers.push({
-      route: ENDPOINT_DEBUG,
-      handler: join(runtime, 'debug'),
-      method: 'GET',
-    })
-  }
-}
-
-/**
  * Setup TypeScript configuration and path aliases
  */
 function setupTypeScriptConfiguration(nitro: Nitro): void {
@@ -443,56 +384,3 @@ function setupNuxtIntegration(nitro: Nitro): void {
   }
 }
 
-/**
- * Log startup information
- */
-function logStartupInfo(nitro: Nitro, serverEnabled: boolean): void {
-  const externalServicesCount = nitro.options.graphql?.externalServices?.length || 0
-  const docs = nitro.scanDocuments || []
-  const isProd = process.env.NODE_ENV === 'production'
-
-  if (serverEnabled) {
-    // Full server mode
-    const securityConfig = resolveSecurityConfig(nitro.options.graphql?.security)
-    const framework = nitro.options.graphql?.framework || 'unknown'
-    const schemas = nitro.scanSchemas?.length || 0
-    const resolvers = nitro.scanResolvers?.length || 0
-
-    consola.box({
-      title: 'Nitro GraphQL',
-      message: [
-        `Framework: ${framework}`,
-        `Environment: ${isProd ? 'production' : 'development'}`,
-        `Schemas: ${schemas}`,
-        `Resolvers: ${resolvers}`,
-        externalServicesCount > 0 ? `External Services: ${externalServicesCount}` : '',
-        docs.length > 0 ? `Documents: ${docs.length}` : '',
-        '',
-        'Security:',
-        `├─ Introspection: ${securityConfig.introspection ? 'enabled' : 'disabled'}`,
-        `├─ Playground: ${securityConfig.playground ? 'enabled' : 'disabled'}`,
-        `├─ Error Masking: ${securityConfig.maskErrors ? 'enabled' : 'disabled'}`,
-        `└─ Field Suggestions: ${securityConfig.disableSuggestions ? 'disabled' : 'enabled'}`,
-      ].filter(Boolean).join('\n'),
-      style: {
-        borderColor: isProd ? 'yellow' : 'cyan',
-        borderStyle: 'rounded',
-      },
-    })
-  }
-  else {
-    // Client-only mode
-    consola.box({
-      title: 'Nitro GraphQL (Client Only)',
-      message: [
-        'Server mode: disabled',
-        `External Services: ${externalServicesCount}`,
-        `Documents: ${docs.length}`,
-      ].join('\n'),
-      style: {
-        borderColor: 'blue',
-        borderStyle: 'rounded',
-      },
-    })
-  }
-}
