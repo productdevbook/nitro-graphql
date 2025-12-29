@@ -10,6 +10,48 @@ import { isAbsolute, resolve } from 'pathe'
 import { getImportId } from '../../core'
 
 /**
+ * Normalize extend config to standard format
+ * Only supports array syntax: ExtendSource[]
+ */
+interface NormalizedExtend {
+  resolvers: string[]
+  schemas: string[]
+}
+
+function normalizeExtendConfig(extend: unknown): NormalizedExtend | null {
+  if (!extend || !Array.isArray(extend) || extend.length === 0) return null
+
+  const resolvers: string[] = []
+  const schemas: string[] = []
+
+  for (const source of extend) {
+    if (typeof source === 'string') {
+      // Simple string - auto-append /resolvers and /schema
+      resolvers.push(`${source}/resolvers`)
+      schemas.push(`${source}/schema`)
+    }
+    else if (source && typeof source === 'object') {
+      // Detailed config
+      const obj = source as { resolvers?: string | string[], schemas?: string | string[] }
+      if (obj.resolvers) {
+        const r = Array.isArray(obj.resolvers) ? obj.resolvers : [obj.resolvers]
+        resolvers.push(...r)
+      }
+      if (obj.schemas) {
+        const s = Array.isArray(obj.schemas) ? obj.schemas : [obj.schemas]
+        schemas.push(...s)
+      }
+    }
+  }
+
+  if (resolvers.length === 0 && schemas.length === 0) {
+    return null
+  }
+
+  return { resolvers, schemas }
+}
+
+/**
  * Resolve extend path to absolute path
  * Supports: relative paths, absolute paths, package names
  */
@@ -63,16 +105,16 @@ function safeGenerateModuleCode(nitro: Nitro, moduleName: string): string {
 export const serverSchemas = {
   id: '#nitro-graphql/server-schemas',
   getCode: (nitro: Nitro): string => {
-    const ext = nitro.options.graphql?.extend
+    const ext = normalizeExtendConfig(nitro.options.graphql?.extend)
+    const skipLocalScan = nitro.options.graphql?.skipLocalScan === true
 
     // Use extend schemas if provided
-    if (ext?.schemas) {
-      const rawPaths = Array.isArray(ext.schemas) ? ext.schemas : [ext.schemas]
-      const schemaPaths = rawPaths.map(p => resolveExtendPath(nitro, p))
+    if (ext && ext.schemas.length > 0) {
+      const schemaPaths = ext.schemas.map(p => resolveExtendPath(nitro, p))
 
-      // Check if we should merge with scanned schemas (merge: true is default)
+      // Check if we should merge with scanned schemas
       const scannedSchemas = [...nitro.scanSchemas, ...(nitro.options.graphql?.typedefs ?? [])]
-      const shouldMergeWithScanned = ext.merge !== false && scannedSchemas.length > 0
+      const shouldMergeWithScanned = !skipLocalScan && scannedSchemas.length > 0
 
       if (shouldMergeWithScanned) {
         // Merge extend + scanned schemas
@@ -129,12 +171,12 @@ export const schemas = [${schemaVars.map(v => `{ def: ${v} }`).join(', ')}]`
 export const serverResolvers = {
   id: '#nitro-graphql/server-resolvers',
   getCode: (nitro: Nitro): string => {
-    const ext = nitro.options.graphql?.extend
+    const ext = normalizeExtendConfig(nitro.options.graphql?.extend)
+    const skipLocalScan = nitro.options.graphql?.skipLocalScan === true
 
     // Use extend resolvers if provided
-    if (ext?.resolvers) {
-      const rawPaths = Array.isArray(ext.resolvers) ? ext.resolvers : [ext.resolvers]
-      const resolverPaths = rawPaths.map(p => resolveExtendPath(nitro, p))
+    if (ext && ext.resolvers.length > 0) {
+      const resolverPaths = ext.resolvers.map(p => resolveExtendPath(nitro, p))
 
       // Import from all extend sources
       const imports = resolverPaths.map((p, i) =>
@@ -142,7 +184,7 @@ export const serverResolvers = {
       )
 
       // Check if we should merge with scanned resolvers
-      if (ext.merge !== false && nitro.scanResolvers.length > 0) {
+      if (!skipLocalScan && nitro.scanResolvers.length > 0) {
         const scannedCode = generateImportModule(nitro.scanResolvers, 'scannedResolvers', 'resolver')
         const spreadAll = [...resolverPaths.map((_, i) => `...resolvers${i}`), '...scannedResolvers']
         return `${imports.join('\n')}

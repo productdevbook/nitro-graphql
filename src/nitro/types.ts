@@ -496,41 +496,26 @@ export interface NitroGraphQLOptions {
   security?: SecurityConfig
 
   /**
-   * Extend GraphQL server with external resolvers/schemas
-   * Use with CLI-generated packages or external npm packages
-   *
-   * Simple syntax - auto-appends /resolvers and /schema:
+   * Extend GraphQL server with external packages
+   * Auto-appends /resolvers and /schema to each package path
    * @example extend: ['@myorg/graphql', './generated']
-   *
-   * Detailed syntax - explicit paths:
-   * @example
-   * ```typescript
-   * extend: {
-   *   resolvers: '@myorg/graphql/resolvers',
-   *   schemas: '@myorg/graphql/schema',
-   *   merge: false, // skip local scanning
-   * }
-   * ```
    */
-  extend?: string | string[] | {
-    /**
-     * Path(s) to resolver modules to extend with
-     * Must export: { resolvers: Array<{ resolver: ResolverObject }> }
-     * @example './generated/resolvers' or '@myorg/graphql/resolvers'
-     */
-    resolvers?: string | string[]
-    /**
-     * Path(s) to schema modules to extend with
-     * Must export: { schemaString: string }
-     * @example './generated/schema' or '@myorg/graphql/schema'
-     */
-    schemas?: string | string[]
-    /**
-     * Merge extended files with locally scanned files
-     * When true (default), both extended and local files are combined
-     * When false, only extended files are used (skip local scanning)
-     * @default true
-     */
-    merge?: boolean
-  }
+  extend?: ExtendSource[]
+
+  /**
+   * Skip local file scanning, use only extend sources
+   * When true, only files from `extend` are used (local server/graphql ignored)
+   * @default false
+   */
+  skipLocalScan?: boolean
+}
+
+/**
+ * Extend source - package path or detailed config
+ * - string: auto-appends /resolvers and /schema
+ * - object: explicit paths for resolvers and/or schemas
+ */
+export type ExtendSource = string | {
+  resolvers?: string | string[]
+  schemas?: string | string[]
 }
