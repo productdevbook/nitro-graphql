@@ -5,6 +5,7 @@ catalog:
   '@antfu/eslint-config': ^6.7.3
   '@apollo/server': ^5.2.0
   '@apollo/subgraph': ^2.12.2
+  '@bomb.sh/tab': ^0.0.11
   '@graphql-codegen/core': ^5.0.0
   '@graphql-codegen/import-types-preset': ^3.0.1
   '@graphql-codegen/typed-document-node': ^6.1.5

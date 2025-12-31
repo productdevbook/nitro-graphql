@@ -310,5 +310,11 @@ const main = defineCommand({
 export { defineConfig } from './config'
 export type { CLIConfig } from './config'
 
-// Run CLI
-runMain(main)
+// Run CLI with completions
+async function run() {
+  const { initCompletions } = await import('./completions')
+  await initCompletions(main)
+  return runMain(main)
+}
+
+run()
