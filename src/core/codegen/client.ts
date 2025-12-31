@@ -23,10 +23,10 @@ import { parse } from 'graphql'
 import { DEFAULT_GRAPHQL_SCALARS } from '../constants'
 import { pluginContent } from './plugin'
 
+export { loadGraphQLDocuments } from './document-loader'
 // Re-export from split modules for backward compatibility
 export type { GraphQLLoadSchemaOptions, GraphQLTypeDefPointer } from './schema-loader'
 export { downloadAndSaveSchema, graphQLLoadSchemaSync, loadExternalSchema } from './schema-loader'
-export { loadGraphQLDocuments } from './document-loader'
 
 /**
  * Default client codegen configuration

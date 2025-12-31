@@ -4,16 +4,16 @@
  */
 
 import type { NPMConfig } from '#graphql/server'
+import type { ApolloServerOptions } from '@apollo/server'
 import type { TypeScriptPluginConfig } from '@graphql-codegen/typescript'
 import type { plugin as typescriptGenericSdk } from '@graphql-codegen/typescript-generic-sdk'
 import type { TypeScriptDocumentsPluginConfig } from '@graphql-codegen/typescript-operations'
 import type { TypeScriptResolversPluginConfig } from '@graphql-codegen/typescript-resolvers'
 import type { IResolvers } from '@graphql-tools/utils'
-import type { ApolloServerOptions } from '@apollo/server'
 import type { GraphQLSchema } from 'graphql'
 import type { YogaServerOptions } from 'graphql-yoga'
-import type { H3Event } from 'nitro/h3'
 import type { ESMCodeGenOptions } from 'knitwork'
+import type { H3Event } from 'nitro/h3'
 
 // ==================== STANDARD SCHEMA ====================
 

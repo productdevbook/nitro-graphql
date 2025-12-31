@@ -1,4 +1,4 @@
-import { defineQuery, defineMutation } from 'nitro-graphql/define'
+import { defineMutation, defineQuery } from 'nitro-graphql/define'
 
 export const userQueries = defineQuery({
   user: (_parent: any, { id }: { id: string }) => ({ id, name: 'Test User' }),

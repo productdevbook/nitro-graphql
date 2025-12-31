@@ -19,7 +19,8 @@ interface NormalizedExtend {
 }
 
 function normalizeExtendConfig(extend: unknown): NormalizedExtend | null {
-  if (!extend || !Array.isArray(extend) || extend.length === 0) return null
+  if (!extend || !Array.isArray(extend) || extend.length === 0)
+    return null
 
   const resolvers: string[] = []
   const schemas: string[] = []

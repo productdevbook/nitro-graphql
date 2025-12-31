@@ -22,18 +22,18 @@ export type {
 // Plugin
 export * from './plugin'
 
-// Server codegen
-export {
-  DEFAULT_SERVER_CODEGEN_CONFIG,
-  generateServerTypesCore,
-  generateTypes,
-} from './server'
-// Validation
-export * from './validation'
-
 // Runtime code generation
 export {
   generateResolverModule,
   generateRuntimeIndex,
   generateSchemaModule,
 } from './runtime'
+// Server codegen
+export {
+  DEFAULT_SERVER_CODEGEN_CONFIG,
+  generateServerTypesCore,
+  generateTypes,
+} from './server'
+
+// Validation
+export * from './validation'

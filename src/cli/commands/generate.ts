@@ -16,12 +16,8 @@ import {
   generateServerTypesCore,
   loadGraphQLDocuments,
 } from '../../core/codegen'
-import { scanResolversCore } from '../../core/scanning'
 import { LOG_TAG } from '../../core/constants'
-import {
-  scanDocumentsCore,
-  scanSchemasCore,
-} from '../../core/scanning'
+import { scanDocumentsCore, scanResolversCore, scanSchemasCore } from '../../core/scanning'
 import { buildGraphQLSchema } from '../../core/schema'
 
 const logger = consola.withTag(LOG_TAG)

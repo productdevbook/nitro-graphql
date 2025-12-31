@@ -10,25 +10,25 @@
     "lint:type": "vue-tsc -b"
   },
   "dependencies": {
-    "@pinia/colada": "catalog:",
-    "@tailwindcss/vite": "catalog:",
-    "graphql": "catalog:",
-    "graphql-yoga": "catalog:",
-    "nitro": "catalog:",
-    "nitro-graphql": "catalog:",
-    "ofetch": "catalog:",
-    "pinia": "catalog:",
-    "tailwindcss": "catalog:",
-    "vue": "catalog:",
-    "vue-router": "catalog:"
+    "@pinia/colada": "^0.20.0",
+    "@tailwindcss/vite": "^4.1.18",
+    "graphql": "^16.12.0",
+    "graphql-yoga": "^5.18.0",
+    "nitro": "^3.0.1-alpha.1",
+    "nitro-graphql": "2.0.0-beta.37",
+    "ofetch": "^1.5.1",
+    "pinia": "^3.0.4",
+    "tailwindcss": "^4.1.18",
+    "vue": "^3.5.26",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
-    "@types/node": "catalog:",
-    "@vitejs/plugin-vue": "catalog:",
-    "@vue/tsconfig": "catalog:",
-    "graphql-config": "catalog:",
-    "typescript": "catalog:",
-    "vite": "catalog:",
-    "vue-tsc": "catalog:"
+    "@types/node": "^25.0.3",
+    "@vitejs/plugin-vue": "^6.0.3",
+    "@vue/tsconfig": "^0.8.1",
+    "graphql-config": "^5.1.5",
+    "typescript": "^5.9.3",
+    "vite": "8.0.0-beta.5",
+    "vue-tsc": "^3.2.1"
   }
 }

@@ -23,13 +23,13 @@ import {
   DEFAULT_TYPES_CONFIG,
   DEFAULT_TYPESCRIPT_STRICT,
 } from './config'
+import { getDefaultPaths } from './paths'
 import { rollupConfig } from './rollup'
 import { getWatchDirectories, setupFileWatcher } from './setup/file-watcher'
 import { logStartupInfo, resolveSecurityConfig } from './setup/logging'
 import { setupRollupChunking, setupRollupExternals } from './setup/rollup-integration'
 import { registerRouteHandlers } from './setup/routes'
 import { setupTypeScriptPaths } from './setup/ts-config'
-import { getDefaultPaths } from './paths'
 
 const logger = consola.withTag(LOG_TAG)
 
@@ -401,4 +401,3 @@ function setupNuxtIntegration(nitro: Nitro): void {
     })
   }
 }
-

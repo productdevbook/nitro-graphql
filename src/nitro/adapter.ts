@@ -4,7 +4,7 @@
  */
 
 import type { Nitro } from 'nitro/types'
-import type { CoreConfig, CoreContext, CoreLogger, ScanContext, ScannedResolver, ScanResult } from '../core/types'
+import type { CoreConfig, CoreContext, CoreLogger, ScanContext, ScanResult } from '../core/types'
 import type { FrameworkAdapter, ScanAdapter } from '../core/types/adapter'
 import { join, relative } from 'pathe'
 import {

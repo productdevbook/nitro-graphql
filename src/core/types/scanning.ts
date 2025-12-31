@@ -72,5 +72,3 @@ export interface ScannedResolver {
   /** Exports from this file */
   imports: ResolverImport[]
 }
-
-
