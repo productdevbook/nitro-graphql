@@ -209,7 +209,7 @@ import { defineField, defineMutation, defineQuery } from 'nitro-graphql/define'
 **Context Setup** (`server/graphql/config.ts`)
 ```typescript
 import { defineGraphQLConfig } from 'nitro-graphql/define'
-import { createDefaultMaskError } from 'nitro-graphql/utils'
+import { createDefaultMaskError } from 'nitro-graphql/core'
 import { tables } from '../drizzle'
 import { useDatabase } from '../utils/useDb'
 
@@ -296,7 +296,7 @@ The example uses `createDefaultMaskError()` to handle validation and HTTP errors
 **Configuration** (`server/graphql/config.ts`)
 ```typescript
 import { defineGraphQLConfig } from 'nitro-graphql/define'
-import { createDefaultMaskError } from 'nitro-graphql/utils'
+import { createDefaultMaskError } from 'nitro-graphql/core'
 
 export default defineGraphQLConfig({
   maskedErrors: {

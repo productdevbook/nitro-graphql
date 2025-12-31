@@ -236,7 +236,7 @@ export function defineField(
  *
  * @example
  * ```typescript
- * import { createDefaultMaskError } from 'nitro-graphql/utils'
+ * import { createDefaultMaskError } from 'nitro-graphql/core'
  *
  * // GraphQL Yoga configuration
  * export default defineGraphQLConfig({

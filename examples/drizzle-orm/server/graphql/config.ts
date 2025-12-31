@@ -1,5 +1,5 @@
+import { createDefaultMaskError } from 'nitro-graphql/core'
 import { defineGraphQLConfig } from 'nitro-graphql/define'
-import { createDefaultMaskError } from 'nitro-graphql/utils'
 import { tables } from '../drizzle'
 import { useDatabase } from '../utils/useDb'
 

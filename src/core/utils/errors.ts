@@ -28,7 +28,7 @@ export interface MaskErrorOptions {
  * @example Basic usage
  * ```ts
  * import { defineGraphQLConfig } from 'nitro-graphql/define'
- * import { createDefaultMaskError } from 'nitro-graphql/core/utils'
+ * import { createDefaultMaskError } from 'nitro-graphql/core'
  *
  * export default defineGraphQLConfig({
  *   maskedErrors: {
@@ -40,7 +40,7 @@ export interface MaskErrorOptions {
  * @example Custom status codes
  * ```ts
  * import { defineGraphQLConfig } from 'nitro-graphql/define'
- * import { createDefaultMaskError } from 'nitro-graphql/core/utils'
+ * import { createDefaultMaskError } from 'nitro-graphql/core'
  *
  * export default defineGraphQLConfig({
  *   maskedErrors: {
@@ -55,7 +55,7 @@ export interface MaskErrorOptions {
  * @example Custom error handling with fallback to default
  * ```ts
  * import { defineGraphQLConfig } from 'nitro-graphql/define'
- * import { createDefaultMaskError } from 'nitro-graphql/core/utils'
+ * import { createDefaultMaskError } from 'nitro-graphql/core'
  *
  * const defaultMaskError = createDefaultMaskError()
  *

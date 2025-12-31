@@ -633,7 +633,7 @@ import { defineResolver, defineQuery, defineMutation, defineField, defineDirecti
 | `defineGraphQLConfig` | GraphQL server config | `defineGraphQLConfig({ maskedErrors: {...} })` |
 | `defineSchema` | Schema with Zod integration | `defineSchema({ Book: selectBookSchema })` |
 
-**Additional Utilities** from `nitro-graphql/utils`:
+**Additional Utilities** from `nitro-graphql/core`:
 - `createDefaultMaskError()` - Error handler for ZodError and HTTPError (use in `defineGraphQLConfig`)
 
 ### Type Generation

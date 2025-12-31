@@ -18,7 +18,7 @@
     "graphql": "^16.12.0",
     "graphql-yoga": "^5.18.0",
     "nitro": "^3.0.1-alpha.1",
-    "nitro-graphql": "2.0.0-beta.37",
+    "nitro-graphql": "2.0.0-beta.38",
     "pg": "^8.16.3",
     "rolldown": "^1.0.0-beta.58",
     "tsx": "^4.21.0",
