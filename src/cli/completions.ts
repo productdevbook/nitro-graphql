@@ -14,7 +14,7 @@ export async function initCompletions<T extends ArgsDef = ArgsDef>(
   // Define completion handlers via config
   await tab(command, {
     subCommands: {
-      init: {
+      'init': {
         options: {
           template: (complete) => {
             // Add available templates
@@ -31,7 +31,7 @@ export async function initCompletions<T extends ArgsDef = ArgsDef>(
           },
         },
       },
-      generate: {
+      'generate': {
         options: {
           cwd: (complete) => {
             complete('.', 'Current directory')
@@ -52,7 +52,7 @@ export async function initCompletions<T extends ArgsDef = ArgsDef>(
           },
         },
       },
-      validate: {
+      'validate': {
         options: {
           cwd: (complete) => {
             complete('.', 'Current directory')

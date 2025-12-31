@@ -6,8 +6,8 @@
 
 import type { CLIContext } from '../index'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { downloadTemplate } from 'giget'
 import consola from 'consola'
+import { downloadTemplate } from 'giget'
 import { basename, join, relative, resolve } from 'pathe'
 import { LOG_TAG } from '../../core/constants'
 
@@ -70,7 +70,7 @@ export function listTemplates(): void {
 export async function initFromTemplate(
   projectName: string,
   templateName: string,
-  options: { force?: boolean; cwd?: string } = {},
+  options: { force?: boolean, cwd?: string } = {},
 ): Promise<void> {
   const { force, cwd = process.cwd() } = options
   const targetDir = resolve(cwd, projectName)
@@ -122,10 +122,10 @@ export async function initFromTemplate(
           .toLowerCase()
 
         packageJson.name = slug || 'my-graphql-app'
-        writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n', 'utf-8')
+        writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`, 'utf-8')
         logger.debug(`Updated package.json name to: ${packageJson.name}`)
       }
-      catch (e) {
+      catch {
         logger.warn('Could not update package.json name')
       }
     }
