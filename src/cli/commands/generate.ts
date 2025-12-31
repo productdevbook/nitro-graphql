@@ -312,7 +312,7 @@ async function watchAndRegenerate(
 
     debounceTimer = setTimeout(async () => {
       try {
-        await generateAll(ctx, { silent: true, watch: false })
+        await generateAll(ctx, { silent: options.silent ?? true, watch: false })
         logger.success(`Types regenerated (${relPath(filePath)})`)
       }
       catch (error) {

@@ -1,5 +1,18 @@
+catalogMode: prefer
+
+cleanupUnusedCatalogs: true
+
+ignoreWorkspaceRootCheck: true
+
+shellEmulator: true
+
+trustPolicy: no-downgrade
+
 packages:
   - playgrounds/*
+
+overrides:
+  vite: 8.0.0-beta.5
 
 catalog:
   '@antfu/eslint-config': ^6.7.3
@@ -48,19 +61,6 @@ catalog:
   vitepress-plugin-llms: ^1.10.0
   vitest: ^4.0.16
   zod: ^4.3.2
-
-catalogMode: prefer
-
-cleanupUnusedCatalogs: true
-
-ignoreWorkspaceRootCheck: true
-
-overrides:
-  vite: 8.0.0-beta.5
-
-shellEmulator: true
-
-trustPolicy: no-downgrade
 
 # 2 weeks in minutes
 trustPolicyIgnoreAfter: 10.080
