@@ -226,9 +226,14 @@ const validateCommand = defineCommand({
 const initCommand = defineCommand({
   meta: {
     name: 'init',
-    description: 'Initialize project structure',
+    description: 'Initialize project structure or download a template',
   },
   args: {
+    projectName: {
+      type: 'positional',
+      description: 'Project name (directory to create)',
+      required: false,
+    },
     cwd: {
       type: 'string',
       description: 'Set working directory',
@@ -238,17 +243,44 @@ const initCommand = defineCommand({
       alias: 'f',
       description: 'Force overwrite existing files',
     },
+    template: {
+      type: 'string',
+      alias: 't',
+      description: 'Template to use (e.g., drizzle-orm, vite-react)',
+    },
+    list: {
+      type: 'boolean',
+      alias: 'l',
+      description: 'List available templates',
+    },
   },
   async run({ args }) {
+    const { listTemplates, initFromTemplate, init } = await import('./commands/init')
+
+    // List templates
+    if (args.list) {
+      listTemplates()
+      return
+    }
+
+    // Template mode: download template
+    if (args.template) {
+      const projectName = args.projectName || args.template
+      logger.info(`Creating project "${projectName}" from template "${args.template}"...`)
+      await initFromTemplate(projectName, args.template, {
+        force: Boolean(args.force),
+        cwd: args.cwd || process.cwd(),
+      })
+      logger.success('Project created successfully!')
+      return
+    }
+
+    // Basic scaffolding mode
     const ctx = await createCLIContext({ cwd: args.cwd })
-
     logger.info('Initializing nitro-graphql project...')
-
-    const { init } = await import('./commands/init')
     await init(ctx, {
       force: Boolean(args.force),
     })
-
     logger.success('Project initialized!')
   },
 })

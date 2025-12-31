@@ -1,18 +1,5 @@
-catalogMode: prefer
-
-cleanupUnusedCatalogs: true
-
-ignoreWorkspaceRootCheck: true
-
-shellEmulator: true
-
-trustPolicy: no-downgrade
-
 packages:
   - playgrounds/*
-
-overrides:
-  vite: 8.0.0-beta.5
 
 catalog:
   '@antfu/eslint-config': ^6.7.3
@@ -45,6 +32,7 @@ catalog:
   crossws: ^0.4.1
   defu: ^6.1.4
   eslint: ^9.39.2
+  giget: ^2.0.0
   graphql: 16.12.0
   graphql-config: ^5.1.5
   graphql-scalars: ^1.25.0
@@ -62,5 +50,17 @@ catalog:
   vitest: ^4.0.16
   zod: ^4.3.2
 
-# 2 weeks in minutes
-trustPolicyIgnoreAfter: 10.080
+catalogMode: prefer
+
+cleanupUnusedCatalogs: true
+
+ignoreWorkspaceRootCheck: true
+
+overrides:
+  vite: 8.0.0-beta.5
+
+shellEmulator: true
+
+trustPolicy: no-downgrade
+
+trustPolicyIgnoreAfter: 10.08

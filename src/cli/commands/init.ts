@@ -1,18 +1,151 @@
 /**
  * Init command
  * Initialize project structure for standalone CLI
+ * Supports downloading templates from GitHub
  */
 
 import type { CLIContext } from '../index'
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { downloadTemplate } from 'giget'
 import consola from 'consola'
-import { join, relative } from 'pathe'
+import { basename, join, relative, resolve } from 'pathe'
 import { LOG_TAG } from '../../core/constants'
 
 const logger = consola.withTag(LOG_TAG)
 
 /**
- * Initialize project structure
+ * Available templates from the examples directory
+ */
+export const AVAILABLE_TEMPLATES = [
+  {
+    name: 'drizzle-orm',
+    description: 'Nitro + GraphQL + Drizzle ORM with PostgreSQL',
+  },
+  {
+    name: 'vite',
+    description: 'Vite + Nitro GraphQL integration',
+  },
+  {
+    name: 'vite-react',
+    description: 'Vite + React + Nitro GraphQL',
+  },
+  {
+    name: 'vite-vue',
+    description: 'Vite + Vue + Nitro GraphQL',
+  },
+  {
+    name: 'better-auth',
+    description: 'Nitro + GraphQL + Better Auth integration',
+  },
+] as const
+
+export type TemplateName = typeof AVAILABLE_TEMPLATES[number]['name']
+
+/**
+ * Default GitHub template source
+ */
+const DEFAULT_TEMPLATE_REGISTRY = 'github:productdevbook/nitro-graphql/examples'
+
+/**
+ * List available templates
+ */
+export function listTemplates(): void {
+  logger.info('Available templates:\n')
+
+  for (const template of AVAILABLE_TEMPLATES) {
+    console.log(`  ${template.name.padEnd(15)} - ${template.description}`)
+  }
+
+  console.log('\nUsage:')
+  console.log('  nitro-graphql init <project-name> --template <template-name>')
+  console.log('  nitro-graphql init my-app -t drizzle-orm')
+  console.log('\nCustom templates:')
+  console.log('  nitro-graphql init my-app -t gh:user/repo')
+  console.log('  nitro-graphql init my-app -t github:user/repo/subdir')
+}
+
+/**
+ * Initialize project from template
+ */
+export async function initFromTemplate(
+  projectName: string,
+  templateName: string,
+  options: { force?: boolean; cwd?: string } = {},
+): Promise<void> {
+  const { force, cwd = process.cwd() } = options
+  const targetDir = resolve(cwd, projectName)
+
+  // Check if target directory exists
+  if (existsSync(targetDir) && !force) {
+    logger.error(`Directory "${projectName}" already exists. Use --force to overwrite.`)
+    process.exit(1)
+  }
+
+  // Resolve template source
+  let templateSource: string
+
+  // Check if it's a custom template (gh:, github:, gitlab:, etc.)
+  if (templateName.includes(':') || templateName.includes('/')) {
+    templateSource = templateName
+  }
+  else {
+    // Check if it's a known template
+    const knownTemplate = AVAILABLE_TEMPLATES.find(t => t.name === templateName)
+    if (!knownTemplate) {
+      logger.error(`Unknown template: "${templateName}"`)
+      logger.info('Use --list to see available templates')
+      process.exit(1)
+    }
+    templateSource = `${DEFAULT_TEMPLATE_REGISTRY}/${templateName}`
+  }
+
+  logger.info(`Downloading template: ${templateName}`)
+  logger.debug(`Source: ${templateSource}`)
+
+  try {
+    // Download template
+    const result = await downloadTemplate(templateSource, {
+      dir: targetDir,
+      force,
+    })
+
+    logger.success(`Template downloaded to: ${result.dir}`)
+
+    // Update package.json name
+    const packageJsonPath = join(targetDir, 'package.json')
+    if (existsSync(packageJsonPath)) {
+      try {
+        const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
+        const slug = basename(projectName)
+          .replace(/[^a-z0-9-]/gi, '-')
+          .replace(/^-+|-+$/g, '')
+          .toLowerCase()
+
+        packageJson.name = slug || 'my-graphql-app'
+        writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n', 'utf-8')
+        logger.debug(`Updated package.json name to: ${packageJson.name}`)
+      }
+      catch (e) {
+        logger.warn('Could not update package.json name')
+      }
+    }
+
+    // Print next steps
+    console.log('')
+    logger.info('Next steps:')
+    console.log(`  cd ${projectName}`)
+    console.log('  pnpm install')
+    console.log('  pnpm dev')
+    console.log('')
+  }
+  catch (error) {
+    logger.error('Failed to download template:', error)
+    process.exit(1)
+  }
+}
+
+/**
+ * Initialize project structure (basic scaffolding)
  */
 export async function init(
   ctx: CLIContext,
