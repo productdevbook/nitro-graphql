@@ -31,13 +31,13 @@ declare module '#nitro-graphql/client-schema' {
 }
 
 declare module '#nitro-graphql/module-config' {
-  import type { NitroGraphQLOptions } from '../types'
+  import type { NitroGraphQLOptions } from './nitro/types'
 
   export const moduleConfig: Partial<NitroGraphQLOptions>
 }
 
 declare module '#nitro-graphql/debug-info' {
-  import type { GenImport } from '../types'
+  import type { GenImport } from './nitro/types'
 
   export const debugInfo: {
     isDev: boolean

@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "paths": {
+      "#graphql/server": ["./.graphql/types/nitro-graphql-server.d.ts"],
+      "#graphql/client": ["./.graphql/types/nitro-graphql-client.d.ts"],
+      "#graphql/schema": ["./server/graphql/schema.ts"]
+    },
+    "resolveJsonModule": true,
+    "strict": true,
+    "noEmit": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", ".graphql"]
+}

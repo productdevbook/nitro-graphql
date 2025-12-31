@@ -2,7 +2,6 @@ import { defineResolver } from 'nitro-graphql/define'
 
 export const helloQueries = defineResolver({
   Query: {
-    hello: () => 'Hello from auto-discovered resolver!',
     greeting: (_parent, { name }) => `Hello, ${name}!`,
     // These fields will be protected by the @auth directive
     profile: (_parent, _args, context) => {

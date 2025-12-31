@@ -1,7 +1,6 @@
 import type { NPMConfig, Resolvers, ResolversTypes } from '#graphql/server'
 
-import type { StandardSchemaV1 } from 'nitro-graphql/types'
-import type { DefineDirectiveConfig, DefineServerConfig, DirectiveDefinition, Flatten } from './types/define'
+import type { DefineDirectiveConfig, DefineServerConfig, DirectiveDefinition, Flatten, StandardSchemaV1 } from './nitro/types'
 
 /**
  * Define schema extensions programmatically for GraphQL types.

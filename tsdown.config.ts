@@ -10,17 +10,19 @@ const playgroundPath = new URL(playgrounds, thisPath).pathname
 
 export default defineConfig({
   entry: [
-    'src/graphql/**',
+    // Main entry points
     'src/index.ts',
-    'src/rollup.ts',
-    'src/setup.ts',
-    'src/vite.ts',
     'src/define.ts',
-    'src/utils/**',
-    'src/routes/**',
-    'src/virtual/**',
-    'src/ecosystem/**',
-    'src/types/**',
+    // Core (framework-agnostic)
+    'src/core/**',
+    // CLI
+    'src/cli/**',
+    // Nitro integration
+    'src/nitro/**',
+    // Nuxt module
+    'src/nuxt.ts',
+    // Runtime type stubs
+    'src/stubs/**',
   ],
   format: ['esm'],
   dts: true,
@@ -43,7 +45,7 @@ export default defineConfig({
     '@nuxt/schema',
     '@apollo/server',
     '@apollo/server/plugin/landingPage/default',
-    'nitro-graphql/utils/apollo',
+    'nitro-graphql/apollo',
     'vite',
     '#graphql/server',
     ...Object.keys(dependencies || {}),

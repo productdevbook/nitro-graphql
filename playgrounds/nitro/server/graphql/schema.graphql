@@ -2,7 +2,6 @@ scalar DateTime
 scalar JSON
 
 type Query {
-  hello: String!
   greeting(name: String!): String!
   # Protected field that requires authentication
   profile: User @auth

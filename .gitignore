@@ -6,3 +6,4 @@ dist
 */.vitepress/cache
 .rolldown
 **/.graphql
+examples/**/bun.*

@@ -8,10 +8,9 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "paths": {
-      "#nitro-graphql/*": ["./src/virtual/*"],
-      "nitro-graphql/internal": ["./src/internal/index.ts"],
       "nitro-graphql": ["./src/index.ts"],
-      "nitro-graphql/types": ["./src/types/index.ts"],
+      "nitro-graphql/types": ["./src/ecosystem/nitro/types/index.ts"],
+      "nitro-graphql/utils/apollo": ["./src/ecosystem/nitro/utils/apollo.ts"],
       "#graphql/server": ["./src/graphql/server.ts"]
     },
     "resolveJsonModule": true,

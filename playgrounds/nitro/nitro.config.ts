@@ -5,6 +5,7 @@ export default defineNitroConfig({
   modules: [
     graphql({
       framework: 'graphql-yoga',
+      extend: ['./generated', '@playground/cli-graphql'],
     }),
   ],
 })
