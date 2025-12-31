@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./.docs/public/logo.svg" alt="Nitro GraphQL Logo" width="120" height="120">
+<img src="./.github/assets/logo.svg" alt="Nitro GraphQL Logo" width="120" height="120">
 
 # Nitro GraphQL
 
