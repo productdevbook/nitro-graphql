@@ -20,6 +20,7 @@ const nitro = {
     '**/README.md',
     'examples/vite-vue/src/**/*.vue',
     'examples/vite-react/src/**/*.{tsx,jsx}',
+    'content/**/*',
   ],
 }
 export default antfu(
