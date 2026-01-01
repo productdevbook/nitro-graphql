@@ -1,27 +1,27 @@
 ---
-title: Installation
-description: Install Nitro GraphQL with your package manager
+title: Kurulum
+description: Nitro GraphQL'i paket yöneticinizle kurun
 icon: heroicons:arrow-down-tray
 order: 1
 tags:
-  - getting-started
-  - setup
+  - baslangic
+  - kurulum
 ---
 
-# Installation
+# Kurulum
 
-## Requirements
+## Gereksinimler
 
-- **Node.js** 24+ (or Bun)
-- **pnpm**, **npm**, **yarn** or **bun**
+- **Node.js** 24+ (veya Bun)
+- **pnpm**, **npm**, **yarn** veya **bun**
 
 ::callout{type="warning"}
-Nitro GraphQL requires Nitro v3 and H3 v2. These versions require Node.js 24+.
+Nitro GraphQL, Nitro v3 ve H3 v2 gerektirmektedir. Bu sürümler Node.js 24+ gerektirir.
 ::
 
-## Quick Start (Recommended)
+## Hızlı Başlangıç (Önerilen)
 
-Create a project from ready-made templates with CLI:
+CLI ile hazır template'lerden proje oluşturun:
 
 ::tabs
   ::tab{label="pnpm"}
@@ -53,20 +53,20 @@ Create a project from ready-made templates with CLI:
 ::
 
 ::callout{type="info"}
-Other templates: `vite`, `vite-react`, `vite-vue`, `drizzle-orm`, `better-auth`
+Diğer template'ler: `vite`, `vite-react`, `vite-vue`, `drizzle-orm`, `better-auth`
 
-To see all templates: `npx nitro-graphql init --list`
+Tüm template'leri görmek için: `npx nitro-graphql init --list`
 ::
 
 GraphQL Playground: http://localhost:3000/api/graphql
 
 ---
 
-## Manual Installation
+## Manuel Kurulum
 
-To add to an existing project:
+Mevcut bir projeye eklemek için:
 
-### 1. Install Packages
+### 1. Paketleri Yükle
 
 ::tabs
   ::tab{label="pnpm"}
@@ -94,11 +94,11 @@ To add to an existing project:
   ::
 ::
 
-### 2. Configuration
+### 2. Yapılandırma
 
 #### Nitro
 
-Add to your `nitro.config.ts`:
+`nitro.config.ts` dosyasına ekleyin:
 
 ```typescript
 import { defineConfig } from 'nitro'
@@ -115,7 +115,7 @@ export default defineConfig({
 
 #### Vite + Nitro
 
-Add to your `vite.config.ts`:
+`vite.config.ts` dosyasına ekleyin:
 
 ```typescript
 import graphql from 'nitro-graphql'
@@ -134,19 +134,19 @@ export default defineConfig({
 
 #### Nuxt
 
-::feature{status="coming-soon" title="Nuxt Support"}
-Nuxt is not currently supported. Support will be added with Nuxt 5.
+::feature{status="coming-soon" title="Nuxt Desteği"}
+Nuxt şu anda desteklenmemektedir. Nuxt 5 ile birlikte destek eklenecektir.
 ::
 
-### 3. Create GraphQL Files
+### 3. GraphQL Dosyalarını Oluştur
 
 ```
 my-project/
 ├── server/
 │   └── graphql/
-│       ├── config.ts         # GraphQL configuration
-│       ├── schema.graphql    # Schema definitions
-│       └── hello.resolver.ts # Resolvers
+│       ├── config.ts         # GraphQL yapılandırması
+│       ├── schema.graphql    # Schema tanımları
+│       └── hello.resolver.ts # Resolver'lar
 ├── nitro.config.ts
 └── package.json
 ```
@@ -174,7 +174,7 @@ export const helloQueries = defineQuery({
 })
 ```
 
-### 4. Start Dev Server
+### 4. Dev Sunucusunu Başlat
 
 ::tabs
   ::tab{label="pnpm"}
@@ -205,5 +205,6 @@ export const helloQueries = defineQuery({
 GraphQL Playground: http://localhost:3000/api/graphql
 
 ::callout{type="success"}
-If you see the GraphiQL interface, installation is complete!
+GraphiQL arayüzünü görüyorsanız kurulum tamamdır!
 ::
+

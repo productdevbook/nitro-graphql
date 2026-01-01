@@ -18,6 +18,10 @@ const logger = consola.withTag(LOG_TAG)
  */
 export const AVAILABLE_TEMPLATES = [
   {
+    name: 'nitro',
+    description: 'Minimal Nitro + GraphQL starter',
+  },
+  {
     name: 'drizzle-orm',
     description: 'Nitro + GraphQL + Drizzle ORM with PostgreSQL',
   },
