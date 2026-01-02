@@ -26,6 +26,7 @@ catalog:
   '@vitejs/devtools': ^0.0.0-alpha.16
   '@vitest/ui': ^4.0.16
   bumpp: ^10.3.2
+  c12: ^3.3.3
   changelogen: ^0.6.2
   chokidar: ^5.0.0
   citty: ^0.1.6

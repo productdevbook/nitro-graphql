@@ -30,7 +30,7 @@ import { logStartupInfo, resolveSecurityConfig } from './setup/logging'
 import { setupRollupChunking, setupRollupExternals } from './setup/rollup-integration'
 import { registerRouteHandlers } from './setup/routes'
 import { setupTypeScriptPaths } from './setup/ts-config'
-import { resolveExtendConfig } from './setup/extend-loader'
+import { resolveExtendConfig, resolveExtendDirs } from './setup/extend-loader'
 
 const logger = consola.withTag(LOG_TAG)
 
@@ -91,8 +91,11 @@ export async function setupNitroGraphQL(nitro: Nitro): Promise<void> {
   // Step 5: Initialize runtime configuration
   initializeRuntimeConfig(nitro)
 
+  // Step 5.5: Resolve extend directories for file watching
+  const extendDirs = await resolveExtendDirs(nitro)
+
   // Step 6: Setup file watching (dev mode)
-  setupFileWatching(nitro, serverEnabled)
+  setupFileWatching(nitro, serverEnabled, extendDirs)
 
   // Step 7: Scan GraphQL files (conditionally based on server mode)
   await scanGraphQLFiles(nitro, serverEnabled)
@@ -235,10 +238,10 @@ function initializeRuntimeConfig(nitro: Nitro): void {
 /**
  * Setup file watching for development mode
  */
-function setupFileWatching(nitro: Nitro, serverEnabled: boolean): void {
+function setupFileWatching(nitro: Nitro, serverEnabled: boolean, extendDirs: string[] = []): void {
   // In client-only mode, only watch client directories
   const watchDirs = serverEnabled
-    ? getWatchDirectories(nitro)
+    ? getWatchDirectories(nitro, extendDirs)
     : [nitro.graphql.clientDir].filter(Boolean)
 
   nitro.graphql.watchDirs = watchDirs

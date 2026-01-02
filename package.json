@@ -53,6 +53,10 @@
       "types": "./dist/cli/index.d.mts",
       "import": "./dist/cli/index.mjs"
     },
+    "./config": {
+      "types": "./dist/config.d.mts",
+      "import": "./dist/config.mjs"
+    },
     "./define": {
       "types": "./dist/define.d.mts",
       "import": "./dist/define.mjs"

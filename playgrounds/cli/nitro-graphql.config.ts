@@ -1,4 +1,4 @@
-import { defineConfig } from 'nitro-graphql/cli'
+import { defineConfig } from 'nitro-graphql/config'
 
 export default defineConfig({
   framework: 'graphql-yoga',

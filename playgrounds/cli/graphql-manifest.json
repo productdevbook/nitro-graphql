@@ -1,9 +1,0 @@
-{
-  "schemas": [
-    "server/graphql/schema.graphql"
-  ],
-  "resolvers": [
-    "server/graphql/hello.resolver.ts",
-    "server/graphql/user.resolver.ts"
-  ]
-}

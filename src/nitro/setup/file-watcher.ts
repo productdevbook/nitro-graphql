@@ -4,9 +4,10 @@
 
 import type { FSWatcher } from 'chokidar'
 import type { Nitro } from 'nitro/types'
+import { existsSync, writeFileSync, readFileSync } from 'node:fs'
 import { watch } from 'chokidar'
 import consola from 'consola'
-import { join } from 'pathe'
+import { join, resolve } from 'pathe'
 import {
   DIR_SERVER_GRAPHQL,
   DIR_SERVER_GRAPHQL_WIN,
@@ -18,12 +19,33 @@ import {
 import { generateDirectiveSchemas } from '../../core/utils/directive-parser'
 import { NitroAdapter } from '../adapter'
 import { generateClientTypes, generateServerTypes } from '../codegen'
+import { resolveExtendConfig } from './extend-loader'
 import {
   DEFAULT_WATCHER_IGNORE_INITIAL,
   DEFAULT_WATCHER_PERSISTENT,
 } from '../config'
 
 const logger = consola.withTag(LOG_TAG)
+
+/**
+ * Touch config.ts to trigger Rolldown's file watcher
+ * This is needed because Rolldown doesn't detect changes to .graphql files in external packages
+ */
+function triggerRolldownRebuild(nitro: Nitro): void {
+  const configPath = resolve(nitro.graphql.serverDir, 'config.ts')
+  if (existsSync(configPath)) {
+    try {
+      const content = readFileSync(configPath, 'utf-8')
+      // Add/update a timestamp comment at the end to trigger change detection
+      const timestampComment = `// HMR trigger: ${Date.now()}`
+      const newContent = content.replace(/\/\/ HMR trigger: \d+\n?$/, '') + '\n' + timestampComment + '\n'
+      writeFileSync(configPath, newContent)
+    }
+    catch {
+      // Ignore errors - this is just a trigger mechanism
+    }
+  }
+}
 
 /**
  * Setup file watcher for GraphQL files (schemas, resolvers, directives, documents)
@@ -37,6 +59,11 @@ export function setupFileWatcher(nitro: Nitro, watchDirs: string[]): FSWatcher {
   })
 
   watcher.on('all', async (_, path) => {
+    // Skip generated files to prevent infinite loops
+    if (path.includes('/sdk.ts') || path.includes('/sdk.js') || path.endsWith('/config.ts')) {
+      return
+    }
+
     const isGraphQLFile = GRAPHQL_EXTENSIONS.some(ext => path.endsWith(ext))
     const isResolverFile = RESOLVER_EXTENSIONS.some(ext => path.endsWith(ext))
     const isDirectiveFile = DIRECTIVE_EXTENSIONS.some(ext => path.endsWith(ext))
@@ -73,9 +100,20 @@ export function setupFileWatcher(nitro: Nitro, watchDirs: string[]): FSWatcher {
         const resolversResult = await NitroAdapter.scanResolvers(nitro)
         nitro.scanResolvers = resolversResult.items
 
+        // Step 6: Re-resolve extend config to add manifest files
+        // (silent mode - dev:start will log when Nitro restarts)
+        await resolveExtendConfig(nitro, { silent: true })
+
         logger.success('Types regenerated')
         await generateServerTypes(nitro, { silent: true })
         await generateClientTypes(nitro, { silent: true })
+
+        // For .graphql files, trigger Rolldown rebuild by touching config.ts
+        // (Rolldown doesn't detect .graphql changes in external/symlinked packages)
+        if (isGraphQLFile) {
+          triggerRolldownRebuild(nitro)
+        }
+
         // Trigger Nitro reload to pick up changes
         await nitro.hooks.callHook('dev:reload')
       }
@@ -93,7 +131,7 @@ export function setupFileWatcher(nitro: Nitro, watchDirs: string[]): FSWatcher {
 /**
  * Determine which directories to watch based on framework and configuration
  */
-export function getWatchDirectories(nitro: Nitro): string[] {
+export function getWatchDirectories(nitro: Nitro, extendDirs: string[] = []): string[] {
   const watchDirs: string[] = []
   const framework = nitro.options.framework.name
 
@@ -126,6 +164,13 @@ export function getWatchDirectories(nitro: Nitro): string[] {
       // Unknown framework - watch both directories as fallback
       watchDirs.push(nitro.graphql.clientDir)
       watchDirs.push(nitro.graphql.serverDir)
+  }
+
+  // Add extend directories (from manifest packages)
+  for (const dir of extendDirs) {
+    if (!watchDirs.includes(dir)) {
+      watchDirs.push(dir)
+    }
   }
 
   // Add external service document patterns to watch

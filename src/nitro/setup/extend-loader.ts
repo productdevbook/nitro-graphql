@@ -1,16 +1,16 @@
 /**
  * Extend configuration loader
- * Handles loading GraphQL manifests and resolving extend sources
+ * Loads nitro-graphql.config.ts from packages and scans their serverDir
  */
 
 import type { Nitro } from 'nitro/types'
 import consola from 'consola'
-import { resolve } from 'pathe'
+import { dirname, resolve } from 'pathe'
 import {
-  loadManifest,
+  loadPackageConfig,
   parseResolverCall,
   parseSingleFile,
-  resolveManifestPaths,
+  resolvePackageFiles,
 } from '../../core'
 import { LOG_TAG } from '../../core/constants'
 
@@ -22,10 +22,55 @@ interface ExtendResult {
 }
 
 /**
+ * Resolve extend directories for file watching
+ * Called early in setup (before watcher) to get directories to watch
+ */
+export async function resolveExtendDirs(nitro: Nitro): Promise<string[]> {
+  const extend = nitro.options.graphql?.extend
+  if (!extend || !Array.isArray(extend) || extend.length === 0) return []
+
+  const dirs: string[] = []
+
+  for (const source of extend) {
+    if (typeof source === 'string') {
+      // Package name - load config and get serverDir
+      const pkg = await loadPackageConfig(source, nitro.options.rootDir)
+      if (pkg) {
+        const serverDir = resolve(pkg.baseDir, pkg.config.serverDir || 'server/graphql')
+        dirs.push(serverDir)
+      }
+    }
+    else if (source && typeof source === 'object') {
+      // Legacy: explicit paths - get parent directories
+      const obj = source as { resolvers?: string | string[], schemas?: string | string[] }
+      if (obj.schemas) {
+        const schemas = Array.isArray(obj.schemas) ? obj.schemas : [obj.schemas]
+        for (const schemaPath of schemas) {
+          dirs.push(dirname(resolve(nitro.options.rootDir, schemaPath)))
+        }
+      }
+      if (obj.resolvers) {
+        const resolvers = Array.isArray(obj.resolvers) ? obj.resolvers : [obj.resolvers]
+        for (const resolverPath of resolvers) {
+          dirs.push(dirname(resolve(nitro.options.rootDir, resolverPath)))
+        }
+      }
+    }
+  }
+
+  // Remove duplicates
+  return [...new Set(dirs)]
+}
+
+interface ResolveExtendOptions {
+  silent?: boolean
+}
+
+/**
  * Resolve extend configuration and add files to scan results
  * Must be called AFTER scanGraphQLFiles to append to results
  */
-export async function resolveExtendConfig(nitro: Nitro): Promise<void> {
+export async function resolveExtendConfig(nitro: Nitro, options: ResolveExtendOptions = {}): Promise<void> {
   const extend = nitro.options.graphql?.extend
   if (!extend || !Array.isArray(extend) || extend.length === 0) return
 
@@ -33,87 +78,74 @@ export async function resolveExtendConfig(nitro: Nitro): Promise<void> {
   let resolversAdded = 0
 
   for (const source of extend) {
-    const result = await processExtendSource(source, nitro)
+    const result = await processExtendSource(source, nitro, options.silent)
     schemasAdded += result.schemas
     resolversAdded += result.resolvers
   }
 
-  if (schemasAdded > 0 || resolversAdded > 0) {
-    logger.info(`Added ${schemasAdded} schema(s), ${resolversAdded} resolver file(s) from extend`)
+  if (!options.silent && (schemasAdded > 0 || resolversAdded > 0)) {
+    logger.info(`Extended with ${schemasAdded} schema(s), ${resolversAdded} resolver file(s)`)
   }
 }
 
 /**
- * Process a single extend source (package name, manifest path, or explicit config)
+ * Process a single extend source (package name or explicit config)
  */
 async function processExtendSource(
   source: string | object,
   nitro: Nitro,
+  silent?: boolean,
 ): Promise<ExtendResult> {
   if (typeof source === 'string') {
-    return loadManifestFromPackage(source, nitro)
+    return loadFromPackage(source, nitro, silent)
   }
 
   if (source && typeof source === 'object') {
-    return processObjectSource(source as Record<string, unknown>, nitro)
+    return processExplicitPaths(source as Record<string, unknown>, nitro)
   }
 
   return { schemas: 0, resolvers: 0 }
 }
 
 /**
- * Load manifest from package name
+ * Load and scan files from a package's nitro-graphql.config.ts
  */
-async function loadManifestFromPackage(
+async function loadFromPackage(
   packageName: string,
   nitro: Nitro,
+  silent?: boolean,
 ): Promise<ExtendResult> {
-  const manifestResult = await loadManifest(packageName, nitro.options.rootDir)
+  const pkg = await loadPackageConfig(packageName, nitro.options.rootDir)
 
-  if (!manifestResult) {
+  if (!pkg) {
     throw new Error(
-      `[nitro-graphql] Manifest not found for "${packageName}". `
-      + `Create a graphql-manifest.json file in the package root with schemas and resolvers paths.`,
+      `[nitro-graphql] Config not found for "${packageName}". `
+      + `Create a nitro-graphql.config.ts file in the package root.`,
     )
   }
 
-  logger.info(`Loaded manifest from ${packageName}`)
-  return addManifestFiles(manifestResult, nitro)
-}
+  // Scan the package's serverDir for GraphQL files
+  const files = await resolvePackageFiles(pkg)
 
-/**
- * Process object-style extend source
- */
-async function processObjectSource(
-  source: { manifest?: string, resolvers?: string | string[], schemas?: string | string[] },
-  nitro: Nitro,
-): Promise<ExtendResult> {
-  if (source.manifest) {
-    const manifestResult = await loadManifest(source.manifest, nitro.options.rootDir)
-    if (!manifestResult) {
-      throw new Error(`[nitro-graphql] Manifest not found at "${source.manifest}"`)
-    }
-    logger.info(`Loaded manifest from ${source.manifest}`)
-    return addManifestFiles(manifestResult, nitro)
+  if (!silent) {
+    logger.info(`Loaded config from ${packageName}`)
   }
 
-  // Legacy: explicit paths
-  return addExplicitPaths(source, nitro)
+  return addPackageFiles(files, nitro)
 }
 
 /**
- * Add files from a resolved manifest to scan results
+ * Add files from a resolved package to scan results
  */
-async function addManifestFiles(
-  manifestResult: { manifest: { schemas?: string[], resolvers?: string[], directives?: string[] }, baseDir: string },
+async function addPackageFiles(
+  files: { schemas: string[], resolvers: string[], directives: string[] },
   nitro: Nitro,
 ): Promise<ExtendResult> {
-  const paths = resolveManifestPaths(manifestResult.manifest, manifestResult.baseDir)
   let schemasAdded = 0
   let resolversAdded = 0
 
   // Add schemas
-  for (const schemaPath of paths.schemas) {
+  for (const schemaPath of files.schemas) {
     if (!nitro.scanSchemas.includes(schemaPath)) {
       nitro.scanSchemas.push(schemaPath)
       schemasAdded++
@@ -121,7 +153,7 @@ async function addManifestFiles(
   }
 
   // Parse and add resolvers
-  for (const resolverPath of paths.resolvers) {
+  for (const resolverPath of files.resolvers) {
     const parsed = await parseSingleFile(resolverPath, parseResolverCall)
     if (parsed?.imports.length) {
       nitro.scanResolvers.push(parsed)
@@ -133,9 +165,9 @@ async function addManifestFiles(
 }
 
 /**
- * Add explicit paths (legacy format)
+ * Process explicit paths (legacy format)
  */
-async function addExplicitPaths(
+async function processExplicitPaths(
   source: { resolvers?: string | string[], schemas?: string | string[] },
   nitro: Nitro,
 ): Promise<ExtendResult> {

@@ -13,6 +13,7 @@ export default defineConfig({
     // Main entry points
     'src/index.ts',
     'src/define.ts',
+    'src/config.ts',
     // Core (framework-agnostic)
     'src/core/**',
     // CLI

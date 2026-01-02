@@ -1,26 +1,28 @@
 /**
- * GraphQL Manifest Loader
- * Loads graphql-manifest.json from packages for extend configuration
+ * Package Config Loader
+ * Loads package configuration for extend functionality
  */
 
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import { dirname, resolve } from 'pathe'
 import { resolvePath } from 'mlly'
+import { glob } from 'tinyglobby'
+import { loadConfig } from 'c12'
+import { GRAPHQL_EXTENSIONS, RESOLVER_EXTENSIONS, DIRECTIVE_EXTENSIONS } from './constants'
 
 /**
- * GraphQL manifest structure
+ * Package config structure (subset of CLIConfig)
  */
-export interface GraphQLManifest {
-  schemas?: string[]
-  resolvers?: string[]
-  directives?: string[]
+export interface PackageConfig {
+  serverDir?: string
+  clientDir?: string
 }
 
 /**
- * Resolved manifest with base directory
+ * Resolved package with config and base directory
  */
-export interface ResolvedManifest {
-  manifest: GraphQLManifest
+export interface ResolvedPackage {
+  config: PackageConfig
   baseDir: string
 }
 
@@ -31,74 +33,76 @@ export interface ResolvedExtend {
   schemas: string[]
   resolvers: string[]
   directives: string[]
+  serverDir: string
 }
 
-const MANIFEST_FILENAME = 'graphql-manifest.json'
-
 /**
- * Load manifest from package or path
- * Uses mlly for proper workspace/symlink resolution
+ * Load config from package
+ * Uses c12 for proper config loading with TypeScript support
  *
- * @param source - Package name or explicit manifest path
+ * @param source - Package name or explicit path
  * @param rootDir - Root directory for resolution
- * @returns Resolved manifest with base directory, or null if not found
+ * @returns Resolved package with config and base directory, or null if not found
  */
-export async function loadManifest(
+export async function loadPackageConfig(
   source: string,
   rootDir: string,
-): Promise<ResolvedManifest | null> {
-  // Explicit manifest path (ends with .json)
-  if (source.endsWith('.json')) {
-    const manifestPath = resolve(rootDir, source)
-    if (existsSync(manifestPath)) {
-      const content = readFileSync(manifestPath, 'utf-8')
-      return {
-        manifest: JSON.parse(content) as GraphQLManifest,
-        baseDir: dirname(manifestPath),
-      }
-    }
-    return null
-  }
-
-  // Package name - use mlly for proper workspace resolution
+): Promise<ResolvedPackage | null> {
   try {
-    // mlly properly resolves workspace symlinks
+    // Resolve package directory using mlly (handles workspace symlinks)
     const pkgPath = await resolvePath(`${source}/package.json`, {
       url: rootDir,
       extensions: ['.json'],
     })
     const pkgDir = dirname(pkgPath)
-    const manifestPath = resolve(pkgDir, MANIFEST_FILENAME)
 
-    if (existsSync(manifestPath)) {
-      const content = readFileSync(manifestPath, 'utf-8')
-      return {
-        manifest: JSON.parse(content) as GraphQLManifest,
-        baseDir: pkgDir,
-      }
+    // Load config using c12
+    const { config } = await loadConfig<PackageConfig>({
+      name: 'nitro-graphql',
+      cwd: pkgDir,
+      defaultConfig: {
+        serverDir: 'server/graphql',
+      },
+    })
+
+    const serverDir = config?.serverDir || 'server/graphql'
+
+    // Verify the serverDir exists
+    const fullServerDir = resolve(pkgDir, serverDir)
+    if (!existsSync(fullServerDir)) {
+      return null
+    }
+
+    return {
+      config: { serverDir },
+      baseDir: pkgDir,
     }
   }
   catch {
-    // Package not found - will throw error in caller
+    // Package not found
+    return null
   }
-
-  return null
 }
 
 /**
- * Resolve manifest paths to absolute paths
+ * Scan package's serverDir and resolve all GraphQL files
  *
- * @param manifest - GraphQL manifest
- * @param baseDir - Base directory for path resolution
- * @returns Resolved absolute paths
+ * @param pkg - Resolved package with config
+ * @returns Resolved file paths
  */
-export function resolveManifestPaths(
-  manifest: GraphQLManifest,
-  baseDir: string,
-): ResolvedExtend {
-  return {
-    schemas: (manifest.schemas || []).map(p => resolve(baseDir, p)),
-    resolvers: (manifest.resolvers || []).map(p => resolve(baseDir, p)),
-    directives: (manifest.directives || []).map(p => resolve(baseDir, p)),
-  }
+export async function resolvePackageFiles(pkg: ResolvedPackage): Promise<ResolvedExtend> {
+  const serverDir = resolve(pkg.baseDir, pkg.config.serverDir || 'server/graphql')
+
+  // Scan for all file types in parallel
+  const schemaPattern = `**/*{${GRAPHQL_EXTENSIONS.join(',')}}`
+  const resolverPattern = `**/*{${RESOLVER_EXTENSIONS.join(',')}}`
+  const directivePattern = `**/*{${DIRECTIVE_EXTENSIONS.join(',')}}`
+
+  const [schemas, resolvers, directives] = await Promise.all([
+    glob(schemaPattern, { cwd: serverDir, absolute: true }),
+    glob(resolverPattern, { cwd: serverDir, absolute: true }),
+    glob(directivePattern, { cwd: serverDir, absolute: true }),
+  ])
+
+  return { schemas, resolvers, directives, serverDir }
 }

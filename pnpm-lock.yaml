@@ -78,6 +78,9 @@ catalogs:
     bumpp:
       specifier: ^10.3.2
       version: 10.3.2
+    c12:
+      specifier: ^3.3.3
+      version: 3.3.3
     changelogen:
       specifier: ^0.6.2
       version: 0.6.2
@@ -212,6 +215,9 @@ importers:
       '@graphql-tools/utils':
         specifier: 'catalog:'
         version: 10.11.0(graphql@16.12.0)
+      c12:
+        specifier: 'catalog:'
+        version: 3.3.3
       chokidar:
         specifier: 'catalog:'
         version: 5.0.0

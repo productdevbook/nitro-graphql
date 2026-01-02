@@ -9,7 +9,7 @@
   "dependencies": {
     "@apollo/server": "catalog:",
     "@playground/cli-graphql": "workspace:*",
-    "nitro-graphql": "link:../",
+    "nitro-graphql": "link:../..",
     "zod": "catalog:"
   },
   "devDependencies": {
