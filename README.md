@@ -357,12 +357,9 @@ export default defineNitroConfig({
       framework: 'graphql-yoga',
 
       // Method 1: Global paths (affects all files)
-      paths: {
-        serverGraphql: 'src/server/graphql',
-        clientGraphql: 'src/client/graphql',
-        buildDir: '.build',
-        typesDir: '.build/types',
-      },
+      serverDir: 'src/server/graphql',
+      clientDir: 'src/client/graphql',
+      typesDir: '.build/types',
 
       // Method 2: Specific file paths
       scaffold: {
@@ -395,13 +392,13 @@ Use placeholders in custom paths:
 | `{rootDir}` | Root directory | `/Users/you/project` |
 | `{framework}` | Framework name | `nuxt` or `nitro` |
 | `{typesDir}` | Types directory | `.nitro/types` |
-| `{serverGraphql}` | Server GraphQL dir | `server/graphql` |
-| `{clientGraphql}` | Client GraphQL dir | `app/graphql` |
+| `{serverDir}` | Server GraphQL dir | `server/graphql` |
+| `{clientDir}` | Client GraphQL dir | `app/graphql` |
 
 Example:
 ```ts
 sdk: {
-  external: '{clientGraphql}/{serviceName}/sdk.ts'
+  external: '{clientDir}/{serviceName}/sdk.ts'
 }
 // → app/graphql/github/sdk.ts
 // → app/graphql/stripe/sdk.ts
@@ -465,15 +462,15 @@ When resolving file paths, the system follows this priority order:
 
 1. **Service-specific path** (for external services): `service.paths.sdk`
 2. **Category config**: `sdk.external` or `sdk.main`
-3. **Global paths**: `paths.clientGraphql`
+3. **Global paths**: `clientDir`
 4. **Framework defaults**: Nuxt vs Nitro defaults
 
 Example:
 ```ts
 // Given this config:
 {
-  paths: { clientGraphql: 'custom/graphql' },
-  sdk: { external: '{clientGraphql}/{serviceName}/sdk.ts' },
+  clientDir: 'custom/graphql',
+  sdk: { external: '{clientDir}/{serviceName}/sdk.ts' },
   externalServices: [
     {
       name: 'github',
@@ -492,9 +489,9 @@ Example:
 
 **Monorepo structure:**
 ```ts
-paths: {
-  serverGraphql: 'packages/api/src/graphql',
-  clientGraphql: 'packages/web/src/graphql',
+{
+  serverDir: 'packages/api/src/graphql',
+  clientDir: 'packages/web/src/graphql',
   typesDir: 'packages/types/src/generated',
 }
 ```

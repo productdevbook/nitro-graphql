@@ -149,8 +149,8 @@ function initializeConfiguration(nitro: Nitro, serverEnabled: boolean): void {
   nitro.graphql ||= {
     buildDir: '',
     watchDirs: [],
-    clientDir: defaultPaths.clientGraphql,
-    serverDir: defaultPaths.serverGraphql,
+    clientDir: defaultPaths.clientDir,
+    serverDir: defaultPaths.serverDir,
     dir: {
       build: relative(nitro.options.rootDir, nitro.options.buildDir),
       client: 'graphql',

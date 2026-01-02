@@ -53,9 +53,8 @@ export const DEFAULT_SDK_CONFIG = {
  * These are used as placeholders and resolved based on framework
  */
 export const DEFAULT_PATHS_CONFIG = {
-  serverGraphql: 'server/graphql',
-  clientGraphql: null, // Determined by framework: 'app/graphql' for Nuxt, 'graphql' for Nitro
-  buildDir: null, // Determined by framework: '.nuxt' or '.nitro'
+  serverDir: 'server/graphql',
+  clientDir: null, // Determined by framework: 'app/graphql' for Nuxt, 'graphql' for Nitro
   typesDir: null, // Derived from buildDir: '{buildDir}/types'
 } as const
 

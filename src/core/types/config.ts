@@ -80,11 +80,9 @@ export interface CoreFederationConfig {
  */
 export interface CorePathsConfig {
   /** Server GraphQL directory (default: 'server/graphql') */
-  serverGraphql?: string
+  serverDir?: string
   /** Client GraphQL directory (default: 'app/graphql' or 'graphql') */
-  clientGraphql?: string
-  /** Build directory (default: '.nitro' or '.nuxt') */
-  buildDir?: string
+  clientDir?: string
   /** Types output directory (default: '{buildDir}/types') */
   typesDir?: string
 }

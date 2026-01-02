@@ -159,7 +159,7 @@ async function generateMainClientTypes(
   }
 
   // Write SDK
-  const sdkPath = resolveFilePath(sdkConfig.main, sdkConfig.enabled, true, '{clientGraphql}/default/sdk.ts', placeholders)
+  const sdkPath = resolveFilePath(sdkConfig.main, sdkConfig.enabled, true, '{clientDir}/default/sdk.ts', placeholders)
   if (sdkPath) {
     writeFile(sdkPath, types.sdk)
     if (!options.silent)
@@ -219,7 +219,7 @@ async function generateExternalTypes(
         service.paths?.sdk ?? sdkConfig.external,
         sdkConfig.enabled,
         true,
-        '{clientGraphql}/{serviceName}/sdk.ts',
+        '{clientDir}/{serviceName}/sdk.ts',
         placeholders,
       )
       if (sdkPath) {

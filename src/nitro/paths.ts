@@ -15,13 +15,13 @@ export interface PathPlaceholders {
   rootDir: string
   framework: 'nuxt' | 'nitro'
   typesDir: string
-  serverGraphql: string
-  clientGraphql: string
+  serverDir: string
+  clientDir: string
 }
 
 /**
  * Replace placeholders in a path string
- * Supports: {serviceName}, {buildDir}, {rootDir}, {framework}, {typesDir}, {serverGraphql}, {clientGraphql}
+ * Supports: {serviceName}, {buildDir}, {rootDir}, {framework}, {typesDir}, {serverDir}, {clientDir}
  */
 export function replacePlaceholders(path: string, placeholders: PathPlaceholders): string {
   return path
@@ -30,8 +30,8 @@ export function replacePlaceholders(path: string, placeholders: PathPlaceholders
     .replace(/\{rootDir\}/g, placeholders.rootDir)
     .replace(/\{framework\}/g, placeholders.framework)
     .replace(/\{typesDir\}/g, placeholders.typesDir)
-    .replace(/\{serverGraphql\}/g, placeholders.serverGraphql)
-    .replace(/\{clientGraphql\}/g, placeholders.clientGraphql)
+    .replace(/\{serverDir\}/g, placeholders.serverDir)
+    .replace(/\{clientDir\}/g, placeholders.clientDir)
 }
 
 /**
@@ -42,22 +42,21 @@ export function getDefaultPaths(nitro: Nitro): Required<PathPlaceholders> {
   const rootDir = nitro.options.rootDir
   const buildDir = nitro.options.buildDir
 
-  // Global path overrides from config
-  const pathsConfig = nitro.options.graphql?.paths || {}
+  // Path overrides from top-level config
+  const graphqlConfig = nitro.options.graphql || {}
 
-  const defaultServerGraphql = pathsConfig.serverGraphql || resolve(rootDir, 'server', 'graphql')
-  const defaultClientGraphql = pathsConfig.clientGraphql || resolve(rootDir, isNuxt ? 'app/graphql' : 'graphql')
-  const defaultBuildDir = pathsConfig.buildDir || buildDir
-  const defaultTypesDir = pathsConfig.typesDir || resolve(defaultBuildDir, 'types')
+  const defaultServerDir = graphqlConfig.serverDir || resolve(rootDir, 'server', 'graphql')
+  const defaultClientDir = graphqlConfig.clientDir || resolve(rootDir, isNuxt ? 'app/graphql' : 'graphql')
+  const defaultTypesDir = graphqlConfig.typesDir || resolve(buildDir, 'types')
 
   return {
     serviceName: 'default',
-    buildDir: defaultBuildDir,
+    buildDir,
     rootDir,
     framework: isNuxt ? 'nuxt' : 'nitro',
     typesDir: defaultTypesDir,
-    serverGraphql: defaultServerGraphql,
-    clientGraphql: defaultClientGraphql,
+    serverDir: defaultServerDir,
+    clientDir: defaultClientDir,
   }
 }
 

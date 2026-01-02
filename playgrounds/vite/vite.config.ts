@@ -7,9 +7,7 @@ export default defineConfig(({ command }) => ({
   plugins: [
     graphql({
       framework: 'graphql-yoga',
-      paths: {
-        serverGraphql: 'routes/graphql',
-      },
+      serverDir: 'routes/graphql',
     }),
     nitro(),
     DevTools(),

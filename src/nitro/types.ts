@@ -342,7 +342,7 @@ export interface ExternalGraphQLService {
   /**
    * Optional: Service-specific path overrides
    * These paths take precedence over global config (sdk, types, clientUtils)
-   * Supports placeholders: {serviceName}, {buildDir}, {rootDir}, {framework}, {typesDir}, {clientGraphql}
+   * Supports placeholders: {serviceName}, {buildDir}, {rootDir}, {framework}, {typesDir}, {clientDir}
    */
   paths?: ExternalServicePaths
 }
@@ -392,21 +392,6 @@ export interface TypesConfig {
   client?: FileGenerationConfig
   /** .nitro/types/nitro-graphql-client-{serviceName}.d.ts - External service types */
   external?: FileGenerationConfig
-}
-
-/**
- * Global path overrides
- * Set base directories for file generation
- */
-export interface PathsConfig {
-  /** Server GraphQL directory (default: 'server/graphql') */
-  serverGraphql?: string
-  /** Client GraphQL directory (default: 'app/graphql' for Nuxt, 'graphql' for Nitro) */
-  clientGraphql?: string
-  /** Build directory (default: '.nitro' or '.nuxt') */
-  buildDir?: string
-  /** Types directory (default: '{buildDir}/types') */
-  typesDir?: string
 }
 
 /**
@@ -468,8 +453,12 @@ export interface NitroGraphQLOptions {
   externalServices?: ExternalGraphQLService[]
   /** Apollo Federation configuration */
   federation?: FederationConfig
-  /** Server GraphQL directory path */
+  /** Server GraphQL directory path (default: 'server/graphql') */
   serverDir?: string
+  /** Client GraphQL directory path (default: 'app/graphql' for Nuxt, 'graphql' for Nitro) */
+  clientDir?: string
+  /** Types directory path (default: '{buildDir}/types') */
+  typesDir?: string
   /** Layer directories (populated by Nuxt module) */
   layerDirectories?: string[]
   layerServerDirs?: string[]
@@ -484,11 +473,6 @@ export interface NitroGraphQLOptions {
    * Set to false to disable all type generation
    */
   types?: false | TypesConfig
-  /**
-   * Global path overrides
-   * Customize base directories for file generation
-   */
-  paths?: PathsConfig
   /**
    * Security configuration for production environments
    * Auto-detects NODE_ENV and applies secure defaults in production

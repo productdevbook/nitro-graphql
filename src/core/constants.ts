@@ -265,8 +265,8 @@ export const PLACEHOLDER_BUILD_DIR = '{buildDir}' as const
 export const PLACEHOLDER_ROOT_DIR = '{rootDir}' as const
 export const PLACEHOLDER_FRAMEWORK = '{framework}' as const
 export const PLACEHOLDER_TYPES_DIR = '{typesDir}' as const
-export const PLACEHOLDER_SERVER_GRAPHQL = '{serverGraphql}' as const
-export const PLACEHOLDER_CLIENT_GRAPHQL = '{clientGraphql}' as const
+export const PLACEHOLDER_SERVER_DIR = '{serverDir}' as const
+export const PLACEHOLDER_CLIENT_DIR = '{clientDir}' as const
 
 // ==================== LOG TAGS ====================
 
