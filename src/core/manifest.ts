@@ -6,7 +6,7 @@
 import { existsSync } from 'node:fs'
 import { loadConfig } from 'c12'
 import { resolvePath } from 'mlly'
-import { dirname, resolve } from 'pathe'
+import { dirname, isAbsolute, resolve } from 'pathe'
 import { glob } from 'tinyglobby'
 import { DIRECTIVE_EXTENSIONS, GRAPHQL_EXTENSIONS, RESOLVER_EXTENSIONS } from './constants'
 
@@ -37,10 +37,10 @@ export interface ResolvedExtend {
 }
 
 /**
- * Check if source is a local path (starts with ./ or ../ or /)
+ * Check if source is a local path (relative or absolute)
  */
-function isLocalPath(source: string): boolean {
-  return source.startsWith('./') || source.startsWith('../') || source.startsWith('/')
+export function isLocalPath(source: string): boolean {
+  return source.startsWith('.') || isAbsolute(source)
 }
 
 /**

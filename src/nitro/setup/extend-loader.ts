@@ -8,6 +8,7 @@ import { existsSync } from 'node:fs'
 import consola from 'consola'
 import { dirname, resolve } from 'pathe'
 import {
+  isLocalPath,
   loadPackageConfig,
   parseResolverCall,
   parseSingleFile,
@@ -16,13 +17,6 @@ import {
 import { LOG_TAG } from '../../core/constants'
 
 const logger = consola.withTag(LOG_TAG)
-
-/**
- * Check if source is a local path
- */
-function isLocalPath(source: string): boolean {
-  return source.startsWith('./') || source.startsWith('../') || source.startsWith('/')
-}
 
 interface ExtendResult {
   schemas: number
