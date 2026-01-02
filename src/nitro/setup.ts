@@ -30,6 +30,7 @@ import { logStartupInfo, resolveSecurityConfig } from './setup/logging'
 import { setupRollupChunking, setupRollupExternals } from './setup/rollup-integration'
 import { registerRouteHandlers } from './setup/routes'
 import { setupTypeScriptPaths } from './setup/ts-config'
+import { resolveExtendConfig } from './setup/extend-loader'
 
 const logger = consola.withTag(LOG_TAG)
 
@@ -95,6 +96,9 @@ export async function setupNitroGraphQL(nitro: Nitro): Promise<void> {
 
   // Step 7: Scan GraphQL files (conditionally based on server mode)
   await scanGraphQLFiles(nitro, serverEnabled)
+
+  // Step 7.5: Resolve extend config with manifests (AFTER scanning to append to results)
+  await resolveExtendConfig(nitro)
 
   // Step 8: Setup dev hooks (only if server enabled)
   if (serverEnabled) {
@@ -289,6 +293,9 @@ function setupDevHooks(nitro: Nitro): void {
   nitro.hooks.hook('dev:start', async () => {
     // Rescan all GraphQL files
     await scanAllGraphQLFiles(nitro)
+
+    // Re-resolve extend config to add manifest files
+    await resolveExtendConfig(nitro)
 
     // Validate resolver setup and provide helpful diagnostics (only in dev)
     // Only show once during startup to avoid duplicate logs

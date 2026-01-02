@@ -93,6 +93,38 @@ export async function scanWithAST(
 }
 
 /**
+ * Parse a single file and extract exports using AST
+ * Used for manifest resolver files
+ */
+export async function parseSingleFile(
+  filePath: string,
+  parseCall: (calleeName: string, exportName: string, filePath: string) => ResolverImport | null,
+): Promise<ScannedResolver | null> {
+  try {
+    const fileContent = await readFile(filePath, 'utf-8')
+    const parsed = parseSync(filePath, fileContent)
+
+    if (parsed.errors && parsed.errors.length > 0) {
+      return null
+    }
+
+    const result = parseExports(filePath, parsed.program, {
+      pattern: '',
+      parseCall,
+      emitWarnings: false,
+    })
+
+    if (result.resolver.imports.length > 0) {
+      return result.resolver
+    }
+    return null
+  }
+  catch {
+    return null
+  }
+}
+
+/**
  * Parse exports from AST program
  */
 function parseExports(

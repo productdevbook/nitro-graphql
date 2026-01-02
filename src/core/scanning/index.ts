@@ -4,7 +4,7 @@
  */
 
 // AST-based scanning
-export { scanWithAST } from './ast-scanner'
+export { parseSingleFile, scanWithAST } from './ast-scanner'
 export type { ASTScanConfig } from './ast-scanner'
 
 // Common utilities
@@ -25,6 +25,7 @@ export type { ScanDocumentsOptions } from './documents'
 
 // Resolver scanning
 export {
+  parseResolverCall,
   scanResolversCore,
 } from './resolvers'
 // Schema scanning

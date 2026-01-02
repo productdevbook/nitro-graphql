@@ -130,6 +130,7 @@
     "graphql-config": "catalog:",
     "graphql-scalars": "catalog:",
     "knitwork": "catalog:",
+    "mlly": "catalog:",
     "ohash": "catalog:",
     "oxc-parser": "catalog:",
     "pathe": "catalog:",

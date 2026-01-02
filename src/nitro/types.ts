@@ -279,6 +279,12 @@ declare module 'nitro/types' {
         client: string
         server: string
       }
+      /** Resolved extend paths from manifests (populated during setup) */
+      resolvedExtend?: {
+        schemas: string[]
+        resolvers: string[]
+        directives: string[]
+      }
     }
   }
 }
@@ -496,10 +502,15 @@ export interface NitroGraphQLOptions {
 
 /**
  * Extend source - package path or detailed config
- * - string: auto-appends /resolvers and /schema
- * - object: explicit paths for resolvers and/or schemas
+ * - string: package name, requires graphql-manifest.json in package root
+ * - object with manifest: explicit manifest path
+ * - object with resolvers/schemas: explicit paths (legacy)
  */
 export type ExtendSource = string | {
+  /** Explicit manifest path */
+  manifest?: string
+  /** Explicit resolver paths (legacy, prefer manifest) */
   resolvers?: string | string[]
+  /** Explicit schema paths (legacy, prefer manifest) */
   schemas?: string | string[]
 }

@@ -10,8 +10,9 @@ import { scanWithAST } from './ast-scanner'
 
 /**
  * Parse a define* function call and return the import info
+ * Exported for use by manifest loader
  */
-function parseResolverCall(
+export function parseResolverCall(
   calleeName: string,
   exportName: string,
   filePath: string,
