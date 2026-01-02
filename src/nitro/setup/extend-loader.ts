@@ -4,6 +4,7 @@
  */
 
 import type { Nitro } from 'nitro/types'
+import { existsSync } from 'node:fs'
 import consola from 'consola'
 import { dirname, resolve } from 'pathe'
 import {
@@ -15,6 +16,13 @@ import {
 import { LOG_TAG } from '../../core/constants'
 
 const logger = consola.withTag(LOG_TAG)
+
+/**
+ * Check if source is a local path
+ */
+function isLocalPath(source: string): boolean {
+  return source.startsWith('./') || source.startsWith('../') || source.startsWith('/')
+}
 
 interface ExtendResult {
   schemas: number
@@ -34,11 +42,18 @@ export async function resolveExtendDirs(nitro: Nitro): Promise<string[]> {
 
   for (const source of extend) {
     if (typeof source === 'string') {
-      // Package name - load config and get serverDir
+      // Package name or local path - load config and get serverDir
       const pkg = await loadPackageConfig(source, nitro.options.rootDir)
       if (pkg) {
         const serverDir = resolve(pkg.baseDir, pkg.config.serverDir || 'server/graphql')
         dirs.push(serverDir)
+      }
+      else if (isLocalPath(source)) {
+        // Local path without config - use default serverDir
+        const localDir = resolve(nitro.options.rootDir, source, 'graphql')
+        if (existsSync(localDir)) {
+          dirs.push(localDir)
+        }
       }
     }
     else if (source && typeof source === 'object') {

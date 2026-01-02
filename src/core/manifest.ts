@@ -37,10 +37,17 @@ export interface ResolvedExtend {
 }
 
 /**
- * Load config from package
+ * Check if source is a local path (starts with ./ or ../ or /)
+ */
+function isLocalPath(source: string): boolean {
+  return source.startsWith('./') || source.startsWith('../') || source.startsWith('/')
+}
+
+/**
+ * Load config from package or local directory
  * Uses c12 for proper config loading with TypeScript support
  *
- * @param source - Package name or explicit path
+ * @param source - Package name or local path (./path, ../path, /absolute/path)
  * @param rootDir - Root directory for resolution
  * @returns Resolved package with config and base directory, or null if not found
  */
@@ -49,12 +56,23 @@ export async function loadPackageConfig(
   rootDir: string,
 ): Promise<ResolvedPackage | null> {
   try {
-    // Resolve package directory using mlly (handles workspace symlinks)
-    const pkgPath = await resolvePath(`${source}/package.json`, {
-      url: rootDir,
-      extensions: ['.json'],
-    })
-    const pkgDir = dirname(pkgPath)
+    let pkgDir: string
+
+    if (isLocalPath(source)) {
+      // Local path - resolve relative to rootDir
+      pkgDir = resolve(rootDir, source)
+      if (!existsSync(pkgDir)) {
+        return null
+      }
+    }
+    else {
+      // Package name - resolve using mlly (handles workspace symlinks)
+      const pkgPath = await resolvePath(`${source}/package.json`, {
+        url: rootDir,
+        extensions: ['.json'],
+      })
+      pkgDir = dirname(pkgPath)
+    }
 
     // Load config using c12
     const { config } = await loadConfig<PackageConfig>({
