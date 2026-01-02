@@ -27,7 +27,8 @@ interface ExtendResult {
  */
 export async function resolveExtendDirs(nitro: Nitro): Promise<string[]> {
   const extend = nitro.options.graphql?.extend
-  if (!extend || !Array.isArray(extend) || extend.length === 0) return []
+  if (!extend || !Array.isArray(extend) || extend.length === 0)
+    return []
 
   const dirs: string[] = []
 
@@ -72,7 +73,8 @@ interface ResolveExtendOptions {
  */
 export async function resolveExtendConfig(nitro: Nitro, options: ResolveExtendOptions = {}): Promise<void> {
   const extend = nitro.options.graphql?.extend
-  if (!extend || !Array.isArray(extend) || extend.length === 0) return
+  if (!extend || !Array.isArray(extend) || extend.length === 0)
+    return
 
   let schemasAdded = 0
   let resolversAdded = 0

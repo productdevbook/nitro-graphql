@@ -8,16 +8,4 @@ export default defineGraphQLConfig({
   // See: https://the-guild.dev/graphql/yoga-server/docs
 })
 
-
-
-
-
-
-
-
-
-
-
-
-
 // HMR trigger: 1767395250529

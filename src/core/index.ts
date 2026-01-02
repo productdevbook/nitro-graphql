@@ -17,6 +17,9 @@ export * from './config'
 // Constants (flattened from constants/)
 export * from './constants'
 
+// Manifest utilities
+export * from './manifest'
+
 // Scanning utilities
 export * from './scanning'
 
@@ -31,6 +34,3 @@ export * from './utils'
 
 // Validation utilities
 export * from './validation'
-
-// Manifest utilities
-export * from './manifest'

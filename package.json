@@ -126,6 +126,7 @@
     "@graphql-tools/schema": "catalog:",
     "@graphql-tools/url-loader": "catalog:",
     "@graphql-tools/utils": "catalog:",
+    "c12": "catalog:",
     "chokidar": "catalog:",
     "citty": "catalog:",
     "consola": "catalog:",

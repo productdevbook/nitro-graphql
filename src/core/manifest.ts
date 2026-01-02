@@ -4,11 +4,11 @@
  */
 
 import { existsSync } from 'node:fs'
-import { dirname, resolve } from 'pathe'
-import { resolvePath } from 'mlly'
-import { glob } from 'tinyglobby'
 import { loadConfig } from 'c12'
-import { GRAPHQL_EXTENSIONS, RESOLVER_EXTENSIONS, DIRECTIVE_EXTENSIONS } from './constants'
+import { resolvePath } from 'mlly'
+import { dirname, resolve } from 'pathe'
+import { glob } from 'tinyglobby'
+import { DIRECTIVE_EXTENSIONS, GRAPHQL_EXTENSIONS, RESOLVER_EXTENSIONS } from './constants'
 
 /**
  * Package config structure (subset of CLIConfig)

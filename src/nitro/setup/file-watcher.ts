@@ -4,7 +4,7 @@
 
 import type { FSWatcher } from 'chokidar'
 import type { Nitro } from 'nitro/types'
-import { existsSync, writeFileSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { watch } from 'chokidar'
 import consola from 'consola'
 import { join, resolve } from 'pathe'
@@ -19,11 +19,11 @@ import {
 import { generateDirectiveSchemas } from '../../core/utils/directive-parser'
 import { NitroAdapter } from '../adapter'
 import { generateClientTypes, generateServerTypes } from '../codegen'
-import { resolveExtendConfig } from './extend-loader'
 import {
   DEFAULT_WATCHER_IGNORE_INITIAL,
   DEFAULT_WATCHER_PERSISTENT,
 } from '../config'
+import { resolveExtendConfig } from './extend-loader'
 
 const logger = consola.withTag(LOG_TAG)
 
@@ -38,7 +38,7 @@ function triggerRolldownRebuild(nitro: Nitro): void {
       const content = readFileSync(configPath, 'utf-8')
       // Add/update a timestamp comment at the end to trigger change detection
       const timestampComment = `// HMR trigger: ${Date.now()}`
-      const newContent = content.replace(/\/\/ HMR trigger: \d+\n?$/, '') + '\n' + timestampComment + '\n'
+      const newContent = `${content.replace(/\/\/ HMR trigger: \d+\n?$/, '')}\n${timestampComment}\n`
       writeFileSync(configPath, newContent)
     }
     catch {
