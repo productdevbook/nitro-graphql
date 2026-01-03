@@ -261,8 +261,13 @@ async function scanGraphQLFiles(nitro: Nitro, serverEnabled: boolean): Promise<v
   const extendSources = nitro.options.graphql?.extend
 
   // Check if skipLocalScan is enabled
-  if (skipLocalScan && extendSources?.length) {
-    logger.info(`Using ${extendSources.length} extend source(s), skipping local scanning`)
+  if (skipLocalScan) {
+    if (extendSources?.length) {
+      logger.info(`Using ${extendSources.length} extend source(s), skipping local scanning`)
+    }
+    else {
+      logger.info('Skipping local scanning (skipLocalScan: true)')
+    }
 
     // Initialize empty arrays (virtual modules will import from extend)
     nitro.scanSchemas = []
@@ -304,8 +309,10 @@ function setupDevHooks(nitro: Nitro): void {
     }
     lastDevStart = now
 
-    // Rescan all GraphQL files
-    await scanAllGraphQLFiles(nitro)
+    // Rescan all GraphQL files (respecting skipLocalScan)
+    if (!nitro.options.graphql?.skipLocalScan) {
+      await scanAllGraphQLFiles(nitro)
+    }
 
     // Re-resolve extend config to add manifest files
     await resolveExtendConfig(nitro, { silent: true })

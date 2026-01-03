@@ -163,8 +163,12 @@ async function addPackageFiles(
     }
   }
 
-  // Parse and add resolvers
+  // Parse and add resolvers (check for duplicates by specifier)
   for (const resolverPath of files.resolvers) {
+    const alreadyExists = nitro.scanResolvers.some(r => r.specifier === resolverPath)
+    if (alreadyExists)
+      continue
+
     const parsed = await parseSingleFile(resolverPath, parseResolverCall)
     if (parsed?.imports.length) {
       nitro.scanResolvers.push(parsed)
@@ -200,6 +204,10 @@ async function processExplicitPaths(
     const resolvers = Array.isArray(source.resolvers) ? source.resolvers : [source.resolvers]
     for (const resolverPath of resolvers) {
       const fullPath = resolve(nitro.options.rootDir, resolverPath)
+      const alreadyExists = nitro.scanResolvers.some(r => r.specifier === fullPath)
+      if (alreadyExists)
+        continue
+
       const parsed = await parseSingleFile(fullPath, parseResolverCall)
       if (parsed?.imports.length) {
         nitro.scanResolvers.push(parsed)

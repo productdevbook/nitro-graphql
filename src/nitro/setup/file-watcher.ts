@@ -154,8 +154,10 @@ export function getWatchDirectories(nitro: Nitro, extendDirs: string[] = []): st
       const layerAppDirs = nitro.options.graphql?.layerAppDirs || []
 
       // Add server GraphQL directories from layers
-      for (const layerServerDir of layerServerDirs) {
-        watchDirs.push(join(layerServerDir, 'graphql'))
+      if (!nitro.options.graphql?.skipLocalScan) {
+        for (const layerServerDir of layerServerDirs) {
+          watchDirs.push(join(layerServerDir, 'graphql'))
+        }
       }
 
       // Add client GraphQL directories from layers (using app directories)
@@ -167,12 +169,16 @@ export function getWatchDirectories(nitro: Nitro, extendDirs: string[] = []): st
     case 'nitro':
       // Watch both client and server directories
       watchDirs.push(nitro.graphql.clientDir)
-      watchDirs.push(nitro.graphql.serverDir)
+      if (!nitro.options.graphql?.skipLocalScan) {
+        watchDirs.push(nitro.graphql.serverDir)
+      }
       break
     default:
       // Unknown framework - watch both directories as fallback
       watchDirs.push(nitro.graphql.clientDir)
-      watchDirs.push(nitro.graphql.serverDir)
+      if (!nitro.options.graphql?.skipLocalScan) {
+        watchDirs.push(nitro.graphql.serverDir)
+      }
   }
 
   // Add extend directories (from manifest packages)
