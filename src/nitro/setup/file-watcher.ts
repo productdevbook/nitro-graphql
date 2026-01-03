@@ -25,6 +25,7 @@ import {
   DEFAULT_WATCHER_PERSISTENT,
 } from '../config'
 import { resolveExtendConfig } from './extend-loader'
+import { shouldScanLocalFiles } from './scanner'
 
 const logger = consola.withTag(LOG_TAG)
 
@@ -143,6 +144,7 @@ export function setupFileWatcher(nitro: Nitro, watchDirs: string[]): FSWatcher {
 export function getWatchDirectories(nitro: Nitro, extendDirs: string[] = []): string[] {
   const watchDirs: string[] = []
   const framework = nitro.options.framework.name
+  const scanLocal = shouldScanLocalFiles(nitro)
 
   switch (framework) {
     case 'nuxt': {
@@ -153,8 +155,8 @@ export function getWatchDirectories(nitro: Nitro, extendDirs: string[] = []): st
       const layerServerDirs = nitro.options.graphql?.layerServerDirs || []
       const layerAppDirs = nitro.options.graphql?.layerAppDirs || []
 
-      // Add server GraphQL directories from layers
-      if (!nitro.options.graphql?.skipLocalScan) {
+      // Add server GraphQL directories from layers (only if local scanning enabled)
+      if (scanLocal) {
         for (const layerServerDir of layerServerDirs) {
           watchDirs.push(join(layerServerDir, 'graphql'))
         }
@@ -169,14 +171,14 @@ export function getWatchDirectories(nitro: Nitro, extendDirs: string[] = []): st
     case 'nitro':
       // Watch both client and server directories
       watchDirs.push(nitro.graphql.clientDir)
-      if (!nitro.options.graphql?.skipLocalScan) {
+      if (scanLocal) {
         watchDirs.push(nitro.graphql.serverDir)
       }
       break
     default:
       // Unknown framework - watch both directories as fallback
       watchDirs.push(nitro.graphql.clientDir)
-      if (!nitro.options.graphql?.skipLocalScan) {
+      if (scanLocal) {
         watchDirs.push(nitro.graphql.serverDir)
       }
   }

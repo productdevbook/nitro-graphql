@@ -15,8 +15,6 @@ import {
   FRAMEWORK_NUXT,
   LOG_TAG,
 } from '../core/constants'
-import { generateDirectiveSchemas } from '../core/utils/directive-parser'
-import { NitroAdapter } from './adapter'
 import { generateClientTypes, generateServerTypes } from './codegen'
 import {
   DEFAULT_RUNTIME_CONFIG,
@@ -25,11 +23,16 @@ import {
 } from './config'
 import { getDefaultPaths } from './paths'
 import { rollupConfig } from './rollup'
-import { resolveExtendConfig, resolveExtendDirs } from './setup/extend-loader'
+import { resolveExtendDirs } from './setup/extend-loader'
 import { getWatchDirectories, setupFileWatcher } from './setup/file-watcher'
 import { logStartupInfo, resolveSecurityConfig } from './setup/logging'
 import { setupRollupChunking, setupRollupExternals } from './setup/rollup-integration'
 import { registerRouteHandlers } from './setup/routes'
+import {
+  isServerEnabled,
+  logResolverDiagnostics,
+  performGraphQLScan,
+} from './setup/scanner'
 import { setupTypeScriptPaths } from './setup/ts-config'
 
 const logger = consola.withTag(LOG_TAG)
@@ -38,40 +41,12 @@ const logger = consola.withTag(LOG_TAG)
 export { resolveSecurityConfig } from './setup/logging'
 
 /**
- * Scan all GraphQL files and update Nitro state
- */
-async function scanAllGraphQLFiles(nitro: Nitro): Promise<void> {
-  // Scan directives first
-  const directivesResult = await NitroAdapter.scanDirectives(nitro)
-  nitro.scanDirectives = directivesResult.items
-
-  // Generate _directives.graphql file
-  if (!nitro.scanSchemas)
-    nitro.scanSchemas = []
-  const directivesPath = await generateDirectiveSchemas(nitro, directivesResult.items)
-
-  // Scan schemas
-  const schemasResult = await NitroAdapter.scanSchemas(nitro)
-  const schemas = schemasResult.items
-  if (directivesPath && !schemas.includes(directivesPath))
-    schemas.push(directivesPath)
-  nitro.scanSchemas = schemas
-
-  // Scan documents and resolvers
-  const docsResult = await NitroAdapter.scanDocuments(nitro)
-  nitro.scanDocuments = docsResult.items
-
-  const resolversResult = await NitroAdapter.scanResolvers(nitro)
-  nitro.scanResolvers = resolversResult.items
-}
-
-/**
  * Main setup function for nitro-graphql
  * Coordinates all initialization steps for the module
  */
 export async function setupNitroGraphQL(nitro: Nitro): Promise<void> {
   // Check if server mode is enabled (default: true)
-  const serverEnabled = nitro.options.graphql?.server !== false
+  const serverEnabled = isServerEnabled(nitro)
 
   // Step 1: Initialize configuration
   initializeConfiguration(nitro, serverEnabled)
@@ -97,11 +72,9 @@ export async function setupNitroGraphQL(nitro: Nitro): Promise<void> {
   // Step 6: Setup file watching (dev mode)
   setupFileWatching(nitro, serverEnabled, extendDirs)
 
-  // Step 7: Scan GraphQL files (conditionally based on server mode)
-  await scanGraphQLFiles(nitro, serverEnabled)
-
-  // Step 7.5: Resolve extend config with manifests (AFTER scanning to append to results)
-  await resolveExtendConfig(nitro)
+  // Step 7: Scan GraphQL files and resolve extend config
+  // performGraphQLScan handles skipLocalScan, serverEnabled, and extend resolution
+  await performGraphQLScan(nitro)
 
   // Step 8: Setup dev hooks (only if server enabled)
   if (serverEnabled) {
@@ -254,44 +227,6 @@ function setupFileWatching(nitro: Nitro, serverEnabled: boolean, extendDirs: str
 }
 
 /**
- * Scan all GraphQL files (schemas, resolvers, directives, documents)
- */
-async function scanGraphQLFiles(nitro: Nitro, serverEnabled: boolean): Promise<void> {
-  const skipLocalScan = nitro.options.graphql?.skipLocalScan === true
-  const extendSources = nitro.options.graphql?.extend
-
-  // Check if skipLocalScan is enabled
-  if (skipLocalScan) {
-    if (extendSources?.length) {
-      logger.info(`Using ${extendSources.length} extend source(s), skipping local scanning`)
-    }
-    else {
-      logger.info('Skipping local scanning (skipLocalScan: true)')
-    }
-
-    // Initialize empty arrays (virtual modules will import from extend)
-    nitro.scanSchemas = []
-    nitro.scanResolvers = []
-    nitro.scanDirectives = []
-
-    // Still scan documents for client-side usage
-    const result = await NitroAdapter.scanDocuments(nitro)
-    nitro.scanDocuments = result.items
-    return
-  }
-
-  if (serverEnabled) {
-    // Full scan: schemas, resolvers, directives, and documents
-    await scanAllGraphQLFiles(nitro)
-  }
-  else {
-    // Client-only mode: only scan documents (for external services)
-    const result = await NitroAdapter.scanDocuments(nitro)
-    nitro.scanDocuments = result.items
-  }
-}
-
-/**
  * Setup dev mode hooks for rescanning files
  */
 function setupDevHooks(nitro: Nitro): void {
@@ -309,13 +244,8 @@ function setupDevHooks(nitro: Nitro): void {
     }
     lastDevStart = now
 
-    // Rescan all GraphQL files (respecting skipLocalScan)
-    if (!nitro.options.graphql?.skipLocalScan) {
-      await scanAllGraphQLFiles(nitro)
-    }
-
-    // Re-resolve extend config to add manifest files
-    await resolveExtendConfig(nitro, { silent: true })
+    // Rescan using unified scan function (handles skipLocalScan, extend, etc.)
+    await performGraphQLScan(nitro, { isRescan: true, silent: true })
 
     // Validate resolver setup and provide helpful diagnostics (only in dev)
     // Only show once during startup to avoid duplicate logs
@@ -324,55 +254,6 @@ function setupDevHooks(nitro: Nitro): void {
       logResolverDiagnostics(nitro)
     }
   })
-}
-
-/**
- * Log resolver diagnostics for development
- */
-function logResolverDiagnostics(nitro: Nitro): void {
-  const resolvers = nitro.scanResolvers || []
-
-  if (resolvers.length > 0) {
-    const totalExports = resolvers.reduce((sum, r) => sum + r.imports.length, 0)
-
-    // Show breakdown by type for better visibility
-    const typeCount = {
-      query: 0,
-      mutation: 0,
-      resolver: 0,
-      type: 0,
-      subscription: 0,
-      directive: 0,
-    }
-    for (const resolver of resolvers) {
-      for (const imp of resolver.imports) {
-        if (imp.type in typeCount) {
-          typeCount[imp.type as keyof typeof typeCount]++
-        }
-      }
-    }
-
-    const breakdown: string[] = []
-    if (typeCount.query > 0)
-      breakdown.push(`${typeCount.query} query`)
-    if (typeCount.mutation > 0)
-      breakdown.push(`${typeCount.mutation} mutation`)
-    if (typeCount.resolver > 0)
-      breakdown.push(`${typeCount.resolver} resolver`)
-    if (typeCount.type > 0)
-      breakdown.push(`${typeCount.type} type`)
-    if (typeCount.subscription > 0)
-      breakdown.push(`${typeCount.subscription} subscription`)
-    if (typeCount.directive > 0)
-      breakdown.push(`${typeCount.directive} directive`)
-
-    if (breakdown.length > 0) {
-      logger.success(`${totalExports} resolver export(s): ${breakdown.join(', ')}`)
-    }
-  }
-  else {
-    logger.warn('No resolvers found. Check /_nitro/graphql/debug for details.')
-  }
 }
 
 /**
