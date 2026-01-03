@@ -114,6 +114,25 @@ jobs:
         run: |
           cd native
           pnpm napi create-npm-dirs
+          # List created dirs
+          ls -la npm/
+
+      - name: Copy binaries to npm packages
+        run: |
+          cd native
+          # Copy each .node file to its corresponding npm package directory
+          for node_file in *.node; do
+            # Extract platform from filename (e.g., graphql-lint.darwin-arm64.node -> darwin-arm64)
+            platform=$(echo "$node_file" | sed 's/graphql-lint\.//' | sed 's/\.node//')
+            target_dir="npm/$platform"
+            if [ -d "$target_dir" ]; then
+              cp "$node_file" "$target_dir/"
+              echo "Copied $node_file to $target_dir/"
+              ls -la "$target_dir/"
+            else
+              echo "Warning: $target_dir not found for $node_file"
+            fi
+          done
 
       - name: Add repository to platform packages
         run: |
