@@ -288,11 +288,12 @@ function getFilePath(ref: DirectiveFileRef): string {
 export const directiveParser = new DirectiveParser()
 
 /**
- * Generate GraphQL schemas from an array of parsed directives
+ * Generate GraphQL schema content from an array of parsed directives
+ * Returns the schema string and optionally writes to buildDir/directives.graphql
  */
 export async function generateDirectiveSchemas(
-  nitro: { graphql: { buildDir: string } },
   directives: DirectiveFileRef[],
+  buildDir?: string,
 ): Promise<string | null> {
   if (directives.length === 0) {
     return null
@@ -323,16 +324,19 @@ export async function generateDirectiveSchemas(
     .map(d => generateDirectiveSchema(d))
     .join('\n\n')
 
-  const directivesPath = path.join(nitro.graphql.buildDir, '_directives.graphql')
-  fs.mkdirSync(path.dirname(directivesPath), { recursive: true })
+  // Write to .graphql/directives.graphql if buildDir provided
+  if (buildDir) {
+    const directivesPath = path.join(buildDir, 'directives.graphql')
+    fs.mkdirSync(buildDir, { recursive: true })
 
-  // Only write if content changed to prevent unnecessary file watcher triggers
-  const existingContent = fs.existsSync(directivesPath)
-    ? fs.readFileSync(directivesPath, 'utf-8')
-    : null
-  if (existingContent !== schemaContent) {
-    fs.writeFileSync(directivesPath, schemaContent, 'utf-8')
+    // Only write if content changed
+    const existingContent = fs.existsSync(directivesPath)
+      ? fs.readFileSync(directivesPath, 'utf-8')
+      : null
+    if (existingContent !== schemaContent) {
+      fs.writeFileSync(directivesPath, schemaContent, 'utf-8')
+    }
   }
 
-  return directivesPath
+  return schemaContent
 }

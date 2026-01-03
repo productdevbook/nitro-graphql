@@ -279,6 +279,8 @@ declare module 'nitro/types' {
         client: string
         server: string
       }
+      /** Inline directive schemas generated from .directive.ts files */
+      directiveSchemas: string | null
       /** Resolved extend paths from manifests (populated during setup) */
       resolvedExtend?: {
         schemas: string[]

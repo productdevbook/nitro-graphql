@@ -8,6 +8,16 @@ import { join, relative } from 'pathe'
 import { glob } from 'tinyglobby'
 import { GLOB_SCAN_PATTERN } from '../constants'
 
+// Default patterns to always ignore during scanning
+const DEFAULT_IGNORE_PATTERNS = [
+  '**/node_modules/**',
+  '**/.git/**',
+  '**/.output/**',
+  '**/.nitro/**',
+  '**/.nuxt/**',
+  '**/.graphql/**',
+]
+
 /**
  * Scan a directory for files matching a glob pattern
  */
@@ -20,7 +30,7 @@ export async function scanDirectory(
   const fileNames = await glob(join(subDir, globPattern), {
     cwd: baseDir,
     dot: true,
-    ignore: ctx.ignorePatterns,
+    ignore: [...DEFAULT_IGNORE_PATTERNS, ...ctx.ignorePatterns],
     absolute: true,
   }).catch((error) => {
     if ((error as NodeJS.ErrnoException)?.code === 'ENOTDIR') {

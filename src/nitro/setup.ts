@@ -136,6 +136,7 @@ function initializeConfiguration(nitro: Nitro, serverEnabled: boolean): void {
       client: 'graphql',
       server: 'server',
     },
+    directiveSchemas: null,
   }
 
   // Initialize empty arrays for server-related scans (needed even if server disabled)
@@ -171,7 +172,8 @@ function validateConfiguration(nitro: Nitro): void {
  * Setup build directories
  */
 function setupBuildDirectories(nitro: Nitro): void {
-  const graphqlBuildDir = resolve(nitro.options.buildDir, 'graphql')
+  // Use .graphql/ in root directory instead of .nitro/graphql/
+  const graphqlBuildDir = resolve(nitro.options.rootDir, '.graphql')
   nitro.graphql.buildDir = graphqlBuildDir
 
   // Update relative dir paths based on framework

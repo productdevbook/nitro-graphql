@@ -48,8 +48,9 @@ export const serverSchemas = {
   getCode: (nitro: Nitro): string => {
     // All schemas (local + manifest) are now in nitro.scanSchemas
     const schemas = [...nitro.scanSchemas, ...(nitro.options.graphql?.typedefs ?? [])]
+    const directiveSchemas = nitro.graphql.directiveSchemas
 
-    if (!schemas.length) {
+    if (!schemas.length && !directiveSchemas) {
       if (nitro.options.dev) {
         nitro.logger.warn('[nitro-graphql] No schemas found. Virtual module will export empty array.')
       }
@@ -58,6 +59,11 @@ export const serverSchemas = {
 
     const importStatements = schemas.map(s => `import ${getImportId(s)} from '${s}';`)
     const schemaArray = schemas.map(s => `{ def: ${getImportId(s)} }`)
+
+    // Add inline directive schemas if present
+    if (directiveSchemas) {
+      schemaArray.push(`{ def: ${JSON.stringify(directiveSchemas)} }`)
+    }
 
     return `${importStatements.join('\n')}\n\nexport const schemas = [\n${schemaArray.join(',\n')}\n];`
   },

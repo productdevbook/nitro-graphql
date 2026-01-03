@@ -64,17 +64,13 @@ export async function scanLocalFiles(nitro: Nitro): Promise<ScanResult> {
   const directivesResult = await NitroAdapter.scanDirectives(nitro)
   nitro.scanDirectives = directivesResult.items
 
-  // Generate _directives.graphql file
-  if (!nitro.scanSchemas)
-    nitro.scanSchemas = []
-  const directivesPath = await generateDirectiveSchemas(nitro, directivesResult.items)
+  // Generate directive schemas and write to .graphql/directives.graphql
+  const directiveSchemas = await generateDirectiveSchemas(directivesResult.items, nitro.graphql.buildDir)
+  nitro.graphql.directiveSchemas = directiveSchemas
 
   // Scan schemas
   const schemasResult = await NitroAdapter.scanSchemas(nitro)
-  const schemas = schemasResult.items
-  if (directivesPath && !schemas.includes(directivesPath))
-    schemas.push(directivesPath)
-  nitro.scanSchemas = schemas
+  nitro.scanSchemas = schemasResult.items
 
   // Scan documents and resolvers
   const docsResult = await NitroAdapter.scanDocuments(nitro)
@@ -84,7 +80,7 @@ export async function scanLocalFiles(nitro: Nitro): Promise<ScanResult> {
   nitro.scanResolvers = resolversResult.items
 
   return {
-    schemas: schemas.length,
+    schemas: schemasResult.items.length,
     resolvers: resolversResult.items.length,
     directives: directivesResult.items.length,
     documents: docsResult.items.length,

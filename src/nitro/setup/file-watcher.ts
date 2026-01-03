@@ -60,10 +60,29 @@ interface PendingChanges {
  * Watches for changes and triggers type regeneration and dev server reload
  */
 export function setupFileWatcher(nitro: Nitro, watchDirs: string[]): FSWatcher {
+  // Only watch graphql-related files, ignore everything else
+  const ignored = (path: string) => {
+    // Always ignore these directories
+    if (path.includes('/node_modules/') || path.includes('/.git/')
+      || path.includes('/.output/') || path.includes('/.nitro/')
+      || path.includes('/.nuxt/') || path.includes('/.graphql/')) {
+      return true
+    }
+    // Check if it's a directory (no extension or ends with /) - allow traversal
+    if (!path.includes('.') || path.endsWith('/')) {
+      return false
+    }
+    // Only watch graphql, resolver, and directive files
+    const isGraphQL = GRAPHQL_EXTENSIONS.some(ext => path.endsWith(ext))
+    const isResolver = RESOLVER_EXTENSIONS.some(ext => path.endsWith(ext))
+    const isDirective = DIRECTIVE_EXTENSIONS.some(ext => path.endsWith(ext))
+    return !isGraphQL && !isResolver && !isDirective
+  }
+
   const watcher = watch(watchDirs, {
     persistent: DEFAULT_WATCHER_PERSISTENT,
     ignoreInitial: DEFAULT_WATCHER_IGNORE_INITIAL,
-    ignored: nitro.options.ignore,
+    ignored,
   })
 
   const pending: PendingChanges = { server: false, client: false, graphql: false }
@@ -76,17 +95,12 @@ export function setupFileWatcher(nitro: Nitro, watchDirs: string[]): FSWatcher {
       const directivesResult = await NitroAdapter.scanDirectives(nitro)
       nitro.scanDirectives = directivesResult.items
 
-      if (!nitro.scanSchemas)
-        nitro.scanSchemas = []
+      // Generate directive schemas and write to .graphql/directives.graphql
+      const directiveSchemas = await generateDirectiveSchemas(directivesResult.items, nitro.graphql.buildDir)
+      nitro.graphql.directiveSchemas = directiveSchemas
 
-      const directivesPath = await generateDirectiveSchemas(nitro, directivesResult.items)
       const schemasResult = await NitroAdapter.scanSchemas(nitro)
-      const schemas = schemasResult.items
-
-      if (directivesPath && !schemas.includes(directivesPath))
-        schemas.push(directivesPath)
-
-      nitro.scanSchemas = schemas
+      nitro.scanSchemas = schemasResult.items
       nitro.scanResolvers = (await NitroAdapter.scanResolvers(nitro)).items
 
       await resolveExtendConfig(nitro, { silent: true })
