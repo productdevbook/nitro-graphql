@@ -115,6 +115,21 @@ jobs:
           cd native
           pnpm napi create-npm-dirs
 
+      - name: Add repository to platform packages
+        run: |
+          cd native
+          for pkg in npm/*/package.json; do
+            node -e "
+              const fs = require('fs');
+              const pkg = JSON.parse(fs.readFileSync('$pkg', 'utf8'));
+              pkg.repository = {
+                type: 'git',
+                url: 'https://github.com/productdevbook/nitro-graphql'
+              };
+              fs.writeFileSync('$pkg', JSON.stringify(pkg, null, 2) + '\n');
+            "
+          done
+
       - name: Determine npm tag
         id: npm-tag
         run: |
