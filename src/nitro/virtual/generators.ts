@@ -52,10 +52,16 @@ export const serverSchemas = {
     const directiveSchemas = nitro.graphql.directiveSchemas
 
     if (!schemas.length && !directiveSchemas) {
+      // Return demo schema when no schemas found
       if (nitro.options.dev) {
-        nitro.logger.warn('[nitro-graphql] No schemas found. Virtual module will export empty array.')
+        nitro.logger.warn(`[nitro-graphql] No schemas found. Using demo schema. Add .graphql files to ${nitro.graphql.serverDir}`)
       }
-      return 'export const schemas = []'
+      return `export const schemas = [
+  { def: \`type Query {
+  hello: String!
+}
+\` }
+]`
     }
 
     const importStatements = schemas.map(s => `import ${getImportId(s)} from '${s}';`)
@@ -77,10 +83,13 @@ export const serverResolvers = {
     const imports = [...nitro.scanResolvers]
 
     if (!imports.length) {
+      // Return demo resolver when no resolvers found
       if (nitro.options.dev) {
-        nitro.logger.warn('[nitro-graphql] No resolvers found. Virtual module will export empty array.')
+        nitro.logger.warn(`[nitro-graphql] No resolvers found. Using demo resolver. Add .resolver.ts files to ${nitro.graphql.serverDir}`)
       }
-      return 'export const resolvers = []'
+      return `export const resolvers = [
+  { resolver: { Query: { hello: () => 'Hello from nitro-graphql!' } } }
+]`
     }
 
     return generateImportModule(imports, 'resolvers', 'resolver')
