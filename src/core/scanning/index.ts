@@ -16,7 +16,7 @@ export {
 } from './common'
 
 // Directive scanning
-export { scanDirectivesCore } from './directives'
+export { parseDirectiveCall, scanDirectivesCore } from './directives'
 
 // Document scanning
 export { scanDocumentsCore } from './documents'

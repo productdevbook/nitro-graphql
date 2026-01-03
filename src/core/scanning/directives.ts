@@ -11,7 +11,7 @@ import { scanWithAST } from './ast-scanner'
 /**
  * Parse a defineDirective call and return the import info
  */
-function parseDirectiveCall(
+export function parseDirectiveCall(
   calleeName: string,
   exportName: string,
   filePath: string,

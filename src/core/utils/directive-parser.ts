@@ -320,7 +320,12 @@ export async function generateDirectiveSchemas(
     return null
   }
 
-  const schemaContent = allParsedDirectives
+  // Deduplicate by directive name (first definition wins - local takes precedence over extends)
+  const uniqueDirectives = allParsedDirectives.filter((directive, index, self) =>
+    index === self.findIndex(d => d.name === directive.name),
+  )
+
+  const schemaContent = uniqueDirectives
     .map(d => generateDirectiveSchema(d))
     .join('\n\n')
 

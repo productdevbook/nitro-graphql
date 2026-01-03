@@ -10,17 +10,20 @@ import { dirname, resolve } from 'pathe'
 import {
   isLocalPath,
   loadPackageConfig,
+  parseDirectiveCall,
   parseResolverCall,
   parseSingleFile,
   resolvePackageFiles,
 } from '../../core'
 import { LOG_TAG } from '../../core/constants'
+import { generateDirectiveSchemas } from '../../core/utils/directive-parser'
 
 const logger = consola.withTag(LOG_TAG)
 
 interface ExtendResult {
   schemas: number
   resolvers: number
+  directives: number
 }
 
 /**
@@ -87,15 +90,23 @@ export async function resolveExtendConfig(nitro: Nitro, options: ResolveExtendOp
 
   let schemasAdded = 0
   let resolversAdded = 0
+  let directivesAdded = 0
 
   for (const source of extend) {
     const result = await processExtendSource(source, nitro, options.silent)
     schemasAdded += result.schemas
     resolversAdded += result.resolvers
+    directivesAdded += result.directives
   }
 
-  if (!options.silent && (schemasAdded > 0 || resolversAdded > 0)) {
-    logger.info(`Extended with ${schemasAdded} schema(s), ${resolversAdded} resolver file(s)`)
+  // Regenerate directive schemas if any directives were added from extends
+  if (directivesAdded > 0) {
+    const directiveSchemas = await generateDirectiveSchemas(nitro.scanDirectives, nitro.graphql.buildDir)
+    nitro.graphql.directiveSchemas = directiveSchemas
+  }
+
+  if (!options.silent && (schemasAdded > 0 || resolversAdded > 0 || directivesAdded > 0)) {
+    logger.info(`Extended with ${schemasAdded} schema(s), ${resolversAdded} resolver(s), ${directivesAdded} directive(s)`)
   }
 }
 
@@ -115,7 +126,7 @@ async function processExtendSource(
     return processExplicitPaths(source as Record<string, unknown>, nitro)
   }
 
-  return { schemas: 0, resolvers: 0 }
+  return { schemas: 0, resolvers: 0, directives: 0 }
 }
 
 /**
@@ -154,6 +165,7 @@ async function addPackageFiles(
 ): Promise<ExtendResult> {
   let schemasAdded = 0
   let resolversAdded = 0
+  let directivesAdded = 0
 
   // Add schemas
   for (const schemaPath of files.schemas) {
@@ -176,7 +188,20 @@ async function addPackageFiles(
     }
   }
 
-  return { schemas: schemasAdded, resolvers: resolversAdded }
+  // Parse and add directives (check for duplicates by specifier)
+  for (const directivePath of files.directives) {
+    const alreadyExists = nitro.scanDirectives.some(d => d.specifier === directivePath)
+    if (alreadyExists)
+      continue
+
+    const parsed = await parseSingleFile(directivePath, parseDirectiveCall)
+    if (parsed?.imports.length) {
+      nitro.scanDirectives.push(parsed)
+      directivesAdded++
+    }
+  }
+
+  return { schemas: schemasAdded, resolvers: resolversAdded, directives: directivesAdded }
 }
 
 /**
@@ -216,5 +241,6 @@ async function processExplicitPaths(
     }
   }
 
-  return { schemas: schemasAdded, resolvers: resolversAdded }
+  // Legacy format doesn't support directives
+  return { schemas: schemasAdded, resolvers: resolversAdded, directives: 0 }
 }
