@@ -139,6 +139,7 @@
     "ohash": "catalog:",
     "oxc-parser": "catalog:",
     "pathe": "catalog:",
+    "perfect-debounce": "catalog:",
     "tinyglobby": "catalog:"
   },
   "devDependencies": {

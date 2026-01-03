@@ -325,7 +325,14 @@ export async function generateDirectiveSchemas(
 
   const directivesPath = path.join(nitro.graphql.buildDir, '_directives.graphql')
   fs.mkdirSync(path.dirname(directivesPath), { recursive: true })
-  fs.writeFileSync(directivesPath, schemaContent, 'utf-8')
+
+  // Only write if content changed to prevent unnecessary file watcher triggers
+  const existingContent = fs.existsSync(directivesPath)
+    ? fs.readFileSync(directivesPath, 'utf-8')
+    : null
+  if (existingContent !== schemaContent) {
+    fs.writeFileSync(directivesPath, schemaContent, 'utf-8')
+  }
 
   return directivesPath
 }

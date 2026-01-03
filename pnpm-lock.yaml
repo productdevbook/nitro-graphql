@@ -135,6 +135,9 @@ catalogs:
     pathe:
       specifier: ^2.0.3
       version: 2.0.3
+    perfect-debounce:
+      specifier: ^2.0.0
+      version: 2.0.0
     tinyglobby:
       specifier: ^0.2.15
       version: 0.2.15
@@ -254,6 +257,9 @@ importers:
       pathe:
         specifier: 'catalog:'
         version: 2.0.3
+      perfect-debounce:
+        specifier: 'catalog:'
+        version: 2.0.0
       tinyglobby:
         specifier: 'catalog:'
         version: 0.2.15

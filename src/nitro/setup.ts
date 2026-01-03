@@ -292,13 +292,23 @@ async function scanGraphQLFiles(nitro: Nitro, serverEnabled: boolean): Promise<v
 function setupDevHooks(nitro: Nitro): void {
   // Track if we've already shown initial logs to prevent duplicates
   let hasShownInitialLogs = false
+  // Debounce to prevent rapid successive calls
+  let lastDevStart = 0
+  const DEBOUNCE_MS = 500
 
   nitro.hooks.hook('dev:start', async () => {
+    // Debounce rapid successive dev:start calls
+    const now = Date.now()
+    if (now - lastDevStart < DEBOUNCE_MS) {
+      return
+    }
+    lastDevStart = now
+
     // Rescan all GraphQL files
     await scanAllGraphQLFiles(nitro)
 
     // Re-resolve extend config to add manifest files
-    await resolveExtendConfig(nitro)
+    await resolveExtendConfig(nitro, { silent: true })
 
     // Validate resolver setup and provide helpful diagnostics (only in dev)
     // Only show once during startup to avoid duplicate logs

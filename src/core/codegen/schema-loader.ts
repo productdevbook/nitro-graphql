@@ -13,7 +13,7 @@ import { loadSchemaSync } from '@graphql-tools/load'
 import { UrlLoader } from '@graphql-tools/url-loader'
 import { printSchemaWithDirectives } from '@graphql-tools/utils'
 import { resolve } from 'pathe'
-import { writeFile } from '../utils/file-io'
+import { writeFileIfChanged } from '../utils/file-io'
 
 /**
  * Type definition pointer for GraphQL schemas
@@ -216,7 +216,7 @@ export async function downloadAndSaveSchema(
       }
 
       const schemaString = printSchemaWithDirectives(schema)
-      writeFile(schemaFilePath, schemaString)
+      writeFileIfChanged(schemaFilePath, schemaString)
     }
 
     return schemaFilePath

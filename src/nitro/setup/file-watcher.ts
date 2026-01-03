@@ -8,6 +8,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { watch } from 'chokidar'
 import consola from 'consola'
 import { join, resolve } from 'pathe'
+import { debounce } from 'perfect-debounce'
 import {
   DIR_SERVER_GRAPHQL,
   DIR_SERVER_GRAPHQL_WIN,
@@ -47,6 +48,12 @@ function triggerRolldownRebuild(nitro: Nitro): void {
   }
 }
 
+interface PendingChanges {
+  server: boolean
+  client: boolean
+  graphql: boolean
+}
+
 /**
  * Setup file watcher for GraphQL files (schemas, resolvers, directives, documents)
  * Watches for changes and triggers type regeneration and dev server reload
@@ -58,71 +65,73 @@ export function setupFileWatcher(nitro: Nitro, watchDirs: string[]): FSWatcher {
     ignored: nitro.options.ignore,
   })
 
-  watcher.on('all', async (_, path) => {
-    // Skip generated files to prevent infinite loops
-    if (path.includes('/sdk.ts') || path.includes('/sdk.js') || path.endsWith('/config.ts')) {
+  const pending: PendingChanges = { server: false, client: false, graphql: false }
+
+  async function processChanges() {
+    const changes = { ...pending }
+    pending.server = pending.client = pending.graphql = false
+
+    if (changes.server) {
+      const directivesResult = await NitroAdapter.scanDirectives(nitro)
+      nitro.scanDirectives = directivesResult.items
+
+      if (!nitro.scanSchemas)
+        nitro.scanSchemas = []
+
+      const directivesPath = await generateDirectiveSchemas(nitro, directivesResult.items)
+      const schemasResult = await NitroAdapter.scanSchemas(nitro)
+      const schemas = schemasResult.items
+
+      if (directivesPath && !schemas.includes(directivesPath))
+        schemas.push(directivesPath)
+
+      nitro.scanSchemas = schemas
+      nitro.scanResolvers = (await NitroAdapter.scanResolvers(nitro)).items
+
+      await resolveExtendConfig(nitro, { silent: true })
+
+      logger.success('Types regenerated')
+      await generateServerTypes(nitro, { silent: true })
+      await generateClientTypes(nitro, { silent: true })
+
+      if (changes.graphql)
+        triggerRolldownRebuild(nitro)
+
+      await nitro.hooks.callHook('dev:reload')
+    }
+    else if (changes.client) {
+      logger.success('Types regenerated')
+      await generateClientTypes(nitro, { silent: true })
+    }
+  }
+
+  const debouncedProcess = debounce(processChanges, 150)
+
+  watcher.on('all', (_, path) => {
+    if (path.includes('/sdk.ts') || path.includes('/sdk.js') || path.endsWith('/config.ts'))
       return
+
+    const isGraphQL = GRAPHQL_EXTENSIONS.some(ext => path.endsWith(ext))
+    const isResolver = RESOLVER_EXTENSIONS.some(ext => path.endsWith(ext))
+    const isDirective = DIRECTIVE_EXTENSIONS.some(ext => path.endsWith(ext))
+
+    if (!isGraphQL && !isResolver && !isDirective)
+      return
+
+    const isServer = path.includes(nitro.graphql.serverDir)
+      || path.includes(DIR_SERVER_GRAPHQL)
+      || path.includes(DIR_SERVER_GRAPHQL_WIN)
+
+    if (isServer || isResolver || isDirective) {
+      pending.server = true
+      if (isGraphQL)
+        pending.graphql = true
+    }
+    else {
+      pending.client = true
     }
 
-    const isGraphQLFile = GRAPHQL_EXTENSIONS.some(ext => path.endsWith(ext))
-    const isResolverFile = RESOLVER_EXTENSIONS.some(ext => path.endsWith(ext))
-    const isDirectiveFile = DIRECTIVE_EXTENSIONS.some(ext => path.endsWith(ext))
-
-    if (isGraphQLFile || isResolverFile || isDirectiveFile) {
-      // Determine if this is a server or client file
-      const isServerFile = path.includes(nitro.graphql.serverDir)
-        || path.includes(DIR_SERVER_GRAPHQL)
-        || path.includes(DIR_SERVER_GRAPHQL_WIN)
-
-      if (isServerFile || isResolverFile || isDirectiveFile) {
-        // Server GraphQL/resolver/directive file changed - rescan and reload
-        // Step 1: Scan directives FIRST
-        const directivesResult = await NitroAdapter.scanDirectives(nitro)
-        nitro.scanDirectives = directivesResult.items
-
-        // Step 2: Regenerate directive schemas and get path
-        if (!nitro.scanSchemas) {
-          nitro.scanSchemas = []
-        }
-        const directivesPath = await generateDirectiveSchemas(nitro, directivesResult.items)
-
-        // Step 3: Rescan schemas from server directory
-        const schemasResult = await NitroAdapter.scanSchemas(nitro)
-        const schemas = schemasResult.items
-
-        // Step 4: Add generated _directives.graphql to schemas if it exists
-        if (directivesPath && !schemas.includes(directivesPath)) {
-          schemas.push(directivesPath)
-        }
-        nitro.scanSchemas = schemas
-
-        // Step 5: Rescan resolvers
-        const resolversResult = await NitroAdapter.scanResolvers(nitro)
-        nitro.scanResolvers = resolversResult.items
-
-        // Step 6: Re-resolve extend config to add manifest files
-        // (silent mode - dev:start will log when Nitro restarts)
-        await resolveExtendConfig(nitro, { silent: true })
-
-        logger.success('Types regenerated')
-        await generateServerTypes(nitro, { silent: true })
-        await generateClientTypes(nitro, { silent: true })
-
-        // For .graphql files, trigger Rolldown rebuild by touching config.ts
-        // (Rolldown doesn't detect .graphql changes in external/symlinked packages)
-        if (isGraphQLFile) {
-          triggerRolldownRebuild(nitro)
-        }
-
-        // Trigger Nitro reload to pick up changes
-        await nitro.hooks.callHook('dev:reload')
-      }
-      else {
-        // Client GraphQL file changed - only regenerate client types
-        logger.success('Types regenerated')
-        await generateClientTypes(nitro, { silent: true })
-      }
-    }
+    debouncedProcess()
   })
 
   return watcher
