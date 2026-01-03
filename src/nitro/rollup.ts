@@ -4,7 +4,6 @@ import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { parse } from 'graphql'
 import { NitroAdapter } from './adapter'
-import { generateClientTypes, generateServerTypes } from './codegen'
 import { registerAllVirtualModules } from './virtual/generators'
 
 export async function rollupConfig(nitro: Nitro) {
@@ -140,10 +139,5 @@ export async function rollupConfig(nitro: Nitro) {
         })
       }
     }
-  })
-
-  nitro.hooks.hook('dev:reload', async () => {
-    await generateServerTypes(nitro, { silent: true })
-    await generateClientTypes(nitro, { silent: true })
   })
 }

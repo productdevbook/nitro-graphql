@@ -43,7 +43,7 @@ export default antfu(
     },
   },
   {
-    files: ['examples/**/*.{ts,js,mjs,cjs,json,vue}'],
+    files: ['examples/**', 'crates/**'],
     rules: {
       'unused-imports/no-unused-vars': 'off',
       'style/eol-last': 'off',

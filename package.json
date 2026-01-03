@@ -45,6 +45,10 @@
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
     },
+    "./native": {
+      "types": "./native/index.d.ts",
+      "import": "./native/index.js"
+    },
     "./core": {
       "types": "./dist/core/index.d.mts",
       "import": "./dist/core/index.mjs"
@@ -76,13 +80,27 @@
     "nitro-graphql": "./dist/cli/index.mjs"
   },
   "files": [
-    "dist"
+    "dist",
+    "native/index.d.ts",
+    "native/index.js"
   ],
+  "napi": {
+    "binaryName": "graphql-lint",
+    "packageName": "nitro-graphql",
+    "targets": [
+      "aarch64-apple-darwin",
+      "x86_64-apple-darwin",
+      "x86_64-unknown-linux-gnu",
+      "x86_64-pc-windows-msvc",
+      "aarch64-unknown-linux-gnu"
+    ]
+  },
   "scripts": {
     "prepack": "pnpm build",
-    "build": "tsdown",
+    "build": "pnpm build:native && tsdown",
+    "build:native": "cd native && napi build --platform --release",
     "dev": "tsdown --watch",
-    "bumpp": "bumpp package.json",
+    "bumpp": "bumpp package.json native/package.json --execute=\"node scripts/sync-versions.mjs\"",
     "release": "pnpm build && pnpm bumpp",
     "playground:nitro": "cd playgrounds/nitro && pnpm install && pnpm dev",
     "playground:nuxt": "cd playgrounds/nuxt && pnpm install && pnpm dev",
@@ -142,8 +160,16 @@
     "perfect-debounce": "catalog:",
     "tinyglobby": "catalog:"
   },
+  "optionalDependencies": {
+    "nitro-graphql-darwin-arm64": "2.0.0-beta.43",
+    "nitro-graphql-darwin-x64": "2.0.0-beta.43",
+    "nitro-graphql-linux-arm64-gnu": "2.0.0-beta.43",
+    "nitro-graphql-linux-x64-gnu": "2.0.0-beta.43",
+    "nitro-graphql-win32-x64-msvc": "2.0.0-beta.43"
+  },
   "devDependencies": {
     "@antfu/eslint-config": "catalog:",
+    "@napi-rs/cli": "catalog:",
     "@nuxt/kit": "catalog:",
     "@nuxt/schema": "catalog:",
     "@types/node": "catalog:",

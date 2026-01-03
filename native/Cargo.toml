@@ -1,0 +1,26 @@
+[package]
+name = "graphql-lint"
+version = "0.1.0"
+edition = "2021"
+description = "Fast GraphQL schema linter powered by apollo-compiler"
+license = "MIT"
+
+[lib]
+crate-type = [ "cdylib" ]
+
+[[bin]]
+name = "graphql-lint"
+path = "src/main.rs"
+
+[dependencies]
+apollo-compiler = "1.31.0"
+glob = "0.3.3"
+napi = { version = "3.8.1", features = [ "async" ] }
+napi-derive = "3.5.0"
+regex = "1"
+
+[build-dependencies]
+napi-build = "2.3.1"
+
+[profile.release]
+lto = true

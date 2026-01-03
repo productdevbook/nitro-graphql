@@ -10,6 +10,7 @@ trustPolicy: no-downgrade
 
 packages:
   - playgrounds/*
+  - crates/*
 
 overrides:
   vite: 8.0.0-beta.5
@@ -33,6 +34,7 @@ catalog:
   '@graphql-tools/schema': ^10.0.30
   '@graphql-tools/url-loader': ^9.0.5
   '@graphql-tools/utils': ^10.11.0
+  '@napi-rs/cli': ^3.5.1
   '@nuxt/kit': ^4.2.2
   '@nuxt/schema': ^4.2.2
   '@types/node': ^25.0.3

@@ -31,6 +31,7 @@ export default defineConfig({
   name: 'nitro-graphql',
   unbundle: true,
   external: [
+    'nitro-graphql/native',
     'nitro-graphql',
     'nitro',
     'nitro/types',

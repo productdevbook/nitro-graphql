@@ -7,3 +7,11 @@ dist
 .rolldown
 **/.graphql
 examples/**/bun.*
+
+# Rust
+native/target/
+
+# napi-rs generated
+native/*.node
+native/index.js
+native/index.d.ts

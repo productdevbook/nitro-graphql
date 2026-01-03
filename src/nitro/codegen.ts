@@ -60,9 +60,19 @@ export async function generateServerTypes(
   try {
     // Load and merge schemas
     const loaded = loadFilesSync(schemas)
-    const strings = loaded.map(s => typeof s === 'string' ? s : s.loc?.source?.body || '').filter(Boolean)
+    const allStrings = loaded.map(s => typeof s === 'string' ? s : s.loc?.source?.body || '')
 
-    if (!validateNoDuplicateTypes(schemas, strings))
+    // Filter empty schemas while keeping index alignment
+    const validSchemas: string[] = []
+    const strings: string[] = []
+    schemas.forEach((schema, i) => {
+      if (allStrings[i]) {
+        validSchemas.push(schema)
+        strings.push(allStrings[i])
+      }
+    })
+
+    if (!validateNoDuplicateTypes(validSchemas, strings))
       return
 
     const merged = mergeTypeDefs([strings.join('\n\n')], { throwOnConflict: true })
