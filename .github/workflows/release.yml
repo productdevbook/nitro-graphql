@@ -146,12 +146,10 @@ jobs:
             if [ -f "$pkg/package.json" ]; then
               echo "Publishing $pkg"
               cd "$pkg"
-              npm publish --provenance --access public --tag ${{ steps.npm-tag.outputs.tag }} || true
+              npm publish --provenance --access public --tag ${{ steps.npm-tag.outputs.tag }}
               cd ../..
             fi
           done
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   # Publish main package (after native packages)
   release:
