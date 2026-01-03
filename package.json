@@ -1,7 +1,7 @@
 {
   "name": "nitro-graphql",
   "type": "module",
-  "version": "2.0.0-beta.46",
+  "version": "2.0.0-beta.47",
   "packageManager": "pnpm@10.27.0",
   "description": "GraphQL integration for Nitro",
   "license": "MIT",
