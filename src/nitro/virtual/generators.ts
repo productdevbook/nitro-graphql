@@ -5,6 +5,7 @@
 
 import type { Nitro } from 'nitro/types'
 import type { GenImport } from '../types'
+import { existsSync } from 'node:fs'
 import { genImport } from 'knitwork'
 import { resolve } from 'pathe'
 import { getImportId } from '../../core'
@@ -101,6 +102,14 @@ export const graphqlConfig = {
   id: '#nitro-graphql/graphql-config',
   getCode: (nitro: Nitro): string => {
     const configPath = resolve(nitro.graphql.serverDir, 'config.ts')
+
+    // config.ts is optional - return empty config if it doesn't exist
+    if (!existsSync(configPath)) {
+      return `const importedConfig = {}
+export { importedConfig }
+`
+    }
+
     return `import config from '${configPath}'
 const importedConfig = config
 export { importedConfig }
