@@ -100,7 +100,7 @@
     "build": "pnpm build:native && tsdown",
     "build:native": "cd native && napi build --platform --release",
     "dev": "tsdown --watch",
-    "bumpp": "bumpp package.json native/package.json --execute=\"node scripts/sync-versions.mjs\"",
+    "bumpp": "bumpp package.json native/package.json",
     "release": "pnpm build && pnpm bumpp",
     "playground:nitro": "cd playgrounds/nitro && pnpm install && pnpm dev",
     "playground:nuxt": "cd playgrounds/nuxt && pnpm install && pnpm dev",
@@ -159,13 +159,6 @@
     "pathe": "catalog:",
     "perfect-debounce": "catalog:",
     "tinyglobby": "catalog:"
-  },
-  "optionalDependencies": {
-    "nitro-graphql-darwin-arm64": "2.0.0-beta.43",
-    "nitro-graphql-darwin-x64": "2.0.0-beta.43",
-    "nitro-graphql-linux-arm64-gnu": "2.0.0-beta.43",
-    "nitro-graphql-linux-x64-gnu": "2.0.0-beta.43",
-    "nitro-graphql-win32-x64-msvc": "2.0.0-beta.43"
   },
   "devDependencies": {
     "@antfu/eslint-config": "catalog:",

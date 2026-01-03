@@ -157,17 +157,21 @@ jobs:
 
       - run: pnpm install
 
-      # Update optionalDependencies versions to match current release
-      - name: Update native package versions
+      # Add optionalDependencies for platform-specific native packages
+      - name: Add native package dependencies
         run: |
           VERSION="${{ github.ref_name }}"
           VERSION="${VERSION#v}"  # Remove 'v' prefix
           node -e "
             const fs = require('fs');
             const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-            for (const dep of Object.keys(pkg.optionalDependencies || {})) {
-              pkg.optionalDependencies[dep] = '$VERSION';
-            }
+            pkg.optionalDependencies = {
+              'nitro-graphql-darwin-arm64': '$VERSION',
+              'nitro-graphql-darwin-x64': '$VERSION',
+              'nitro-graphql-linux-x64-gnu': '$VERSION',
+              'nitro-graphql-linux-arm64-gnu': '$VERSION',
+              'nitro-graphql-win32-x64-msvc': '$VERSION'
+            };
             fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
           "
           cat package.json | grep -A 10 optionalDependencies
