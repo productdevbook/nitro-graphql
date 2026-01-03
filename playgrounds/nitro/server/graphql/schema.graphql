@@ -25,17 +25,3 @@ type Query {
   activeUsers: [User!]! @list(filter: "isActive", unique: "email")
   recentPosts: [Post!]! @list(max: 5, sort: "publishedAt", sortDesc: true)
 }
-
-
-type Mutation {
-  createUser(
-    name: String! @validate(minLength: 2, maxLength: 50)
-    email: String! @validate(pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
-    age: Int! @validate(min: 18, max: 100)
-  ): User
-  
-  updateBio(
-    userId: ID!
-    bio: String! @validate(maxLength: 500) @transform(trim: true)
-  ): User
-}

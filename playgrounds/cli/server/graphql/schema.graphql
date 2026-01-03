@@ -1,14 +1,3 @@
 extend type Query {
-  hello: String!
-  user(id: ID!): User
-  users: [User!]!
-}
-
-extend type Mutation {
-  createUser(name: String!): User
-}
-
-extend type User {
-  id: ID!
-  name: String!
+  helloCI: String!
 }

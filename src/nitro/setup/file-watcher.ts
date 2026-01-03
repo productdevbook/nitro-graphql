@@ -4,10 +4,9 @@
 
 import type { FSWatcher } from 'chokidar'
 import type { Nitro } from 'nitro/types'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { watch } from 'chokidar'
 import consola from 'consola'
-import { join, resolve } from 'pathe'
+import { join } from 'pathe'
 import { debounce } from 'perfect-debounce'
 import {
   DIR_SERVER_GRAPHQL,
@@ -29,30 +28,9 @@ import { shouldScanLocalFiles } from './scanner'
 
 const logger = consola.withTag(LOG_TAG)
 
-/**
- * Touch config.ts to trigger Rolldown's file watcher
- * This is needed because Rolldown doesn't detect changes to .graphql files in external packages
- */
-function triggerRolldownRebuild(nitro: Nitro): void {
-  const configPath = resolve(nitro.graphql.serverDir, 'config.ts')
-  if (existsSync(configPath)) {
-    try {
-      const content = readFileSync(configPath, 'utf-8')
-      // Add/update a timestamp comment at the end to trigger change detection
-      const timestampComment = `// HMR trigger: ${Date.now()}`
-      const newContent = `${content.replace(/\/\/ HMR trigger: \d+\n?$/, '')}\n${timestampComment}\n`
-      writeFileSync(configPath, newContent)
-    }
-    catch {
-      // Ignore errors - this is just a trigger mechanism
-    }
-  }
-}
-
 interface PendingChanges {
   server: boolean
   client: boolean
-  graphql: boolean
 }
 
 /**
@@ -85,11 +63,11 @@ export function setupFileWatcher(nitro: Nitro, watchDirs: string[]): FSWatcher {
     ignored,
   })
 
-  const pending: PendingChanges = { server: false, client: false, graphql: false }
+  const pending: PendingChanges = { server: false, client: false }
 
   async function processChanges() {
     const changes = { ...pending }
-    pending.server = pending.client = pending.graphql = false
+    pending.server = pending.client = false
 
     if (changes.server) {
       const directivesResult = await NitroAdapter.scanDirectives(nitro)
@@ -108,9 +86,6 @@ export function setupFileWatcher(nitro: Nitro, watchDirs: string[]): FSWatcher {
       logger.success('Types regenerated')
       await generateServerTypes(nitro, { silent: true })
       await generateClientTypes(nitro, { silent: true })
-
-      if (changes.graphql)
-        triggerRolldownRebuild(nitro)
 
       await nitro.hooks.callHook('dev:reload')
     }
@@ -139,8 +114,6 @@ export function setupFileWatcher(nitro: Nitro, watchDirs: string[]): FSWatcher {
 
     if (isServer || isResolver || isDirective) {
       pending.server = true
-      if (isGraphQL)
-        pending.graphql = true
     }
     else {
       pending.client = true
