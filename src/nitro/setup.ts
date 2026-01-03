@@ -69,8 +69,10 @@ export async function setupNitroGraphQL(nitro: Nitro): Promise<void> {
   // Step 5.5: Resolve extend directories for file watching
   const extendDirs = await resolveExtendDirs(nitro)
 
-  // Step 6: Setup file watching (dev mode)
-  setupFileWatching(nitro, serverEnabled, extendDirs)
+  // Step 6: Setup file watching (dev mode only)
+  if (nitro.options.dev) {
+    setupFileWatching(nitro, serverEnabled, extendDirs)
+  }
 
   // Step 7: Scan GraphQL files and resolve extend config
   // performGraphQLScan handles skipLocalScan, serverEnabled, and extend resolution
