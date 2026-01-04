@@ -26,8 +26,8 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     permissions:
-      # Required to checkout the code
-      contents: read
+      # Required to checkout the code and push coverage badge updates
+      contents: write
       # Required to put a comment into the pull-request
       pull-requests: write
 
