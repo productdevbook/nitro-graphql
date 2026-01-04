@@ -145,5 +145,14 @@ describe('extend integration', () => {
       expect(extendDirective!.imports.length).toBeGreaterThan(0)
       expect(extendDirective!.imports[0].type).toBe('directive')
     })
+
+    it('should include directive with transformer', () => {
+      // upper.directive.ts has a transformer function
+      const upperDirective = nitro.scanDirectives.find(
+        (d: { specifier: string }) => d.specifier.includes('upper.directive'),
+      )
+      expect(upperDirective).toBeDefined()
+      expect(upperDirective!.specifier).toContain('extend-pkg')
+    })
   })
 })
