@@ -230,7 +230,7 @@ jobs:
             if [ -f "$pkg/package.json" ]; then
               echo "Publishing $pkg"
               cd "$pkg"
-              npm publish --provenance --access public --tag ${{ steps.npm-tag.outputs.tag }} || true
+              pnpm publish --provenance --access public --tag ${{ steps.npm-tag.outputs.tag }} --no-git-checks || true
               cd ../..
             fi
           done
@@ -320,9 +320,9 @@ jobs:
       - name: Generate changelog
         run: |
           if [ -n "${{ steps.prev-tag.outputs.tag }}" ]; then
-            npx changelogithub --from ${{ steps.prev-tag.outputs.tag }}
+            pnpm dlx changelogithub --from ${{ steps.prev-tag.outputs.tag }}
           else
-            npx changelogithub
+            pnpm dlx changelogithub
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
