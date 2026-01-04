@@ -119,7 +119,7 @@
   },
   "peerDependencies": {
     "@apollo/server": "^5.0.0",
-    "graphql": "^16.11.0",
+    "graphql": "^16.12.0",
     "nitro": "^3.0.1-alpha.0"
   },
   "peerDependenciesMeta": {
@@ -181,7 +181,11 @@
     "vitepress-plugin-llms": "catalog:",
     "vitest": "catalog:"
   },
+  "overrides": {
+    "graphql": "^16.12.0"
+  },
   "resolutions": {
+    "graphql": "^16.12.0",
     "nitro-graphql": "link:."
   }
 }

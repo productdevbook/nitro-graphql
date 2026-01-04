@@ -34,6 +34,10 @@ export interface ResolvedExtend {
   resolvers: string[]
   directives: string[]
   serverDir: string
+  /** Path to config.ts if it exists */
+  configPath?: string
+  /** Path to schema.ts if it exists */
+  schemaPath?: string
 }
 
 /**
@@ -122,5 +126,16 @@ export async function resolvePackageFiles(pkg: ResolvedPackage): Promise<Resolve
     glob(directivePattern, { cwd: serverDir, absolute: true }),
   ])
 
-  return { schemas, resolvers, directives, serverDir }
+  // Check for config.ts and schema.ts
+  const configPath = resolve(serverDir, 'config.ts')
+  const schemaPath = resolve(serverDir, 'schema.ts')
+
+  return {
+    schemas,
+    resolvers,
+    directives,
+    serverDir,
+    configPath: existsSync(configPath) ? configPath : undefined,
+    schemaPath: existsSync(schemaPath) ? schemaPath : undefined,
+  }
 }

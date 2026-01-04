@@ -139,6 +139,8 @@ function initializeConfiguration(nitro: Nitro, serverEnabled: boolean): void {
       server: 'server',
     },
     directiveSchemas: null,
+    extendConfigs: [],
+    extendSchemas: [],
   }
 
   // Initialize empty arrays for server-related scans (needed even if server disabled)

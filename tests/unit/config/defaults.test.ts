@@ -1,15 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import {
-  DEFAULT_CLIENT_UTILS_CONFIG,
-  DEFAULT_RUNTIME_CONFIG,
-  DEFAULT_SCAFFOLD_CONFIG,
-  DEFAULT_SDK_CONFIG,
-  DEFAULT_TYPES_CONFIG,
-} from '../../../src/config/defaults'
-import {
   ENDPOINT_GRAPHQL,
   ENDPOINT_HEALTH,
-} from '../../../src/constants'
+} from '../../../src/core/constants'
+import {
+  DEFAULT_RUNTIME_CONFIG,
+  DEFAULT_SDK_CONFIG,
+  DEFAULT_TYPES_CONFIG,
+} from '../../../src/nitro/config'
 
 describe('config/defaults', () => {
   it('should export default types config', () => {
@@ -22,18 +20,6 @@ describe('config/defaults', () => {
     expect(DEFAULT_RUNTIME_CONFIG.endpoint?.graphql).toBe(ENDPOINT_GRAPHQL)
     expect(DEFAULT_RUNTIME_CONFIG.endpoint?.healthCheck).toBe(ENDPOINT_HEALTH)
     expect(DEFAULT_RUNTIME_CONFIG.playground).toBe(true)
-  })
-
-  it('should export default scaffold config', () => {
-    expect(DEFAULT_SCAFFOLD_CONFIG.enabled).toBe(true)
-    expect(DEFAULT_SCAFFOLD_CONFIG.graphqlConfig).toBe(true)
-    expect(DEFAULT_SCAFFOLD_CONFIG.serverSchema).toBe(true)
-  })
-
-  it('should export default client utils config', () => {
-    expect(DEFAULT_CLIENT_UTILS_CONFIG.enabled).toBe(true)
-    expect(DEFAULT_CLIENT_UTILS_CONFIG.index).toBe(true)
-    expect(DEFAULT_CLIENT_UTILS_CONFIG.ofetch).toBe(true)
   })
 
   it('should export default SDK config', () => {

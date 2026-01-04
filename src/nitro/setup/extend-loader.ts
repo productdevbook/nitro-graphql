@@ -24,6 +24,8 @@ interface ExtendResult {
   schemas: number
   resolvers: number
   directives: number
+  hasConfig: boolean
+  hasSchema: boolean
 }
 
 /**
@@ -91,12 +93,18 @@ export async function resolveExtendConfig(nitro: Nitro, options: ResolveExtendOp
   let schemasAdded = 0
   let resolversAdded = 0
   let directivesAdded = 0
+  let configsAdded = 0
+  let programmaticSchemasAdded = 0
 
   for (const source of extend) {
     const result = await processExtendSource(source, nitro, options.silent)
     schemasAdded += result.schemas
     resolversAdded += result.resolvers
     directivesAdded += result.directives
+    if (result.hasConfig)
+      configsAdded++
+    if (result.hasSchema)
+      programmaticSchemasAdded++
   }
 
   // Regenerate directive schemas if any directives were added from extends
@@ -105,8 +113,19 @@ export async function resolveExtendConfig(nitro: Nitro, options: ResolveExtendOp
     nitro.graphql.directiveSchemas = directiveSchemas
   }
 
-  if (!options.silent && (schemasAdded > 0 || resolversAdded > 0 || directivesAdded > 0)) {
-    logger.info(`Extended with ${schemasAdded} schema(s), ${resolversAdded} resolver(s), ${directivesAdded} directive(s)`)
+  if (!options.silent && (schemasAdded > 0 || resolversAdded > 0 || directivesAdded > 0 || configsAdded > 0 || programmaticSchemasAdded > 0)) {
+    const parts = []
+    if (schemasAdded > 0)
+      parts.push(`${schemasAdded} schema(s)`)
+    if (resolversAdded > 0)
+      parts.push(`${resolversAdded} resolver(s)`)
+    if (directivesAdded > 0)
+      parts.push(`${directivesAdded} directive(s)`)
+    if (configsAdded > 0)
+      parts.push(`${configsAdded} config(s)`)
+    if (programmaticSchemasAdded > 0)
+      parts.push(`${programmaticSchemasAdded} programmatic schema(s)`)
+    logger.info(`Extended with ${parts.join(', ')}`)
   }
 }
 
@@ -126,7 +145,7 @@ async function processExtendSource(
     return processExplicitPaths(source as Record<string, unknown>, nitro)
   }
 
-  return { schemas: 0, resolvers: 0, directives: 0 }
+  return { schemas: 0, resolvers: 0, directives: 0, hasConfig: false, hasSchema: false }
 }
 
 /**
@@ -160,12 +179,14 @@ async function loadFromPackage(
  * Add files from a resolved package to scan results
  */
 async function addPackageFiles(
-  files: { schemas: string[], resolvers: string[], directives: string[] },
+  files: { schemas: string[], resolvers: string[], directives: string[], configPath?: string, schemaPath?: string },
   nitro: Nitro,
 ): Promise<ExtendResult> {
   let schemasAdded = 0
   let resolversAdded = 0
   let directivesAdded = 0
+  let hasConfig = false
+  let hasSchema = false
 
   // Add schemas
   for (const schemaPath of files.schemas) {
@@ -201,7 +222,19 @@ async function addPackageFiles(
     }
   }
 
-  return { schemas: schemasAdded, resolvers: resolversAdded, directives: directivesAdded }
+  // Add config.ts path if exists
+  if (files.configPath && !nitro.graphql.extendConfigs.includes(files.configPath)) {
+    nitro.graphql.extendConfigs.push(files.configPath)
+    hasConfig = true
+  }
+
+  // Add schema.ts path if exists
+  if (files.schemaPath && !nitro.graphql.extendSchemas.includes(files.schemaPath)) {
+    nitro.graphql.extendSchemas.push(files.schemaPath)
+    hasSchema = true
+  }
+
+  return { schemas: schemasAdded, resolvers: resolversAdded, directives: directivesAdded, hasConfig, hasSchema }
 }
 
 /**
@@ -241,6 +274,6 @@ async function processExplicitPaths(
     }
   }
 
-  // Legacy format doesn't support directives
-  return { schemas: schemasAdded, resolvers: resolversAdded, directives: 0 }
+  // Legacy format doesn't support directives, configs, or schemas
+  return { schemas: schemasAdded, resolvers: resolversAdded, directives: 0, hasConfig: false, hasSchema: false }
 }

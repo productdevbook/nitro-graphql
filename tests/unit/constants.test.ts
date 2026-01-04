@@ -5,7 +5,7 @@ import {
   FRAMEWORK_NUXT,
   GRAPHQL_EXTENSIONS,
   RESOLVER_EXTENSIONS,
-} from '../../src/constants'
+} from '../../src/core/constants'
 
 describe('constants', () => {
   it('should export GraphQL extensions', () => {

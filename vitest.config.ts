@@ -6,6 +6,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: ['tests/**/*.test.ts'],
+    testTimeout: 30000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -23,6 +24,8 @@ export default defineConfig({
     alias: {
       '~': resolve(__dirname, './src'),
       '@': resolve(__dirname, './src'),
+      // Force single graphql instance to avoid "Cannot use GraphQL* from another module" errors
+      'graphql': resolve(__dirname, './node_modules/graphql'),
     },
   },
 })

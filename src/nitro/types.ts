@@ -287,6 +287,10 @@ declare module 'nitro/types' {
         resolvers: string[]
         directives: string[]
       }
+      /** Config paths from extend packages (for merging) */
+      extendConfigs: string[]
+      /** Schema.ts paths from extend packages (for merging) */
+      extendSchemas: string[]
     }
   }
 }

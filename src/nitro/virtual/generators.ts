@@ -110,17 +110,41 @@ export const serverDirectives = {
 export const graphqlConfig = {
   id: '#nitro-graphql/graphql-config',
   getCode: (nitro: Nitro): string => {
-    const configPath = resolve(nitro.graphql.serverDir, 'config.ts')
+    const localConfigPath = resolve(nitro.graphql.serverDir, 'config.ts')
+    const extendConfigs = nitro.graphql.extendConfigs || []
+    const hasLocalConfig = existsSync(localConfigPath)
 
-    // config.ts is optional - return empty config if it doesn't exist
-    if (!existsSync(configPath)) {
+    // No configs at all - return empty
+    if (!hasLocalConfig && extendConfigs.length === 0) {
       return `const importedConfig = {}
 export { importedConfig }
 `
     }
 
-    return `import config from '${configPath}'
-const importedConfig = config
+    // Build imports and merge statement
+    const imports: string[] = ['import { defu } from \'defu\'']
+    const configNames: string[] = []
+
+    // Import extend configs first (lower priority)
+    extendConfigs.forEach((configPath, index) => {
+      const configName = `extendConfig${index}`
+      imports.push(`import ${configName} from '${configPath}'`)
+      configNames.push(configName)
+    })
+
+    // Import local config last (highest priority)
+    if (hasLocalConfig) {
+      imports.push(`import localConfig from '${localConfigPath}'`)
+      configNames.push('localConfig')
+    }
+
+    // Merge configs with defu (later configs have higher priority)
+    // defu merges right-to-left, so we reverse to give local config highest priority
+    const mergeArgs = configNames.reverse().join(', ')
+
+    return `${imports.join('\n')}
+
+const importedConfig = defu(${mergeArgs})
 export { importedConfig }
 `
   },
@@ -131,6 +155,50 @@ export const moduleConfig = {
   getCode: (nitro: Nitro): string => {
     const config = nitro.options.graphql || {}
     return `export const moduleConfig = ${JSON.stringify(config, null, 2)};`
+  },
+}
+
+export const validationSchemas = {
+  id: '#nitro-graphql/validation-schemas',
+  getCode: (nitro: Nitro): string => {
+    const localSchemaPath = resolve(nitro.graphql.serverDir, 'schema.ts')
+    const extendSchemas = nitro.graphql.extendSchemas || []
+    const hasLocalSchema = existsSync(localSchemaPath)
+
+    // No schemas at all - return empty object
+    if (!hasLocalSchema && extendSchemas.length === 0) {
+      return `const mergedSchemas = {}
+export default mergedSchemas
+`
+    }
+
+    // Build imports and merge statement
+    const imports: string[] = []
+    const schemaNames: string[] = []
+
+    // Import extend schemas first (lower priority)
+    extendSchemas.forEach((schemaPath, index) => {
+      const schemaName = `extendSchema${index}`
+      imports.push(`import ${schemaName} from '${schemaPath}'`)
+      schemaNames.push(schemaName)
+    })
+
+    // Import local schema last (highest priority)
+    if (hasLocalSchema) {
+      imports.push(`import localSchema from '${localSchemaPath}'`)
+      schemaNames.push('localSchema')
+    }
+
+    // Merge schemas with spread (later schemas override earlier ones)
+    const mergeExpression = schemaNames.length === 1
+      ? schemaNames[0]
+      : `{ ${schemaNames.map(name => `...${name}`).join(', ')} }`
+
+    return `${imports.join('\n')}
+
+const mergedSchemas = ${mergeExpression}
+export default mergedSchemas
+`
   },
 }
 
@@ -175,6 +243,7 @@ const allModules = [
   serverDirectives,
   graphqlConfig,
   moduleConfig,
+  validationSchemas,
   debugInfo,
 ]
 

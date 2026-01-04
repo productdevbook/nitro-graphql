@@ -65,7 +65,7 @@ export async function generateServerTypesCore(
         plugin: () => {
           return {
             prepend: [
-              `import schemas from '#graphql/schema'`,
+              `import schemas from '#nitro-graphql/validation-schemas'`,
               `import type { StandardSchemaV1 } from 'nitro-graphql/types'`,
               generateServerTypeHelpers(framework),
               '',
