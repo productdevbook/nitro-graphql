@@ -53,11 +53,48 @@ jobs:
       - name: 🧪 Test
         run: pnpm test:run --coverage
 
-      - name: 📊 Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+      - name: 📊 Vitest Coverage Report
+        uses: davelosert/vitest-coverage-report-action@v2
+        if: github.event_name == 'pull_request'
         with:
-          files: ./coverage/coverage-final.json
-          fail_ci_if_error: false
+          json-summary-path: ./coverage/coverage-summary.json
+          json-final-path: ./coverage/coverage-final.json
+
+      - name: 📊 Update coverage badge
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          # Extract coverage percentage
+          COVERAGE=$(node -e "
+            const data = require('./coverage/coverage-summary.json');
+            console.log(Math.round(data.total.lines.pct));
+          ")
+
+          # Determine badge color
+          if [ "$COVERAGE" -ge 80 ]; then
+            COLOR="brightgreen"
+          elif [ "$COVERAGE" -ge 60 ]; then
+            COLOR="green"
+          elif [ "$COVERAGE" -ge 40 ]; then
+            COLOR="yellow"
+          else
+            COLOR="red"
+          fi
+
+          echo "Coverage: $COVERAGE%, Color: $COLOR"
+
+          # Update README
+          sed -i "s|coverage-[0-9]*%25-[a-z]*|coverage-${COVERAGE}%25-${COLOR}|g" README.md
+
+          # Check if changed
+          if git diff --quiet README.md; then
+            echo "No coverage change"
+          else
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add README.md
+            git commit -m "chore: update coverage badge to ${COVERAGE}%"
+            git push
+          fi
 
       - name: 🚀 Build
         run: pnpm build

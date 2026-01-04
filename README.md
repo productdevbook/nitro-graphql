@@ -7,8 +7,7 @@
 [![npm version][npm-version-src]][npm-version-href]
 [![Beta Status][beta-src]][beta-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
-[![CI][ci-src]][ci-href]
-[![codecov][codecov-src]][codecov-href]
+[![Coverage][coverage-src]][coverage-href]
 [![License][license-src]][license-href]
 [![Documentation][docs-src]][docs-href]
 
@@ -878,7 +877,5 @@ pnpm lint
 [docs-href]: https://nitro-graphql.pages.dev
 [beta-src]: https://img.shields.io/npm/v/nitro-graphql/beta?style=flat&logo=rocket&logoColor=white&label=beta&color=7c3aed&colorA=080f12
 [beta-href]: https://github.com/productdevbook/nitro-graphql/releases
-[ci-src]: https://img.shields.io/github/actions/workflow/status/productdevbook/nitro-graphql/ci.yml?branch=main&style=flat&colorA=080f12&colorB=1fa669&label=CI
-[ci-href]: https://github.com/productdevbook/nitro-graphql/actions/workflows/ci.yml
-[codecov-src]: https://img.shields.io/codecov/c/github/productdevbook/nitro-graphql?style=flat&colorA=080f12&colorB=1fa669
-[codecov-href]: https://codecov.io/gh/productdevbook/nitro-graphql
+[coverage-src]: https://img.shields.io/badge/coverage-35%25-yellow?style=flat&colorA=080f12
+[coverage-href]: https://github.com/productdevbook/nitro-graphql/actions/workflows/ci.yml
