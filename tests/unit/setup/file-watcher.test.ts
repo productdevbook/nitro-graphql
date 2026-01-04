@@ -74,6 +74,7 @@ vi.mock('../../../src/nitro/setup/extend-loader', () => ({
 // Mock scanner
 vi.mock('../../../src/nitro/setup/scanner', () => ({
   shouldScanLocalFiles: vi.fn(() => true),
+  performGraphQLScan: vi.fn().mockResolvedValue(undefined),
 }))
 
 /**
@@ -383,6 +384,190 @@ describe('setupFileWatcher', () => {
 
       const ignored = vi.mocked(watch).mock.calls[0]?.[1]?.ignored as (path: string) => boolean
       expect(ignored('/project/server/graphql/config.json')).toBe(true)
+    })
+  })
+
+  describe('file change handling (processChanges)', () => {
+    it('should call performGraphQLScan when server file changes', async () => {
+      const { watch } = await import('chokidar')
+      const { performGraphQLScan } = await import('../../../src/nitro/setup/scanner')
+
+      // Create a mock watcher that captures the 'all' event handler
+      let allEventHandler: ((event: string, path: string) => void) | null = null
+      const mockWatcher = {
+        on: vi.fn((event: string, handler: (event: string, path: string) => void) => {
+          if (event === 'all') {
+            allEventHandler = handler
+          }
+          return mockWatcher
+        }),
+        close: vi.fn(),
+      }
+      vi.mocked(watch).mockReturnValue(mockWatcher as any)
+
+      const nitro = createMockNitro()
+      const watchDirs = ['/project/server/graphql']
+
+      setupFileWatcher(nitro, watchDirs)
+
+      // Simulate a .graphql file change
+      expect(allEventHandler).not.toBeNull()
+      allEventHandler!('change', '/project/server/graphql/schema.graphql')
+
+      // Wait for debounced function to be called
+      await new Promise(resolve => setTimeout(resolve, 10))
+
+      expect(performGraphQLScan).toHaveBeenCalledWith(nitro, { silent: true, isRescan: true })
+    })
+
+    it('should call performGraphQLScan when resolver file changes', async () => {
+      const { watch } = await import('chokidar')
+      const { performGraphQLScan } = await import('../../../src/nitro/setup/scanner')
+
+      let allEventHandler: ((event: string, path: string) => void) | null = null
+      const mockWatcher = {
+        on: vi.fn((event: string, handler: (event: string, path: string) => void) => {
+          if (event === 'all') {
+            allEventHandler = handler
+          }
+          return mockWatcher
+        }),
+        close: vi.fn(),
+      }
+      vi.mocked(watch).mockReturnValue(mockWatcher as any)
+
+      const nitro = createMockNitro()
+      const watchDirs = ['/project/server/graphql']
+
+      setupFileWatcher(nitro, watchDirs)
+
+      // Simulate a .resolver.ts file change
+      allEventHandler!('change', '/project/server/graphql/user.resolver.ts')
+
+      await new Promise(resolve => setTimeout(resolve, 10))
+
+      expect(performGraphQLScan).toHaveBeenCalledWith(nitro, { silent: true, isRescan: true })
+    })
+
+    it('should NOT call performGraphQLScan for non-graphql files', async () => {
+      const { watch } = await import('chokidar')
+      const { performGraphQLScan } = await import('../../../src/nitro/setup/scanner')
+
+      vi.mocked(performGraphQLScan).mockClear()
+
+      let allEventHandler: ((event: string, path: string) => void) | null = null
+      const mockWatcher = {
+        on: vi.fn((event: string, handler: (event: string, path: string) => void) => {
+          if (event === 'all') {
+            allEventHandler = handler
+          }
+          return mockWatcher
+        }),
+        close: vi.fn(),
+      }
+      vi.mocked(watch).mockReturnValue(mockWatcher as any)
+
+      const nitro = createMockNitro()
+      const watchDirs = ['/project/server/graphql']
+
+      setupFileWatcher(nitro, watchDirs)
+
+      // Simulate a non-graphql file change
+      allEventHandler!('change', '/project/server/graphql/utils.ts')
+
+      await new Promise(resolve => setTimeout(resolve, 10))
+
+      expect(performGraphQLScan).not.toHaveBeenCalled()
+    })
+
+    it('should NOT call performGraphQLScan for sdk.ts files', async () => {
+      const { watch } = await import('chokidar')
+      const { performGraphQLScan } = await import('../../../src/nitro/setup/scanner')
+
+      vi.mocked(performGraphQLScan).mockClear()
+
+      let allEventHandler: ((event: string, path: string) => void) | null = null
+      const mockWatcher = {
+        on: vi.fn((event: string, handler: (event: string, path: string) => void) => {
+          if (event === 'all') {
+            allEventHandler = handler
+          }
+          return mockWatcher
+        }),
+        close: vi.fn(),
+      }
+      vi.mocked(watch).mockReturnValue(mockWatcher as any)
+
+      const nitro = createMockNitro()
+      const watchDirs = ['/project/server/graphql']
+
+      setupFileWatcher(nitro, watchDirs)
+
+      // Simulate sdk.ts file change (should be ignored)
+      allEventHandler!('change', '/project/graphql/sdk.ts')
+
+      await new Promise(resolve => setTimeout(resolve, 10))
+
+      expect(performGraphQLScan).not.toHaveBeenCalled()
+    })
+
+    it('should use performGraphQLScan with isRescan:true to respect skipLocalScan during file changes', async () => {
+      // This test verifies the fix for the bug where skipLocalScan was ignored during rescan.
+      // Previously, processChanges called NitroAdapter.scanSchemas directly which ignored skipLocalScan.
+      // Now it calls performGraphQLScan which properly handles skipLocalScan.
+      const { watch } = await import('chokidar')
+      const { performGraphQLScan } = await import('../../../src/nitro/setup/scanner')
+      const { NitroAdapter } = await import('../../../src/nitro/adapter')
+
+      vi.mocked(performGraphQLScan).mockClear()
+      vi.mocked(NitroAdapter.scanSchemas).mockClear()
+      vi.mocked(NitroAdapter.scanResolvers).mockClear()
+      vi.mocked(NitroAdapter.scanDirectives).mockClear()
+
+      let allEventHandler: ((event: string, path: string) => void) | null = null
+      const mockWatcher = {
+        on: vi.fn((event: string, handler: (event: string, path: string) => void) => {
+          if (event === 'all') {
+            allEventHandler = handler
+          }
+          return mockWatcher
+        }),
+        close: vi.fn(),
+      }
+      vi.mocked(watch).mockReturnValue(mockWatcher as any)
+
+      // Create nitro with skipLocalScan: true
+      const nitro = createMockNitro({
+        options: {
+          rootDir: '/project',
+          dev: true,
+          framework: { name: 'nitro' },
+          graphql: { skipLocalScan: true },
+          ignore: [],
+        } as any,
+        graphql: {
+          buildDir: '/project/.nitro',
+          serverDir: '/project/server/graphql',
+          clientDir: '/project/graphql',
+        } as any,
+      })
+      // Watch extend package directory (simulating extend: ['./auth'])
+      const watchDirs = ['/packages/auth/server/graphql']
+
+      setupFileWatcher(nitro, watchDirs)
+
+      // Simulate a file change in extend package (path includes 'server/graphql' so it's detected as server file)
+      allEventHandler!('change', '/packages/auth/server/graphql/schema.graphql')
+
+      await new Promise(resolve => setTimeout(resolve, 10))
+
+      // Should call performGraphQLScan (which respects skipLocalScan)
+      expect(performGraphQLScan).toHaveBeenCalledWith(nitro, { silent: true, isRescan: true })
+
+      // Should NOT call NitroAdapter methods directly (old buggy behavior)
+      expect(NitroAdapter.scanSchemas).not.toHaveBeenCalled()
+      expect(NitroAdapter.scanResolvers).not.toHaveBeenCalled()
+      expect(NitroAdapter.scanDirectives).not.toHaveBeenCalled()
     })
   })
 })

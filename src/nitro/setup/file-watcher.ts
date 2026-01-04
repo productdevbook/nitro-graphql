@@ -16,15 +16,12 @@ import {
   LOG_TAG,
   RESOLVER_EXTENSIONS,
 } from '../../core/constants'
-import { generateDirectiveSchemas } from '../../core/utils/directive-parser'
-import { NitroAdapter } from '../adapter'
 import { generateClientTypes, generateServerTypes } from '../codegen'
 import {
   DEFAULT_WATCHER_IGNORE_INITIAL,
   DEFAULT_WATCHER_PERSISTENT,
 } from '../config'
-import { resolveExtendConfig } from './extend-loader'
-import { shouldScanLocalFiles } from './scanner'
+import { performGraphQLScan, shouldScanLocalFiles } from './scanner'
 
 const logger = consola.withTag(LOG_TAG)
 
@@ -70,18 +67,8 @@ export function setupFileWatcher(nitro: Nitro, watchDirs: string[]): FSWatcher {
     pending.server = pending.client = false
 
     if (changes.server) {
-      const directivesResult = await NitroAdapter.scanDirectives(nitro)
-      nitro.scanDirectives = directivesResult.items
-
-      // Generate directive schemas and write to .graphql/directives.graphql
-      const directiveSchemas = await generateDirectiveSchemas(directivesResult.items, nitro.graphql.buildDir)
-      nitro.graphql.directiveSchemas = directiveSchemas
-
-      const schemasResult = await NitroAdapter.scanSchemas(nitro)
-      nitro.scanSchemas = schemasResult.items
-      nitro.scanResolvers = (await NitroAdapter.scanResolvers(nitro)).items
-
-      await resolveExtendConfig(nitro, { silent: true })
+      // Use centralized scan function that respects skipLocalScan
+      await performGraphQLScan(nitro, { silent: true, isRescan: true })
 
       logger.success('Types regenerated')
       await generateServerTypes(nitro, { silent: true })
