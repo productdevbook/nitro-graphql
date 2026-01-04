@@ -13,8 +13,34 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  # Build native modules for all platforms
+  # Check if native binaries are cached, build only if needed
+  prepare-native:
+    runs-on: ubuntu-latest
+    outputs:
+      native-hash: ${{ steps.hash.outputs.hash }}
+      cache-hit: ${{ steps.cache-check.outputs.cache-hit }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Calculate native source hash
+        id: hash
+        run: |
+          HASH=$(find native/src native/Cargo.toml native/Cargo.lock native/build.rs -type f -exec sha256sum {} \; 2>/dev/null | sort | sha256sum | cut -d' ' -f1)
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+          echo "Native source hash: $HASH"
+
+      - name: Check cache for pre-built binaries
+        id: cache-check
+        uses: actions/cache/restore@v4
+        with:
+          path: native-binaries-flat
+          key: native-${{ steps.hash.outputs.hash }}
+          lookup-only: true
+
+  # Build native modules only if not cached
   build-native:
+    needs: prepare-native
+    if: needs.prepare-native.outputs.cache-hit != 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -68,9 +94,34 @@ jobs:
           path: native/*.node
           if-no-files-found: error
 
-  # Publish platform-specific npm packages
+  # Collect freshly built binaries and cache them
+  cache-new-binaries:
+    needs: [prepare-native, build-native]
+    if: needs.prepare-native.outputs.cache-hit != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: native-binaries
+
+      - name: Flatten directory structure
+        run: |
+          mkdir -p native-binaries-flat
+          find native-binaries -name "*.node" -exec cp {} native-binaries-flat/ \;
+          ls -la native-binaries-flat/
+
+      - name: Cache native binaries for future releases
+        uses: actions/cache/save@v4
+        with:
+          path: native-binaries-flat
+          key: native-${{ needs.prepare-native.outputs.native-hash }}
+
+  # Publish platform-specific npm packages (only if native code changed)
   publish-native:
-    needs: build-native
+    needs: [prepare-native, build-native, cache-new-binaries]
+    # Only run if native code changed (cache miss means we built new binaries)
+    if: always() && !failure() && !cancelled() && needs.prepare-native.outputs.cache-hit != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -85,12 +136,30 @@ jobs:
 
       - run: pnpm install
 
-      - name: Download all artifacts
+      # Try to restore from cache first
+      - name: Restore cached binaries
+        id: cache-restore
+        if: needs.prepare-native.outputs.cache-hit == 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: native-binaries-flat
+          key: native-${{ needs.prepare-native.outputs.native-hash }}
+
+      - name: Copy cached binaries to native/
+        if: steps.cache-restore.outputs.cache-hit == 'true'
+        run: |
+          cp native-binaries-flat/*.node native/
+          ls -la native/*.node
+
+      # Or download freshly built artifacts
+      - name: Download build artifacts
+        if: needs.prepare-native.outputs.cache-hit != 'true'
         uses: actions/download-artifact@v4
         with:
           path: native/artifacts
 
-      - name: Move artifacts
+      - name: Move artifacts to native/
+        if: needs.prepare-native.outputs.cache-hit != 'true'
         run: |
           cd native
           for dir in artifacts/bindings-*; do
@@ -101,7 +170,7 @@ jobs:
       - name: Update native package version
         run: |
           VERSION="${{ github.ref_name }}"
-          VERSION="${VERSION#v}"  # Remove 'v' prefix
+          VERSION="${VERSION#v}"
           cd native
           node -e "
             const fs = require('fs');
@@ -114,21 +183,17 @@ jobs:
         run: |
           cd native
           pnpm napi create-npm-dirs
-          # List created dirs
           ls -la npm/
 
       - name: Copy binaries to npm packages
         run: |
           cd native
-          # Copy each .node file to its corresponding npm package directory
           for node_file in *.node; do
-            # Extract platform from filename (e.g., graphql-lint.darwin-arm64.node -> darwin-arm64)
             platform=$(echo "$node_file" | sed 's/graphql-lint\.//' | sed 's/\.node//')
             target_dir="npm/$platform"
             if [ -d "$target_dir" ]; then
               cp "$node_file" "$target_dir/"
               echo "Copied $node_file to $target_dir/"
-              ls -la "$target_dir/"
             else
               echo "Warning: $target_dir not found for $node_file"
             fi
@@ -165,14 +230,18 @@ jobs:
             if [ -f "$pkg/package.json" ]; then
               echo "Publishing $pkg"
               cd "$pkg"
-              npm publish --provenance --access public --tag ${{ steps.npm-tag.outputs.tag }}
+              npm publish --provenance --access public --tag ${{ steps.npm-tag.outputs.tag }} || true
               cd ../..
             fi
           done
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  # Publish main package (after native packages)
+  # Publish main package
   release:
-    needs: publish-native
+    needs: [prepare-native, publish-native]
+    # Always run (publish-native might be skipped if native code unchanged)
+    if: always() && !failure() && !cancelled()
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -189,26 +258,43 @@ jobs:
 
       - run: pnpm install
 
-      # Add optionalDependencies for platform-specific native packages
+      - name: Determine native package version
+        id: native-version
+        run: |
+          RELEASE_VERSION="${{ github.ref_name }}"
+          RELEASE_VERSION="${RELEASE_VERSION#v}"
+
+          # If native code changed, use current release version
+          # If not changed, get latest published version from npm
+          if [ "${{ needs.prepare-native.outputs.cache-hit }}" == "true" ]; then
+            echo "Native code unchanged, fetching latest published version..."
+            NATIVE_VERSION=$(npm view nitro-graphql-linux-x64-gnu version 2>/dev/null || echo "$RELEASE_VERSION")
+            echo "Using existing native version: $NATIVE_VERSION"
+          else
+            echo "Native code changed, using release version: $RELEASE_VERSION"
+            NATIVE_VERSION="$RELEASE_VERSION"
+          fi
+
+          echo "version=$NATIVE_VERSION" >> $GITHUB_OUTPUT
+
       - name: Add native package dependencies
         run: |
-          VERSION="${{ github.ref_name }}"
-          VERSION="${VERSION#v}"  # Remove 'v' prefix
+          NATIVE_VERSION="${{ steps.native-version.outputs.version }}"
           node -e "
             const fs = require('fs');
             const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
             pkg.optionalDependencies = {
-              'nitro-graphql-darwin-arm64': '$VERSION',
-              'nitro-graphql-darwin-x64': '$VERSION',
-              'nitro-graphql-linux-x64-gnu': '$VERSION',
-              'nitro-graphql-linux-arm64-gnu': '$VERSION',
-              'nitro-graphql-win32-x64-msvc': '$VERSION'
+              'nitro-graphql-darwin-arm64': '$NATIVE_VERSION',
+              'nitro-graphql-darwin-x64': '$NATIVE_VERSION',
+              'nitro-graphql-linux-x64-gnu': '$NATIVE_VERSION',
+              'nitro-graphql-linux-arm64-gnu': '$NATIVE_VERSION',
+              'nitro-graphql-win32-x64-msvc': '$NATIVE_VERSION'
             };
             fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
           "
-          cat package.json | grep -A 10 optionalDependencies
+          echo "optionalDependencies set to version: $NATIVE_VERSION"
+          cat package.json | grep -A 6 optionalDependencies
 
-      # Skip native build - use JS-only build since native packages are separate
       - run: pnpm tsdown
 
       - name: Determine npm tag
@@ -240,3 +326,16 @@ jobs:
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        run: |
+          echo "## Release Complete 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Native Version:** ${{ steps.native-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.prepare-native.outputs.cache-hit }}" == "true" ]; then
+            echo "**Native Build:** ⏭️ Skipped (unchanged, using cached)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Native Build:** ✅ Built & Published" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "**Cache Key:** \`native-${{ needs.prepare-native.outputs.native-hash }}\`" >> $GITHUB_STEP_SUMMARY

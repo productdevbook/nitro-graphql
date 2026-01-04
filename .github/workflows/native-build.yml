@@ -1,0 +1,126 @@
+name: Native Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'native/**'
+      - Cargo.lock
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # Calculate hash of native source to use as cache key
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      native-hash: ${{ steps.hash.outputs.hash }}
+      cache-hit: ${{ steps.cache-check.outputs.cache-hit }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Calculate native source hash
+        id: hash
+        run: |
+          HASH=$(find native/src native/Cargo.toml native/Cargo.lock native/build.rs -type f -exec sha256sum {} \; 2>/dev/null | sort | sha256sum | cut -d' ' -f1)
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+          echo "Native source hash: $HASH"
+
+      - name: Check if binaries are already cached
+        id: cache-check
+        uses: actions/cache/restore@v4
+        with:
+          path: native-binaries
+          key: native-${{ steps.hash.outputs.hash }}
+          lookup-only: true
+
+  # Build native modules for all platforms (only if not cached)
+  build:
+    needs: prepare
+    if: needs.prepare.outputs.cache-hit != 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            os: macos-latest
+          - target: x86_64-apple-darwin
+            os: macos-latest
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross-compilation tools (Linux ARM64)
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+
+      - run: pnpm install
+
+      - name: Build native module
+        run: |
+          cd native
+          pnpm napi build --platform --release --target ${{ matrix.target }}
+        env:
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bindings-${{ matrix.target }}
+          path: native/*.node
+          if-no-files-found: error
+
+  # Collect all binaries and cache them
+  cache-binaries:
+    needs: [prepare, build]
+    if: needs.prepare.outputs.cache-hit != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: native-binaries
+
+      - name: Flatten directory structure
+        run: |
+          mkdir -p native-binaries-flat
+          find native-binaries -name "*.node" -exec cp {} native-binaries-flat/ \;
+          ls -la native-binaries-flat/
+
+      - name: Cache native binaries
+        uses: actions/cache/save@v4
+        with:
+          path: native-binaries-flat
+          key: native-${{ needs.prepare.outputs.native-hash }}
+
+      - name: Summary
+        run: |
+          echo "## Native Build Complete 🦀" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Cache Key:** \`native-${{ needs.prepare.outputs.native-hash }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Binaries:**" >> $GITHUB_STEP_SUMMARY
+          ls -la native-binaries-flat/ >> $GITHUB_STEP_SUMMARY
