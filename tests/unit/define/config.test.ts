@@ -74,7 +74,7 @@ describe('defineGraphQLConfig', () => {
       const result = defineGraphQLConfig(config as any)
 
       const mockEvent = { context: { user: { id: 1 } }, headers: {} }
-      const ctx = await (result.context as Function)(mockEvent)
+      const ctx = await (result.context as (event: unknown) => Promise<unknown>)(mockEvent)
 
       expect(ctx.user).toEqual({ id: 1 })
     })
@@ -178,7 +178,7 @@ describe('defineGraphQLConfig', () => {
   describe('type preservation', () => {
     it('should preserve function references', () => {
       const contextFn = async () => ({})
-      const maskError = () => new Error()
+      const maskError = () => new Error('Test error')
       const config = {
         context: contextFn,
         maskedErrors: { maskError },

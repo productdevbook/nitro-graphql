@@ -6,9 +6,7 @@
  * - Returns flattened schema configuration
  * - Provides type inference for GraphQL types
  */
-import { describe, expect, it } from 'vitest'
-// Import vi for mock functions
-import { vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { defineSchema } from '../../../src/define'
 
