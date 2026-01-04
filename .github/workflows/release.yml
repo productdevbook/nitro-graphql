@@ -264,11 +264,18 @@ jobs:
           RELEASE_VERSION="${{ github.ref_name }}"
           RELEASE_VERSION="${RELEASE_VERSION#v}"
 
+          # Determine npm tag based on release version
+          if [[ "$RELEASE_VERSION" == *"-beta"* ]] || [[ "$RELEASE_VERSION" == *"-rc"* ]] || [[ "$RELEASE_VERSION" == *"-alpha"* ]]; then
+            NPM_TAG="beta"
+          else
+            NPM_TAG="latest"
+          fi
+
           # If native code changed, use current release version
-          # If not changed, get latest published version from npm
+          # If not changed, get published version from appropriate npm tag
           if [ "${{ needs.prepare-native.outputs.cache-hit }}" == "true" ]; then
-            echo "Native code unchanged, fetching latest published version..."
-            NATIVE_VERSION=$(npm view nitro-graphql-linux-x64-gnu version 2>/dev/null || echo "$RELEASE_VERSION")
+            echo "Native code unchanged, fetching published version from @${NPM_TAG} tag..."
+            NATIVE_VERSION=$(npm view nitro-graphql-linux-x64-gnu@${NPM_TAG} version 2>/dev/null || echo "$RELEASE_VERSION")
             echo "Using existing native version: $NATIVE_VERSION"
           else
             echo "Native code changed, using release version: $RELEASE_VERSION"
