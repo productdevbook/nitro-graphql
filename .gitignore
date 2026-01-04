@@ -9,6 +9,9 @@ dist
 **/.graphql
 examples/**/bun.*
 
+# Test coverage
+coverage/
+
 # Rust
 native/target/
 

@@ -167,6 +167,7 @@
     "@nuxt/schema": "catalog:",
     "@types/node": "catalog:",
     "@vitejs/devtools": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "@vitest/ui": "catalog:",
     "bumpp": "catalog:",
     "changelogen": "catalog:",

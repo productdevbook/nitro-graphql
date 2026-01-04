@@ -39,6 +39,7 @@ catalog:
   '@nuxt/schema': ^4.2.2
   '@types/node': ^25.0.3
   '@vitejs/devtools': ^0.0.0-alpha.16
+  '@vitest/coverage-v8': ^4.0.16
   '@vitest/ui': ^4.0.16
   bumpp: ^10.3.2
   c12: ^3.3.3
