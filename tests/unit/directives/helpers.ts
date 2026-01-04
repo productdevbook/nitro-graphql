@@ -2,11 +2,9 @@
  * Shared helpers for directive transformer tests
  */
 import type { DirectiveDefinition } from '../../../src/core/types/define'
+import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils'
+import { defaultFieldResolver } from 'graphql'
 import { createMergedSchema } from '../../../src/core/schema/builder'
-
-// Import from graphql-tools (uses same graphql instance as createMergedSchema)
-const { defaultFieldResolver } = await import('graphql')
-const { getDirective, MapperKind, mapSchema } = await import('@graphql-tools/utils')
 
 /** @upper directive for testing - transforms string fields to uppercase */
 export const upperDirective: DirectiveDefinition = {

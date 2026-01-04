@@ -21,6 +21,8 @@ const nitro = {
     'examples/vite-vue/src/**/*.vue',
     'examples/vite-react/src/**/*.{tsx,jsx}',
     'content/**/*',
+    // Test fixtures with intentional syntax errors
+    'tests/fixtures/**/syntax-error.*',
   ],
 }
 export default antfu(
