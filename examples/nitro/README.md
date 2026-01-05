@@ -1,8 +1,8 @@
 # Nitro GraphQL Starter
 
-Minimal Nitro + GraphQL örneği.
+Minimal Nitro + GraphQL example.
 
-## Kurulum
+## Installation
 
 ```bash
 pnpm install
@@ -11,11 +11,11 @@ pnpm dev
 
 GraphQL Playground: http://localhost:3000/api/graphql
 
-## Örnek Sorgular
+## Example Queries
 
 ```graphql
 query {
   hello
-  greeting(name: "Dünya")
+  greeting(name: "World")
 }
 ```

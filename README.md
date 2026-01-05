@@ -36,11 +36,17 @@ pnpm add nitro-graphql@beta graphql-yoga graphql graphql-config
 
 ```ts
 // nitro.config.ts
+import { defineConfig } from 'nitro'
 import graphql from 'nitro-graphql'
-import { defineNitroConfig } from 'nitro/config'
 
-export default defineNitroConfig({
-  modules: [graphql({ framework: 'graphql-yoga' })],
+export default defineConfig({
+  serverDir: './',
+  modules: [
+    graphql({
+      framework: 'graphql-yoga',
+      serverDir: './',
+    }),
+  ],
 })
 ```
 
