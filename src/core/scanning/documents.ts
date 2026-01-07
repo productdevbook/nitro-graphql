@@ -20,7 +20,7 @@ export interface ScanDocumentsOptions {
 }
 
 /**
- * Scan for GraphQL client documents (.graphql) in client directory
+ * Scan for GraphQL client documents (.graphql, .gql) in client directory
  * Excludes files from external service directories
  */
 export async function scanDocumentsCore(

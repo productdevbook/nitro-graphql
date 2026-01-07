@@ -9,7 +9,7 @@ import { GRAPHQL_GLOB_PATTERN } from '../constants'
 import { extractPaths, scanWithLayers } from './common'
 
 /**
- * Scan for GraphQL schema files (.graphql) in server directory
+ * Scan for GraphQL schema files (.graphql, .gql) in server directory
  */
 export async function scanSchemasCore(ctx: ScanContext): Promise<ScanResult<string>> {
   const warnings: string[] = []
