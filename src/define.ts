@@ -363,3 +363,14 @@ export function defineDirective(config: DefineDirectiveConfig): DirectiveDefinit
     locations: [...config.locations], // Convert readonly array to mutable
   }
 }
+
+// Re-export PubSub utilities for convenience
+export {
+  createPubSub,
+  mapAsyncIterator,
+  withFilter,
+} from './core/pubsub'
+export type {
+  PubSubEngine,
+  TypedPubSub,
+} from './core/pubsub'

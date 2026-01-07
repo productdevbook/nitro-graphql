@@ -435,6 +435,85 @@ export interface SecurityConfig {
   disableSuggestions?: boolean
 }
 
+/**
+ * WebSocket transport configuration for subscriptions
+ */
+export interface WebSocketTransportConfig {
+  /**
+   * Enable WebSocket transport
+   * @default true when subscriptions.enabled is true
+   */
+  enabled?: boolean
+  /**
+   * WebSocket endpoint path
+   * @default Same as GraphQL HTTP endpoint
+   */
+  path?: string
+  /**
+   * Connection initialization timeout in milliseconds
+   * @default 10000
+   */
+  connectionTimeout?: number
+  /**
+   * Keep-alive ping interval in milliseconds
+   * @default 30000
+   */
+  pingInterval?: number
+}
+
+/**
+ * SSE (Server-Sent Events) transport configuration for subscriptions
+ * Only available with GraphQL Yoga framework
+ */
+export interface SSETransportConfig {
+  /**
+   * Enable SSE transport
+   * @default true for GraphQL Yoga
+   */
+  enabled?: boolean
+}
+
+/**
+ * PubSub configuration for subscription event distribution
+ */
+export interface PubSubConfig {
+  /**
+   * Use built-in in-memory PubSub
+   * Suitable for single-instance deployments
+   * @default true
+   */
+  useBuiltin?: boolean
+  /**
+   * Path to custom PubSub module
+   * The module should export a PubSub-compatible instance
+   * When provided, built-in PubSub is disabled
+   */
+  customPath?: string
+}
+
+/**
+ * GraphQL Subscriptions configuration
+ */
+export interface SubscriptionsConfig {
+  /**
+   * Enable subscriptions support
+   * @default false
+   */
+  enabled?: boolean
+  /**
+   * WebSocket transport configuration
+   */
+  websocket?: WebSocketTransportConfig
+  /**
+   * SSE transport configuration (GraphQL Yoga only)
+   */
+  sse?: SSETransportConfig
+  /**
+   * PubSub configuration for event distribution
+   */
+  pubsub?: PubSubConfig
+}
+
 export interface NitroGraphQLOptions {
   framework?: 'graphql-yoga' | 'apollo-server'
   /**
@@ -504,6 +583,12 @@ export interface NitroGraphQLOptions {
    * @default false
    */
   skipLocalScan?: boolean
+
+  /**
+   * GraphQL Subscriptions configuration
+   * Enables real-time subscriptions via WebSocket and/or SSE transports
+   */
+  subscriptions?: SubscriptionsConfig
 }
 
 /**

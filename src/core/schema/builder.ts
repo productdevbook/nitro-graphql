@@ -12,6 +12,9 @@ import { consola } from 'consola'
 import { buildSchema, parse, print } from 'graphql'
 import { loadFederationSupport, warnFederationUnavailable } from './federation'
 
+// Re-export graphql functions to ensure same instance is used throughout
+export { parse, subscribe, validate } from 'graphql'
+
 /**
  * Schema definition from virtual module
  */

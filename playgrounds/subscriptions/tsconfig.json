@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "paths": {
+      "#graphql/server": ["./.nitro/types/nitro-graphql-server.d.ts"]
+    },
+    "resolveJsonModule": true,
+    "types": ["nitro"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", ".nitro", ".output"]
+}

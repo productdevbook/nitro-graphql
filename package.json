@@ -38,6 +38,10 @@
     "#nitro-graphql/debug-info": {
       "types": "./dist/nitro/virtual/stubs.d.mts",
       "import": "./dist/nitro/virtual/stubs.mjs"
+    },
+    "#nitro-graphql/pubsub": {
+      "types": "./dist/nitro/virtual/stubs.d.mts",
+      "import": "./dist/nitro/virtual/stubs.mjs"
     }
   },
   "exports": {
@@ -72,6 +76,10 @@
     "./nuxt": {
       "types": "./dist/nuxt.d.mts",
       "import": "./dist/nuxt.mjs"
+    },
+    "./pubsub": {
+      "types": "./dist/core/pubsub/index.d.mts",
+      "import": "./dist/core/pubsub/index.mjs"
     }
   },
   "module": "./dist/index.mjs",
@@ -105,6 +113,7 @@
     "playground:nitro": "cd playgrounds/nitro && pnpm install && pnpm dev",
     "playground:nuxt": "cd playgrounds/nuxt && pnpm install && pnpm dev",
     "playground:federation": "cd playgrounds/federation && pnpm install && pnpm dev",
+    "playground:subscriptions": "cd playgrounds/subscriptions && pnpm install && pnpm dev",
     "docs:dev": "cd .docs && pnpm install && pnpm update:metadata && pnpm dev",
     "docs:build": "cd .docs && pnpm install && pnpm update:metadata && pnpm build",
     "docs:preview": "cd .docs && pnpm preview",
@@ -120,10 +129,14 @@
   "peerDependencies": {
     "@apollo/server": "^5.0.0",
     "graphql": "^16.12.0",
+    "graphql-ws": "^6.0.6",
     "nitro": "^3.0.1-alpha.0"
   },
   "peerDependenciesMeta": {
     "@apollo/server": {
+      "optional": true
+    },
+    "graphql-ws": {
       "optional": true
     }
   },

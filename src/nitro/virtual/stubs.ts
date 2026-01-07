@@ -38,3 +38,6 @@ export const debugInfo: Record<string, any> = {
   },
   virtualModules: {},
 }
+
+// #nitro-graphql/pubsub
+export const pubsub: any = null

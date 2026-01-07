@@ -1,0 +1,17 @@
+{
+  "name": "nitro-graphql-subscriptions-example",
+  "private": true,
+  "scripts": {
+    "dev": "nitro dev",
+    "build": "nitro build",
+    "preview": "node .output/server/index.mjs"
+  },
+  "dependencies": {
+    "graphql-ws": "catalog:",
+    "nitro-graphql": "link:../.."
+  },
+  "devDependencies": {
+    "nitro": "catalog:",
+    "ws": "catalog:"
+  }
+}
