@@ -4,6 +4,7 @@
  */
 
 import type { Nitro } from 'nitro/types'
+import type { ExtendSource } from '../types'
 import consola from 'consola'
 import { LOG_TAG } from '../../core/constants'
 import { generateDirectiveSchemas } from '../../core/utils/directive-parser'
@@ -48,7 +49,7 @@ export function isServerEnabled(nitro: Nitro): boolean {
 /**
  * Get extend sources from config
  */
-export function getExtendSources(nitro: Nitro): string[] | undefined {
+export function getExtendSources(nitro: Nitro): ExtendSource[] | undefined {
   const extend = nitro.options.graphql?.extend
   return Array.isArray(extend) ? extend : undefined
 }

@@ -202,6 +202,31 @@ export default mergedSchemas
   },
 }
 
+export const pubsub = {
+  id: '#nitro-graphql/pubsub',
+  getCode: (nitro: Nitro): string => {
+    const subscriptions = nitro.options.graphql?.subscriptions
+    const pubsubConfig = subscriptions?.pubsub
+
+    // If subscriptions not enabled, return null pubsub
+    if (!subscriptions?.enabled) {
+      return `export const pubsub = null`
+    }
+
+    // If custom PubSub path is provided, import from there
+    if (pubsubConfig?.customPath) {
+      return `import customPubSub from '${pubsubConfig.customPath}'
+export const pubsub = customPubSub
+`
+    }
+
+    // Default: use built-in PubSub
+    return `import { createPubSub } from 'nitro-graphql/pubsub'
+export const pubsub = createPubSub()
+`
+  },
+}
+
 export const debugInfo = {
   id: '#nitro-graphql/debug-info',
   getCode: (nitro: Nitro): string => {
@@ -211,6 +236,7 @@ export const debugInfo = {
       'server-directives': safeGenerateModuleCode(nitro, '#nitro-graphql/server-directives'),
       'module-config': safeGenerateModuleCode(nitro, '#nitro-graphql/module-config'),
       'graphql-config': safeGenerateModuleCode(nitro, '#nitro-graphql/graphql-config'),
+      'pubsub': safeGenerateModuleCode(nitro, '#nitro-graphql/pubsub'),
     }
 
     const info = {
@@ -244,6 +270,7 @@ const allModules = [
   graphqlConfig,
   moduleConfig,
   validationSchemas,
+  pubsub,
   debugInfo,
 ]
 

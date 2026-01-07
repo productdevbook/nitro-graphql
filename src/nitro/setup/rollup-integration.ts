@@ -126,6 +126,8 @@ export function setupRollupExternals(nitro: Nitro): void {
     const codegenExternals = [
       'oxc-parser',
       '@oxc-parser',
+      // Ensure single graphql instance across all modules
+      'graphql',
     ]
 
     const allExternals = [...codegenExternals]

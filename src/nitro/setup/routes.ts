@@ -13,14 +13,26 @@ import { ENDPOINT_DEBUG, GRAPHQL_HTTP_METHODS } from '../../core/constants'
 export function registerRouteHandlers(nitro: Nitro): void {
   const runtime = fileURLToPath(new URL('../routes', import.meta.url))
   const framework = nitro.options.graphql?.framework
+  const subscriptions = nitro.options.graphql?.subscriptions
+  const endpoint = nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql'
 
-  // Main GraphQL endpoint
+  // Main GraphQL endpoint (HTTP)
   if (framework === 'graphql-yoga') {
     for (const method of GRAPHQL_HTTP_METHODS) {
       nitro.options.handlers.push({
-        route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
+        route: endpoint,
         handler: join(runtime, 'graphql-yoga'),
         method,
+      })
+    }
+
+    // WebSocket handler for subscriptions (Yoga)
+    if (subscriptions?.enabled && subscriptions.websocket?.enabled !== false) {
+      // Use separate path for WebSocket to avoid conflict with HTTP handlers
+      const wsPath = subscriptions.websocket?.path || `${endpoint}/ws`
+      nitro.options.handlers.push({
+        route: wsPath,
+        handler: join(runtime, 'graphql-yoga-ws'),
       })
     }
   }
@@ -28,9 +40,19 @@ export function registerRouteHandlers(nitro: Nitro): void {
   if (framework === 'apollo-server') {
     for (const method of GRAPHQL_HTTP_METHODS) {
       nitro.options.handlers.push({
-        route: nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql',
+        route: endpoint,
         handler: join(runtime, 'apollo-server'),
         method,
+      })
+    }
+
+    // WebSocket handler for subscriptions (Apollo)
+    if (subscriptions?.enabled && subscriptions.websocket?.enabled !== false) {
+      // Use separate path for WebSocket to avoid conflict with HTTP handlers
+      const wsPath = subscriptions.websocket?.path || `${endpoint}/ws`
+      nitro.options.handlers.push({
+        route: wsPath,
+        handler: join(runtime, 'apollo-server-ws'),
       })
     }
   }

@@ -148,6 +148,14 @@ function initializeConfiguration(nitro: Nitro, serverEnabled: boolean): void {
   nitro.scanResolvers ||= []
   nitro.scanDirectives ||= []
   nitro.scanDocuments ||= []
+
+  // Auto-enable WebSocket feature when subscriptions are enabled
+  if (nitro.options.graphql?.subscriptions?.enabled) {
+    nitro.options.features = {
+      ...nitro.options.features,
+      websocket: true,
+    }
+  }
 }
 
 /**

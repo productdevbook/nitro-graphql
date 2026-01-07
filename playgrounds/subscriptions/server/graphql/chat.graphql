@@ -1,0 +1,51 @@
+scalar DateTime
+
+type Query {
+  """
+  Get all messages in a channel
+  """
+  messages(channelId: ID!): [Message!]!
+
+  """
+  Get available channels
+  """
+  channels: [Channel!]!
+}
+
+type Mutation {
+  """
+  Send a message to a channel
+  """
+  sendMessage(channelId: ID!, content: String!, username: String!): Message!
+
+  """
+  Create a new channel
+  """
+  createChannel(name: String!): Channel!
+}
+
+type Subscription {
+  """
+  Subscribe to new messages in a channel
+  """
+  messageAdded(channelId: ID!): Message!
+
+  """
+  Subscribe to all messages across all channels
+  """
+  allMessages: Message!
+}
+
+type Message {
+  id: ID!
+  channelId: ID!
+  content: String!
+  username: String!
+  createdAt: DateTime!
+}
+
+type Channel {
+  id: ID!
+  name: String!
+  createdAt: DateTime!
+}
