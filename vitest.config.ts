@@ -34,6 +34,7 @@ export default defineConfig({
       // Map nitro-graphql/* imports to source files (no build required)
       'nitro-graphql/config': resolve(__dirname, './src/config.ts'),
       'nitro-graphql/define': resolve(__dirname, './src/define.ts'),
+      'nitro-graphql/pubsub': resolve(__dirname, './src/core/pubsub/index.ts'),
       'nitro-graphql/native': resolve(__dirname, './tests/mocks/native.ts'),
       // Force single graphql instance to avoid "Cannot use GraphQL* from another module" errors
       'graphql': resolve(__dirname, './node_modules/graphql'),

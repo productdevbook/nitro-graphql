@@ -50,6 +50,9 @@ jobs:
       - name: 👀 Lint
         run: pnpm lint
 
+      - name: 🚀 Build
+        run: pnpm build
+
       - name: 🧪 Test
         run: pnpm test:run --coverage
 
@@ -95,6 +98,3 @@ jobs:
             git commit -m "chore: update coverage badge to ${COVERAGE}%"
             git push
           fi
-
-      - name: 🚀 Build
-        run: pnpm build
