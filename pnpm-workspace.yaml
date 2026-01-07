@@ -1,6 +1,19 @@
+catalogMode: prefer
+
+cleanupUnusedCatalogs: true
+
+ignoreWorkspaceRootCheck: true
+
+shellEmulator: true
+
+trustPolicy: no-downgrade
+
 packages:
   - playgrounds/*
   - crates/*
+
+overrides:
+  vite: 8.0.0-beta.5
 
 catalog:
   '@antfu/eslint-config': ^6.7.3
@@ -58,18 +71,5 @@ catalog:
   vitest: ^4.0.16
   ws: ^8.19.0
   zod: ^4.3.4
-
-catalogMode: prefer
-
-cleanupUnusedCatalogs: true
-
-ignoreWorkspaceRootCheck: true
-
-overrides:
-  vite: 8.0.0-beta.5
-
-shellEmulator: true
-
-trustPolicy: no-downgrade
 
 trustPolicyIgnoreAfter: 10.08

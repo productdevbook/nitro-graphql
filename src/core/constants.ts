@@ -289,4 +289,3 @@ export const HTTP_STATUS_INTERNAL_ERROR = 500 as const
  * Default service directory name for main service
  */
 export const SERVICE_DEFAULT = 'default' as const
-

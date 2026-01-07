@@ -41,15 +41,21 @@ async function getSchema(): Promise<GraphQLSchema> {
 const gqlWsHooks = makeHooks({
   schema: () => getSchema(),
   context: async (ctx) => {
-    // Include any context from importedConfig
-    const configContext = typeof importedConfig.context === 'function'
-      ? await (importedConfig.context as Function)({ connectionParams: ctx.connectionParams })
-      : importedConfig.context || {}
+    // Build context from connectionParams and any user-defined context
+    const baseContext = { connectionParams: ctx.connectionParams }
 
-    return {
-      connectionParams: ctx.connectionParams,
-      ...configContext,
+    // If user defined a context function in config.ts, call it
+    if (typeof importedConfig.context === 'function') {
+      const userContext = await importedConfig.context(baseContext)
+      return { ...baseContext, ...userContext }
     }
+
+    // If user defined a static context object, merge it
+    if (importedConfig.context && typeof importedConfig.context === 'object') {
+      return { ...baseContext, ...importedConfig.context }
+    }
+
+    return baseContext
   },
 })
 
