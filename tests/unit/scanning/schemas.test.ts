@@ -3,7 +3,7 @@ import type { ScanContext } from '../../../src/core/types/scanning'
  * Unit tests for schema scanning module
  *
  * Tests the scanSchemasCore and scanGraphqlCore functions which:
- * - Scan for GraphQL schema files (.graphql) in server directory
+ * - Scan for GraphQL schema files (.graphql, .gql) in server directory
  * - Support Nuxt layers for multi-layer scanning
  * - Return file paths with warnings/errors
  */
@@ -58,6 +58,21 @@ describe('scanSchemasCore', () => {
       expect(result.errors).toHaveLength(0)
     })
 
+    it('should scan for both .graphql and .gql files in server directory', async () => {
+      mockGlob.mockResolvedValue([
+        '/project/server/graphql/schema.graphql',
+        '/project/server/graphql/types.gql',
+        '/project/server/graphql/queries.gql',
+      ])
+
+      const result = await scanSchemasCore(mockContext)
+
+      expect(result.items).toHaveLength(3)
+      expect(result.items).toContain('/project/server/graphql/schema.graphql')
+      expect(result.items).toContain('/project/server/graphql/types.gql')
+      expect(result.items).toContain('/project/server/graphql/queries.gql')
+    })
+
     it('should return empty array when no files found', async () => {
       mockGlob.mockResolvedValue([])
 
@@ -68,13 +83,13 @@ describe('scanSchemasCore', () => {
       expect(result.errors).toHaveLength(0)
     })
 
-    it('should call glob with correct pattern', async () => {
+    it('should call glob with correct pattern for both extensions', async () => {
       mockGlob.mockResolvedValue([])
 
       await scanSchemasCore(mockContext)
 
       expect(mockGlob).toHaveBeenCalledWith(
-        expect.stringContaining('**/*.graphql'),
+        expect.stringMatching(/\*\*\/\*\.\{graphql,gql\}/),
         expect.objectContaining({
           cwd: '/project',
           dot: true,

@@ -56,9 +56,9 @@ export const DIRECTIVE_EXTENSIONS = ['.directive.ts', '.directive.js'] as const
 export const GLOB_SCAN_PATTERN = '**/*.{graphql,gql,js,mjs,cjs,ts,mts,cts,tsx,jsx}' as const
 
 /**
- * GraphQL file pattern for glob
+ * GraphQL file pattern for glob (supports both .graphql and .gql extensions)
  */
-export const GRAPHQL_GLOB_PATTERN = '**/*.graphql' as const
+export const GRAPHQL_GLOB_PATTERN = '**/*.{graphql,gql}' as const
 
 /**
  * Resolver file pattern for glob

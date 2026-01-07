@@ -3,7 +3,7 @@ import type { ScanContext } from '../../../src/core/types/scanning'
  * Unit tests for document scanning module
  *
  * Tests the scanDocumentsCore function which:
- * - Scans for GraphQL client documents (.graphql) in client directory
+ * - Scans for GraphQL client documents (.graphql, .gql) in client directory
  * - Filters out external service directories
  * - Supports Nuxt layers for multi-layer scanning
  */
@@ -60,6 +60,32 @@ describe('scanDocumentsCore', () => {
       expect(result.items).toHaveLength(2)
       expect(result.warnings).toHaveLength(0)
       expect(result.errors).toHaveLength(0)
+    })
+
+    it('should scan for both .graphql and .gql files in client directory', async () => {
+      mockGlob.mockResolvedValue([
+        '/project/app/graphql/queries/getUser.graphql',
+        '/project/app/graphql/mutations/createUser.gql',
+        '/project/app/graphql/fragments/userFields.gql',
+      ])
+
+      const result = await scanDocumentsCore(mockContext)
+
+      expect(result.items).toHaveLength(3)
+      expect(result.items).toContain('/project/app/graphql/queries/getUser.graphql')
+      expect(result.items).toContain('/project/app/graphql/mutations/createUser.gql')
+      expect(result.items).toContain('/project/app/graphql/fragments/userFields.gql')
+    })
+
+    it('should call glob with correct pattern for both extensions', async () => {
+      mockGlob.mockResolvedValue([])
+
+      await scanDocumentsCore(mockContext)
+
+      expect(mockGlob).toHaveBeenCalledWith(
+        expect.stringMatching(/\*\*\/\*\.\{graphql,gql\}/),
+        expect.any(Object),
+      )
     })
 
     it('should return empty array when no documents found', async () => {

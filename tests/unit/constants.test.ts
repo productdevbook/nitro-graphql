@@ -4,12 +4,17 @@ import {
   FRAMEWORK_NITRO,
   FRAMEWORK_NUXT,
   GRAPHQL_EXTENSIONS,
+  GRAPHQL_GLOB_PATTERN,
   RESOLVER_EXTENSIONS,
 } from '../../src/core/constants'
 
 describe('constants', () => {
   it('should export GraphQL extensions', () => {
     expect(GRAPHQL_EXTENSIONS).toEqual(['.graphql', '.gql'])
+  })
+
+  it('should export GraphQL glob pattern with both extensions', () => {
+    expect(GRAPHQL_GLOB_PATTERN).toBe('**/*.{graphql,gql}')
   })
 
   it('should export resolver extensions', () => {
