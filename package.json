@@ -187,6 +187,7 @@
     "@nuxt/kit": "catalog:",
     "@nuxt/schema": "catalog:",
     "@types/node": "catalog:",
+    "@types/ws": "catalog:",
     "@vitejs/devtools": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "@vitest/ui": "catalog:",
@@ -201,7 +202,8 @@
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitepress-plugin-llms": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "ws": "catalog:"
   },
   "overrides": {
     "graphql": "^16.12.0"

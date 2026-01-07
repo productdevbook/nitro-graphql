@@ -1,0 +1,18 @@
+type Query {
+  messages: [Message!]!
+}
+
+type Mutation {
+  sendMessage(content: String!): Message!
+}
+
+type Subscription {
+  messageAdded: Message!
+  countdown(from: Int!): Int!
+}
+
+type Message {
+  id: ID!
+  content: String!
+  createdAt: String!
+}
