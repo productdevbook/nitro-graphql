@@ -1,0 +1,19 @@
+subscription MessageAdded($channelId: ID!) {
+  messageAdded(channelId: $channelId) {
+    id
+    channelId
+    content
+    username
+    createdAt
+  }
+}
+
+subscription AllMessages {
+  allMessages {
+    id
+    channelId
+    content
+    username
+    createdAt
+  }
+}

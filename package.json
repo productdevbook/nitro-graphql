@@ -80,6 +80,10 @@
     "./pubsub": {
       "types": "./dist/core/pubsub/index.d.mts",
       "import": "./dist/core/pubsub/index.mjs"
+    },
+    "./subscribe": {
+      "types": "./dist/subscribe/index.d.mts",
+      "import": "./dist/subscribe/index.mjs"
     }
   },
   "module": "./dist/index.mjs",
@@ -129,11 +133,15 @@
   "peerDependencies": {
     "@apollo/server": "^5.0.0",
     "graphql": "^16.12.0",
+    "graphql-sse": "^2.6.0",
     "graphql-ws": "^6.0.6",
     "nitro": "^3.0.1-alpha.0"
   },
   "peerDependenciesMeta": {
     "@apollo/server": {
+      "optional": true
+    },
+    "graphql-sse": {
       "optional": true
     },
     "graphql-ws": {

@@ -1,17 +1,22 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES2022",
+    "jsx": "preserve",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "paths": {
-      "#graphql/server": ["./.nitro/types/nitro-graphql-server.d.ts"]
+      "#graphql/server": ["./.graphql/types/nitro-graphql-server.d.ts"],
+      "#graphql/client": ["./.graphql/types/nitro-graphql-client.d.ts"]
     },
     "resolveJsonModule": true,
     "types": ["nitro"],
     "strict": true,
+    "noEmit": true,
     "esModuleInterop": true,
+    "isolatedModules": true,
     "skipLibCheck": true
   },
-  "include": ["**/*.ts"],
-  "exclude": ["node_modules", ".nitro", ".output"]
+  "include": ["src/**/*.ts", "src/**/*.vue", "server/**/*.ts"],
+  "exclude": ["node_modules", ".graphql", ".output"]
 }

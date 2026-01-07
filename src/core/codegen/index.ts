@@ -7,8 +7,10 @@
 export {
   DEFAULT_CLIENT_CODEGEN_CONFIG,
   downloadAndSaveSchema,
+  extractSubscriptions,
   generateClientTypesCore,
   generateExternalClientTypesCore,
+  generateSubscriptionBuilder,
   graphQLLoadSchemaSync,
   loadExternalSchema,
   loadGraphQLDocuments,
@@ -17,6 +19,7 @@ export {
 export type {
   GraphQLLoadSchemaOptions,
   GraphQLTypeDefPointer,
+  SubscriptionInfo,
 } from './client'
 
 // Plugin

@@ -1,6 +1,6 @@
 /**
  * Built-in PubSub implementation for GraphQL Subscriptions
- * Simple EventTarget-based implementation for single-instance deployments
+ * Simple EventEmitter-based implementation for single-instance deployments
  *
  * For multi-instance deployments, use external PubSub solutions like:
  * - Redis (with ioredis)
@@ -8,6 +8,8 @@
  * - RabbitMQ
  * - Cloud Pub/Sub services
  */
+
+import { EventEmitter } from 'node:events'
 
 /**
  * Generic PubSub engine interface
@@ -37,7 +39,7 @@ export type TypedPubSub<Topics extends Record<string, unknown>> = PubSubEngine<T
 /**
  * Create a simple in-memory PubSub instance
  *
- * This implementation uses EventTarget for lightweight pub/sub functionality.
+ * This implementation uses EventEmitter for lightweight pub/sub functionality.
  * Suitable for:
  * - Development environments
  * - Single-instance production deployments
@@ -74,12 +76,13 @@ export type TypedPubSub<Topics extends Record<string, unknown>> = PubSubEngine<T
 export function createPubSub<
   Topics extends Record<string, unknown> = Record<string, unknown>,
 >(): PubSubEngine<Topics> {
-  const eventTarget = new EventTarget()
+  const emitter = new EventEmitter()
+  // Allow unlimited listeners to prevent warnings with many subscriptions
+  emitter.setMaxListeners(0)
 
   return {
     async publish<K extends keyof Topics>(topic: K, payload: Topics[K]): Promise<void> {
-      const event = new CustomEvent(String(topic), { detail: payload })
-      eventTarget.dispatchEvent(event)
+      emitter.emit(String(topic), payload)
     },
 
     subscribe<K extends keyof Topics>(topic: K): AsyncIterable<Topics[K]> {
@@ -91,8 +94,7 @@ export function createPubSub<
           let resolve: ((value: IteratorResult<Topics[K]>) => void) | null = null
           let done = false
 
-          const listener = (event: Event): void => {
-            const payload = (event as CustomEvent<Topics[K]>).detail
+          const listener = (payload: Topics[K]): void => {
             if (resolve) {
               resolve({ value: payload, done: false })
               resolve = null
@@ -102,7 +104,7 @@ export function createPubSub<
             }
           }
 
-          eventTarget.addEventListener(topicStr, listener)
+          emitter.on(topicStr, listener)
 
           return {
             next(): Promise<IteratorResult<Topics[K]>> {
@@ -119,13 +121,13 @@ export function createPubSub<
 
             return(): Promise<IteratorResult<Topics[K]>> {
               done = true
-              eventTarget.removeEventListener(topicStr, listener)
+              emitter.off(topicStr, listener)
               return Promise.resolve({ value: undefined as unknown as Topics[K], done: true })
             },
 
             throw(error: Error): Promise<IteratorResult<Topics[K]>> {
               done = true
-              eventTarget.removeEventListener(topicStr, listener)
+              emitter.off(topicStr, listener)
               return Promise.reject(error)
             },
           }

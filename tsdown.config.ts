@@ -14,6 +14,8 @@ export default defineConfig({
     'src/index.ts',
     'src/define.ts',
     'src/config.ts',
+    // Subscription client (browser-side)
+    'src/subscribe/index.ts',
     // Core (framework-agnostic)
     'src/core/**',
     // CLI

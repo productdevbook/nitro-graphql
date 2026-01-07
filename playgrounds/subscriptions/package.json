@@ -1,17 +1,27 @@
 {
-  "name": "nitro-graphql-subscriptions-example",
+  "name": "nitro-graphql-subscriptions-playground",
+  "type": "module",
+  "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "nitro dev",
-    "build": "nitro build",
-    "preview": "node .output/server/index.mjs"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
+    "@tailwindcss/vite": "catalog:",
+    "graphql": "catalog:",
+    "graphql-sse": "catalog:",
     "graphql-ws": "catalog:",
-    "nitro-graphql": "link:../.."
+    "graphql-yoga": "catalog:",
+    "nitro": "catalog:",
+    "nitro-graphql": "link:../..",
+    "tailwindcss": "catalog:",
+    "vue": "catalog:"
   },
   "devDependencies": {
-    "nitro": "catalog:",
-    "ws": "catalog:"
+    "@vitejs/plugin-vue": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
   }
 }

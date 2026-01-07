@@ -17,6 +17,7 @@ import {
   generateClientTypesCore,
   generateExternalClientTypesCore,
   generateServerTypesCore,
+  generateSubscriptionBuilder,
   loadExternalSchema,
   loadGraphQLDocuments,
   validateNoDuplicateTypes,
@@ -24,6 +25,7 @@ import {
 import { LOG_TAG } from '../core/constants'
 import { loadFederationSupport } from '../core/schema'
 import { writeFile } from '../core/utils/file-io'
+import { subscribeClientTemplate } from '../core/utils/subscribe-templates'
 import { getDefaultPaths, getSdkConfig, getTypesConfig, resolveFilePath, shouldGenerateTypes } from './paths'
 
 const logger = consola.withTag(LOG_TAG)
@@ -170,6 +172,7 @@ async function generateMainClientTypes(
   const placeholders = getDefaultPaths(nitro)
   const typesConfig = getTypesConfig(nitro)
   const sdkConfig = getSdkConfig(nitro)
+  const subscriptionsEnabled = nitro.options.graphql?.subscriptions?.enabled ?? false
 
   // Write client types
   const clientPath = resolveFilePath(typesConfig.client, typesConfig.enabled, true, '{typesDir}/nitro-graphql-client.d.ts', placeholders)
@@ -179,12 +182,26 @@ async function generateMainClientTypes(
       logger.success(`Client types: ${clientPath}`)
   }
 
-  // Write SDK
+  // Generate subscription builder code if subscriptions are enabled
+  const subscriptionCode = generateSubscriptionBuilder(docs, subscriptionsEnabled)
+
+  // Write SDK (with optional subscription composables appended)
   const sdkPath = resolveFilePath(sdkConfig.main, sdkConfig.enabled, true, '{clientDir}/default/sdk.ts', placeholders)
   if (sdkPath) {
-    writeFile(sdkPath, types.sdk)
+    const sdkContent = subscriptionCode ? types.sdk + subscriptionCode : types.sdk
+    writeFile(sdkPath, sdkContent)
     if (!options.silent)
       logger.success(`SDK: ${sdkPath}`)
+  }
+
+  // Generate subscribe.ts config file if subscriptions enabled (only if it doesn't exist)
+  if (subscriptionsEnabled) {
+    const subscribePath = resolveFilePath(true, true, true, '{clientDir}/default/subscribe.ts', placeholders)
+    if (subscribePath && !existsSync(subscribePath)) {
+      writeFile(subscribePath, subscribeClientTemplate)
+      if (!options.silent)
+        logger.success(`Subscribe config: ${subscribePath}`)
+    }
   }
 }
 

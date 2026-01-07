@@ -10,7 +10,7 @@
     "lint:type": "vue-tsc -b"
   },
   "dependencies": {
-    "@pinia/colada": "^0.20.0",
+    "@pinia/colada": "^0.21.0",
     "@tailwindcss/vite": "^4.1.18",
     "graphql": "^16.12.0",
     "graphql-yoga": "^5.18.0",
@@ -29,6 +29,6 @@
     "graphql-config": "^5.1.5",
     "typescript": "^5.9.3",
     "vite": "8.0.0-beta.5",
-    "vue-tsc": "^3.2.1"
+    "vue-tsc": "^3.2.2"
   }
 }
