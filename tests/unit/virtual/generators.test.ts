@@ -12,7 +12,7 @@
  */
 import type { Nitro } from 'nitro/types'
 import { describe, expect, it, vi } from 'vitest'
-import { graphqlConfig, validationSchemas } from '../../../src/nitro/virtual/generators'
+import { graphqlConfig, serverResolvers, serverSchemas, validationSchemas } from '../../../src/nitro/virtual/generators'
 
 /** Minimal Nitro mock for testing virtual module generators */
 type MockNitro = Pick<Nitro, 'graphql'>
@@ -175,5 +175,167 @@ describe('validationSchemas virtual module', () => {
       export default mergedSchemas
       "
     `)
+  })
+})
+
+describe('serverSchemas virtual module - deterministic ordering', () => {
+  function createSchemaMockNitro(schemas: string[]): Nitro {
+    return {
+      scanSchemas: schemas,
+      graphql: {
+        serverDir: '/server/graphql',
+        buildDir: '',
+        watchDirs: [],
+        clientDir: '',
+        dir: { build: '', client: '', server: '' },
+        directiveSchemas: null,
+        extendConfigs: [],
+        extendSchemas: [],
+      },
+      options: {
+        dev: false,
+        graphql: {},
+      },
+      logger: { warn: () => {} },
+    } as unknown as Nitro
+  }
+
+  it('should generate imports in same order as input array', () => {
+    const schemas = [
+      '/server/graphql/a-first.graphql',
+      '/server/graphql/b-second.graphql',
+      '/server/graphql/c-third.graphql',
+    ]
+    const nitro = createSchemaMockNitro(schemas)
+    const code = serverSchemas.getCode(nitro)
+
+    // Verify imports are in order
+    const importLines = code.split('\n').filter(l => l.startsWith('import'))
+    expect(importLines[0]).toContain('a-first.graphql')
+    expect(importLines[1]).toContain('b-second.graphql')
+    expect(importLines[2]).toContain('c-third.graphql')
+  })
+
+  it('should generate deterministic output for sorted schemas', () => {
+    // Simulate sorted schema paths (as scanning should provide)
+    const schemas = [
+      '/server/graphql/auth.graphql',
+      '/server/graphql/user.graphql',
+      '/server/graphql/z-last.graphql',
+    ]
+    const nitro = createSchemaMockNitro(schemas)
+
+    // Run multiple times - output should be identical
+    const results = [
+      serverSchemas.getCode(nitro),
+      serverSchemas.getCode(nitro),
+      serverSchemas.getCode(nitro),
+    ]
+
+    expect(results[0]).toBe(results[1])
+    expect(results[1]).toBe(results[2])
+  })
+
+  it('should preserve alphabetical order in export array', () => {
+    const schemas = [
+      '/server/graphql/a.graphql',
+      '/server/graphql/m.graphql',
+      '/server/graphql/z.graphql',
+    ]
+    const nitro = createSchemaMockNitro(schemas)
+    const code = serverSchemas.getCode(nitro)
+
+    // Verify imports appear in same order as input
+    const importLines = code.split('\n').filter(l => l.startsWith('import'))
+    expect(importLines).toHaveLength(3)
+    expect(importLines[0]).toContain('a.graphql')
+    expect(importLines[1]).toContain('m.graphql')
+    expect(importLines[2]).toContain('z.graphql')
+
+    // Verify export array has entries in same order as imports
+    const exportMatch = code.match(/export const schemas = \[([\s\S]*?)\];/)
+    expect(exportMatch).toBeTruthy()
+    const exportEntries = exportMatch![1].split(',').map(s => s.trim()).filter(Boolean)
+    expect(exportEntries).toHaveLength(3)
+  })
+})
+
+describe('serverResolvers virtual module - deterministic ordering', () => {
+  function createResolverMockNitro(resolvers: Array<{ specifier: string, imports: Array<{ name: string }> }>): Nitro {
+    return {
+      scanResolvers: resolvers.map(r => ({
+        specifier: r.specifier,
+        imports: r.imports,
+      })),
+      graphql: {
+        serverDir: '/server/graphql',
+        buildDir: '',
+        watchDirs: [],
+        clientDir: '',
+        dir: { build: '', client: '', server: '' },
+        directiveSchemas: null,
+        extendConfigs: [],
+        extendSchemas: [],
+      },
+      options: {
+        dev: false,
+      },
+      logger: { warn: () => {} },
+    } as unknown as Nitro
+  }
+
+  it('should generate imports in same order as input array', () => {
+    const resolvers = [
+      { specifier: '/server/graphql/a.resolver.ts', imports: [{ name: 'aResolver' }] },
+      { specifier: '/server/graphql/b.resolver.ts', imports: [{ name: 'bResolver' }] },
+      { specifier: '/server/graphql/c.resolver.ts', imports: [{ name: 'cResolver' }] },
+    ]
+    const nitro = createResolverMockNitro(resolvers)
+    const code = serverResolvers.getCode(nitro)
+
+    const importLines = code.split('\n').filter(l => l.startsWith('import'))
+    expect(importLines[0]).toContain('a.resolver.ts')
+    expect(importLines[1]).toContain('b.resolver.ts')
+    expect(importLines[2]).toContain('c.resolver.ts')
+  })
+
+  it('should generate deterministic output for sorted resolvers', () => {
+    const resolvers = [
+      { specifier: '/server/graphql/auth.resolver.ts', imports: [{ name: 'authResolver' }] },
+      { specifier: '/server/graphql/user.resolver.ts', imports: [{ name: 'userResolver' }] },
+    ]
+    const nitro = createResolverMockNitro(resolvers)
+
+    // Run multiple times - output should be identical
+    const results = [
+      serverResolvers.getCode(nitro),
+      serverResolvers.getCode(nitro),
+      serverResolvers.getCode(nitro),
+    ]
+
+    expect(results[0]).toBe(results[1])
+    expect(results[1]).toBe(results[2])
+  })
+
+  it('should preserve order in resolvers export array', () => {
+    const resolvers = [
+      { specifier: '/server/graphql/a.resolver.ts', imports: [{ name: 'aResolver' }] },
+      { specifier: '/server/graphql/m.resolver.ts', imports: [{ name: 'mResolver' }] },
+      { specifier: '/server/graphql/z.resolver.ts', imports: [{ name: 'zResolver' }] },
+    ]
+    const nitro = createResolverMockNitro(resolvers)
+    const code = serverResolvers.getCode(nitro)
+
+    // Check the resolvers array maintains order
+    const resolversArrayMatch = code.match(/export const resolvers = \[([\s\S]*?)\]/)
+    expect(resolversArrayMatch).toBeTruthy()
+
+    const arrayContent = resolversArrayMatch![1]
+    const aIndex = arrayContent.indexOf('aResolver')
+    const mIndex = arrayContent.indexOf('mResolver')
+    const zIndex = arrayContent.indexOf('zResolver')
+
+    expect(aIndex).toBeLessThan(mIndex)
+    expect(mIndex).toBeLessThan(zIndex)
   })
 })

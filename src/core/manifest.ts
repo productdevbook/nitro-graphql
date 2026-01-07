@@ -131,9 +131,9 @@ export async function resolvePackageFiles(pkg: ResolvedPackage): Promise<Resolve
   const schemaPath = resolve(serverDir, 'schema.ts')
 
   return {
-    schemas,
-    resolvers,
-    directives,
+    schemas: schemas.sort((a, b) => a.localeCompare(b)),
+    resolvers: resolvers.sort((a, b) => a.localeCompare(b)),
+    directives: directives.sort((a, b) => a.localeCompare(b)),
     serverDir,
     configPath: existsSync(configPath) ? configPath : undefined,
     schemaPath: existsSync(schemaPath) ? schemaPath : undefined,

@@ -105,6 +105,7 @@ export async function scanWithLayers(
     ),
   ).then(r => r.flat())
 
-  // Combine and deduplicate
-  return deduplicateFiles([...mainFiles, ...layerFiles])
+  // Combine, deduplicate, and sort for deterministic output
+  const combined = deduplicateFiles([...mainFiles, ...layerFiles])
+  return combined.sort((a, b) => a.path.localeCompare(b.path))
 }

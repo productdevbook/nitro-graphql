@@ -10,7 +10,7 @@ import { loadFilesSync } from '@graphql-tools/load-files'
 import { mergeTypeDefs } from '@graphql-tools/merge'
 import { printSchemaWithDirectives } from '@graphql-tools/utils'
 import consola from 'consola'
-import { buildSchema, parse, print } from 'graphql'
+import { buildSchema, lexicographicSortSchema, parse, print } from 'graphql'
 import { join, resolve } from 'pathe'
 import {
   downloadAndSaveSchema,
@@ -86,17 +86,20 @@ export async function generateServerTypes(
     const federation = nitro.options.graphql?.federation?.enabled === true
     const schema = await buildSchemaFromString(print(merged), federation)
 
+    // Sort schema for deterministic output
+    const sortedSchema = lexicographicSortSchema(schema)
+
     // Generate types
     const result = await generateServerTypesCore({
       framework: nitro.options.graphql?.framework || 'graphql-yoga',
-      schema,
+      schema: sortedSchema,
       config: nitro.options.graphql?.codegen?.server as any,
       federationEnabled: federation,
     })
 
     // Write schema.graphql
     const schemaPath = resolve(nitro.graphql.buildDir, 'schema.graphql')
-    writeFile(schemaPath, printSchemaWithDirectives(schema))
+    writeFile(schemaPath, printSchemaWithDirectives(sortedSchema))
 
     // Write server types
     const placeholders = getDefaultPaths(nitro)
@@ -151,9 +154,10 @@ async function generateMainClientTypes(
   const docs = await loadGraphQLDocuments(nitro.scanDocuments)
   const federation = nitro.options.graphql?.federation?.enabled === true
   const schema = await buildSchemaFromString(readFileSync(schemaPath, 'utf-8'), federation)
+  const sortedSchema = lexicographicSortSchema(schema)
 
   const types = await generateClientTypesCore({
-    schema,
+    schema: sortedSchema,
     documents: docs,
     config: nitro.options.graphql?.codegen?.client as any,
     sdkConfig: nitro.options.graphql?.codegen?.clientSDK as any,
@@ -199,6 +203,7 @@ async function generateExternalTypes(
         consola.warn(`[${service.name}] Failed to load schema`)
         continue
       }
+      const sortedSchema = lexicographicSortSchema(schema)
 
       const docs = service.documents?.length
         ? await loadGraphQLDocuments(service.documents).catch(() => [])
@@ -209,7 +214,7 @@ async function generateExternalTypes(
         continue
       }
 
-      const types = await generateExternalClientTypesCore(service as any, schema, docs)
+      const types = await generateExternalClientTypesCore(service as any, sortedSchema, docs)
       if (types === false)
         continue
 

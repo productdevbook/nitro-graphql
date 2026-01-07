@@ -1131,3 +1131,25 @@ describe('scan arrays', () => {
     expect(nitro.scanDirectives[0].imports[0].type).toBe('directive')
   })
 })
+
+/**
+ * Note: Deterministic ordering tests for generated files (schema.graphql, nitro-graphql-server.d.ts)
+ * are covered by the following unit tests:
+ *
+ * 1. tests/unit/scanning/ordering.test.ts
+ *    - Tests that scanDirectory and scanWithLayers return files in sorted order
+ *    - Tests that layer files are merged and sorted together
+ *
+ * 2. tests/unit/virtual/generators.test.ts
+ *    - Tests that serverSchemas generates imports in input order
+ *    - Tests that serverResolvers generates imports in input order
+ *    - Tests deterministic output across multiple calls
+ *
+ * These unit tests verify that:
+ * - File scanning returns sorted arrays (fix in src/core/scanning/common.ts)
+ * - Extend package files are sorted (fix in src/core/manifest.ts)
+ * - Generated code preserves the sorted order
+ *
+ * The actual file content is a result of the sorted scanSchemas/scanResolvers arrays
+ * being passed through generateServerTypes, which uses them in order.
+ */
