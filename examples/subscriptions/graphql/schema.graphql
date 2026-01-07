@@ -1,0 +1,20 @@
+type Query {
+  messages: [Message!]!
+  onlineCount: Int!
+}
+
+type Mutation {
+  sendMessage(text: String!, author: String!): Message!
+}
+
+type Subscription {
+  messageReceived: Message!
+  onlineCountChanged: Int!
+}
+
+type Message {
+  id: ID!
+  text: String!
+  author: String!
+  createdAt: String!
+}
