@@ -1,16 +1,13 @@
 {
-  "name": "nitro-graphql-subscriptions-example",
   "type": "module",
-  "private": true,
   "scripts": {
     "build": "nitro build",
     "dev": "nitro dev",
     "preview": "npx srvx --prod .output/"
   },
   "devDependencies": {
+    "@apollo/server": "^5.2.0",
     "graphql": "^16.12.0",
-    "graphql-ws": "^6.0.6",
-    "graphql-yoga": "^5.18.0",
     "nitro": "^3.0.1-alpha.1",
     "nitro-graphql": "2.0.0-beta.57",
     "rolldown": "^1.0.0-beta.59"
