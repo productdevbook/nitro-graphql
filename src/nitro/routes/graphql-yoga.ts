@@ -12,16 +12,19 @@ import { createMergedSchema } from '../../core/schema'
 // Cache control header for playground HTML (1 month)
 const PLAYGROUND_CACHE_HEADER = 'public, max-age=2592000, stale-while-revalidate=86400'
 
-// Apollo Sandbox HTML with 1 week cache
+// Apollo Sandbox HTML - uses proxied script for better caching
 const apolloSandboxHtml = `<!DOCTYPE html>
 <html lang="en">
+<head>
+  <link rel="preload" href="/api/graphql/sandbox.js" as="script">
+</head>
 <body style="margin: 0; overflow-x: hidden; overflow-y: hidden">
 <div id="sandbox" style="height:100vh; width:100vw;"></div>
-<script src="https://embeddable-sandbox.cdn.apollographql.com/02e2da0fccbe0240ef03d2396d6c98559bab5b06/embeddable-sandbox.umd.production.min.js"></script>
+<script src="/api/graphql/sandbox.js"></script>
 <script>
 new window.EmbeddedSandbox({
   target: "#sandbox",
-  initialEndpoint: window.location.href,
+  initialEndpoint: window.location.href.replace('/sandbox.js', ''),
   hideCookieToggle: false,
   initialState: {
     includeCookies: true

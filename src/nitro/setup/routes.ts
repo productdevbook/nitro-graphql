@@ -26,6 +26,13 @@ export function registerRouteHandlers(nitro: Nitro): void {
       })
     }
 
+    // Apollo Sandbox script proxy (cacheable)
+    nitro.options.handlers.push({
+      route: `${endpoint}/sandbox.js`,
+      handler: join(runtime, 'apollo-sandbox-script'),
+      method: 'GET',
+    })
+
     // WebSocket handler for subscriptions (Yoga)
     if (subscriptions?.enabled && subscriptions.websocket?.enabled !== false) {
       // Use separate path for WebSocket to avoid conflict with HTTP handlers

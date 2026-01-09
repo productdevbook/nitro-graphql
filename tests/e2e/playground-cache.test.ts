@@ -48,7 +48,7 @@ describe('playground Cache Headers E2E', () => {
   })
 
   describe('cache headers', () => {
-    it('gET request (playground) should have cache-control header', async () => {
+    it('get request (playground) should have cache-control header', async () => {
       const response = await fetch(`${serverUrl}/api/graphql`, {
         method: 'GET',
         headers: { Accept: 'text/html' },
@@ -63,7 +63,7 @@ describe('playground Cache Headers E2E', () => {
       expect(cacheControl).toContain('max-age=2592000') // 1 month
     })
 
-    it('pOST request (GraphQL query) should NOT have playground cache header', async () => {
+    it('post request (GraphQL query) should NOT have playground cache header', async () => {
       const response = await fetch(`${serverUrl}/api/graphql`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -85,7 +85,7 @@ describe('playground Cache Headers E2E', () => {
       }
     })
 
-    it('gET request with query param should NOT have playground cache header', async () => {
+    it('get request with query param should NOT have playground cache header', async () => {
       // GET with ?query= is a GraphQL query over GET, not playground
       const response = await fetch(
         `${serverUrl}/api/graphql?query=${encodeURIComponent('{ __typename }')}`,

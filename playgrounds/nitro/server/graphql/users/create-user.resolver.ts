@@ -64,21 +64,3 @@ export const deleteUserMutation = defineResolver({
     },
   },
 })
-
-export const updateBioMutation = defineResolver({
-  Mutation: {
-    updateBio: (_parent, { userId, bio }) => {
-      const user = users.find(u => u.id === userId)
-
-      if (!user) {
-        throw new Error(`User with id ${userId} not found`)
-      }
-
-      // Note: bio is already validated and transformed by directives
-      user.bio = bio
-      console.log('[GraphQL] User bio updated:', { userId, bio })
-
-      return user
-    },
-  },
-})
