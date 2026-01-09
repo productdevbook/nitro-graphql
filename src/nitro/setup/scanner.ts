@@ -124,6 +124,14 @@ export async function performGraphQLScan(nitro: Nitro, options: ScanOptions = {}
   const scanLocal = shouldScanLocalFiles(nitro)
   const extendSources = getExtendSources(nitro)
 
+  // Skip rescan when using skipLocalScan with extends
+  // The dev:start hook triggers rescan but Nitro doesn't await async hooks.
+  // This causes a race condition where tests/code run before rescan completes.
+  // Since extend packages don't change during dev, skipping rescan is correct.
+  if (isRescan && !scanLocal && extendSources?.length) {
+    return
+  }
+
   // Step 1: Handle skipLocalScan mode
   if (!scanLocal) {
     if (!isRescan && !silent) {

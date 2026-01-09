@@ -46,10 +46,6 @@ describe('extend Schema Merge E2E', () => {
     await prepare(nitro)
     await build(nitro)
 
-    // BUG: After build(), the dev:start hook triggers performGraphQLScan
-    // which clears and re-populates scanSchemas/scanResolvers.
-    // During rescan with skipLocalScan:true, extend packages are NOT fully loaded.
-
     devServer = createDevServer(nitro)
     const server = await devServer.listen({ port: 0 })
     const url = server.url || `http://localhost:${(server as unknown as { port: number }).port}`
