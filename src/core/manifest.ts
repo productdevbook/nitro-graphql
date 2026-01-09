@@ -142,7 +142,7 @@ export async function resolvePackageFiles(pkg: ResolvedPackage): Promise<Resolve
     scanPromises.push(Promise.resolve([]))
   }
 
-  const [schemas, resolvers, directives, documents] = await Promise.all(scanPromises)
+  const [schemas = [], resolvers = [], directives = [], documents = []] = await Promise.all(scanPromises)
 
   // Check for config.ts and schema.ts
   const configPath = resolve(serverDir, 'config.ts')
