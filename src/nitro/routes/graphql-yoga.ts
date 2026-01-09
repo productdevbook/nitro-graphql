@@ -6,8 +6,11 @@ import { resolvers } from '#nitro-graphql/server-resolvers'
 import { schemas } from '#nitro-graphql/server-schemas'
 import defu from 'defu'
 import { createYoga } from 'graphql-yoga'
-import { defineEventHandler } from 'nitro/h3'
+import { defineEventHandler, getQuery } from 'nitro/h3'
 import { createMergedSchema } from '../../core/schema'
+
+// Cache control header for playground HTML (1 month)
+const PLAYGROUND_CACHE_HEADER = 'public, max-age=2592000, stale-while-revalidate=86400'
 
 // Apollo Sandbox HTML with 1 week cache
 const apolloSandboxHtml = `<!DOCTYPE html>
@@ -63,11 +66,25 @@ export default defineEventHandler(async (event) => {
   }
   const response = await yoga.handleRequest(event.req, event as unknown as Record<string, unknown>)
 
+  // Check if this is a playground request (GET without query param)
+  const isPlaygroundRequest = event.req.method === 'GET' && !getQuery(event).query
+
   // If resolver set a custom status code via event.res.status, use it
   if (event.res.status && event.res.status !== 200) {
     return new Response(response.body, {
       ...response,
       status: event.res.status,
+    })
+  }
+
+  // Add cache headers for playground HTML responses
+  if (isPlaygroundRequest && response.headers.get('content-type')?.includes('text/html')) {
+    const headers = new Headers(response.headers)
+    headers.set('cache-control', PLAYGROUND_CACHE_HEADER)
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
     })
   }
 
