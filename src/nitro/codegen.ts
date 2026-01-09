@@ -8,9 +8,10 @@ import type { Nitro } from 'nitro/types'
 import { existsSync, readFileSync } from 'node:fs'
 import { loadFilesSync } from '@graphql-tools/load-files'
 import { mergeTypeDefs } from '@graphql-tools/merge'
+import { makeExecutableSchema } from '@graphql-tools/schema'
 import { printSchemaWithDirectives } from '@graphql-tools/utils'
 import consola from 'consola'
-import { buildSchema, lexicographicSortSchema, parse, print } from 'graphql'
+import { parse, print } from 'graphql'
 import { join, resolve } from 'pathe'
 import {
   downloadAndSaveSchema,
@@ -31,6 +32,7 @@ import { getDefaultPaths, getSdkConfig, getTypesConfig, resolveFilePath, shouldG
 const logger = consola.withTag(LOG_TAG)
 
 // Helper: Build schema with optional federation support
+// Uses @graphql-tools to ensure same graphql instance is used throughout
 async function buildSchemaFromString(source: string, federation: boolean): Promise<GraphQLSchema> {
   if (federation) {
     const buildSubgraph = await loadFederationSupport()
@@ -39,7 +41,9 @@ async function buildSchemaFromString(source: string, federation: boolean): Promi
     }
     return buildSubgraph([{ typeDefs: parse(source) }])
   }
-  return buildSchema(source)
+  // Use makeExecutableSchema from @graphql-tools to ensure same graphql instance
+  // This allows printSchemaWithDirectives to work without "different module" errors
+  return makeExecutableSchema({ typeDefs: source })
 }
 
 /**
@@ -84,15 +88,17 @@ export async function generateServerTypes(
     if (!validateNoDuplicateTypes(validSchemas, strings))
       return
 
-    const merged = mergeTypeDefs([strings.join('\n\n')], { throwOnConflict: true })
+    // mergeTypeDefs with sort: true provides deterministic ordering
+    const merged = mergeTypeDefs([strings.join('\n\n')], { throwOnConflict: true, sort: true })
+    // print(merged) preserves directives from the merged DocumentNode
     const mergedSchemaString = print(merged)
     const federation = nitro.options.graphql?.federation?.enabled === true
     const schema = await buildSchemaFromString(mergedSchemaString, federation)
 
-    // Sort schema for deterministic output
-    const sortedSchema = lexicographicSortSchema(schema)
-    // Get sorted schema string with directives preserved
-    const sortedSchemaString = printSchemaWithDirectives(sortedSchema)
+    // Use printSchemaWithDirectives to preserve custom directives in the output
+    // Note: We skip lexicographicSortSchema because it causes graphql instance mismatch errors
+    // The schema is already sorted by mergeTypeDefs with sort: true
+    const sortedSchemaString = printSchemaWithDirectives(schema)
 
     // Generate types - pass schemaString to avoid graphql instance mismatch
     const result = await generateServerTypesCore({
@@ -223,8 +229,6 @@ async function generateExternalTypes(
         consola.warn(`[${service.name}] Failed to load schema`)
         continue
       }
-      const sortedSchema = lexicographicSortSchema(schema)
-
       const docs = service.documents?.length
         ? await loadGraphQLDocuments(service.documents).catch(() => [])
         : []
@@ -234,7 +238,8 @@ async function generateExternalTypes(
         continue
       }
 
-      const types = await generateExternalClientTypesCore(service as any, sortedSchema, docs)
+      // Use schema directly without lexicographicSortSchema to avoid graphql instance mismatch
+      const types = await generateExternalClientTypesCore(service as any, schema, docs)
       if (types === false)
         continue
 

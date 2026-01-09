@@ -889,6 +889,52 @@ describe('getTypesConfig', () => {
 
       expect(result).toEqual(typesConfig)
     })
+
+    it('should return types config with custom client path', () => {
+      const typesConfig = {
+        enabled: true,
+        client: '{rootDir}/generated/client-types.d.ts',
+      }
+      const nitro = createMockNitro({
+        graphql: { types: typesConfig },
+      })
+
+      const result = getTypesConfig(nitro)
+
+      expect(result).toEqual(typesConfig)
+      expect(result.client).toBe('{rootDir}/generated/client-types.d.ts')
+    })
+
+    it('should return types config with all custom paths', () => {
+      const typesConfig = {
+        enabled: true,
+        server: '{typesDir}/custom-server.d.ts',
+        client: '{typesDir}/custom-client.d.ts',
+        external: '{typesDir}/custom-external-{serviceName}.d.ts',
+      }
+      const nitro = createMockNitro({
+        graphql: { types: typesConfig },
+      })
+
+      const result = getTypesConfig(nitro)
+
+      expect(result).toEqual(typesConfig)
+    })
+
+    it('should disable client types when set to false', () => {
+      const typesConfig = {
+        enabled: true,
+        server: true,
+        client: false,
+      }
+      const nitro = createMockNitro({
+        graphql: { types: typesConfig },
+      })
+
+      const result = getTypesConfig(nitro)
+
+      expect(result.client).toBe(false)
+    })
   })
 })
 
@@ -992,6 +1038,149 @@ describe('integration scenarios', () => {
         placeholders,
       )
       expect(typesPath).toBe('/project/.nuxt/types/nitro-graphql-client-github.d.ts')
+    })
+  })
+
+  describe('client types custom path resolution', () => {
+    it('should resolve custom client types path with {rootDir} placeholder', () => {
+      const placeholders = createPlaceholders({
+        rootDir: '/my-project',
+        buildDir: '/my-project/.nitro',
+        typesDir: '/my-project/.nitro/types',
+      })
+
+      const clientTypesPath = resolveFilePath(
+        '{rootDir}/generated/client-types.d.ts',
+        true,
+        true,
+        '{typesDir}/nitro-graphql-client.d.ts',
+        placeholders,
+      )
+
+      expect(clientTypesPath).toBe('/my-project/generated/client-types.d.ts')
+    })
+
+    it('should resolve custom client types path with {typesDir} placeholder', () => {
+      const placeholders = createPlaceholders({
+        rootDir: '/my-project',
+        buildDir: '/my-project/.nuxt',
+        typesDir: '/my-project/.nuxt/types',
+      })
+
+      const clientTypesPath = resolveFilePath(
+        '{typesDir}/custom-client.d.ts',
+        true,
+        true,
+        '{typesDir}/nitro-graphql-client.d.ts',
+        placeholders,
+      )
+
+      expect(clientTypesPath).toBe('/my-project/.nuxt/types/custom-client.d.ts')
+    })
+
+    it('should resolve custom client types path with {buildDir} placeholder', () => {
+      const placeholders = createPlaceholders({
+        rootDir: '/my-project',
+        buildDir: '/my-project/.nitro',
+        typesDir: '/my-project/.nitro/types',
+      })
+
+      const clientTypesPath = resolveFilePath(
+        '{buildDir}/graphql/client.d.ts',
+        true,
+        true,
+        '{typesDir}/nitro-graphql-client.d.ts',
+        placeholders,
+      )
+
+      expect(clientTypesPath).toBe('/my-project/.nitro/graphql/client.d.ts')
+    })
+
+    it('should return null when client types path is false', () => {
+      const placeholders = createPlaceholders({
+        rootDir: '/my-project',
+        typesDir: '/my-project/.nitro/types',
+      })
+
+      const clientTypesPath = resolveFilePath(
+        false,
+        true,
+        true,
+        '{typesDir}/nitro-graphql-client.d.ts',
+        placeholders,
+      )
+
+      expect(clientTypesPath).toBeNull()
+    })
+
+    it('should return null when categoryEnabled is false and config is undefined', () => {
+      const placeholders = createPlaceholders({
+        rootDir: '/my-project',
+        typesDir: '/my-project/.nitro/types',
+      })
+
+      const clientTypesPath = resolveFilePath(
+        undefined, // config is undefined
+        false, // categoryEnabled = false
+        true,
+        '{typesDir}/nitro-graphql-client.d.ts',
+        placeholders,
+      )
+
+      expect(clientTypesPath).toBeNull()
+    })
+
+    it('should generate when config is string even if categoryEnabled is false', () => {
+      const placeholders = createPlaceholders({
+        rootDir: '/my-project',
+        typesDir: '/my-project/.nitro/types',
+      })
+
+      // Config string takes priority over categoryEnabled=false
+      const clientTypesPath = resolveFilePath(
+        '{typesDir}/client.d.ts',
+        false, // categoryEnabled = false
+        true,
+        '{typesDir}/nitro-graphql-client.d.ts',
+        placeholders,
+      )
+
+      // Should still generate because config is a string (explicit path)
+      expect(clientTypesPath).toBe('/my-project/.nitro/types/client.d.ts')
+    })
+
+    it('should use default path when custom path is true', () => {
+      const placeholders = createPlaceholders({
+        rootDir: '/my-project',
+        typesDir: '/my-project/.nitro/types',
+      })
+
+      const clientTypesPath = resolveFilePath(
+        true,
+        true,
+        true,
+        '{typesDir}/nitro-graphql-client.d.ts',
+        placeholders,
+      )
+
+      expect(clientTypesPath).toBe('/my-project/.nitro/types/nitro-graphql-client.d.ts')
+    })
+
+    it('should resolve absolute path without placeholders', () => {
+      const placeholders = createPlaceholders({
+        rootDir: '/my-project',
+        typesDir: '/my-project/.nitro/types',
+      })
+
+      const clientTypesPath = resolveFilePath(
+        '/absolute/path/to/client.d.ts',
+        true,
+        true,
+        '{typesDir}/nitro-graphql-client.d.ts',
+        placeholders,
+      )
+
+      expect(clientTypesPath).toBe('/absolute/path/to/client.d.ts')
     })
   })
 })
