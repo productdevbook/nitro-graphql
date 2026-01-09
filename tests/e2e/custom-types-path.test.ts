@@ -14,7 +14,7 @@ import type { Nitro } from 'nitro/types'
 import { existsSync, readFileSync, rmSync } from 'node:fs'
 import { build, createNitro, prepare } from 'nitro/builder'
 import { join, resolve } from 'pathe'
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import graphql from '../../src'
 
 const fixturesDir = resolve(__dirname, '../fixtures')
