@@ -18,6 +18,7 @@ import { plugin as typescriptPlugin } from '@graphql-codegen/typescript'
 import { plugin as typescriptGenericSdk } from '@graphql-codegen/typescript-generic-sdk'
 import { plugin as typescriptOperations } from '@graphql-codegen/typescript-operations'
 import { printSchemaWithDirectives } from '@graphql-tools/utils'
+import consola from 'consola'
 import { defu } from 'defu'
 import { Kind, parse } from 'graphql'
 import { DEFAULT_GRAPHQL_SCALARS } from '../constants'
@@ -194,7 +195,9 @@ export async function generateClientTypesCore(
       sdk: sdkContent,
     }
   }
-  catch {
+  catch (error) {
+    // Log codegen errors - these are usually configuration issues like missing scalar definitions
+    consola.error('[nitro-graphql] Client type generation failed:', (error as Error).message)
     return false
   }
 }

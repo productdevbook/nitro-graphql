@@ -167,16 +167,26 @@ async function generateMainClientTypes(
   // Read schema as string to avoid graphql instance mismatch
   const schemaString = readFileSync(schemaPath, 'utf-8')
 
+  // Merge server scalars into client config if client scalars not explicitly set
+  // This ensures custom scalars defined for server types are also available for client types
+  const serverScalars = nitro.options.graphql?.codegen?.server?.scalars
+  const clientConfig = nitro.options.graphql?.codegen?.client || {}
+  const mergedClientConfig = {
+    ...clientConfig,
+    scalars: clientConfig.scalars ?? serverScalars,
+  }
+
   const types = await generateClientTypesCore({
     schemaString,
     documents: docs,
-    config: nitro.options.graphql?.codegen?.client as any,
+    config: mergedClientConfig as any,
     sdkConfig: nitro.options.graphql?.codegen?.clientSDK as any,
     options,
   })
 
-  if (types === false)
+  if (types === false) {
     return
+  }
 
   const placeholders = getDefaultPaths(nitro)
   const typesConfig = getTypesConfig(nitro)
@@ -185,6 +195,7 @@ async function generateMainClientTypes(
 
   // Write client types
   const clientPath = resolveFilePath(typesConfig.client, typesConfig.enabled, true, '{typesDir}/nitro-graphql-client.d.ts', placeholders)
+
   if (clientPath) {
     writeFile(clientPath, types.types)
     if (!options.silent)
