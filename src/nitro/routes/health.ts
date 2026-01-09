@@ -1,6 +1,6 @@
-import { $fetch } from 'nitro/deps/ofetch'
 import { defineEventHandler } from 'nitro/h3'
 import { useRuntimeConfig } from 'nitro/runtime-config'
+import { $fetch } from 'ofetch'
 
 export default defineEventHandler(async (event) => {
   const runtime = useRuntimeConfig()

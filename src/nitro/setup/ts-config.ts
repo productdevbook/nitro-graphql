@@ -19,7 +19,7 @@ import {
 export function setupTypeScriptPaths(nitro: Nitro, types: NitroTypes): void {
   const tsConfigPath = resolve(
     nitro.options.buildDir,
-    nitro.options.typescript.tsconfigPath,
+    nitro.options.typescript.tsconfigPath ?? 'tsconfig.json',
   )
   const tsconfigDir = dirname(tsConfigPath)
 

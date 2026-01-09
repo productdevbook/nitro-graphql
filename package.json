@@ -175,6 +175,7 @@
     "graphql-scalars": "catalog:",
     "knitwork": "catalog:",
     "mlly": "catalog:",
+    "ofetch": "catalog:",
     "ohash": "catalog:",
     "oxc-parser": "catalog:",
     "pathe": "catalog:",
@@ -206,10 +207,12 @@
     "ws": "catalog:"
   },
   "overrides": {
-    "graphql": "^16.12.0"
+    "graphql": "^16.12.0",
+    "nitro": "https://pkg.pr.new/nitrojs/nitro@99691fc"
   },
   "resolutions": {
     "graphql": "^16.12.0",
+    "nitro": "https://pkg.pr.new/nitrojs/nitro@99691fc",
     "nitro-graphql": "link:."
   }
 }
