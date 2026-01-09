@@ -10,7 +10,7 @@
  */
 
 import type { Nitro } from 'nitro/types'
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createNitro, prepare } from 'nitro/builder'
 import { dirname, resolve } from 'pathe'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
@@ -1129,6 +1129,196 @@ describe('scan arrays', () => {
     expect(nitro.scanDirectives).toHaveLength(1)
     expect(nitro.scanDirectives[0].specifier).toBe('/path/to/auth.directive.ts')
     expect(nitro.scanDirectives[0].imports[0].type).toBe('directive')
+  })
+})
+
+describe('client scalars inheritance', () => {
+  beforeEach(() => {
+    ensureDir(tempDir)
+  })
+
+  afterEach(() => {
+    if (existsSync(tempDir)) {
+      rmSync(tempDir, { recursive: true, force: true })
+    }
+  })
+
+  it('should inherit scalars from server config when client scalars not defined', async () => {
+    const rootDir = resolve(tempDir, 'inherit-test')
+    const buildDir = resolve(rootDir, '.nitro')
+
+    // Create a schema with custom Decimal scalar
+    const schemaDir = resolve(rootDir, 'server', 'graphql')
+    ensureDir(schemaDir)
+    writeTestFile(
+      resolve(schemaDir, 'schema.graphql'),
+      `
+scalar Decimal
+type Product {
+  id: ID!
+  name: String!
+  price: Decimal!
+}
+type Query {
+  product(id: ID!): Product
+}
+`,
+    )
+
+    // Create client document
+    const clientDir = resolve(rootDir, 'graphql')
+    ensureDir(clientDir)
+    writeTestFile(
+      resolve(clientDir, 'queries.graphql'),
+      `
+query GetProduct($id: ID!) {
+  product(id: $id) {
+    id
+    name
+    price
+  }
+}
+`,
+    )
+
+    const nitro = createMockNitro({
+      options: {
+        rootDir,
+        buildDir,
+        dev: true,
+        graphql: {
+          framework: 'graphql-yoga',
+          codegen: {
+            // Server scalars defined, but not client scalars
+            server: {
+              scalars: {
+                Decimal: 'number',
+              },
+            },
+            // client.scalars is undefined - should inherit from server
+          },
+        },
+      },
+      scanSchemas: [resolve(schemaDir, 'schema.graphql')],
+      scanDocuments: [resolve(clientDir, 'queries.graphql')],
+      graphql: {
+        buildDir: resolve(buildDir, 'graphql'),
+        clientDir,
+        serverDir: schemaDir,
+        dir: {
+          build: resolve(buildDir, 'graphql'),
+          client: clientDir,
+          server: schemaDir,
+        },
+      },
+    })
+
+    // Generate server types (creates schema.graphql)
+    await generateServerTypes(nitro)
+
+    // Generate client types (should inherit Decimal: 'number' from server config)
+    await generateClientTypes(nitro)
+
+    const clientTypesPath = resolve(buildDir, 'types', 'nitro-graphql-client.d.ts')
+    expect(existsSync(clientTypesPath)).toBe(true)
+
+    const clientTypes = readFileSync(clientTypesPath, 'utf-8')
+    // Should contain Decimal mapped to number (inherited from server config)
+    // GraphQL Codegen v5 format: Decimal: { input: number; output: number; }
+    expect(clientTypes).toContain('Decimal: { input: number; output: number; }')
+    // Query result should use the scalar type (number)
+    expect(clientTypes).toContain('price: number')
+  })
+
+  it('should override server scalars when client scalars are explicitly defined', async () => {
+    const rootDir = resolve(tempDir, 'override-test')
+    const buildDir = resolve(rootDir, '.nitro')
+
+    // Create a schema with custom Decimal scalar
+    const schemaDir = resolve(rootDir, 'server', 'graphql')
+    ensureDir(schemaDir)
+    writeTestFile(
+      resolve(schemaDir, 'schema.graphql'),
+      `
+scalar Decimal
+type Product {
+  id: ID!
+  name: String!
+  price: Decimal!
+}
+type Query {
+  product(id: ID!): Product
+}
+`,
+    )
+
+    // Create client document
+    const clientDir = resolve(rootDir, 'graphql')
+    ensureDir(clientDir)
+    writeTestFile(
+      resolve(clientDir, 'queries.graphql'),
+      `
+query GetProduct($id: ID!) {
+  product(id: $id) {
+    id
+    name
+    price
+  }
+}
+`,
+    )
+
+    const nitro = createMockNitro({
+      options: {
+        rootDir,
+        buildDir,
+        dev: true,
+        graphql: {
+          framework: 'graphql-yoga',
+          codegen: {
+            server: {
+              scalars: {
+                Decimal: 'number',
+              },
+            },
+            // Client scalars explicitly defined - should override server scalars
+            client: {
+              scalars: {
+                Decimal: 'string', // Different mapping
+              },
+            },
+          },
+        },
+      },
+      scanSchemas: [resolve(schemaDir, 'schema.graphql')],
+      scanDocuments: [resolve(clientDir, 'queries.graphql')],
+      graphql: {
+        buildDir: resolve(buildDir, 'graphql'),
+        clientDir,
+        serverDir: schemaDir,
+        dir: {
+          build: resolve(buildDir, 'graphql'),
+          client: clientDir,
+          server: schemaDir,
+        },
+      },
+    })
+
+    // Generate server types (creates schema.graphql)
+    await generateServerTypes(nitro)
+
+    // Generate client types (should use client scalars, not server scalars)
+    await generateClientTypes(nitro)
+
+    const clientTypesPath = resolve(buildDir, 'types', 'nitro-graphql-client.d.ts')
+    expect(existsSync(clientTypesPath)).toBe(true)
+
+    const clientTypes = readFileSync(clientTypesPath, 'utf-8')
+    // Should contain Decimal mapped to string (from client config, not server)
+    // GraphQL Codegen v5 format: Decimal: { input: string; output: string; }
+    expect(clientTypes).toContain('Decimal: { input: string; output: string; }')
+    // Query result should use the scalar type (string)
+    expect(clientTypes).toContain('price: string')
   })
 })
 
