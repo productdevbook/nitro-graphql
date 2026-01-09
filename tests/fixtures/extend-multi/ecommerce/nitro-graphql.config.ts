@@ -1,1 +1,4 @@
-export default { serverDir: 'server/graphql' }
+export default {
+  serverDir: 'server/graphql',
+  clientDir: 'client/graphql',
+}

@@ -33,7 +33,9 @@ export interface ResolvedExtend {
   schemas: string[]
   resolvers: string[]
   directives: string[]
+  documents: string[]
   serverDir: string
+  clientDir?: string
   /** Path to config.ts if it exists */
   configPath?: string
   /** Path to schema.ts if it exists */
@@ -87,16 +89,19 @@ export async function loadPackageConfig(
       },
     })
 
-    const serverDir = config?.serverDir || 'server/graphql'
+    const resolvedConfig: PackageConfig = {
+      serverDir: config?.serverDir || 'server/graphql',
+      clientDir: config?.clientDir,
+    }
 
     // Verify the serverDir exists
-    const fullServerDir = resolve(pkgDir, serverDir)
+    const fullServerDir = resolve(pkgDir, resolvedConfig.serverDir!)
     if (!existsSync(fullServerDir)) {
       return null
     }
 
     return {
-      config: { serverDir },
+      config: resolvedConfig,
       baseDir: pkgDir,
     }
   }
@@ -114,17 +119,30 @@ export async function loadPackageConfig(
  */
 export async function resolvePackageFiles(pkg: ResolvedPackage): Promise<ResolvedExtend> {
   const serverDir = resolve(pkg.baseDir, pkg.config.serverDir || 'server/graphql')
+  const clientDir = pkg.config.clientDir
+    ? resolve(pkg.baseDir, pkg.config.clientDir)
+    : undefined
 
   // Scan for all file types in parallel
   const schemaPattern = `**/*{${GRAPHQL_EXTENSIONS.join(',')}}`
   const resolverPattern = `**/*{${RESOLVER_EXTENSIONS.join(',')}}`
   const directivePattern = `**/*{${DIRECTIVE_EXTENSIONS.join(',')}}`
 
-  const [schemas, resolvers, directives] = await Promise.all([
+  const scanPromises: Promise<string[]>[] = [
     glob(schemaPattern, { cwd: serverDir, absolute: true }),
     glob(resolverPattern, { cwd: serverDir, absolute: true }),
     glob(directivePattern, { cwd: serverDir, absolute: true }),
-  ])
+  ]
+
+  // Scan client documents if clientDir is configured and exists
+  if (clientDir && existsSync(clientDir)) {
+    scanPromises.push(glob(schemaPattern, { cwd: clientDir, absolute: true }))
+  }
+  else {
+    scanPromises.push(Promise.resolve([]))
+  }
+
+  const [schemas, resolvers, directives, documents] = await Promise.all(scanPromises)
 
   // Check for config.ts and schema.ts
   const configPath = resolve(serverDir, 'config.ts')
@@ -134,7 +152,9 @@ export async function resolvePackageFiles(pkg: ResolvedPackage): Promise<Resolve
     schemas: schemas.sort((a, b) => a.localeCompare(b)),
     resolvers: resolvers.sort((a, b) => a.localeCompare(b)),
     directives: directives.sort((a, b) => a.localeCompare(b)),
+    documents: documents.sort((a, b) => a.localeCompare(b)),
     serverDir,
+    clientDir,
     configPath: existsSync(configPath) ? configPath : undefined,
     schemaPath: existsSync(schemaPath) ? schemaPath : undefined,
   }
