@@ -10,8 +10,9 @@
  * - These documents should be available for client type generation
  */
 import type { Nitro } from 'nitro/types'
-import { createNitro, prepare } from 'nitro/builder'
-import { resolve } from 'pathe'
+import { existsSync, readFileSync } from 'node:fs'
+import { build, createNitro, prepare } from 'nitro/builder'
+import { join, resolve } from 'pathe'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import graphql from '../../src'
 
@@ -37,6 +38,12 @@ describe('extend Package clientDir E2E', () => {
     })
 
     await prepare(nitro)
+    await build(nitro)
+
+    // Generate types
+    const { generateServerTypes, generateClientTypes } = await import('../../src/nitro/codegen')
+    await generateServerTypes(nitro)
+    await generateClientTypes(nitro)
   }, 60000)
 
   afterAll(async () => {
@@ -47,8 +54,6 @@ describe('extend Package clientDir E2E', () => {
     it('should scan client documents from extend package clientDir', () => {
       // ecommerce package has clientDir: 'client/graphql' with products.graphql
       const docs = nitro.scanDocuments || []
-
-      console.warn('scanDocuments:', docs)
 
       // Should include the products.graphql from ecommerce/client/graphql
       const hasEcommerceDoc = docs.some((d: string) =>
@@ -68,6 +73,42 @@ describe('extend Package clientDir E2E', () => {
 
       expect(ecommerceDoc).toBeDefined()
       expect(ecommerceDoc).toContain('client/graphql/products.graphql')
+    })
+
+    it('should include extend documents in codegen input', async () => {
+      // Import the document loader to verify documents can be loaded
+      const { loadGraphQLDocuments } = await import('../../src/core/codegen/document-loader')
+
+      const docs = await loadGraphQLDocuments(nitro.scanDocuments)
+
+      // Should have loaded the products.graphql document
+      expect(docs.length).toBeGreaterThan(0)
+
+      // Check that GetProducts query is in the loaded documents
+      const hasGetProductsQuery = docs.some(doc =>
+        doc.document?.definitions.some(def =>
+          def.kind === 'OperationDefinition' && 'name' in def && def.name?.value === 'GetProducts',
+        ),
+      )
+      expect(hasGetProductsQuery).toBe(true)
+    })
+
+    it('should generate client types with extend package queries', () => {
+      // Check paths - types are in .graphql/ based on config
+      const graphqlBuildDir = join(nitro.options.rootDir, '.graphql')
+      const schemaPath = join(graphqlBuildDir, 'schema.graphql')
+      const clientTypesPath = join(nitro.options.rootDir, '.graphql/nitro-graphql-client.d.ts')
+
+      // First check if schema.graphql was generated
+      expect(existsSync(schemaPath)).toBe(true)
+
+      // Then check if client types were generated
+      expect(existsSync(clientTypesPath)).toBe(true)
+
+      const content = readFileSync(clientTypesPath, 'utf-8')
+
+      // Should include GetProducts query type
+      expect(content).toContain('GetProducts')
     })
   })
 })

@@ -85,6 +85,7 @@ export async function generateClientTypesCore(
 ): Promise<ClientCodegenResult | false> {
   const {
     schema,
+    schemaString,
     documents,
     config = {},
     sdkConfig = {},
@@ -98,6 +99,12 @@ export async function generateClientTypesCore(
     return false
   }
 
+  // Get schema string - use provided schemaString to avoid graphql instance mismatch
+  const schemaSDL = schemaString || (schema ? printSchemaWithDirectives(schema) : null)
+  if (!schemaSDL) {
+    return false
+  }
+
   const mergedConfig = defu(DEFAULT_CLIENT_CODEGEN_CONFIG, config)
   const mergedSdkConfig = defu(mergedConfig, sdkConfig)
 
@@ -106,7 +113,7 @@ export async function generateClientTypesCore(
     if (documents.length === 0) {
       const output = await codegen({
         filename: outputPath || 'client-types.generated.ts',
-        schema: parse(printSchemaWithDirectives(schema)),
+        schema: parse(schemaSDL),
         documents: [],
         config: mergedConfig,
         plugins: [
@@ -148,7 +155,7 @@ export async function generateClientTypesCore(
 
     const output = await codegen({
       filename: outputPath || 'client-types.generated.ts',
-      schema: parse(printSchemaWithDirectives(schema)),
+      schema: parse(schemaSDL),
       documents: [...documents],
       config: mergedConfig,
       plugins,
@@ -158,7 +165,7 @@ export async function generateClientTypesCore(
     const typesPath = virtualTypesPath || (serviceName ? `#graphql/client/${serviceName}` : '#graphql/client')
     const sdkOutput = await preset.buildGeneratesSection({
       baseOutputDir: outputPath || 'client-types.generated.ts',
-      schema: parse(printSchemaWithDirectives(schema)),
+      schema: parse(schemaSDL),
       documents: [...documents],
       config: mergedSdkConfig,
       presetConfig: {

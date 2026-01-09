@@ -85,23 +85,26 @@ export async function generateServerTypes(
       return
 
     const merged = mergeTypeDefs([strings.join('\n\n')], { throwOnConflict: true })
+    const mergedSchemaString = print(merged)
     const federation = nitro.options.graphql?.federation?.enabled === true
-    const schema = await buildSchemaFromString(print(merged), federation)
+    const schema = await buildSchemaFromString(mergedSchemaString, federation)
 
     // Sort schema for deterministic output
     const sortedSchema = lexicographicSortSchema(schema)
+    // Get sorted schema string with directives preserved
+    const sortedSchemaString = printSchemaWithDirectives(sortedSchema)
 
-    // Generate types
+    // Generate types - pass schemaString to avoid graphql instance mismatch
     const result = await generateServerTypesCore({
       framework: nitro.options.graphql?.framework || 'graphql-yoga',
-      schema: sortedSchema,
+      schemaString: sortedSchemaString,
       config: nitro.options.graphql?.codegen?.server as any,
       federationEnabled: federation,
     })
 
     // Write schema.graphql
     const schemaPath = resolve(nitro.graphql.buildDir, 'schema.graphql')
-    writeFile(schemaPath, printSchemaWithDirectives(sortedSchema))
+    writeFile(schemaPath, sortedSchemaString)
 
     // Write server types
     const placeholders = getDefaultPaths(nitro)
@@ -154,12 +157,12 @@ async function generateMainClientTypes(
   }
 
   const docs = await loadGraphQLDocuments(nitro.scanDocuments)
-  const federation = nitro.options.graphql?.federation?.enabled === true
-  const schema = await buildSchemaFromString(readFileSync(schemaPath, 'utf-8'), federation)
-  const sortedSchema = lexicographicSortSchema(schema)
+
+  // Read schema as string to avoid graphql instance mismatch
+  const schemaString = readFileSync(schemaPath, 'utf-8')
 
   const types = await generateClientTypesCore({
-    schema: sortedSchema,
+    schemaString,
     documents: docs,
     config: nitro.options.graphql?.codegen?.client as any,
     sdkConfig: nitro.options.graphql?.codegen?.clientSDK as any,

@@ -5,11 +5,3 @@ query GetProducts {
     price
   }
 }
-
-query GetProduct($id: ID!) {
-  product(id: $id) {
-    id
-    name
-    price
-  }
-}

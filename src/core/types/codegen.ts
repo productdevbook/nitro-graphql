@@ -59,8 +59,10 @@ export interface SdkCodegenConfig extends ClientCodegenConfig {
 export interface ServerCodegenInput {
   /** GraphQL framework name */
   framework: string
-  /** Parsed GraphQL schema */
-  schema: GraphQLSchema
+  /** Parsed GraphQL schema (optional if schemaString provided) */
+  schema?: GraphQLSchema
+  /** Schema as string (avoids graphql instance mismatch issues) */
+  schemaString?: string
   /** Server codegen configuration */
   config?: ServerCodegenConfig
   /** Whether federation is enabled */
@@ -83,8 +85,10 @@ export interface ServerCodegenResult {
  * Input for client type generation
  */
 export interface ClientCodegenInput {
-  /** Parsed GraphQL schema */
-  schema: GraphQLSchema
+  /** Parsed GraphQL schema (optional if schemaString provided) */
+  schema?: GraphQLSchema
+  /** Schema as string (avoids graphql instance mismatch issues) */
+  schemaString?: string
   /** Loaded GraphQL documents */
   documents: Source[]
   /** Client codegen configuration */

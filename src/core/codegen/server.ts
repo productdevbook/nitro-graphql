@@ -35,7 +35,7 @@ export const DEFAULT_SERVER_CODEGEN_CONFIG: ServerCodegenConfig = {
 export async function generateServerTypesCore(
   input: ServerCodegenInput,
 ): Promise<ServerCodegenResult> {
-  const { framework, schema, config = {}, federationEnabled = false, outputPath } = input
+  const { framework, schema, schemaString: inputSchemaString, config = {}, federationEnabled = false, outputPath } = input
 
   const defaultConfig: ServerCodegenConfig = {
     ...DEFAULT_SERVER_CODEGEN_CONFIG,
@@ -44,7 +44,11 @@ export async function generateServerTypesCore(
 
   const mergedConfig = defu(defaultConfig, config)
 
-  const schemaString = printSchemaWithDirectives(schema)
+  // Get schema string - use provided schemaString to avoid graphql instance mismatch
+  const schemaString = inputSchemaString || (schema ? printSchemaWithDirectives(schema) : null)
+  if (!schemaString) {
+    throw new Error('[generateServerTypesCore] No schema or schemaString provided')
+  }
 
   const types = await codegen({
     filename: outputPath || 'types.generated.ts',

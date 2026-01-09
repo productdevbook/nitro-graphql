@@ -128,7 +128,7 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:types": "tsc --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "@apollo/server": "^5.0.0",
