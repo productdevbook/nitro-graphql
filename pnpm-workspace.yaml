@@ -14,7 +14,7 @@ packages:
 
 overrides:
   graphql: ^16.12.0
-  vite: 8.0.0-beta.5
+  vite: 8.0.0-beta.7
 
 catalog:
   '@antfu/eslint-config': ^6.7.3
@@ -74,7 +74,7 @@ catalog:
   tinyglobby: ^0.2.15
   tsdown: ^0.18.4
   typescript: ^5.9.3
-  vite: 8.0.0-beta.5
+  vite: 8.0.0-beta.7
   vitepress-plugin-llms: ^1.10.0
   vitest: ^4.0.16
   vue: ^3.5.26

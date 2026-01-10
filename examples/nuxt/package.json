@@ -1,0 +1,40 @@
+{
+  "name": "nuxt-5-graphql-example",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@nuxt/kit": "https://pkg.pr.new/@nuxt/kit@33005",
+    "@nuxt/schema": "https://pkg.pr.new/@nuxt/schema@33005",
+    "graphql": "^16.12.0",
+    "graphql-yoga": "^5.16.2",
+    "nitro-graphql": "^2.0.0-beta.61",
+    "nuxt": "https://pkg.pr.new/nuxt@33005",
+    "vue": "^3.5.26",
+    "vue-router": "^4.2.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "@nuxt/kit": "https://pkg.pr.new/@nuxt/kit@33005",
+      "@nuxt/schema": "https://pkg.pr.new/@nuxt/schema@33005",
+      "graphql": "^16.12.0",
+      "nitro": "https://pkg.pr.new/nitrojs/nitro@99691fc",
+      "nuxt": "https://pkg.pr.new/nuxt@33005",
+      "vite": "8.0.0-beta.7"
+    }
+  },
+  "overrides": {
+    "@nuxt/kit": "https://pkg.pr.new/@nuxt/kit@33005",
+    "@nuxt/schema": "https://pkg.pr.new/@nuxt/schema@33005",
+    "graphql": "^16.12.0",
+    "nitro": "https://pkg.pr.new/nitrojs/nitro@99691fc",
+    "nuxt": "https://pkg.pr.new/nuxt@33005",
+    "vite": "8.0.0-beta.7"
+  }
+}

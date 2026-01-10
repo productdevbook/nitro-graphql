@@ -50,6 +50,7 @@ export default antfu(
       'unused-imports/no-unused-vars': 'off',
       'style/eol-last': 'off',
       'pnpm/json-enforce-catalog': 'off',
+      'pnpm/json-prefer-workspace-settings': 'off',
     },
   },
 )
