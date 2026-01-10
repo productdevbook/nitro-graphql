@@ -8,6 +8,7 @@
 [![Beta Status][beta-src]][beta-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![Coverage][coverage-src]][coverage-href]
+[![CodSpeed][codspeed-src]][codspeed-href]
 [![License][license-src]][license-href]
 [![Documentation][docs-src]][docs-href]
 
@@ -84,3 +85,5 @@ See the [documentation](https://nitro-graphql.pages.dev) for Nuxt and Vite setup
 [beta-href]: https://github.com/productdevbook/nitro-graphql/releases
 [coverage-src]: https://img.shields.io/badge/coverage-74%25-green?style=flat&colorA=080f12
 [coverage-href]: https://github.com/productdevbook/nitro-graphql/actions/workflows/ci.yml
+[codspeed-src]: https://img.shields.io/badge/CodSpeed-performance-7c3aed?style=flat&colorA=080f12
+[codspeed-href]: https://codspeed.io/productdevbook/nitro-graphql?utm_source=badge
