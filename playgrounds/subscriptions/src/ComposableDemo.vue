@@ -27,7 +27,7 @@ const {
   { channelId: channelId.value },
   {
     immediate: false,
-    onData: _msg => {},
+    onData: (_msg) => {},
     onError: err => console.error('Error:', err),
   },
 )
