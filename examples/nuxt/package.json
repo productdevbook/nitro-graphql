@@ -13,11 +13,11 @@
     "@nuxt/kit": "https://pkg.pr.new/@nuxt/kit@33005",
     "@nuxt/schema": "https://pkg.pr.new/@nuxt/schema@33005",
     "graphql": "^16.12.0",
-    "graphql-yoga": "^5.16.2",
+    "graphql-yoga": "^5.18.0",
     "nitro-graphql": "^2.0.0-beta.61",
     "nuxt": "https://pkg.pr.new/nuxt@33005",
     "vue": "^3.5.26",
-    "vue-router": "^4.2.2"
+    "vue-router": "^4.6.4"
   },
   "pnpm": {
     "overrides": {

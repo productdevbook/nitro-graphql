@@ -39,7 +39,7 @@ catalog:
   '@nuxt/kit': https://pkg.pr.new/@nuxt/kit@33005
   '@nuxt/schema': https://pkg.pr.new/@nuxt/schema@33005
   '@tailwindcss/vite': ^4.1.18
-  '@types/node': ^25.0.3
+  '@types/node': ^25.0.5
   '@types/ws': ^8.18.1
   '@vitejs/devtools': ^0.0.0-alpha.16
   '@vitejs/plugin-vue': ^6.0.3
@@ -78,7 +78,7 @@ catalog:
   vitepress-plugin-llms: ^1.10.0
   vitest: ^4.0.16
   vue: ^3.5.26
-  vue-router: ^4.2.2
+  vue-router: ^4.6.4
   ws: ^8.19.0
   zod: ^4.3.5
 
