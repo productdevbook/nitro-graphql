@@ -7,7 +7,7 @@ import type { ScanContext } from '../../core/types'
 import type { CLIContext } from '../index'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import consola from 'consola'
-import { dirname, join, relative } from 'pathe'
+import { dirname, join, relative, resolve } from 'pathe'
 import {
   generateClientTypesCore,
   generateResolverModule,
@@ -109,8 +109,20 @@ export async function generateServer(
   mkdirSync(dirname(schemaPath), { recursive: true })
   writeFileSync(schemaPath, result.schemaString, 'utf-8')
 
+  // Determine types output path
+  const typesConfig = ctx.config.types
+  let typesPath: string
+
+  if (typesConfig && typeof typesConfig === 'object' && typeof typesConfig.server === 'string') {
+    // Use custom path from config
+    typesPath = resolve(ctx.config.rootDir, typesConfig.server)
+  }
+  else {
+    // Use default path
+    typesPath = join(ctx.config.typesDir, 'nitro-graphql-server.d.ts')
+  }
+
   // Write types file
-  const typesPath = join(ctx.config.typesDir, 'nitro-graphql-server.d.ts')
   mkdirSync(dirname(typesPath), { recursive: true })
   writeFileSync(typesPath, result.types, 'utf-8')
 
@@ -180,8 +192,20 @@ export async function generateClient(
     return
   }
 
+  // Determine types output path
+  const typesConfig = ctx.config.types
+  let typesPath: string
+
+  if (typesConfig && typeof typesConfig === 'object' && typeof typesConfig.client === 'string') {
+    // Use custom path from config
+    typesPath = resolve(ctx.config.rootDir, typesConfig.client)
+  }
+  else {
+    // Use default path
+    typesPath = join(ctx.config.typesDir, 'nitro-graphql-client.d.ts')
+  }
+
   // Write types file
-  const typesPath = join(ctx.config.typesDir, 'nitro-graphql-client.d.ts')
   mkdirSync(dirname(typesPath), { recursive: true })
   writeFileSync(typesPath, result.types, 'utf-8')
 
