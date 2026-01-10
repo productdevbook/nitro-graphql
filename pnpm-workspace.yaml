@@ -21,6 +21,7 @@ catalog:
   '@apollo/server': ^5.2.0
   '@apollo/subgraph': ^2.12.2
   '@bomb.sh/tab': ^0.0.11
+  '@codspeed/vitest-plugin': ^5.0.1
   '@graphql-codegen/core': ^5.0.0
   '@graphql-codegen/import-types-preset': ^3.0.1
   '@graphql-codegen/typed-document-node': ^6.1.5
@@ -43,8 +44,8 @@ catalog:
   '@types/ws': ^8.18.1
   '@vitejs/devtools': ^0.0.0-alpha.16
   '@vitejs/plugin-vue': ^6.0.3
-  '@vitest/coverage-v8': ^4.0.16
-  '@vitest/ui': ^4.0.16
+  '@vitest/coverage-v8': ^3.0.11
+  '@vitest/ui': ^3.0.11
   bumpp: ^10.3.2
   c12: ^3.3.3
   changelogen: ^0.6.2
@@ -74,7 +75,7 @@ catalog:
   typescript: ^5.9.3
   vite: 8.0.0-beta.5
   vitepress-plugin-llms: ^1.10.0
-  vitest: ^4.0.16
+  vitest: ^3.0.11
   vue: ^3.5.26
   ws: ^8.19.0
   zod: ^4.3.5

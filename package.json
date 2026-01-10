@@ -128,6 +128,7 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "bench": "vitest bench --run",
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
@@ -183,6 +184,7 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "catalog:",
+    "@codspeed/vitest-plugin": "catalog:",
     "@napi-rs/cli": "catalog:",
     "@nuxt/kit": "catalog:",
     "@nuxt/schema": "catalog:",

@@ -1,7 +1,9 @@
+import codspeedPlugin from '@codspeed/vitest-plugin'
 import { resolve } from 'pathe'
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
+  plugins: [codspeedPlugin()],
   test: {
     globals: true,
     environment: 'node',
@@ -21,8 +23,7 @@ export default defineConfig({
         'src/nitro/types.ts', // Type definitions only
         'src/nitro/routes/**', // Route handlers tested via integration
         'src/nitro/virtual/**', // Virtual module generators
-        'src/nuxt.ts', // Nuxt-specific (needs Nuxt to test)
-        'src/core/codegen/runtime.ts', // Runtime config generation
+        'src/nuxt.ts', // Nuxt-specific (needs Nuxt to test)\n        'src/core/codegen/runtime.ts', // Runtime config generation
       ],
     },
     setupFiles: ['./tests/setup.ts'],
@@ -36,7 +37,7 @@ export default defineConfig({
       'nitro-graphql/define': resolve(__dirname, './src/define.ts'),
       'nitro-graphql/pubsub': resolve(__dirname, './src/core/pubsub/index.ts'),
       'nitro-graphql/native': resolve(__dirname, './tests/mocks/native.ts'),
-      // Force single graphql instance to avoid "Cannot use GraphQL* from another module" errors
+      // Force single graphql instance to avoid \"Cannot use GraphQL* from another module\" errors
       'graphql': resolve(__dirname, './node_modules/graphql'),
     },
   },
