@@ -2,7 +2,23 @@
 
 This example demonstrates using nitro-graphql with Nuxt 4.
 
-## Setup
+## Get Started
+
+Clone this example using [giget](https://github.com/unjs/giget):
+
+```bash
+npx giget@latest gh:productdevbook/nitro-graphql/examples/nuxt my-nuxt-app
+cd my-nuxt-app
+pnpm install
+```
+
+Or using pnpm:
+
+```bash
+pnpm dlx giget@latest gh:productdevbook/nitro-graphql/examples/nuxt my-nuxt-app
+```
+
+## Development
 
 ```bash
 pnpm install

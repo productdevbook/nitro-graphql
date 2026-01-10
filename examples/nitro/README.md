@@ -2,7 +2,23 @@
 
 Minimal Nitro + GraphQL example.
 
-## Installation
+## Get Started
+
+Clone this example using [giget](https://github.com/unjs/giget):
+
+```bash
+npx giget@latest gh:productdevbook/nitro-graphql/examples/nitro my-nitro-app
+cd my-nitro-app
+pnpm install
+```
+
+Or using pnpm:
+
+```bash
+pnpm dlx giget@latest gh:productdevbook/nitro-graphql/examples/nitro my-nitro-app
+```
+
+## Development
 
 ```bash
 pnpm install

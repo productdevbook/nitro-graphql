@@ -2,7 +2,23 @@
 
 Real-time chat with GraphQL Subscriptions over WebSocket.
 
-## Setup
+## Get Started
+
+Clone this example using [giget](https://github.com/unjs/giget):
+
+```bash
+npx giget@latest gh:productdevbook/nitro-graphql/examples/subscriptions my-subscriptions-app
+cd my-subscriptions-app
+pnpm install
+```
+
+Or using pnpm:
+
+```bash
+pnpm dlx giget@latest gh:productdevbook/nitro-graphql/examples/subscriptions my-subscriptions-app
+```
+
+## Development
 
 ```bash
 pnpm install
