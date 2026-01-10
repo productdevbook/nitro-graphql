@@ -199,6 +199,7 @@
     "graphql": "catalog:",
     "graphql-yoga": "catalog:",
     "nitro": "catalog:",
+    "nuxt": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",

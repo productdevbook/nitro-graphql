@@ -52,6 +52,9 @@ function graphqlModule(options?: NitroGraphQLOptions): Plugin & { nitro?: NitroM
     name: 'nitro-graphql',
     enforce: 'pre', // Run before other plugins to prevent Vite from transforming GraphQL files
 
+    // Note: Virtual module resolution is handled by Nitro's built-in virtual() plugin
+    // We only handle .graphql/.gql file loading here
+
     async load(id) {
       // Only handle .graphql and .gql files
       if (!/\.(?:graphql|gql)$/i.test(id))
@@ -72,7 +75,7 @@ function graphqlModule(options?: NitroGraphQLOptions): Plugin & { nitro?: NitroM
       }
     },
 
-    // NEW: Nitro integration hook
+    // Nitro integration hook
     // This automatically registers the nitro-graphql module when the Vite plugin is used
     // nitro hook is a Nitro v3 feature not yet in Vite Plugin types
     nitro: {

@@ -26,7 +26,7 @@ import { rollupConfig } from './rollup'
 import { resolveExtendDirs } from './setup/extend-loader'
 import { getWatchDirectories, setupFileWatcher } from './setup/file-watcher'
 import { logStartupInfo, resolveSecurityConfig } from './setup/logging'
-import { setupRollupChunking, setupRollupExternals } from './setup/rollup-integration'
+import { setupNoExternals, setupRollupChunking, setupRollupExternals } from './setup/rollup-integration'
 import { registerRouteHandlers } from './setup/routes'
 import {
   isServerEnabled,
@@ -59,6 +59,8 @@ export async function setupNitroGraphQL(nitro: Nitro): Promise<void> {
 
   // Step 4: Setup Rollup/Rolldown configuration (only if server enabled)
   if (serverEnabled) {
+    // Configure noExternals first (must be set before rollup hooks)
+    setupNoExternals(nitro)
     setupRollupExternals(nitro)
     setupRollupChunking(nitro)
   }

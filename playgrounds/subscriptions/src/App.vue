@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
-import { createSubscriptionClient } from 'nitro-graphql/subscribe'
 import type { SubscriptionHandle } from 'nitro-graphql/subscribe'
+import { createSubscriptionClient } from 'nitro-graphql/subscribe'
+import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 
 // Types
 interface Message {
@@ -18,19 +18,20 @@ interface Channel {
 }
 
 // State
-const getOrCreateUsername = () => {
+function getOrCreateUsername() {
   if (typeof localStorage !== 'undefined') {
     const stored = localStorage.getItem('chat-username')
-    if (stored) return stored
-    const newUsername = 'User' + Math.floor(Math.random() * 1000)
+    if (stored)
+      return stored
+    const newUsername = `User${Math.floor(Math.random() * 1000)}`
     localStorage.setItem('chat-username', newUsername)
     return newUsername
   }
-  return 'User' + Math.floor(Math.random() * 1000)
+  return `User${Math.floor(Math.random() * 1000)}`
 }
 const username = ref(getOrCreateUsername())
 
-const saveUsername = () => {
+function saveUsername() {
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem('chat-username', username.value)
   }
@@ -99,7 +100,7 @@ function subscribeToMessages() {
       console.error('Subscription error:', error)
       connectionState.value = 'disconnected'
     },
-    { transport: transport.value }
+    { transport: transport.value },
   )
 
   if (subscriptionHandle) {
@@ -109,7 +110,8 @@ function subscribeToMessages() {
 
 // Send message
 async function sendMessage() {
-  if (!newMessage.value.trim()) return
+  if (!newMessage.value.trim())
+    return
 
   await fetch('/api/graphql', {
     method: 'POST',
@@ -175,7 +177,9 @@ onUnmounted(() => {
   <div class="h-screen flex flex-col bg-[#1a1a2e]">
     <!-- Header -->
     <header class="flex justify-between items-center px-8 py-4 bg-[#16213e] border-b border-[#0f3460]">
-      <h1 class="text-2xl font-bold text-[#e94560]">GraphQL Subscriptions</h1>
+      <h1 class="text-2xl font-bold text-[#e94560]">
+        GraphQL Subscriptions
+      </h1>
       <div class="flex items-center gap-6">
         <a
           href="#/demo"
@@ -189,9 +193,9 @@ onUnmounted(() => {
             :class="{
               'bg-green-400': connectionState === 'connected',
               'bg-yellow-400': connectionState === 'connecting',
-              'bg-red-400': connectionState === 'disconnected'
+              'bg-red-400': connectionState === 'disconnected',
             }"
-          ></span>
+          />
           {{ connectionState }} ({{ transport }})
         </div>
       </div>
@@ -200,7 +204,9 @@ onUnmounted(() => {
     <div class="flex flex-1 overflow-hidden">
       <!-- Sidebar -->
       <aside class="w-60 bg-[#16213e] p-4 border-r border-[#0f3460] overflow-y-auto">
-        <h3 class="text-xs uppercase text-gray-500 mb-2">Channels</h3>
+        <h3 class="text-xs uppercase text-gray-500 mb-2">
+          Channels
+        </h3>
         <ul class="space-y-1">
           <li
             v-for="channel in channels"
@@ -215,7 +221,9 @@ onUnmounted(() => {
           </li>
         </ul>
 
-        <h3 class="text-xs uppercase text-gray-500 mt-6 mb-2">Transport</h3>
+        <h3 class="text-xs uppercase text-gray-500 mt-6 mb-2">
+          Transport
+        </h3>
         <div class="flex gap-2">
           <button
             class="flex-1 px-3 py-2 text-sm rounded border transition-colors"
@@ -237,12 +245,14 @@ onUnmounted(() => {
           </button>
         </div>
 
-        <h3 class="text-xs uppercase text-gray-500 mt-6 mb-2">Username</h3>
+        <h3 class="text-xs uppercase text-gray-500 mt-6 mb-2">
+          Username
+        </h3>
         <input
           v-model="username"
           class="w-full px-3 py-2 bg-[#0f3460] border border-[#0f3460] text-white rounded focus:outline-none focus:border-[#e94560]"
           @blur="saveUsername"
-        />
+        >
       </aside>
 
       <!-- Chat -->
@@ -265,7 +275,9 @@ onUnmounted(() => {
               </strong>
               <span class="text-xs text-gray-600">{{ formatTime(msg.createdAt) }}</span>
             </div>
-            <div class="text-gray-300">{{ msg.content }}</div>
+            <div class="text-gray-300">
+              {{ msg.content }}
+            </div>
           </div>
 
           <div v-if="messages.length === 0" class="text-center text-gray-600 py-8">
@@ -282,7 +294,7 @@ onUnmounted(() => {
             placeholder="Type a message..."
             class="flex-1 px-4 py-3 bg-[#0f3460] border border-[#0f3460] text-white rounded-lg focus:outline-none focus:border-[#e94560]"
             autofocus
-          />
+          >
           <button
             type="submit"
             class="px-6 py-3 bg-[#e94560] text-white font-semibold rounded-lg hover:bg-[#d63850] transition-colors"

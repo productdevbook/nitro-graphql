@@ -1,13 +1,13 @@
 import type { Nitro } from 'nitro/types'
 
 import { readFile } from 'node:fs/promises'
-import { fileURLToPath } from 'node:url'
 import { parse } from 'graphql'
 import { NitroAdapter } from './adapter'
 import { registerAllVirtualModules } from './virtual/generators'
 
 export async function rollupConfig(nitro: Nitro) {
-  // Register all virtual module generators
+  // Register virtual modules in nitro.options.virtual
+  // Nitro's virtual() plugin reads from this when creating the plugin
   registerAllVirtualModules(nitro)
 
   nitro.hooks.hook('rollup:before', (_, rollupConfig) => {
@@ -19,67 +19,11 @@ export async function rollupConfig(nitro: Nitro) {
     } = nitro.options.graphql?.loader || {}
 
     if (Array.isArray(rollupConfig.plugins)) {
-      // Add resolve plugin for #nitro-graphql virtual modules
-      // This mimics Nitro's nitro:resolve-ids plugin for #nitro-internal-virtual
-      rollupConfig.plugins.push({
-        name: 'nitro-graphql:virtual',
-        resolveId: {
-          order: 'pre',
-          filter: {
-            id: /^#nitro-graphql\//,
-          },
-          async handler(id: string, parent: string | undefined, _options: unknown) {
-            // Handle initial imports TO our virtual modules (mark them as virtual)
-            if (id.startsWith('#nitro-graphql/')) {
-              return `\0virtual:${id}`
-            }
+      // Note: We don't need a custom virtual module plugin here
+      // Nitro's built-in virtual() plugin already handles nitro.options.virtual
+      // See: src/build/plugins/virtual.ts in Nitro source
 
-            // Handle imports FROM our virtual modules (resolve dependencies)
-            if (parent?.startsWith('\0virtual:#nitro-graphql')) {
-              const runtimeDir = fileURLToPath(new URL('routes', import.meta.url))
-              const internalRes = await this.resolve(id, runtimeDir, {
-                skipSelf: true,
-              })
-
-              if (internalRes) {
-                return internalRes.id
-              }
-            }
-
-            return null
-          },
-        },
-        load: {
-          order: 'pre',
-          filter: {
-            id: /^\0virtual:#nitro-graphql\//,
-          },
-          async handler(id) {
-            // Handle loading virtual modules
-            if (id.startsWith('\0virtual:#nitro-graphql/')) {
-              const moduleName = id.slice('\0virtual:'.length)
-              const generator = nitro.options.virtual?.[moduleName]
-
-              if (typeof generator === 'function') {
-                try {
-                  return {
-                    code: await generator(),
-                    moduleType: 'js',
-                  }
-                }
-                catch (error) {
-                  const message = error instanceof Error ? error.message : String(error)
-                  this.error(`Failed to generate virtual module ${moduleName}: ${message}`)
-                }
-              }
-              else {
-                this.error(`No generator function found for virtual module ${moduleName}`)
-              }
-            }
-          },
-        },
-      })
-
+      // GraphQL file loader plugin
       rollupConfig.plugins.push({
         name: 'nitro-graphql',
 

@@ -15,6 +15,33 @@ import {
 } from '../../core/constants'
 
 /**
+ * Configure noExternals to ensure nitro-graphql route handlers are bundled
+ * This is critical for Nuxt integration where node_modules are externalized by default.
+ * Without this, the #nitro-graphql/* virtual imports in handlers would fail at runtime.
+ */
+export function setupNoExternals(nitro: Nitro): void {
+  // Add nitro-graphql routes to noExternals so they get bundled
+  // This ensures #nitro-graphql/* virtual imports are resolved at build time
+  const routePatterns: RegExp[] = [
+    // Match nitro-graphql route files
+    /nitro-graphql[/\\]dist[/\\]nitro[/\\]routes/,
+    // Match nitro-graphql core schema builder (used by routes)
+    /nitro-graphql[/\\]dist[/\\]core[/\\]schema/,
+  ]
+
+  // noExternals can be true (bundle all) or an array
+  if (nitro.options.noExternals === true) {
+    return // Already bundling everything
+  }
+
+  if (!Array.isArray(nitro.options.noExternals)) {
+    nitro.options.noExternals = []
+  }
+
+  nitro.options.noExternals.push(...routePatterns)
+}
+
+/**
  * Setup Rollup/Rolldown chunking configuration for GraphQL files
  * Creates separate chunks for schemas and resolvers to optimize bundle size
  */
@@ -128,6 +155,19 @@ export function setupRollupExternals(nitro: Nitro): void {
       '@oxc-parser',
       // Ensure single graphql instance across all modules
       'graphql',
+      // Native modules must be external - they contain binary .node files
+      'nitro-graphql/native',
+      'nitro-graphql-darwin-arm64',
+      'nitro-graphql-darwin-x64',
+      'nitro-graphql-darwin-universal',
+      'nitro-graphql-linux-x64-gnu',
+      'nitro-graphql-linux-x64-musl',
+      'nitro-graphql-linux-arm64-gnu',
+      'nitro-graphql-linux-arm64-musl',
+      'nitro-graphql-win32-x64-msvc',
+      'nitro-graphql-win32-x64-gnu',
+      'nitro-graphql-win32-arm64-msvc',
+      'nitro-graphql-win32-ia32-msvc',
     ]
 
     const allExternals = [...codegenExternals]

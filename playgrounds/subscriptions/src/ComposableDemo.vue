@@ -4,10 +4,10 @@
  */
 import { ref } from 'vue'
 import {
-  useMessageAdded,
-  useAllMessages,
-  useSubscriptionSession,
   subscription,
+  useAllMessages,
+  useMessageAdded,
+  useSubscriptionSession,
 } from './graphql/default/sdk'
 
 // ============================================
@@ -27,9 +27,9 @@ const {
   { channelId: channelId.value },
   {
     immediate: false,
-    onData: (msg) => console.log('New message:', msg),
-    onError: (err) => console.error('Error:', err),
-  }
+    onData: _msg => {},
+    onError: err => console.error('Error:', err),
+  },
 )
 
 // ============================================
@@ -38,7 +38,7 @@ const {
 const allMessagesLog = ref<string[]>([])
 
 const {
-  data: latestFromAll,
+  data: _latestFromAll,
   isActive: allActive,
   start: startAll,
   stop: stopAll,
@@ -64,8 +64,9 @@ function subscribeViaSession() {
     {},
     (msg: any) => {
       sessionMessages.value.push(`${msg.username}: ${msg.content}`)
-      if (sessionMessages.value.length > 5) sessionMessages.value.shift()
-    }
+      if (sessionMessages.value.length > 5)
+        sessionMessages.value.shift()
+    },
   )
 }
 
@@ -79,9 +80,10 @@ function startDrizzle() {
   drizzleHandle = subscription.AllMessages()
     .onData((msg) => {
       drizzleMessages.value.push(`${msg.username}: ${msg.content}`)
-      if (drizzleMessages.value.length > 5) drizzleMessages.value.shift()
+      if (drizzleMessages.value.length > 5)
+        drizzleMessages.value.shift()
     })
-    .onError((err) => console.error('Drizzle error:', err))
+    .onError(err => console.error('Drizzle error:', err))
     .start()
 }
 
@@ -93,48 +95,56 @@ function stopDrizzle() {
 <template>
   <div class="min-h-screen bg-[#1a1a2e] p-8">
     <div class="max-w-6xl mx-auto">
-      <h1 class="text-3xl font-bold text-[#e94560] mb-2">Vue Composables Demo</h1>
-      <p class="text-gray-500 mb-8">Auto-generated subscription composables</p>
+      <h1 class="text-3xl font-bold text-[#e94560] mb-2">
+        Vue Composables Demo
+      </h1>
+      <p class="text-gray-500 mb-8">
+        Auto-generated subscription composables
+      </p>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Example 1: useMessageAdded -->
         <section class="bg-[#16213e] rounded-xl p-6 border border-[#0f3460]">
-          <h2 class="text-lg font-semibold text-white mb-1">1. useMessageAdded</h2>
-          <p class="text-gray-500 text-sm mb-4">Listen to messages in a specific channel</p>
+          <h2 class="text-lg font-semibold text-white mb-1">
+            1. useMessageAdded
+          </h2>
+          <p class="text-gray-500 text-sm mb-4">
+            Listen to messages in a specific channel
+          </p>
 
           <div class="flex items-center gap-2 text-sm text-gray-400 mb-4">
             <span
               class="w-2 h-2 rounded-full"
               :class="isActive ? 'bg-green-400' : 'bg-gray-600'"
-            ></span>
+            />
             {{ isActive ? 'Active' : 'Inactive' }}
             <span class="text-gray-600">({{ transport }})</span>
           </div>
 
           <div class="flex gap-2 mb-4">
             <button
-              @click="start"
               :disabled="isActive"
               class="px-4 py-2 text-sm rounded border transition-colors"
               :class="isActive
                 ? 'border-gray-700 text-gray-600 cursor-not-allowed'
                 : 'border-[#0f3460] text-white hover:bg-[#0f3460]'"
+              @click="start"
             >
               Start
             </button>
             <button
-              @click="stop"
               :disabled="!isActive"
               class="px-4 py-2 text-sm rounded border transition-colors"
               :class="!isActive
                 ? 'border-gray-700 text-gray-600 cursor-not-allowed'
                 : 'border-[#0f3460] text-white hover:bg-[#0f3460]'"
+              @click="stop"
             >
               Stop
             </button>
             <button
-              @click="restart"
               class="px-4 py-2 text-sm rounded border border-[#0f3460] text-white hover:bg-[#0f3460] transition-colors"
+              @click="restart"
             >
               Restart
             </button>
@@ -153,35 +163,39 @@ function stopDrizzle() {
 
         <!-- Example 2: useAllMessages -->
         <section class="bg-[#16213e] rounded-xl p-6 border border-[#0f3460]">
-          <h2 class="text-lg font-semibold text-white mb-1">2. useAllMessages</h2>
-          <p class="text-gray-500 text-sm mb-4">Listen to messages from all channels</p>
+          <h2 class="text-lg font-semibold text-white mb-1">
+            2. useAllMessages
+          </h2>
+          <p class="text-gray-500 text-sm mb-4">
+            Listen to messages from all channels
+          </p>
 
           <div class="flex items-center gap-2 text-sm text-gray-400 mb-4">
             <span
               class="w-2 h-2 rounded-full"
               :class="allActive ? 'bg-green-400' : 'bg-gray-600'"
-            ></span>
+            />
             {{ allActive ? 'Active' : 'Inactive' }}
           </div>
 
           <div class="flex gap-2 mb-4">
             <button
-              @click="startAll"
               :disabled="allActive"
               class="px-4 py-2 text-sm rounded border transition-colors"
               :class="allActive
                 ? 'border-gray-700 text-gray-600 cursor-not-allowed'
                 : 'border-[#0f3460] text-white hover:bg-[#0f3460]'"
+              @click="startAll"
             >
               Start
             </button>
             <button
-              @click="stopAll"
               :disabled="!allActive"
               class="px-4 py-2 text-sm rounded border transition-colors"
               :class="!allActive
                 ? 'border-gray-700 text-gray-600 cursor-not-allowed'
                 : 'border-[#0f3460] text-white hover:bg-[#0f3460]'"
+              @click="stopAll"
             >
               Stop
             </button>
@@ -204,28 +218,32 @@ function stopDrizzle() {
 
         <!-- Example 3: useSubscriptionSession -->
         <section class="bg-[#16213e] rounded-xl p-6 border border-[#0f3460]">
-          <h2 class="text-lg font-semibold text-white mb-1">3. useSubscriptionSession</h2>
-          <p class="text-gray-500 text-sm mb-4">Multiplexed session (single connection, multiple subscriptions)</p>
+          <h2 class="text-lg font-semibold text-white mb-1">
+            3. useSubscriptionSession
+          </h2>
+          <p class="text-gray-500 text-sm mb-4">
+            Multiplexed session (single connection, multiple subscriptions)
+          </p>
 
           <div class="flex items-center gap-2 text-sm text-gray-400 mb-4">
             <span
               class="w-2 h-2 rounded-full"
               :class="session.isConnected.value ? 'bg-green-400' : 'bg-gray-600'"
-            ></span>
+            />
             {{ session.state.value }}
             <span class="text-gray-600">({{ session.subscriptionCount.value }} subs)</span>
           </div>
 
           <div class="flex gap-2 mb-4">
             <button
-              @click="subscribeViaSession"
               class="px-4 py-2 text-sm rounded border border-[#0f3460] text-white hover:bg-[#0f3460] transition-colors"
+              @click="subscribeViaSession"
             >
               Add Subscription
             </button>
             <button
-              @click="session.close()"
               class="px-4 py-2 text-sm rounded border border-[#0f3460] text-white hover:bg-[#0f3460] transition-colors"
+              @click="session.close()"
             >
               Close All
             </button>
@@ -248,19 +266,23 @@ function stopDrizzle() {
 
         <!-- Example 4: Drizzle-style -->
         <section class="bg-[#16213e] rounded-xl p-6 border border-[#0f3460]">
-          <h2 class="text-lg font-semibold text-white mb-1">4. Drizzle-style API</h2>
-          <p class="text-gray-500 text-sm mb-4">subscription.AllMessages().onData(fn).start()</p>
+          <h2 class="text-lg font-semibold text-white mb-1">
+            4. Drizzle-style API
+          </h2>
+          <p class="text-gray-500 text-sm mb-4">
+            subscription.AllMessages().onData(fn).start()
+          </p>
 
           <div class="flex gap-2 mb-4">
             <button
-              @click="startDrizzle"
               class="px-4 py-2 text-sm rounded border border-[#0f3460] text-white hover:bg-[#0f3460] transition-colors"
+              @click="startDrizzle"
             >
               Start
             </button>
             <button
-              @click="stopDrizzle"
               class="px-4 py-2 text-sm rounded border border-[#0f3460] text-white hover:bg-[#0f3460] transition-colors"
+              @click="stopDrizzle"
             >
               Stop
             </button>

@@ -4,8 +4,8 @@ import graphql from 'nitro-graphql'
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: false },
-
   nitro: {
+    builder: 'rolldown',
     modules: [
       graphql({
         framework: 'graphql-yoga',

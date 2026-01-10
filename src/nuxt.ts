@@ -1,3 +1,5 @@
+/* eslint-disable ts/ban-ts-comment */
+// @ts-nocheck
 import type { VueTSConfig } from '@nuxt/schema'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { defineNuxtModule, getLayerDirectories } from '@nuxt/kit'

@@ -10,6 +10,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "graphql-yoga": "catalog:",
     "nitro-graphql": "link:../..",
     "nuxt": "catalog:",
     "vue": "catalog:",

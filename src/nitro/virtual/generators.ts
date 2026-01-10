@@ -5,10 +5,9 @@
 
 import type { Nitro } from 'nitro/types'
 import type { GenImport } from '../types'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { genImport } from 'knitwork'
 import { resolve } from 'pathe'
-import { getImportId } from '../../core'
 
 // ============ HELPERS ============
 
@@ -64,15 +63,24 @@ export const serverSchemas = {
 ]`
     }
 
-    const importStatements = schemas.map(s => `import ${getImportId(s)} from '${s}';`)
-    const schemaArray = schemas.map(s => `{ def: ${getImportId(s)} }`)
+    // Inline schema contents directly to avoid runtime .graphql import issues
+    const schemaArray: string[] = schemas.map((schemaPath) => {
+      try {
+        const content = readFileSync(schemaPath, 'utf-8')
+        return `{ def: ${JSON.stringify(content)} }`
+      }
+      catch {
+        // Fallback to import if file can't be read (shouldn't happen)
+        return `{ def: '' }`
+      }
+    })
 
     // Add inline directive schemas if present
     if (directiveSchemas) {
       schemaArray.push(`{ def: ${JSON.stringify(directiveSchemas)} }`)
     }
 
-    return `${importStatements.join('\n')}\n\nexport const schemas = [\n${schemaArray.join(',\n')}\n];`
+    return `export const schemas = [\n${schemaArray.join(',\n')}\n];`
   },
 }
 

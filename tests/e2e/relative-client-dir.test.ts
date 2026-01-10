@@ -71,8 +71,6 @@ describe('extend Package with Relative clientDir E2E', () => {
     it('should scan client documents from relative clientDir path', () => {
       const docs = nitro.scanDocuments || []
 
-      console.log('Scanned documents:', docs)
-
       // Should include products.graphql from apps/main-app/app/graphql
       // (resolved from clientDir: '../../apps/main-app/app/graphql')
       const hasProductsDoc = docs.some((d: string) =>

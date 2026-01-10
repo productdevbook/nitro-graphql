@@ -79,11 +79,10 @@ describe('extend Schema Merge E2E', () => {
       expect(schemasModule).toBeDefined()
 
       const code = typeof schemasModule === 'function' ? schemasModule() : ''
-      console.warn('Virtual module code:', code)
 
-      // Should have BOTH auth and ecommerce schemas
-      expect(code).toContain('auth')
-      expect(code).toContain('ecommerce')
+      // Should have BOTH auth (User type) and ecommerce (Product type) schema content inlined
+      expect(code).toContain('User')
+      expect(code).toContain('Product')
     })
 
     it('virtual module should include ALL resolvers from ALL extends', () => {
