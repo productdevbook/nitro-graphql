@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process'
 /**
  * E2E tests for CLI generate command with custom types path
  *
@@ -5,7 +6,6 @@
  * at the custom path specified in nitro-graphql.config.ts
  */
 import { existsSync, readFileSync, rmSync } from 'node:fs'
-import { execSync } from 'node:child_process'
 import { join, resolve } from 'pathe'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
@@ -27,7 +27,7 @@ function cleanupGeneratedFiles() {
   }
 }
 
-describe('CLI Generate with Custom Types Path E2E', () => {
+describe('cLI Generate with Custom Types Path E2E', () => {
   beforeAll(() => {
     cleanupGeneratedFiles()
   })
@@ -40,7 +40,7 @@ describe('CLI Generate with Custom Types Path E2E', () => {
     it('should generate types at custom paths specified in config', () => {
       // Run CLI generate command
       const cliPath = resolve(__dirname, '../../dist/cli/index.mjs')
-      
+
       try {
         execSync(`node ${cliPath} generate`, {
           cwd: projectDir,

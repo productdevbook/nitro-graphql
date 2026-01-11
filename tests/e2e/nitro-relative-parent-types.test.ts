@@ -1,6 +1,6 @@
 /**
  * E2E test for Nitro module with relative parent paths for types
- * 
+ *
  * This tests the real scenario where:
  * - GraphQL package is in packages/graphql
  * - Types should be written to ../../apps/ecommerce/app/graphql/types/index.d.ts
@@ -14,7 +14,7 @@ import graphql from '../../src'
 
 const fixturesDir = resolve(__dirname, '../fixtures')
 const projectDir = resolve(fixturesDir, 'nitro-relative-parent/packages/graphql')
-const appsDir = resolve(fixturesDir, 'nitro-relative-parent/apps/ecommerce/app/graphql')
+const _appsDir = resolve(fixturesDir, 'nitro-relative-parent/apps/ecommerce/app/graphql')
 
 // Clean up generated files
 function cleanupGeneratedFiles() {
@@ -33,7 +33,7 @@ function cleanupGeneratedFiles() {
   }
 }
 
-describe('Nitro Module with Relative Parent Paths E2E', () => {
+describe('nitro Module with Relative Parent Paths E2E', () => {
   let nitro: Nitro
 
   beforeAll(async () => {

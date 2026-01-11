@@ -59,7 +59,7 @@ async function waitForFileChange(
   return false
 }
 
-describe('Nuxt File Watcher Integration Test', () => {
+describe('nuxt File Watcher Integration Test', () => {
   let nuxt: Nuxt
 
   beforeAll(async () => {

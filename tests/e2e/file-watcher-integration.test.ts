@@ -112,7 +112,7 @@ async function waitForFileChange(
   return false
 }
 
-describe('File Watcher Integration Test - Real Nitro', () => {
+describe('file Watcher Integration Test - Real Nitro', () => {
   let nitro: Nitro
 
   beforeAll(async () => {

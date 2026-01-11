@@ -1,5 +1,5 @@
 // THIS FILE IS GENERATED, DO NOT EDIT!
-/* eslint-disable eslint-comments/no-unlimited-disable */
+
 /* tslint:disable */
 /* eslint-disable */
 /* prettier-ignore */

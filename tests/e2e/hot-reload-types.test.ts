@@ -119,7 +119,7 @@ function resetFixtureFiles() {
   writeFileSync(clientQueryPath, initialQuery, 'utf-8')
 }
 
-describe('Hot Reload Type Regeneration E2E', () => {
+describe('hot Reload Type Regeneration E2E', () => {
   let nitro: Nitro
 
   beforeAll(async () => {
@@ -220,7 +220,7 @@ describe('Hot Reload Type Regeneration E2E', () => {
   })
 })
 
-describe('Hot Reload - Schema Change Only', () => {
+describe('hot Reload - Schema Change Only', () => {
   let nitro: Nitro
 
   beforeAll(async () => {
