@@ -5,7 +5,6 @@ import type { ScanContext } from '../../../src/core/types/scanning'
  * Tests the scanDocumentsCore function which:
  * - Scans for GraphQL client documents (.graphql, .gql) in client directory
  * - Filters out external service directories
- * - Supports Nuxt layers for multi-layer scanning
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { scanDocumentsCore } from '../../../src/core/scanning/documents'
@@ -28,9 +27,8 @@ describe('scanDocumentsCore', () => {
       rootDir: '/project',
       serverDir: '/project/server/graphql',
       clientDir: '/project/app/graphql',
-      layerServerDirs: [],
-      layerAppDirs: [],
       ignorePatterns: [],
+      isDev: false,
       logger: {
         info: vi.fn(),
         warn: vi.fn(),
@@ -154,21 +152,6 @@ describe('scanDocumentsCore', () => {
       })
 
       expect(result.items).toContain('/project/app/graphql/local.graphql')
-    })
-  })
-
-  describe('layer support', () => {
-    it('should scan layer app directories when provided', async () => {
-      mockContext.layerAppDirs = ['/layers/base/app']
-
-      mockGlob
-        .mockResolvedValueOnce(['/project/app/graphql/main.graphql'])
-        .mockResolvedValueOnce(['/layers/base/app/graphql/base.graphql'])
-
-      const result = await scanDocumentsCore(mockContext)
-
-      expect(result.items).toHaveLength(2)
-      expect(mockGlob).toHaveBeenCalledTimes(2)
     })
   })
 

@@ -4,9 +4,11 @@
  */
 
 import type { Nitro } from 'nitro/types'
+import type { LocalDirExtendSource } from '../types'
 import { existsSync } from 'node:fs'
 import consola from 'consola'
 import { dirname, resolve } from 'pathe'
+import { glob } from 'tinyglobby'
 import {
   isLocalPath,
   loadPackageConfig,
@@ -15,10 +17,24 @@ import {
   parseSingleFile,
   resolvePackageFiles,
 } from '../../core'
-import { LOG_TAG } from '../../core/constants'
+import { GRAPHQL_GLOB_PATTERN, LOG_TAG, RESOLVER_GLOB_PATTERN } from '../../core/constants'
 import { generateDirectiveSchemas } from '../../core/utils/directive-parser'
 
 const logger = consola.withTag(LOG_TAG)
+
+/**
+ * Check if source is a LocalDirExtendSource
+ */
+function isLocalDirSource(source: unknown): source is LocalDirExtendSource {
+  return (
+    source !== null
+    && typeof source === 'object'
+    && ('serverDir' in source || 'clientDir' in source)
+    && !('manifest' in source)
+    && !('resolvers' in source)
+    && !('schemas' in source)
+  )
+}
 
 interface ExtendResult {
   schemas: number
@@ -54,6 +70,15 @@ export async function resolveExtendDirs(nitro: Nitro): Promise<string[]> {
         if (existsSync(localDir)) {
           dirs.push(localDir)
         }
+      }
+    }
+    else if (isLocalDirSource(source)) {
+      // LocalDirExtendSource: explicit serverDir/clientDir
+      if (source.serverDir && existsSync(source.serverDir)) {
+        dirs.push(source.serverDir)
+      }
+      if (source.clientDir && existsSync(source.clientDir)) {
+        dirs.push(source.clientDir)
       }
     }
     else if (source && typeof source === 'object') {
@@ -144,6 +169,10 @@ async function processExtendSource(
 ): Promise<ExtendResult> {
   if (typeof source === 'string') {
     return loadFromPackage(source, nitro, silent)
+  }
+
+  if (isLocalDirSource(source)) {
+    return processLocalDirSource(source, nitro)
   }
 
   if (source && typeof source === 'object') {
@@ -290,4 +319,99 @@ async function processExplicitPaths(
 
   // Legacy format doesn't support directives, documents, configs, or schemas
   return { schemas: schemasAdded, resolvers: resolversAdded, directives: 0, documents: 0, hasConfig: false, hasSchema: false }
+}
+
+/**
+ * Process LocalDirExtendSource - scan serverDir and clientDir for GraphQL files
+ * Used for Nuxt layers and local directory extends
+ */
+async function processLocalDirSource(
+  source: LocalDirExtendSource,
+  nitro: Nitro,
+): Promise<ExtendResult> {
+  let schemasAdded = 0
+  let resolversAdded = 0
+  let directivesAdded = 0
+  let documentsAdded = 0
+
+  const ignorePatterns = [
+    '**/node_modules/**',
+    '**/.git/**',
+    '**/.output/**',
+    '**/.nitro/**',
+    '**/.nuxt/**',
+  ]
+
+  // Scan serverDir for schemas, resolvers, and directives
+  if (source.serverDir && existsSync(source.serverDir)) {
+    // Scan schemas (.graphql files)
+    const schemaFiles = await glob(GRAPHQL_GLOB_PATTERN, {
+      cwd: source.serverDir,
+      absolute: true,
+      ignore: ignorePatterns,
+    })
+
+    for (const schemaPath of schemaFiles) {
+      if (!nitro.scanSchemas.includes(schemaPath)) {
+        nitro.scanSchemas.push(schemaPath)
+        schemasAdded++
+      }
+    }
+
+    // Scan resolvers (.resolver.ts files)
+    const resolverFiles = await glob(RESOLVER_GLOB_PATTERN, {
+      cwd: source.serverDir,
+      absolute: true,
+      ignore: ignorePatterns,
+    })
+
+    for (const resolverPath of resolverFiles) {
+      const alreadyExists = nitro.scanResolvers.some(r => r.specifier === resolverPath)
+      if (alreadyExists)
+        continue
+
+      const parsed = await parseSingleFile(resolverPath, parseResolverCall)
+      if (parsed?.imports.length) {
+        nitro.scanResolvers.push(parsed)
+        resolversAdded++
+      }
+    }
+
+    // Scan directives (.directive.ts files)
+    const directiveFiles = await glob('**/*.directive.ts', {
+      cwd: source.serverDir,
+      absolute: true,
+      ignore: ignorePatterns,
+    })
+
+    for (const directivePath of directiveFiles) {
+      const alreadyExists = nitro.scanDirectives.some(d => d.specifier === directivePath)
+      if (alreadyExists)
+        continue
+
+      const parsed = await parseSingleFile(directivePath, parseDirectiveCall)
+      if (parsed?.imports.length) {
+        nitro.scanDirectives.push(parsed)
+        directivesAdded++
+      }
+    }
+  }
+
+  // Scan clientDir for documents (.graphql files)
+  if (source.clientDir && existsSync(source.clientDir)) {
+    const documentFiles = await glob(GRAPHQL_GLOB_PATTERN, {
+      cwd: source.clientDir,
+      absolute: true,
+      ignore: ignorePatterns,
+    })
+
+    for (const docPath of documentFiles) {
+      if (!nitro.scanDocuments.includes(docPath)) {
+        nitro.scanDocuments.push(docPath)
+        documentsAdded++
+      }
+    }
+  }
+
+  return { schemas: schemasAdded, resolvers: resolversAdded, directives: directivesAdded, documents: documentsAdded, hasConfig: false, hasSchema: false }
 }

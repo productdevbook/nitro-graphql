@@ -601,10 +601,6 @@ export interface NitroGraphQLOptions {
   clientDir?: string
   /** Types directory path (default: '{buildDir}/types') */
   typesDir?: string
-  /** Layer directories (populated by Nuxt module) */
-  layerDirectories?: string[]
-  layerServerDirs?: string[]
-  layerAppDirs?: string[]
   /**
    * SDK files configuration
    * Set to false to disable all SDK generation
@@ -690,12 +686,9 @@ export interface NitroGraphQLOptions {
 }
 
 /**
- * Extend source - package path or detailed config
- * - string: package name, requires graphql-manifest.json in package root
- * - object with manifest: explicit manifest path
- * - object with resolvers/schemas: explicit paths (legacy)
+ * Explicit paths extend source (legacy)
  */
-export type ExtendSource = string | {
+export interface ExplicitPathsExtendSource {
   /** Explicit manifest path */
   manifest?: string
   /** Explicit resolver paths (legacy, prefer manifest) */
@@ -703,3 +696,22 @@ export type ExtendSource = string | {
   /** Explicit schema paths (legacy, prefer manifest) */
   schemas?: string | string[]
 }
+
+/**
+ * Local directory extend source
+ * For extending from local directories (e.g., Nuxt layers, monorepo packages)
+ */
+export interface LocalDirExtendSource {
+  /** Server GraphQL directory path (for schemas, resolvers, directives) */
+  serverDir?: string
+  /** Client GraphQL directory path (for documents) */
+  clientDir?: string
+}
+
+/**
+ * Extend source - package path or detailed config
+ * - string: package name or local path, requires nitro-graphql.config.ts in package root
+ * - LocalDirExtendSource: local directories with serverDir/clientDir
+ * - ExplicitPathsExtendSource: explicit paths (legacy)
+ */
+export type ExtendSource = string | LocalDirExtendSource | ExplicitPathsExtendSource

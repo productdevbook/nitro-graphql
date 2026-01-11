@@ -179,10 +179,6 @@ export interface CoreConfig {
   logger: CoreLogger
   /** Patterns to ignore during scanning */
   ignorePatterns: string[]
-  /** Layer server directories (Nuxt) */
-  layerServerDirs?: string[]
-  /** Layer app directories (Nuxt) */
-  layerAppDirs?: string[]
 }
 
 /**

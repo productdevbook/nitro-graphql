@@ -4,7 +4,6 @@ import type { ScanContext } from '../../../src/core/types/scanning'
  *
  * Tests the scanSchemasCore and scanGraphqlCore functions which:
  * - Scan for GraphQL schema files (.graphql, .gql) in server directory
- * - Support Nuxt layers for multi-layer scanning
  * - Return file paths with warnings/errors
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -28,9 +27,8 @@ describe('scanSchemasCore', () => {
       rootDir: '/project',
       serverDir: '/project/server/graphql',
       clientDir: '/project/graphql',
-      layerServerDirs: [],
-      layerAppDirs: [],
       ignorePatterns: [],
+      isDev: false,
       logger: {
         info: vi.fn(),
         warn: vi.fn(),
@@ -99,34 +97,6 @@ describe('scanSchemasCore', () => {
     })
   })
 
-  describe('layer support', () => {
-    it('should scan layer directories when provided', async () => {
-      mockContext.layerServerDirs = ['/layers/base/server/graphql']
-
-      mockGlob
-        .mockResolvedValueOnce(['/project/server/graphql/main.graphql'])
-        .mockResolvedValueOnce(['/layers/base/server/graphql/base.graphql'])
-
-      const result = await scanSchemasCore(mockContext)
-
-      expect(result.items).toHaveLength(2)
-      expect(mockGlob).toHaveBeenCalledTimes(2)
-    })
-
-    it('should deduplicate files from multiple layers', async () => {
-      mockContext.layerServerDirs = ['/layers/base/server/graphql']
-      const sharedPath = '/project/server/graphql/shared.graphql'
-
-      mockGlob
-        .mockResolvedValueOnce([sharedPath])
-        .mockResolvedValueOnce([sharedPath])
-
-      const result = await scanSchemasCore(mockContext)
-
-      expect(result.items).toHaveLength(1)
-    })
-  })
-
   describe('error handling', () => {
     it('should return error when glob throws', async () => {
       mockGlob.mockRejectedValue(new Error('Glob failed'))
@@ -180,9 +150,8 @@ describe('scanGraphqlCore', () => {
       rootDir: '/project',
       serverDir: '/project/server/graphql',
       clientDir: '/project/graphql',
-      layerServerDirs: [],
-      layerAppDirs: [],
       ignorePatterns: [],
+      isDev: false,
       logger: {
         info: vi.fn(),
         warn: vi.fn(),

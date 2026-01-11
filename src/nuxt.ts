@@ -153,29 +153,30 @@ export default defineNuxtModule<ModuleOptions>({
       // Collect layer directories using official Nuxt Kit utility
       const layerDirs = await getLayerDirectories(nuxt)
 
-      const layerDirectories = layerDirs
-        .map((layer: any) => layer.root.replace(/\/$/, '')) // Remove trailing slash
-        .filter((root: string) => root !== nuxt.options.rootDir) // Exclude main project root
-
-      // Also collect server directories for layers
-      const layerServerDirs = layerDirs
+      // Convert Nuxt layers to extend entries (LocalDirExtendSource format)
+      const layerExtends = layerDirs
         .filter((layer: any) => layer.root !== `${nuxt.options.rootDir}/`) // Exclude main project
-        .map((layer: any) => layer.server?.replace(/\/$/, '')) // Remove trailing slash
-        .filter(Boolean) // Remove undefined values
+        .map((layer: any) => {
+          const serverDir = layer.server?.replace(/\/$/, '')
+          const appDir = layer.app?.replace(/\/$/, '')
+          // Only return if at least one graphql dir exists
+          if (!serverDir && !appDir)
+            return null
+          return {
+            serverDir: serverDir ? join(serverDir, 'graphql') : undefined,
+            clientDir: appDir ? join(appDir, 'graphql') : undefined,
+          }
+        })
+        .filter(Boolean) // Remove null entries
 
-      // Also collect app directories for layers
-      const layerAppDirs = layerDirs
-        .filter((layer: any) => layer.root !== `${nuxt.options.rootDir}/`) // Exclude main project
-        .map((layer: any) => layer.app?.replace(/\/$/, '')) // Remove trailing slash
-        .filter(Boolean) // Remove undefined values
-
-      // Pass layer information to Nitro config
+      // Initialize graphql config and add layer extends
       if (!nitroConfig.graphql) {
         nitroConfig.graphql = {} as any
       }
-      nitroConfig.graphql!.layerDirectories = layerDirectories
-      nitroConfig.graphql!.layerServerDirs = layerServerDirs
-      nitroConfig.graphql!.layerAppDirs = layerAppDirs
+      nitroConfig.graphql!.extend = [
+        ...(nitroConfig.graphql?.extend || []),
+        ...layerExtends,
+      ]
 
       // Check if app/graphql directory exists - use default app directory
       const appGraphqlDir = resolve(nuxt.options.rootDir, 'app/graphql')

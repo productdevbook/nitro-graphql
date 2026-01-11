@@ -39,8 +39,6 @@ export function createScanContextFromNitro(nitro: Nitro): ScanContext {
     ignorePatterns: nitro.options.ignore,
     isDev: nitro.options.dev,
     logger: createLoggerFromNitro(nitro),
-    layerServerDirs: nitro.options.graphql?.layerServerDirs || [],
-    layerAppDirs: nitro.options.graphql?.layerAppDirs || [],
   }
 }
 
@@ -73,8 +71,6 @@ export function createCoreConfigFromNitro(nitro: Nitro): CoreConfig {
     },
     logger: createLoggerFromNitro(nitro),
     ignorePatterns: nitro.options.ignore,
-    layerServerDirs: nitro.options.graphql?.layerServerDirs || [],
-    layerAppDirs: nitro.options.graphql?.layerAppDirs || [],
   }
 }
 

@@ -7,7 +7,7 @@ import type { CoreExternalService } from '../types/config'
 import type { ScanContext, ScanResult } from '../types/scanning'
 import { relative } from 'pathe'
 import { GRAPHQL_GLOB_PATTERN } from '../constants'
-import { scanWithLayers } from './common'
+import { scanDirectory } from './common'
 
 /**
  * Options for scanning documents
@@ -33,14 +33,8 @@ export async function scanDocumentsCore(
   try {
     const clientDirRelative = options.clientDirRelative || relative(ctx.rootDir, ctx.clientDir)
 
-    // Scan main project and layer documents
-    const allFiles = await scanWithLayers(ctx, {
-      mainDir: ctx.rootDir,
-      mainSubDir: clientDirRelative,
-      layerDirs: ctx.layerAppDirs,
-      layerSubDir: 'graphql',
-      pattern: GRAPHQL_GLOB_PATTERN,
-    })
+    // Scan main project documents
+    const allFiles = await scanDirectory(ctx, ctx.rootDir, clientDirRelative, GRAPHQL_GLOB_PATTERN)
 
     // Get external service document patterns to filter out
     const externalServices = options.externalServices || []

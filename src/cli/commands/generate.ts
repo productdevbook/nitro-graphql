@@ -39,8 +39,6 @@ function createScanContext(ctx: CLIContext): ScanContext {
       success: (msg, ...args) => logger.success(msg, ...args),
       debug: (msg, ...args) => logger.debug(msg, ...args),
     },
-    layerServerDirs: [],
-    layerAppDirs: [],
   }
 }
 

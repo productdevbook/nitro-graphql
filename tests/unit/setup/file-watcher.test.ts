@@ -864,7 +864,7 @@ describe('getWatchDirectories', () => {
       expect(dirs).not.toContain('/project/server/graphql')
     })
 
-    it('should include layer server directories when local scanning enabled', async () => {
+    it('should include layer directories via extendDirs parameter', async () => {
       const { shouldScanLocalFiles } = await import('../../../src/nitro/setup/scanner')
       vi.mocked(shouldScanLocalFiles).mockReturnValue(true)
 
@@ -873,10 +873,7 @@ describe('getWatchDirectories', () => {
           rootDir: '/project',
           dev: true,
           framework: { name: 'nuxt' },
-          graphql: {
-            layerServerDirs: ['/project/layers/base/server'],
-            layerAppDirs: [],
-          },
+          graphql: {},
           ignore: [],
         } as any,
         graphql: {
@@ -886,60 +883,39 @@ describe('getWatchDirectories', () => {
         } as any,
       })
 
-      const dirs = getWatchDirectories(nitro)
+      // Layer directories are now passed via extendDirs parameter (from extend-loader)
+      const extendDirs = ['/project/layers/base/server/graphql', '/project/layers/base/app/graphql']
+      const dirs = getWatchDirectories(nitro, extendDirs)
 
       expect(dirs).toContain('/project/layers/base/server/graphql')
-    })
-
-    it('should not include layer server directories when local scanning disabled', async () => {
-      const { shouldScanLocalFiles } = await import('../../../src/nitro/setup/scanner')
-      vi.mocked(shouldScanLocalFiles).mockReturnValue(false)
-
-      const nitro = createMockNitro({
-        options: {
-          rootDir: '/project',
-          dev: true,
-          framework: { name: 'nuxt' },
-          graphql: {
-            layerServerDirs: ['/project/layers/base/server'],
-            layerAppDirs: [],
-          },
-          ignore: [],
-        } as any,
-        graphql: {
-          buildDir: '/project/.nuxt',
-          serverDir: '/project/server/graphql',
-          clientDir: '/project/app/graphql',
-        } as any,
-      })
-
-      const dirs = getWatchDirectories(nitro)
-
-      expect(dirs).not.toContain('/project/layers/base/server/graphql')
-    })
-
-    it('should include layer app directories', () => {
-      const nitro = createMockNitro({
-        options: {
-          rootDir: '/project',
-          dev: true,
-          framework: { name: 'nuxt' },
-          graphql: {
-            layerServerDirs: [],
-            layerAppDirs: ['/project/layers/base/app'],
-          },
-          ignore: [],
-        } as any,
-        graphql: {
-          buildDir: '/project/.nuxt',
-          serverDir: '/project/server/graphql',
-          clientDir: '/project/app/graphql',
-        } as any,
-      })
-
-      const dirs = getWatchDirectories(nitro)
-
       expect(dirs).toContain('/project/layers/base/app/graphql')
+    })
+
+    it('should not duplicate layer directories already in extendDirs', async () => {
+      const { shouldScanLocalFiles } = await import('../../../src/nitro/setup/scanner')
+      vi.mocked(shouldScanLocalFiles).mockReturnValue(true)
+
+      const nitro = createMockNitro({
+        options: {
+          rootDir: '/project',
+          dev: true,
+          framework: { name: 'nuxt' },
+          graphql: {},
+          ignore: [],
+        } as any,
+        graphql: {
+          buildDir: '/project/.nuxt',
+          serverDir: '/project/server/graphql',
+          clientDir: '/project/app/graphql',
+        } as any,
+      })
+
+      const extendDirs = ['/project/layers/base/server/graphql']
+      const dirs = getWatchDirectories(nitro, extendDirs)
+
+      // Count occurrences
+      const count = dirs.filter(d => d === '/project/layers/base/server/graphql').length
+      expect(count).toBe(1)
     })
   })
 

@@ -30,8 +30,6 @@ export async function validate(ctx: CLIContext): Promise<boolean> {
       success: (msg, ...args) => logger.success(msg, ...args),
       debug: (msg, ...args) => logger.debug(msg, ...args),
     },
-    layerServerDirs: [],
-    layerAppDirs: [],
   }
 
   // Scan for schema files

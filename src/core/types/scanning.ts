@@ -22,10 +22,6 @@ export interface ScanContext {
   isDev: boolean
   /** Logger instance */
   logger: CoreLogger
-  /** Layer server directories (Nuxt layers) */
-  layerServerDirs?: string[]
-  /** Layer app directories (Nuxt layers) */
-  layerAppDirs?: string[]
 }
 
 /**

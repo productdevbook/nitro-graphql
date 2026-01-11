@@ -7,7 +7,7 @@ import type { ResolverImport, ScanContext, ScannedResolver, ScanResult } from '.
 import { readFile } from 'node:fs/promises'
 import { parseSync } from 'oxc-parser'
 import { basename, relative } from 'pathe'
-import { scanWithLayers } from './common'
+import { scanDirectory } from './common'
 
 /**
  * Configuration for AST-based scanning
@@ -34,15 +34,9 @@ export async function scanWithAST(
   const errors: string[] = []
 
   try {
-    // Scan from serverDir with layer support
+    // Scan from serverDir
     const serverDirRelative = relative(ctx.rootDir, ctx.serverDir)
-    const files = await scanWithLayers(ctx, {
-      mainDir: ctx.rootDir,
-      mainSubDir: serverDirRelative,
-      layerDirs: ctx.layerServerDirs,
-      layerSubDir: 'graphql',
-      pattern: config.pattern,
-    })
+    const files = await scanDirectory(ctx, ctx.rootDir, serverDirRelative, config.pattern)
 
     const results: ScannedResolver[] = []
 

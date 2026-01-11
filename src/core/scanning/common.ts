@@ -80,32 +80,3 @@ export function filterByExtension<T extends { fullPath: string }>(
 export function extractPaths(files: ScannedFile[]): string[] {
   return files.map(f => f.fullPath)
 }
-
-/**
- * Scan directory with layer support
- * Encapsulates the common pattern of scanning main directory + layer directories
- */
-export async function scanWithLayers(
-  ctx: ScanContext,
-  options: {
-    mainDir: string
-    mainSubDir: string
-    layerDirs: string[] | undefined
-    layerSubDir: string
-    pattern: string
-  },
-): Promise<ScannedFile[]> {
-  // Scan main directory
-  const mainFiles = await scanDirectory(ctx, options.mainDir, options.mainSubDir, options.pattern)
-
-  // Scan layer directories
-  const layerFiles = await Promise.all(
-    (options.layerDirs || []).map(layerDir =>
-      scanDirectory(ctx, layerDir, options.layerSubDir, options.pattern),
-    ),
-  ).then(r => r.flat())
-
-  // Combine, deduplicate, and sort for deterministic output
-  const combined = deduplicateFiles([...mainFiles, ...layerFiles])
-  return combined.sort((a, b) => a.path.localeCompare(b.path))
-}

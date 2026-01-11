@@ -37,10 +37,6 @@ export interface CreateCoreConfigOptions {
   logger?: CoreLogger
   /** Patterns to ignore */
   ignorePatterns?: string[]
-  /** Layer server directories */
-  layerServerDirs?: string[]
-  /** Layer app directories */
-  layerAppDirs?: string[]
 }
 
 /**
@@ -54,8 +50,6 @@ export function createCoreConfig(options: CreateCoreConfigOptions): CoreConfig {
     graphqlOptions = {},
     logger = createLogger(),
     ignorePatterns = [],
-    layerServerDirs = [],
-    layerAppDirs = [],
   } = options
 
   // Determine framework
@@ -79,8 +73,6 @@ export function createCoreConfig(options: CreateCoreConfigOptions): CoreConfig {
     graphqlOptions,
     logger,
     ignorePatterns,
-    layerServerDirs,
-    layerAppDirs,
   }
 }
 
@@ -116,8 +108,6 @@ export function createScanContext(config: CoreConfig): ScanContext {
     ignorePatterns: config.ignorePatterns,
     isDev: config.isDev,
     logger: config.logger,
-    layerServerDirs: config.layerServerDirs,
-    layerAppDirs: config.layerAppDirs,
   }
 }
 

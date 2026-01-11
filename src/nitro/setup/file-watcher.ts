@@ -114,55 +114,21 @@ export function setupFileWatcher(nitro: Nitro, watchDirs: string[]): FSWatcher {
 
 /**
  * Determine which directories to watch based on framework and configuration
+ * Note: Layer directories are now handled via extendDirs (passed from extend-loader)
  */
 export function getWatchDirectories(nitro: Nitro, extendDirs: string[] = []): string[] {
   const watchDirs: string[] = []
-  const framework = nitro.options.framework.name
   const scanLocal = shouldScanLocalFiles(nitro)
 
-  switch (framework) {
-    case 'nuxt': {
-      // Watch client directory
-      watchDirs.push(nitro.graphql.clientDir)
+  // Watch client directory
+  watchDirs.push(nitro.graphql.clientDir)
 
-      // Watch server directory (main project)
-      if (scanLocal) {
-        watchDirs.push(nitro.graphql.serverDir)
-      }
-
-      // Add layer directories to watch list
-      const layerServerDirs = nitro.options.graphql?.layerServerDirs || []
-      const layerAppDirs = nitro.options.graphql?.layerAppDirs || []
-
-      // Add server GraphQL directories from layers (only if local scanning enabled)
-      if (scanLocal) {
-        for (const layerServerDir of layerServerDirs) {
-          watchDirs.push(join(layerServerDir, 'graphql'))
-        }
-      }
-
-      // Add client GraphQL directories from layers (using app directories)
-      for (const layerAppDir of layerAppDirs) {
-        watchDirs.push(join(layerAppDir, 'graphql'))
-      }
-      break
-    }
-    case 'nitro':
-      // Watch both client and server directories
-      watchDirs.push(nitro.graphql.clientDir)
-      if (scanLocal) {
-        watchDirs.push(nitro.graphql.serverDir)
-      }
-      break
-    default:
-      // Unknown framework - watch both directories as fallback
-      watchDirs.push(nitro.graphql.clientDir)
-      if (scanLocal) {
-        watchDirs.push(nitro.graphql.serverDir)
-      }
+  // Watch server directory (main project)
+  if (scanLocal) {
+    watchDirs.push(nitro.graphql.serverDir)
   }
 
-  // Add extend directories (from manifest packages)
+  // Add extend directories (includes layers converted to extends by Nuxt module)
   for (const dir of extendDirs) {
     if (!watchDirs.includes(dir)) {
       watchDirs.push(dir)
