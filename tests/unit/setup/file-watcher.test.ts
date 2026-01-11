@@ -569,6 +569,142 @@ describe('setupFileWatcher', () => {
       expect(NitroAdapter.scanResolvers).not.toHaveBeenCalled()
       expect(NitroAdapter.scanDirectives).not.toHaveBeenCalled()
     })
+
+    it('should call generateServerTypes when server .graphql file changes', async () => {
+      const { watch } = await import('chokidar')
+      const { generateServerTypes } = await import('../../../src/nitro/codegen')
+
+      vi.mocked(generateServerTypes).mockClear()
+
+      let allEventHandler: ((event: string, path: string) => void) | null = null
+      const mockWatcher = {
+        on: vi.fn((event: string, handler: (event: string, path: string) => void) => {
+          if (event === 'all') {
+            allEventHandler = handler
+          }
+          return mockWatcher
+        }),
+        close: vi.fn(),
+      }
+      vi.mocked(watch).mockReturnValue(mockWatcher as any)
+
+      const nitro = createMockNitro()
+      const watchDirs = ['/project/server/graphql']
+
+      setupFileWatcher(nitro, watchDirs)
+
+      // Simulate a server .graphql file change
+      allEventHandler!('change', '/project/server/graphql/schema.graphql')
+
+      await new Promise(resolve => setTimeout(resolve, 10))
+
+      expect(generateServerTypes).toHaveBeenCalledWith(nitro, { silent: true })
+    })
+
+    it('should call generateClientTypes when server .graphql file changes', async () => {
+      const { watch } = await import('chokidar')
+      const { generateClientTypes } = await import('../../../src/nitro/codegen')
+
+      vi.mocked(generateClientTypes).mockClear()
+
+      let allEventHandler: ((event: string, path: string) => void) | null = null
+      const mockWatcher = {
+        on: vi.fn((event: string, handler: (event: string, path: string) => void) => {
+          if (event === 'all') {
+            allEventHandler = handler
+          }
+          return mockWatcher
+        }),
+        close: vi.fn(),
+      }
+      vi.mocked(watch).mockReturnValue(mockWatcher as any)
+
+      const nitro = createMockNitro()
+      const watchDirs = ['/project/server/graphql']
+
+      setupFileWatcher(nitro, watchDirs)
+
+      // Simulate a server .graphql file change
+      allEventHandler!('change', '/project/server/graphql/schema.graphql')
+
+      await new Promise(resolve => setTimeout(resolve, 10))
+
+      expect(generateClientTypes).toHaveBeenCalledWith(nitro, { silent: true })
+    })
+
+    it('should call generateClientTypes when client .graphql file changes', async () => {
+      const { watch } = await import('chokidar')
+      const { generateClientTypes, generateServerTypes } = await import('../../../src/nitro/codegen')
+
+      vi.mocked(generateClientTypes).mockClear()
+      vi.mocked(generateServerTypes).mockClear()
+
+      let allEventHandler: ((event: string, path: string) => void) | null = null
+      const mockWatcher = {
+        on: vi.fn((event: string, handler: (event: string, path: string) => void) => {
+          if (event === 'all') {
+            allEventHandler = handler
+          }
+          return mockWatcher
+        }),
+        close: vi.fn(),
+      }
+      vi.mocked(watch).mockReturnValue(mockWatcher as any)
+
+      const nitro = createMockNitro({
+        graphql: {
+          buildDir: '/project/.nitro',
+          serverDir: '/project/server/graphql',
+          clientDir: '/project/graphql',
+        } as any,
+      })
+      const watchDirs = ['/project/graphql']
+
+      setupFileWatcher(nitro, watchDirs)
+
+      // Simulate a client .graphql file change (not in server directory)
+      allEventHandler!('change', '/project/graphql/queries/user.graphql')
+
+      await new Promise(resolve => setTimeout(resolve, 10))
+
+      // Should call generateClientTypes for client changes
+      expect(generateClientTypes).toHaveBeenCalledWith(nitro, { silent: true })
+      // Should NOT call generateServerTypes for client-only changes
+      expect(generateServerTypes).not.toHaveBeenCalled()
+    })
+
+    it('should call dev:reload hook after type generation for server changes', async () => {
+      const { watch } = await import('chokidar')
+
+      let allEventHandler: ((event: string, path: string) => void) | null = null
+      const mockWatcher = {
+        on: vi.fn((event: string, handler: (event: string, path: string) => void) => {
+          if (event === 'all') {
+            allEventHandler = handler
+          }
+          return mockWatcher
+        }),
+        close: vi.fn(),
+      }
+      vi.mocked(watch).mockReturnValue(mockWatcher as any)
+
+      const mockCallHook = vi.fn()
+      const nitro = createMockNitro({
+        hooks: {
+          callHook: mockCallHook,
+        } as any,
+      })
+      const watchDirs = ['/project/server/graphql']
+
+      setupFileWatcher(nitro, watchDirs)
+
+      // Simulate a server .graphql file change
+      allEventHandler!('change', '/project/server/graphql/schema.graphql')
+
+      await new Promise(resolve => setTimeout(resolve, 10))
+
+      expect(mockCallHook).toHaveBeenCalledWith('dev:reload')
+    })
   })
 })
 
@@ -671,6 +807,61 @@ describe('getWatchDirectories', () => {
       const dirs = getWatchDirectories(nitro)
 
       expect(dirs).toContain('/project/app/graphql')
+    })
+
+    it('should include server directory when local scanning enabled', async () => {
+      const { shouldScanLocalFiles } = await import('../../../src/nitro/setup/scanner')
+      vi.mocked(shouldScanLocalFiles).mockReturnValue(true)
+
+      const nitro = createMockNitro({
+        options: {
+          rootDir: '/project',
+          dev: true,
+          framework: { name: 'nuxt' },
+          graphql: {
+            layerServerDirs: [],
+            layerAppDirs: [],
+          },
+          ignore: [],
+        } as any,
+        graphql: {
+          buildDir: '/project/.nuxt',
+          serverDir: '/project/server/graphql',
+          clientDir: '/project/app/graphql',
+        } as any,
+      })
+
+      const dirs = getWatchDirectories(nitro)
+
+      expect(dirs).toContain('/project/server/graphql')
+    })
+
+    it('should not include server directory when local scanning disabled', async () => {
+      const { shouldScanLocalFiles } = await import('../../../src/nitro/setup/scanner')
+      vi.mocked(shouldScanLocalFiles).mockReturnValue(false)
+
+      const nitro = createMockNitro({
+        options: {
+          rootDir: '/project',
+          dev: true,
+          framework: { name: 'nuxt' },
+          graphql: {
+            skipLocalScan: true,
+            layerServerDirs: [],
+            layerAppDirs: [],
+          },
+          ignore: [],
+        } as any,
+        graphql: {
+          buildDir: '/project/.nuxt',
+          serverDir: '/project/server/graphql',
+          clientDir: '/project/app/graphql',
+        } as any,
+      })
+
+      const dirs = getWatchDirectories(nitro)
+
+      expect(dirs).not.toContain('/project/server/graphql')
     })
 
     it('should include layer server directories when local scanning enabled', async () => {

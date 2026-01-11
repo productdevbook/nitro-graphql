@@ -125,6 +125,11 @@ export function getWatchDirectories(nitro: Nitro, extendDirs: string[] = []): st
       // Watch client directory
       watchDirs.push(nitro.graphql.clientDir)
 
+      // Watch server directory (main project)
+      if (scanLocal) {
+        watchDirs.push(nitro.graphql.serverDir)
+      }
+
       // Add layer directories to watch list
       const layerServerDirs = nitro.options.graphql?.layerServerDirs || []
       const layerAppDirs = nitro.options.graphql?.layerAppDirs || []

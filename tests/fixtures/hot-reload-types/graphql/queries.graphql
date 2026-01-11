@@ -1,0 +1,10 @@
+query GetUser($id: ID!) {
+  user(id: $id) {
+    id
+    name
+  }
+}
+
+query GetHello {
+  hello
+}
