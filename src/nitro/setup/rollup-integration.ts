@@ -8,7 +8,6 @@ import type { Nitro } from 'nitro/types'
 import {
   CHUNK_NAME_RESOLVERS,
   CHUNK_NAME_SCHEMAS,
-  CHUNK_PATH_GRAPHQL,
   CHUNK_PATH_UNKNOWN,
   GRAPHQL_EXTENSIONS,
   RESOLVER_EXTENSIONS,
@@ -44,67 +43,64 @@ export function setupNoExternals(nitro: Nitro): void {
 /**
  * Setup Rollup/Rolldown chunking configuration for GraphQL files
  * Creates separate chunks for schemas and resolvers to optimize bundle size
+ *
+ * Note: For Rolldown, we only use manualChunks (not advancedChunks) to avoid
+ * interfering with Nitro's node_modules chunking which uses advancedChunks.
  */
 export function setupRollupChunking(nitro: Nitro): void {
   nitro.hooks.hook('rollup:before', (_, rollupConfig) => {
-    const manualChunks = rollupConfig.output?.manualChunks
-    const chunkFiles = rollupConfig.output?.chunkFileNames
-
-    if (!rollupConfig.output.inlineDynamicImports) {
-      // manualChunks for Rollup
-      rollupConfig.output.manualChunks = (id: string, _meta: unknown) => {
-        // Handle schema files (.graphql, .gql)
-        if (isGraphQLFile(id)) {
-          return getSchemaChunkName(id)
-        }
-
-        // Handle resolver files (.resolver.ts)
-        if (isResolverFile(id)) {
-          return getResolverChunkName(id)
-        }
-
-        if (typeof manualChunks === 'function') {
-          // @ts-expect-error - Rollup type compatibility
-          return manualChunks(id, meta)
-        }
-        return undefined
-      }
-
-      // advancedChunks for Rolldown - merge all GraphQL files into single chunks
-      // @ts-expect-error - Rolldown-specific feature not in Rollup types
-      rollupConfig.output.advancedChunks = {
-        groups: [
-          {
-            // All schemas into single chunk
-            name: CHUNK_NAME_SCHEMAS,
-            test: new RegExp(`\\.(${GRAPHQL_EXTENSIONS.map(e => e.slice(1)).join('|')})$`),
-          },
-          {
-            // All resolvers into single chunk
-            name: CHUNK_NAME_RESOLVERS,
-            test: /\.resolver\.(ts|js)$/,
-          },
-        ],
-        minSize: 0,
-        minShareCount: 1,
-      }
+    // TODO: Skip if advancedChunks is used?
+    return
+    // Skip if inlineDynamicImports is enabled
+    if (rollupConfig.output.inlineDynamicImports) {
+      return
     }
 
-    rollupConfig.output.chunkFileNames = (chunkInfo: { moduleIds?: string[] }) => {
-      // Check for GraphQL files
-      if (chunkInfo.moduleIds && chunkInfo.moduleIds.some((id: string) =>
-        isGraphQLFile(id) || isResolverFile(id),
-      )) {
-        return CHUNK_PATH_GRAPHQL
+    // Use manualChunks for both Rollup and Rolldown
+    // This doesn't interfere with Nitro's advancedChunks for node_modules
+    const existingManualChunks = rollupConfig.output?.manualChunks
+
+    rollupConfig.output.manualChunks = (id: string, meta: unknown) => {
+      // Handle schema files (.graphql, .gql)
+      if (isGraphQLFile(id)) {
+        return `graphql/${CHUNK_NAME_SCHEMAS}`
       }
 
-      // Use original logic for other chunks
-      if (typeof chunkFiles === 'function') {
+      // Handle resolver files (.resolver.ts, .resolver.js)
+      if (isResolverFile(id)) {
+        return `graphql/${CHUNK_NAME_RESOLVERS}`
+      }
+
+      // Use existing manualChunks if defined
+      if (typeof existingManualChunks === 'function') {
+        // @ts-expect-error - Rollup type compatibility
+        return existingManualChunks(id, meta)
+      }
+
+      return undefined
+    }
+
+    // chunkFileNames: only override for graphql chunks
+    const existingChunkFileNames = rollupConfig.output.chunkFileNames
+
+    rollupConfig.output.chunkFileNames = (chunkInfo: { name?: string, moduleIds?: string[] }) => {
+      const name = chunkInfo.name || ''
+
+      // GraphQL chunks get special path
+      if (name.startsWith('graphql/')) {
+        return `chunks/${name}.mjs`
+      }
+
+      // Use existing logic for other chunks
+      if (typeof existingChunkFileNames === 'function') {
         // @ts-expect-error - Simplified chunkInfo for our use case
-        return chunkFiles(chunkInfo)
+        return existingChunkFileNames(chunkInfo)
+      }
+      if (typeof existingChunkFileNames === 'string') {
+        return existingChunkFileNames
       }
 
-      // Unknown path
+      // Fallback
       return CHUNK_PATH_UNKNOWN
     }
   })
@@ -122,24 +118,6 @@ function isGraphQLFile(id: string): boolean {
  */
 function isResolverFile(id: string): boolean {
   return RESOLVER_EXTENSIONS.some(ext => id.endsWith(ext))
-}
-
-/**
- * Get chunk name for GraphQL schema files
- * All schemas are bundled into a single chunk since GraphQL server
- * merges them at runtime anyway - no benefit from separate chunks
- */
-function getSchemaChunkName(_id: string): string {
-  return CHUNK_NAME_SCHEMAS
-}
-
-/**
- * Get chunk name for resolver files
- * All resolvers are bundled into a single chunk since GraphQL server
- * requires all resolvers to be registered at startup - no runtime lazy loading
- */
-function getResolverChunkName(_id: string): string {
-  return CHUNK_NAME_RESOLVERS
 }
 
 /**
