@@ -10,7 +10,6 @@ export default defineConfig({
     nitro(),
     graphql({
       framework: 'graphql-yoga',
-      scaffold: false,
       serverDir: 'server/graphql',
       clientDir: 'src/graphql',
     }),

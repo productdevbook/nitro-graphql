@@ -514,6 +514,57 @@ export interface SubscriptionsConfig {
   pubsub?: PubSubConfig
 }
 
+/**
+ * Client utilities configuration
+ * Controls auto-generation of client utility files
+ */
+export interface ClientUtilsConfig {
+  /** Master switch for client utilities */
+  enabled?: boolean
+  /** Index file output path */
+  index?: FileGenerationConfig
+  /** Ofetch client output path */
+  ofetch?: FileGenerationConfig
+}
+
+/**
+ * Path configuration with placeholders
+ * Supports: {buildDir}, {rootDir}, {typesDir}, {serverDir}, {clientDir}, {serviceName}
+ */
+export interface PathsConfig {
+  /** Server GraphQL directory (default: 'server/graphql') */
+  serverDir?: string
+  /** Client GraphQL directory (default: 'app/graphql' or 'graphql') */
+  clientDir?: string
+  /** Types output directory (default: '{buildDir}/types') */
+  typesDir?: string
+}
+
+/**
+ * Watch mode configuration
+ */
+export interface WatchConfig {
+  /** Enable watch mode */
+  enabled?: boolean
+  /** Debounce time in ms */
+  debounce?: number
+}
+
+/**
+ * Runtime file generation configuration
+ * Generates resolvers.ts, schema.ts for standalone server usage
+ */
+export interface RuntimeConfig {
+  /** Output directory for runtime files (defaults to '{buildDir}/runtime') */
+  outDir?: string
+  /** What to include in generation */
+  include?: {
+    resolvers?: boolean
+    schema?: boolean
+    index?: boolean
+  }
+}
+
 export interface NitroGraphQLOptions {
   framework?: 'graphql-yoga' | 'apollo-server'
   /**
@@ -589,6 +640,53 @@ export interface NitroGraphQLOptions {
    * Enables real-time subscriptions via WebSocket and/or SSE transports
    */
   subscriptions?: SubscriptionsConfig
+
+  // ==================== CLI OPTIONS ====================
+  // These options enable standalone CLI usage without Nitro module
+
+  /**
+   * Root directory of the project
+   * Used by CLI for path resolution. In Nitro module context, this is implicit.
+   */
+  rootDir?: string
+
+  /**
+   * Build output directory
+   * Used by CLI for generated files. In Nitro module context, this is implicit.
+   */
+  buildDir?: string
+
+  /**
+   * Client utilities configuration
+   * Controls auto-generation of client utility files (index.ts, ofetch.ts)
+   * Set to false to disable all client utilities generation
+   */
+  clientUtils?: false | ClientUtilsConfig
+
+  /**
+   * Path configuration with placeholders
+   * Allows overriding default paths for generated files
+   */
+  paths?: PathsConfig
+
+  /**
+   * Patterns to ignore during file scanning
+   * Defaults to node_modules and dist directories
+   */
+  ignore?: string[]
+
+  /**
+   * Watch mode configuration
+   * Enables automatic type regeneration on file changes
+   */
+  watch?: WatchConfig
+
+  /**
+   * Runtime file generation configuration
+   * Generates resolvers.ts, schema.ts for standalone server usage
+   * Set to true for default behavior or provide config object
+   */
+  runtime?: boolean | RuntimeConfig
 }
 
 /**

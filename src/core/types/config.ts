@@ -88,22 +88,6 @@ export interface CorePathsConfig {
 }
 
 /**
- * Scaffold file generation configuration
- */
-export interface CoreScaffoldConfig {
-  /** Master switch for all scaffold files */
-  enabled?: boolean
-  /** Generate graphql.config.ts */
-  graphqlConfig?: boolean | string
-  /** Generate server schema.ts */
-  serverSchema?: boolean | string
-  /** Generate server config.ts */
-  serverConfig?: boolean | string
-  /** Generate server context.d.ts */
-  serverContext?: boolean | string
-}
-
-/**
  * Type generation configuration
  */
 export interface CoreTypesConfig {
@@ -160,8 +144,6 @@ export interface CoreGraphQLOptions {
   federation?: CoreFederationConfig
   /** Path configuration */
   paths?: CorePathsConfig
-  /** Scaffold file configuration */
-  scaffold?: false | CoreScaffoldConfig
   /** Type generation configuration */
   types?: false | CoreTypesConfig
   /** SDK generation configuration */

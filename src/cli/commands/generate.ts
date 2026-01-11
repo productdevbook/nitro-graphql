@@ -96,11 +96,11 @@ export async function generateServer(
     return
   }
 
-  // Generate types
+  // Generate types (cast codegen config as core expects simplified types)
   const result = await generateServerTypesCore({
     framework: ctx.config.framework,
     schema,
-    config: ctx.config.codegen?.server,
+    config: ctx.config.codegen?.server as any,
     federationEnabled: ctx.config.federation?.enabled,
   })
 
@@ -149,9 +149,9 @@ export async function generateClient(
     return
   }
 
-  // Scan for documents
+  // Scan for documents (cast external services as core expects simplified types)
   const docsResult = await scanDocumentsCore(scanCtx, {
-    externalServices: ctx.config.externalServices,
+    externalServices: ctx.config.externalServices as any,
   })
 
   if (docsResult.errors.length > 0) {
@@ -176,12 +176,12 @@ export async function generateClient(
   const schemaString = readFileSync(schemaPath, 'utf-8')
   const schema = buildSchema(schemaString)
 
-  // Generate types
+  // Generate types (cast codegen config as core expects simplified types)
   const result = await generateClientTypesCore({
     schema,
     documents,
-    config: ctx.config.codegen?.client,
-    sdkConfig: ctx.config.codegen?.clientSDK,
+    config: ctx.config.codegen?.client as any,
+    sdkConfig: ctx.config.codegen?.clientSDK as any,
     options: { silent: options.silent },
   })
 

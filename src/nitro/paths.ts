@@ -45,9 +45,16 @@ export function getDefaultPaths(nitro: Nitro): Required<PathPlaceholders> {
   // Path overrides from top-level config
   const graphqlConfig = nitro.options.graphql || {}
 
-  const defaultServerDir = graphqlConfig.serverDir || resolve(rootDir, 'server', 'graphql')
-  const defaultClientDir = graphqlConfig.clientDir || resolve(rootDir, isNuxt ? 'app/graphql' : 'graphql')
-  const defaultTypesDir = graphqlConfig.typesDir || resolve(buildDir, 'types')
+  // Resolve relative paths against rootDir
+  const defaultServerDir = graphqlConfig.serverDir
+    ? resolve(rootDir, graphqlConfig.serverDir)
+    : resolve(rootDir, 'server', 'graphql')
+  const defaultClientDir = graphqlConfig.clientDir
+    ? resolve(rootDir, graphqlConfig.clientDir)
+    : resolve(rootDir, isNuxt ? 'app/graphql' : 'graphql')
+  const defaultTypesDir = graphqlConfig.typesDir
+    ? resolve(rootDir, graphqlConfig.typesDir)
+    : resolve(buildDir, 'types')
 
   return {
     serviceName: 'default',

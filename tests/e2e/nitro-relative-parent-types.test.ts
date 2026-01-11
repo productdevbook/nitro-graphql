@@ -45,7 +45,6 @@ describe('Nitro Module with Relative Parent Paths E2E', () => {
       modules: [
         graphql({
           framework: 'graphql-yoga',
-          serverDir: './',
           clientDir: '../../apps/ecommerce/app/graphql',
           types: {
             enabled: true,

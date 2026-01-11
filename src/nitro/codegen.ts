@@ -5,6 +5,7 @@
 
 import type { GraphQLSchema } from 'graphql'
 import type { Nitro } from 'nitro/types'
+import type { PathPlaceholders } from './paths'
 import { existsSync, readFileSync } from 'node:fs'
 import { loadFilesSync } from '@graphql-tools/load-files'
 import { mergeTypeDefs } from '@graphql-tools/merge'
@@ -254,7 +255,7 @@ async function generateExternalTypes(
       if (types === false)
         continue
 
-      const placeholders = { ...getDefaultPaths(nitro), serviceName: service.name }
+      const placeholders = { ...getDefaultPaths(nitro), serviceName: service.name } as PathPlaceholders
       const typesConfig = getTypesConfig(nitro)
       const sdkConfig = getSdkConfig(nitro)
 
