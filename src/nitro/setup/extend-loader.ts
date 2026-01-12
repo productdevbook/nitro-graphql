@@ -58,11 +58,17 @@ export async function resolveExtendDirs(nitro: Nitro): Promise<string[]> {
 
   for (const source of extend) {
     if (typeof source === 'string') {
-      // Package name or local path - load config and get serverDir
+      // Package name or local path - load config and get serverDir/clientDir
       const pkg = await loadPackageConfig(source, nitro.options.rootDir)
       if (pkg) {
         const serverDir = resolve(pkg.baseDir, pkg.config.serverDir || 'server/graphql')
         dirs.push(serverDir)
+
+        // Also add clientDir if configured
+        if (pkg.config.clientDir) {
+          const clientDir = resolve(pkg.baseDir, pkg.config.clientDir)
+          dirs.push(clientDir)
+        }
       }
       else if (isLocalPath(source)) {
         // Local path without config - use default serverDir

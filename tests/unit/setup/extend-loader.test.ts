@@ -206,5 +206,72 @@ describe('extend-loader', () => {
         expect(dirs).toContain('/layers/base/server/graphql')
       })
     })
+
+    describe('package extends with clientDir', () => {
+      it('should resolve clientDir from package config', async () => {
+        const { loadPackageConfig } = await import('../../../src/core')
+        vi.mocked(loadPackageConfig).mockResolvedValue({
+          baseDir: '/node_modules/@org/graphql-pkg',
+          config: {
+            serverDir: 'server/graphql',
+            clientDir: '../../apps/main/app/graphql',
+          },
+        } as any)
+        vi.mocked(existsSync).mockReturnValue(true)
+
+        mockNitro.options!.graphql = {
+          extend: ['@org/graphql-pkg'],
+        } as any
+
+        const dirs = await resolveExtendDirs(mockNitro as Nitro)
+
+        expect(dirs).toContain('/node_modules/@org/graphql-pkg/server/graphql')
+        // ../../apps/main/app/graphql from /node_modules/@org/graphql-pkg resolves to /node_modules/apps/main/app/graphql
+        expect(dirs).toContain('/node_modules/apps/main/app/graphql')
+      })
+
+      it('should resolve clientDir with relative parent path from package', async () => {
+        const { loadPackageConfig } = await import('../../../src/core')
+        vi.mocked(loadPackageConfig).mockResolvedValue({
+          baseDir: '/monorepo/packages/graphql',
+          config: {
+            serverDir: './',
+            clientDir: '../../apps/ecommerce/app/graphql',
+          },
+        } as any)
+        vi.mocked(existsSync).mockReturnValue(true)
+
+        mockNitro.options!.graphql = {
+          extend: ['@org/graphql-pkg'],
+        } as any
+
+        const dirs = await resolveExtendDirs(mockNitro as Nitro)
+
+        expect(dirs).toContain('/monorepo/packages/graphql')
+        expect(dirs).toContain('/monorepo/apps/ecommerce/app/graphql')
+      })
+
+      it('should handle package with only clientDir configured', async () => {
+        const { loadPackageConfig } = await import('../../../src/core')
+        vi.mocked(loadPackageConfig).mockResolvedValue({
+          baseDir: '/node_modules/@org/graphql-pkg',
+          config: {
+            clientDir: 'client/graphql',
+          },
+        } as any)
+        vi.mocked(existsSync).mockReturnValue(true)
+
+        mockNitro.options!.graphql = {
+          extend: ['@org/graphql-pkg'],
+        } as any
+
+        const dirs = await resolveExtendDirs(mockNitro as Nitro)
+
+        // Should still have default serverDir
+        expect(dirs).toContain('/node_modules/@org/graphql-pkg/server/graphql')
+        // Should also have clientDir
+        expect(dirs).toContain('/node_modules/@org/graphql-pkg/client/graphql')
+      })
+    })
   })
 })
