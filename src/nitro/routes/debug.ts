@@ -4,7 +4,7 @@ import { directives } from '#nitro-graphql/server-directives'
 import { resolvers } from '#nitro-graphql/server-resolvers'
 import { schemas } from '#nitro-graphql/server-schemas'
 import { defineEventHandler, getQuery } from 'nitro/h3'
-import { generateHtmlDashboard } from './debug-template'
+import { generateDebugHtml } from '../../core/debug/template'
 
 /**
  * Debug endpoint for inspecting virtual modules and GraphQL setup
@@ -116,5 +116,5 @@ export default defineEventHandler(async (event) => {
 
   // HTML dashboard
   event.res.headers.set('Content-Type', 'text/html')
-  return generateHtmlDashboard(fullDebugInfo)
+  return generateDebugHtml(fullDebugInfo)
 })

@@ -1,3 +1,16 @@
+# CLI Playground specific types (prefixed to avoid conflicts when extended)
+type CLIUser {
+  id: ID!
+  name: String!
+  source: String!
+}
+
 extend type Query {
   helloCI: String!
+  cliUser(id: ID!): CLIUser
+  cliUsers: [CLIUser!]!
+}
+
+extend type Mutation {
+  createCLIUser(name: String!): CLIUser!
 }

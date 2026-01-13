@@ -1,7 +1,43 @@
 /**
- * Debug dashboard HTML template
- * Extracted from debug.ts to reduce file complexity
+ * Core Debug Dashboard Template
+ *
+ * Shared HTML template generation for debug dashboard.
+ * Used by both Nitro debug route and CLI debug handler.
  */
+
+/**
+ * Debug info structure for dashboard rendering
+ */
+export interface DebugInfo {
+  environment: {
+    dev: boolean
+    framework: string
+  }
+  graphql: {
+    framework: string | null
+  }
+  scanned: {
+    schemas: number
+    resolvers: number
+    directives: number
+    documents: number
+    schemaFiles: string[]
+    resolverFiles: Array<{
+      file: string
+      exports: Array<{
+        name: string
+        type: string
+      }>
+    }>
+    documentFiles: string[]
+  }
+  runtime: {
+    loadedResolvers: number
+    loadedSchemas: number
+    loadedDirectives: number
+  }
+  virtualModules: Record<string, string>
+}
 
 /**
  * Escape HTML special characters
@@ -95,14 +131,14 @@ const GRAPHQL_LOGO = `<svg class="w-10 h-10" viewBox="0 0 400 400" fill="none">
 /**
  * Render resolver exports section
  */
-function renderResolverExports(resolverFiles: any[]): string {
+function renderResolverExports(resolverFiles: DebugInfo['scanned']['resolverFiles']): string {
   if (resolverFiles.length === 0) {
     return '<p class="text-slate-500 text-sm">No resolvers found</p>'
   }
 
   return `
     <div class="max-h-96 overflow-y-auto space-y-2 pr-2">
-      ${resolverFiles.map((r: any) => {
+      ${resolverFiles.map((r) => {
         const totalExports = r.exports.length
         return `
           <div class="border border-slate-700/50 rounded-lg p-4 hover:border-[#E535AB]/20 hover:bg-slate-800/30 transition-all">
@@ -113,7 +149,7 @@ function renderResolverExports(resolverFiles: any[]): string {
               </span>
             </div>
             <div class="flex flex-wrap gap-1.5">
-              ${r.exports.map((e: any) => {
+              ${r.exports.map((e) => {
                 const config = TYPE_CONFIG[e.type as keyof typeof TYPE_CONFIG] || TYPE_CONFIG.resolver
                 return `<span class="px-2.5 py-1 rounded border text-[11px] font-mono ${config.bg} ${config.text} ${config.border} hover:scale-105 transition-transform inline-flex items-center gap-1.5">
                   <span class="font-bold">${config.symbol}</span>
@@ -132,7 +168,7 @@ function renderResolverExports(resolverFiles: any[]): string {
 /**
  * Render virtual modules section
  */
-function renderVirtualModules(virtualModules: Record<string, unknown>): string {
+function renderVirtualModules(virtualModules: Record<string, string>): string {
   return Object.entries(virtualModules).map(([moduleName, codeContent]) => {
     const code = String(codeContent)
     const colorConfig = MODULE_COLORS[moduleName as keyof typeof MODULE_COLORS] || MODULE_COLORS['module-config']
@@ -187,8 +223,10 @@ function renderFileList(files: string[], emptyMessage: string): string {
 
 /**
  * Generate the HTML dashboard for the debug endpoint
+ *
+ * Used by both Nitro and CLI debug routes.
  */
-export function generateHtmlDashboard(debugInfo: any): string {
+export function generateDebugHtml(debugInfo: DebugInfo): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>

@@ -5,9 +5,9 @@
 
 import type { ScanContext } from '../../core/types'
 import type { CLIContext } from '../index'
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import consola from 'consola'
 import { dirname, join, relative, resolve } from 'pathe'
+import { existsSync_, mkdirSync_, onSignal, readFileSync_, writeFileSync_ } from '../../core/utils/runtime'
 import {
   generateClientTypesCore,
   generateResolverModule,
@@ -104,8 +104,8 @@ export async function generateServer(
 
   // Write schema file
   const schemaPath = join(ctx.config.buildDir, 'schema.graphql')
-  mkdirSync(dirname(schemaPath), { recursive: true })
-  writeFileSync(schemaPath, result.schemaString, 'utf-8')
+  mkdirSync_(dirname(schemaPath))
+  writeFileSync_(schemaPath, result.schemaString)
 
   // Determine types output path
   const typesConfig = ctx.config.types
@@ -121,8 +121,8 @@ export async function generateServer(
   }
 
   // Write types file
-  mkdirSync(dirname(typesPath), { recursive: true })
-  writeFileSync(typesPath, result.types, 'utf-8')
+  mkdirSync_(dirname(typesPath))
+  writeFileSync_(typesPath, result.types)
 
   if (!options.silent) {
     logger.success(`Generated server types: ${relative(ctx.config.rootDir, typesPath)}`)
@@ -140,7 +140,7 @@ export async function generateClient(
 
   // Check if schema exists
   const schemaPath = join(ctx.config.buildDir, 'schema.graphql')
-  if (!existsSync(schemaPath)) {
+  if (!existsSync_(schemaPath)) {
     if (!options.silent) {
       logger.info('Server schema not found. Generate server types first.')
     }
@@ -170,8 +170,7 @@ export async function generateClient(
 
   // Build schema from file
   const { buildSchema } = await import('graphql')
-  const { readFileSync } = await import('node:fs')
-  const schemaString = readFileSync(schemaPath, 'utf-8')
+  const schemaString = readFileSync_(schemaPath)
   const schema = buildSchema(schemaString)
 
   // Generate types (cast codegen config as core expects simplified types)
@@ -204,13 +203,13 @@ export async function generateClient(
   }
 
   // Write types file
-  mkdirSync(dirname(typesPath), { recursive: true })
-  writeFileSync(typesPath, result.types, 'utf-8')
+  mkdirSync_(dirname(typesPath))
+  writeFileSync_(typesPath, result.types)
 
   // Write SDK file
   const sdkPath = join(ctx.config.clientDir, 'default', 'sdk.ts')
-  mkdirSync(dirname(sdkPath), { recursive: true })
-  writeFileSync(sdkPath, result.sdk, 'utf-8')
+  mkdirSync_(dirname(sdkPath))
+  writeFileSync_(sdkPath, result.sdk)
 
   if (!options.silent) {
     logger.success(`Generated client types: ${relative(ctx.config.rootDir, typesPath)}`)
@@ -232,7 +231,7 @@ async function generateRuntimeFiles(
     ? join(ctx.config.rootDir, runtimeConfig.outDir)
     : join(ctx.config.buildDir, 'runtime')
 
-  mkdirSync(runtimeDir, { recursive: true })
+  mkdirSync_(runtimeDir)
 
   // Check what to include
   const include = typeof runtimeConfig === 'object' && runtimeConfig.include
@@ -245,7 +244,7 @@ async function generateRuntimeFiles(
 
     if (resolversResult.items.length > 0) {
       const resolverCode = generateResolverModule(resolversResult.items, runtimeDir)
-      writeFileSync(join(runtimeDir, 'resolvers.ts'), resolverCode, 'utf-8')
+      writeFileSync_(join(runtimeDir, 'resolvers.ts'), resolverCode)
 
       if (!options.silent) {
         logger.success(`Generated runtime: ${relative(ctx.config.rootDir, join(runtimeDir, 'resolvers.ts'))}`)
@@ -259,11 +258,10 @@ async function generateRuntimeFiles(
   // Generate schema.ts
   if (include.schema !== false) {
     const schemaPath = join(ctx.config.buildDir, 'schema.graphql')
-    if (existsSync(schemaPath)) {
-      const { readFileSync } = await import('node:fs')
-      const schemaString = readFileSync(schemaPath, 'utf-8')
+    if (existsSync_(schemaPath)) {
+      const schemaString = readFileSync_(schemaPath)
       const schemaCode = generateSchemaModule(schemaString)
-      writeFileSync(join(runtimeDir, 'schema.ts'), schemaCode, 'utf-8')
+      writeFileSync_(join(runtimeDir, 'schema.ts'), schemaCode)
 
       if (!options.silent) {
         logger.success(`Generated runtime: ${relative(ctx.config.rootDir, join(runtimeDir, 'schema.ts'))}`)
@@ -277,7 +275,7 @@ async function generateRuntimeFiles(
   // Generate index.ts
   if (include.index !== false) {
     const indexCode = generateRuntimeIndex()
-    writeFileSync(join(runtimeDir, 'index.ts'), indexCode, 'utf-8')
+    writeFileSync_(join(runtimeDir, 'index.ts'), indexCode)
 
     if (!options.silent) {
       logger.success(`Generated runtime: ${relative(ctx.config.rootDir, join(runtimeDir, 'index.ts'))}`)
@@ -344,10 +342,10 @@ async function watchAndRegenerate(
   })
 
   // Keep process alive
-  await new Promise<void>((resolve) => {
-    process.on('SIGINT', () => {
+  await new Promise<void>((resolvePromise) => {
+    onSignal('SIGINT', () => {
       watcher.close()
-      resolve()
+      resolvePromise()
     })
   })
 }

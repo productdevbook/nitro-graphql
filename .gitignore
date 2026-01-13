@@ -20,3 +20,6 @@ native/*.node
 native/index.js
 native/index.d.ts
 .nuxt
+
+# External projects (not part of this repo)
+vercube/

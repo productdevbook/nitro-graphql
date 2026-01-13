@@ -7,16 +7,35 @@ import type * as Types from '#graphql/client';
 
 import type { ExecutionResult } from 'graphql';
 
+export const HelloDocument = /*#__PURE__*/ `
+    query Hello {
+  helloCI
+}
+    `;
 export const GetUsersDocument = /*#__PURE__*/ `
     query GetUsers {
-  hello
+  users {
+    id
+    name
+  }
+}
+    `;
+export const GetGreetingDocument = /*#__PURE__*/ `
+    query GetGreeting {
+  greeting(name: "World")
 }
     `;
 export type Requester<C = {}, E = unknown> = <R, V>(doc: string, vars?: V, options?: C) => Promise<ExecutionResult<R, E>> | AsyncIterable<ExecutionResult<R, E>>
 export function getSdk<C, E>(requester: Requester<C, E>) {
   return {
+    Hello(variables?: Types.HelloQueryVariables, options?: C): Promise<ExecutionResult<Types.HelloQuery, E>> {
+      return requester<Types.HelloQuery, Types.HelloQueryVariables>(HelloDocument, variables, options) as Promise<ExecutionResult<Types.HelloQuery, E>>;
+    },
     GetUsers(variables?: Types.GetUsersQueryVariables, options?: C): Promise<ExecutionResult<Types.GetUsersQuery, E>> {
       return requester<Types.GetUsersQuery, Types.GetUsersQueryVariables>(GetUsersDocument, variables, options) as Promise<ExecutionResult<Types.GetUsersQuery, E>>;
+    },
+    GetGreeting(variables?: Types.GetGreetingQueryVariables, options?: C): Promise<ExecutionResult<Types.GetGreetingQuery, E>> {
+      return requester<Types.GetGreetingQuery, Types.GetGreetingQueryVariables>(GetGreetingDocument, variables, options) as Promise<ExecutionResult<Types.GetGreetingQuery, E>>;
     }
   };
 }

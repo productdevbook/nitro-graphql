@@ -125,8 +125,17 @@ export async function createMergedSchema(options: CreateMergedSchemaOptions): Pr
 }
 
 /**
+ * Base schema with empty Query and Mutation types.
+ * Required for 'extend type Query' syntax to work.
+ * Shared between CLI and Nitro.
+ */
+export const BASE_SCHEMA = `type Query { _empty: String }
+type Mutation { _empty: String }`
+
+/**
  * Build a GraphQL schema from file paths (CLI usage)
  * Reads schema files, merges them, and builds an executable schema
+ * Includes BASE_SCHEMA for extend type support
  */
 export async function buildGraphQLSchema(schemaPaths: string[]): Promise<GraphQLSchema | null> {
   if (schemaPaths.length === 0) {
@@ -134,7 +143,11 @@ export async function buildGraphQLSchema(schemaPaths: string[]): Promise<GraphQL
   }
 
   try {
-    const schemaContents = schemaPaths.map(path => readFileSync(path, 'utf-8'))
+    // Include BASE_SCHEMA for extend type support
+    const schemaContents = [
+      BASE_SCHEMA,
+      ...schemaPaths.map(path => readFileSync(path, 'utf-8')),
+    ]
     const mergedTypeDefs = mergeTypeDefs(schemaContents, {
       throwOnConflict: true,
       commentDescriptions: true,

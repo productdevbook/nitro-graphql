@@ -12,10 +12,10 @@
     "better:init": "npx @better-auth/cli@latest generate --config ./server/utils/auth.ts"
   },
   "devDependencies": {
-    "@better-auth/cli": "^1.4.10",
+    "@better-auth/cli": "^1.4.11",
     "@graphql-tools/utils": "^11.0.0",
     "@types/pg": "^8.16.0",
-    "better-auth": "^1.4.10",
+    "better-auth": "^1.4.11",
     "drizzle-kit": "^0.31.8",
     "drizzle-orm": "^0.45.1",
     "drizzle-zod": "^0.8.3",

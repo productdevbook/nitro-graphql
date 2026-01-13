@@ -5,6 +5,11 @@
 
 import { beforeEach, vi } from 'vitest'
 
+// Set CI environment to disable Vite HMR and other interactive features
+// This prevents port conflicts when running multiple dev servers in parallel
+process.env.CI = 'true'
+process.env.VITE_TEST = 'true'
+
 // Mock consola globally to suppress expected error logs during tests
 vi.mock('consola', async (importOriginal) => {
   const actual = await importOriginal<typeof import('consola')>()

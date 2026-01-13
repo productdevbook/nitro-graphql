@@ -180,6 +180,7 @@
     "oxc-parser": "catalog:",
     "pathe": "catalog:",
     "perfect-debounce": "catalog:",
+    "srvx": "catalog:",
     "tinyglobby": "catalog:"
   },
   "devDependencies": {
@@ -196,6 +197,7 @@
     "changelogen": "catalog:",
     "crossws": "catalog:",
     "eslint": "catalog:",
+    "get-port": "catalog:",
     "graphql": "catalog:",
     "graphql-yoga": "catalog:",
     "nitro": "catalog:",

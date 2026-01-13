@@ -1,20 +1,6 @@
-catalogMode: prefer
-
-cleanupUnusedCatalogs: true
-
-ignoreWorkspaceRootCheck: true
-
-shellEmulator: true
-
-trustPolicy: no-downgrade
-
 packages:
   - playgrounds/*
   - crates/*
-
-overrides:
-  graphql: ^16.12.0
-  vite: 8.0.0-beta.7
 
 catalog:
   '@antfu/eslint-config': ^6.7.3
@@ -39,12 +25,12 @@ catalog:
   '@nuxt/kit': https://pkg.pr.new/@nuxt/kit@33005
   '@nuxt/schema': https://pkg.pr.new/@nuxt/schema@33005
   '@tailwindcss/vite': ^4.1.18
-  '@types/node': ^25.0.5
+  '@types/node': ^25.0.6
   '@types/ws': ^8.18.1
   '@vitejs/devtools': ^0.0.0-alpha.16
   '@vitejs/plugin-vue': ^6.0.3
-  '@vitest/coverage-v8': ^4.0.16
-  '@vitest/ui': ^4.0.16
+  '@vitest/coverage-v8': ^4.0.17
+  '@vitest/ui': ^4.0.17
   bumpp: ^10.3.2
   c12: ^3.3.3
   changelogen: ^0.6.2
@@ -54,6 +40,7 @@ catalog:
   crossws: ^0.4.1
   defu: ^6.1.4
   eslint: ^9.39.2
+  get-port: ^7.1.0
   giget: ^2.0.0
   graphql: ^16.12.0
   graphql-config: ^5.1.5
@@ -67,19 +54,34 @@ catalog:
   nuxt: https://pkg.pr.new/nuxt@33005
   ofetch: ^2.0.0-alpha.3
   ohash: ^2.0.11
-  oxc-parser: ^0.107.0
+  oxc-parser: ^0.108.0
   pathe: ^2.0.3
   perfect-debounce: ^2.0.0
+  srvx: ^0.10.0
   tailwindcss: ^4.1.18
   tinyglobby: ^0.2.15
-  tsdown: ^0.18.4
+  tsdown: ^0.19.0
   typescript: ^5.9.3
   vite: 8.0.0-beta.7
   vitepress-plugin-llms: ^1.10.0
-  vitest: ^4.0.16
+  vitest: ^4.0.17
   vue: ^3.5.26
   vue-router: ^4.6.4
   ws: ^8.19.0
   zod: ^4.3.5
+
+catalogMode: prefer
+
+cleanupUnusedCatalogs: true
+
+ignoreWorkspaceRootCheck: true
+
+overrides:
+  graphql: ^16.12.0
+  vite: 8.0.0-beta.7
+
+shellEmulator: true
+
+trustPolicy: no-downgrade
 
 trustPolicyIgnoreAfter: 10.08

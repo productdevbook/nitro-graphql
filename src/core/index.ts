@@ -26,6 +26,9 @@ export * from './scanning'
 // Schema utilities
 export * from './schema'
 
+// Server factories (shared between CLI and Nitro)
+export * from './server'
+
 // Types
 export * from './types'
 

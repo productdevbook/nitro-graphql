@@ -1,73 +1,41 @@
-import type { YogaServerInstance } from 'graphql-yoga'
+/**
+ * GraphQL Yoga Route Handler
+ *
+ * Nitro/H3 wrapper around the core GraphQL Yoga server.
+ * Uses virtual modules to load schemas, resolvers, and directives.
+ */
+
+import type { CoreServerInstance } from '../../core/server/types'
 import { importedConfig } from '#nitro-graphql/graphql-config'
 import { moduleConfig } from '#nitro-graphql/module-config'
 import { directives } from '#nitro-graphql/server-directives'
 import { resolvers } from '#nitro-graphql/server-resolvers'
 import { schemas } from '#nitro-graphql/server-schemas'
-import defu from 'defu'
-import { createYoga } from 'graphql-yoga'
 import { defineEventHandler, getQuery } from 'nitro/h3'
-import { createMergedSchema } from '../../core/schema'
+import { BASE_SCHEMA, createYogaServer } from '../../core/server/yoga'
 
 // Cache control header for playground HTML (1 month)
 const PLAYGROUND_CACHE_HEADER = 'public, max-age=2592000, stale-while-revalidate=86400'
 
-// Apollo Sandbox HTML - uses proxied script for better caching
-const apolloSandboxHtml = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <link rel="preload" href="/api/graphql/sandbox.js" as="script">
-</head>
-<body style="margin: 0; overflow-x: hidden; overflow-y: hidden">
-<div id="sandbox" style="height:100vh; width:100vw;"></div>
-<script src="/api/graphql/sandbox.js"></script>
-<script>
-new window.EmbeddedSandbox({
-  target: "#sandbox",
-  initialEndpoint: window.location.href.replace('/sandbox.js', ''),
-  hideCookieToggle: false,
-  initialState: {
-    includeCookies: true
-  }
-});
-</script>
-</body>
-</html>`
-
-let yoga: YogaServerInstance<object, object>
+let server: CoreServerInstance | null = null
 
 export default defineEventHandler(async (event) => {
-  if (!yoga) {
-    const schema = await createMergedSchema({
-      schemas,
+  if (!server) {
+    // Use core server factory - same code as CLI uses
+    // Always add BASE_SCHEMA first to support extend types
+    server = await createYogaServer({
+      schemas: [BASE_SCHEMA, ...schemas],
       resolvers,
       directives,
       moduleConfig,
+      endpoint: '/api/graphql',
+      security: moduleConfig.security,
+      importedConfig,
     })
-
-    // Get security config from module config (resolved with environment defaults)
-    const securityConfig = moduleConfig.security || {
-      introspection: true,
-      playground: true,
-      maskErrors: false,
-      disableSuggestions: false,
-    }
-
-    // Yoga instance'ı henüz oluşturulmadıysa, oluştur
-    yoga = createYoga(defu({
-      schema,
-      graphqlEndpoint: '/api/graphql',
-      // Apply security settings
-      landingPage: securityConfig.playground,
-      graphiql: securityConfig.playground
-        ? { defaultQuery: '# Welcome to GraphQL\n#\n# Try running a query!\n' }
-        : false,
-      renderGraphiQL: securityConfig.playground ? () => apolloSandboxHtml : undefined,
-      // Mask errors in production
-      maskedErrors: securityConfig.maskErrors,
-    }, importedConfig))
   }
-  const response = await yoga.handleRequest(event.req, event as unknown as Record<string, unknown>)
+
+  // Handle request using web standard fetch API
+  const response = await server.fetch(event.req, event as unknown as Record<string, unknown>)
 
   // Check if this is a playground request (GET without query param)
   const isPlaygroundRequest = event.req.method === 'GET' && !getQuery(event).query

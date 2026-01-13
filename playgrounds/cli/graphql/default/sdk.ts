@@ -9,7 +9,7 @@ import type { ExecutionResult } from 'graphql';
 
 export const HelloDocument = /*#__PURE__*/ `
     query Hello {
-  hello
+  helloCI
 }
     `;
 export type Requester<C = {}, E = unknown> = <R, V>(doc: string, vars?: V, options?: C) => Promise<ExecutionResult<R, E>> | AsyncIterable<ExecutionResult<R, E>>

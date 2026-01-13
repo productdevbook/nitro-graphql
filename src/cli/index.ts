@@ -5,11 +5,11 @@
  */
 
 import type { NitroGraphQLOptions } from '../nitro/types'
-import { existsSync } from 'node:fs'
 import { defineCommand, runMain } from 'citty'
 import consola from 'consola'
 import { resolve } from 'pathe'
 import { LOG_TAG } from '../core/constants'
+import { exit, existsSync_, getCwd } from '../core/utils/runtime'
 import { DEFAULT_CLI_CONFIG } from './config'
 
 const logger = consola.withTag(LOG_TAG)
@@ -28,7 +28,7 @@ export interface CLIContext {
 /**
  * Load CLI configuration from file or defaults
  */
-export async function loadConfig(cwd: string = process.cwd()): Promise<NitroGraphQLOptions> {
+export async function loadConfig(cwd: string = getCwd()): Promise<NitroGraphQLOptions> {
   const configFiles = [
     'nitro-graphql.config.ts',
     'nitro-graphql.config.js',
@@ -38,7 +38,7 @@ export async function loadConfig(cwd: string = process.cwd()): Promise<NitroGrap
 
   for (const file of configFiles) {
     const configPath = resolve(cwd, file)
-    if (existsSync(configPath)) {
+    if (existsSync_(configPath)) {
       try {
         // Dynamic import for config file
         const module = await import(configPath)
@@ -60,7 +60,7 @@ export async function loadConfig(cwd: string = process.cwd()): Promise<NitroGrap
  * Create CLI context from configuration
  */
 export async function createCLIContext(options: { cwd?: string } = {}): Promise<CLIContext> {
-  const cwd = options.cwd || process.cwd()
+  const cwd = options.cwd || getCwd()
   const config = await loadConfig(cwd)
 
   // Resolve all paths relative to cwd
@@ -221,7 +221,7 @@ const validateCommand = defineCommand({
     }
     else {
       logger.error('Schema validation failed!')
-      process.exit(1)
+      exit(1)
     }
   },
 })
@@ -272,7 +272,7 @@ const initCommand = defineCommand({
       logger.info(`Creating project "${projectName}" from template "${args.template}"...`)
       await initFromTemplate(projectName, args.template, {
         force: Boolean(args.force),
-        cwd: args.cwd || process.cwd(),
+        cwd: args.cwd || getCwd(),
       })
       logger.success('Project created successfully!')
       return
@@ -288,14 +288,85 @@ const initCommand = defineCommand({
   },
 })
 
+// Build command
+const buildCmd = defineCommand({
+  meta: {
+    name: 'build',
+    description: 'Build GraphQL types for production',
+  },
+  args: {
+    cwd: {
+      type: 'string',
+      description: 'Working directory',
+    },
+    skipValidation: {
+      type: 'boolean',
+      description: 'Skip schema validation',
+      default: false,
+    },
+  },
+  async run({ args }) {
+    const { buildCommand } = await import('./commands/build')
+    return buildCommand.run!({ args })
+  },
+})
+
+// Dev command (lazy loaded for performance)
+const devCommand = defineCommand({
+  meta: {
+    name: 'dev',
+    description: 'Start GraphQL development server',
+  },
+  args: {
+    cwd: {
+      type: 'string',
+      description: 'Working directory',
+    },
+    port: {
+      type: 'string',
+      alias: 'p',
+      default: '4000',
+      description: 'Server port',
+    },
+    host: {
+      type: 'string',
+      alias: 'H',
+      default: 'localhost',
+      description: 'Server host',
+    },
+    open: {
+      type: 'boolean',
+      alias: 'o',
+      description: 'Open browser',
+    },
+    watch: {
+      type: 'boolean',
+      alias: 'w',
+      default: true,
+      description: 'Enable file watching for hot reload',
+    },
+  },
+  async run({ args }) {
+    const { devCommand: devCommandImpl } = await import('./commands/dev')
+    return devCommandImpl.run!({ args })
+  },
+})
+
 // Main command
 const main = defineCommand({
   meta: {
     name: 'nitro-graphql',
     version: '2.0.0',
-    description: 'GraphQL type generation CLI for Nitro',
+    description: 'GraphQL CLI for Nitro - type generation and dev server',
   },
   subCommands: {
+    // Dev server
+    'dev': devCommand,
+    'd': devCommand,
+    // Build
+    'build': buildCmd,
+    'b': buildCmd,
+    // Code generation
     'generate': generateCommand,
     'gen': generateCommand,
     'g': generateCommand,
@@ -303,8 +374,10 @@ const main = defineCommand({
     'gen:server': generateServerCommand,
     'generate:client': generateClientCommand,
     'gen:client': generateClientCommand,
+    // Validation
     'validate': validateCommand,
     'v': validateCommand,
+    // Scaffolding
     'init': initCommand,
   },
 })

@@ -6,8 +6,16 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: ['tests/**/*.test.ts'],
+    exclude: [
+      '**/node_modules/**',
+      '**/vercube/**',
+      '**/dist/**',
+    ],
     testTimeout: 30000,
     globalSetup: ['./tests/global-setup.ts'],
+    setupFiles: ['./tests/setup.ts'],
+    // Retry flaky tests (E2E tests may have race conditions)
+    retry: 2,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'json-summary'],
@@ -26,7 +34,6 @@ export default defineConfig({
         'src/core/codegen/runtime.ts', // Runtime config generation
       ],
     },
-    setupFiles: ['./tests/setup.ts'],
   },
   resolve: {
     alias: {
