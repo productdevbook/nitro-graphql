@@ -35,14 +35,23 @@ export const DEFAULT_SERVER_CODEGEN_CONFIG: ServerCodegenConfig = {
 export async function generateServerTypesCore(
   input: ServerCodegenInput,
 ): Promise<ServerCodegenResult> {
-  const { framework, schema, schemaString: inputSchemaString, config = {}, federationEnabled = false, outputPath } = input
+  const {
+    framework,
+    schema,
+    schemaString: inputSchemaString,
+    config = {},
+    federationEnabled = false,
+    outputPath,
+    skipValidationSchemas = false,
+  } = input
 
   const defaultConfig: ServerCodegenConfig = {
     ...DEFAULT_SERVER_CODEGEN_CONFIG,
     ...(federationEnabled && { federation: true }),
   }
 
-  const mergedConfig = defu(defaultConfig, config)
+  // User config takes precedence over defaults
+  const mergedConfig = defu(config, defaultConfig)
 
   // Get schema string - use provided schemaString to avoid graphql instance mismatch
   const schemaString = inputSchemaString || (schema ? printSchemaWithDirectives(schema) : null)
@@ -50,43 +59,102 @@ export async function generateServerTypesCore(
     throw new Error('[generateServerTypesCore] No schema or schemaString provided')
   }
 
+  // Build plugins array
+  const plugins: Array<Record<string, unknown>> = [
+    { imports: {} },
+    { pluginContent: {} },
+    { typescript: {} },
+    { typescriptResolvers: {} },
+  ]
+
+  // Parse contextType to get type name for re-export
+  // Format: 'path/to/module#TypeName' or just 'TypeName'
+  const contextType = mergedConfig.contextType as string | undefined
+  const contextTypeName = contextType?.includes('#')
+    ? contextType.split('#')[1]
+    : null
+
+  // Build plugin map
+  const pluginMap: Record<string, unknown> = {
+    pluginContent: {
+      plugin: pluginContent,
+    },
+    imports: {
+      plugin: () => {
+        return {
+          prepend: skipValidationSchemas
+            ? [
+                generateServerTypeHelpersMinimal(framework),
+                '',
+              ]
+            : [
+                `import schemas from '#nitro-graphql/validation-schemas'`,
+                `import type { StandardSchemaV1 } from 'nitro-graphql/types'`,
+                generateServerTypeHelpers(framework),
+                '',
+              ],
+          // Re-export context type if available
+          append: contextTypeName
+            ? [`\nexport type { ${contextTypeName} };`]
+            : [],
+          content: '',
+        }
+      },
+    },
+    typescript: typescriptPlugin,
+    typescriptResolvers: typescriptResolversPlugin,
+  }
+
   const types = await codegen({
     filename: outputPath || 'types.generated.ts',
     schema: parse(schemaString),
     documents: [],
     config: mergedConfig,
-    plugins: [
-      { imports: {} },
-      { pluginContent: {} },
-      { typescript: {} },
-      { typescriptResolvers: {} },
-    ],
-    pluginMap: {
-      pluginContent: {
-        plugin: pluginContent,
-      },
-      imports: {
-        plugin: () => {
-          return {
-            prepend: [
-              `import schemas from '#nitro-graphql/validation-schemas'`,
-              `import type { StandardSchemaV1 } from 'nitro-graphql/types'`,
-              generateServerTypeHelpers(framework),
-              '',
-            ],
-            content: '',
-          }
-        },
-      },
-      typescript: typescriptPlugin,
-      typescriptResolvers: typescriptResolversPlugin,
-    },
+    plugins,
+    pluginMap,
   })
 
   return {
     types,
     schemaString,
   }
+}
+
+/**
+ * Generate minimal server type helper code (without validation schemas)
+ * Used when skipValidationSchemas is true (e.g., for non-Nitro frameworks like Vercube)
+ */
+function generateServerTypeHelpersMinimal(framework: string): string {
+  return `
+export interface NPMConfig {
+  framework: '${framework || 'graphql-yoga'}';
+}
+
+type Primitive =
+| null
+| undefined
+| string
+| number
+| boolean
+| symbol
+| bigint;
+
+type BuiltIns = Primitive | void | Date | RegExp;
+
+type ResolverReturnType<T> = T extends BuiltIns
+? T
+: T extends (...args: any[]) => unknown
+? T | undefined
+: T extends object
+? T extends Array<infer ItemType>
+  ? ItemType[] extends T
+    ? Array<ResolverReturnType<ItemType>>
+    : ResolverReturnTypeObject<T>
+  : ResolverReturnTypeObject<T>
+: unknown;
+
+type ResolverReturnTypeObject<T extends object> = { [K in keyof T]: ResolverReturnType<T[K]> };
+`
 }
 
 /**

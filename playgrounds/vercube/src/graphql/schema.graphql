@@ -1,0 +1,8 @@
+extend type Query {
+  hello: String!
+  greet(name: String!): String!
+}
+
+extend type Mutation {
+  setMessage(message: String!): String!
+}

@@ -95,11 +95,13 @@ export async function generateServer(
   }
 
   // Generate types (cast codegen config as core expects simplified types)
+  const serverConfig = ctx.config.codegen?.server as any
   const result = await generateServerTypesCore({
     framework: ctx.config.framework,
     schema,
-    config: ctx.config.codegen?.server as any,
+    config: serverConfig,
     federationEnabled: ctx.config.federation?.enabled,
+    skipValidationSchemas: serverConfig?.skipValidationSchemas ?? false,
   })
 
   // Write schema file

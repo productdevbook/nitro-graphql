@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["es2022", "ESNext"],
+    "emitDecoratorMetadata": false,
+    "experimentalDecorators": true,
+    "baseUrl": ".",
+    "rootDir": ".",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@/*": ["src/*"],
+      "#graphql/server": [".graphql/types/nitro-graphql-server.d.ts"],
+      "#graphql/context": ["src/types/graphql-context.ts"]
+    },
+    "resolveJsonModule": true,
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "declaration": false,
+    "importHelpers": true,
+    "noEmit": false,
+    "sourceMap": false,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*.ts",
+    ".graphql/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

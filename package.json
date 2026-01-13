@@ -84,6 +84,10 @@
     "./subscribe": {
       "types": "./dist/subscribe/index.d.mts",
       "import": "./dist/subscribe/index.mjs"
+    },
+    "./vercube": {
+      "types": "./dist/vercube/index.d.mts",
+      "import": "./dist/vercube/index.mjs"
     }
   },
   "module": "./dist/index.mjs",
@@ -160,6 +164,7 @@
     "@graphql-codegen/typescript-generic-sdk": "catalog:",
     "@graphql-codegen/typescript-operations": "catalog:",
     "@graphql-codegen/typescript-resolvers": "catalog:",
+    "@graphql-codegen/typescript-type-graphql": "catalog:",
     "@graphql-tools/graphql-file-loader": "catalog:",
     "@graphql-tools/load": "catalog:",
     "@graphql-tools/load-files": "catalog:",
@@ -167,6 +172,9 @@
     "@graphql-tools/schema": "catalog:",
     "@graphql-tools/url-loader": "catalog:",
     "@graphql-tools/utils": "catalog:",
+    "@vercube/cli": "catalog:",
+    "@vercube/core": "catalog:",
+    "@vercube/di": "catalog:",
     "c12": "catalog:",
     "chokidar": "catalog:",
     "citty": "catalog:",
