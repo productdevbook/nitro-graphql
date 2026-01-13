@@ -13,16 +13,19 @@ import { build, createNitro, prepare } from 'nitro/builder'
 import { join, resolve } from 'pathe'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import graphql from '../../src'
+import { cleanupIsolatedFixture, createIsolatedFixture } from '../utils/fixture'
 
 const fixturesDir = resolve(__dirname, '../fixtures')
-const mainProjectDir = resolve(fixturesDir, 'extend-multi/main-project')
-const ecommerceDir = resolve(fixturesDir, 'extend-multi/ecommerce')
-const ecommerceClientDir = resolve(ecommerceDir, 'client/graphql')
-const clientQueryPath = join(ecommerceClientDir, 'products.graphql')
+const originalFixtureDir = resolve(fixturesDir, 'extend-multi')
 
-// Note: nitro-graphql uses .graphql as the output directory for types
-const graphqlBuildDir = join(mainProjectDir, '.graphql')
-const clientTypesPath = join(graphqlBuildDir, 'nitro-graphql-client.d.ts')
+// These will be set in beforeAll after creating isolated fixture
+let isolatedFixtureDir: string
+let mainProjectDir: string
+let ecommerceDir: string
+let ecommerceClientDir: string
+let clientQueryPath: string
+let graphqlBuildDir: string
+let clientTypesPath: string
 
 // Initial client query
 const initialQuery = `query GetProducts {
@@ -52,7 +55,7 @@ query GetAllProducts {
 }
 `
 
-// Clean up generated files
+// Clean up generated files within isolated fixture
 function cleanupGeneratedFiles() {
   const dirsToClean = [
     join(mainProjectDir, '.nitro'),
@@ -73,22 +76,28 @@ function resetFixtureFiles() {
   writeFileSync(clientQueryPath, initialQuery, 'utf-8')
 }
 
-// Helper to wait for file to be updated
+// Helper to wait for file to be updated with retries
 async function waitForFileChange(
   filePath: string,
   expectedContent: string,
-  timeout = 5000,
+  timeout = 10000,
 ): Promise<boolean> {
   const startTime = Date.now()
+  const pollInterval = 200
 
   while (Date.now() - startTime < timeout) {
-    if (existsSync(filePath)) {
-      const content = readFileSync(filePath, 'utf-8')
-      if (content.includes(expectedContent)) {
-        return true
+    try {
+      if (existsSync(filePath)) {
+        const content = readFileSync(filePath, 'utf-8')
+        if (content.includes(expectedContent)) {
+          return true
+        }
       }
     }
-    await new Promise(r => setTimeout(r, 100))
+    catch {
+      // File might be being written, ignore and retry
+    }
+    await new Promise(r => setTimeout(r, pollInterval))
   }
 
   return false
@@ -98,6 +107,17 @@ describe('extend Package clientDir File Watcher E2E', () => {
   let nitro: Nitro
 
   beforeAll(async () => {
+    // Create isolated copy of fixture to avoid conflicts with parallel tests
+    isolatedFixtureDir = createIsolatedFixture(originalFixtureDir)
+
+    // Set up paths based on isolated fixture
+    mainProjectDir = resolve(isolatedFixtureDir, 'main-project')
+    ecommerceDir = resolve(isolatedFixtureDir, 'ecommerce')
+    ecommerceClientDir = resolve(ecommerceDir, 'client/graphql')
+    clientQueryPath = join(ecommerceClientDir, 'products.graphql')
+    graphqlBuildDir = join(mainProjectDir, '.graphql')
+    clientTypesPath = join(graphqlBuildDir, 'nitro-graphql-client.d.ts')
+
     cleanupGeneratedFiles()
     resetFixtureFiles()
 
@@ -110,8 +130,8 @@ describe('extend Package clientDir File Watcher E2E', () => {
           framework: 'graphql-yoga',
           skipLocalScan: true,
           extend: [
-            resolve(fixturesDir, 'extend-multi/auth'),
-            resolve(fixturesDir, 'extend-multi/ecommerce'),
+            resolve(isolatedFixtureDir, 'auth'),
+            resolve(isolatedFixtureDir, 'ecommerce'),
           ],
         }),
       ],
@@ -128,6 +148,8 @@ describe('extend Package clientDir File Watcher E2E', () => {
     await nitro?.close()
     cleanupGeneratedFiles()
     resetFixtureFiles()
+    // Clean up isolated fixture
+    cleanupIsolatedFixture(isolatedFixtureDir)
   })
 
   it('should include extend package clientDir in watchDirs', () => {
@@ -159,8 +181,8 @@ describe('extend Package clientDir File Watcher E2E', () => {
     writeFileSync(clientQueryPath, updatedQuery, 'utf-8')
 
     // Wait for file watcher to detect change and regenerate types
-    // File watcher has 150ms debounce + processing time
-    const found = await waitForFileChange(clientTypesPath, 'GetAllProducts', 5000)
+    // File watcher has 150ms debounce + processing time + codegen time
+    const found = await waitForFileChange(clientTypesPath, 'GetAllProducts', 15000)
 
     expect(found).toBe(true)
 
@@ -168,5 +190,5 @@ describe('extend Package clientDir File Watcher E2E', () => {
     const updatedContent = readFileSync(clientTypesPath, 'utf-8')
     expect(updatedContent).toContain('GetAllProducts')
     expect(updatedContent).toContain('GetProducts')
-  }, 10000)
+  }, 20000)
 })

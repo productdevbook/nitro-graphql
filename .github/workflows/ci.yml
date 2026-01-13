@@ -53,8 +53,11 @@ jobs:
       - name: 🚀 Build
         run: pnpm build
 
-      - name: 🧪 Test
-        run: pnpm test:run --coverage
+      - name: 🧪 Test (Unit + Integration)
+        run: pnpm test:unit --coverage
+
+      - name: 🧪 Test (E2E)
+        run: pnpm test:e2e
 
       - name: 📊 Vitest Coverage Report
         uses: davelosert/vitest-coverage-report-action@v2

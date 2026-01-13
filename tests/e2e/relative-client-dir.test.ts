@@ -21,23 +21,30 @@ import { build, createNitro, prepare } from 'nitro/builder'
 import { join, resolve } from 'pathe'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import graphql from '../../src'
+import { cleanupIsolatedFixture, createIsolatedFixture } from '../utils/fixture'
 
 const fixturesDir = resolve(__dirname, '../fixtures')
-const relativeClientDirFixture = resolve(fixturesDir, 'relative-client-dir')
+const originalFixtureDir = resolve(fixturesDir, 'relative-client-dir')
+
+// Will be set in beforeAll after creating isolated fixture
+let isolatedFixtureDir: string
 
 describe('extend Package with Relative clientDir E2E', () => {
   let nitro: Nitro
 
   beforeAll(async () => {
+    // Create isolated copy of fixture to avoid conflicts with parallel tests
+    isolatedFixtureDir = createIsolatedFixture(originalFixtureDir)
+
     nitro = await createNitro({
-      rootDir: resolve(relativeClientDirFixture, 'apps/main-app'),
+      rootDir: resolve(isolatedFixtureDir, 'apps/main-app'),
       dev: true,
       modules: [
         graphql({
           framework: 'graphql-yoga',
           extend: [
             // This package has clientDir: '../../apps/main-app/app/graphql'
-            resolve(relativeClientDirFixture, 'packages/shared-graphql'),
+            resolve(isolatedFixtureDir, 'packages/shared-graphql'),
           ],
         }),
       ],
@@ -54,6 +61,8 @@ describe('extend Package with Relative clientDir E2E', () => {
 
   afterAll(async () => {
     await nitro?.close()
+    // Clean up isolated fixture
+    cleanupIsolatedFixture(isolatedFixtureDir)
   })
 
   describe('relative clientDir path resolution', () => {

@@ -14,8 +14,13 @@ import { build, createDevServer, createNitro, prepare } from 'nitro/builder'
 import { resolve } from 'pathe'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import graphql from '../../src'
+import { cleanupIsolatedFixture, createIsolatedFixture } from '../utils/fixture'
 
 const fixturesDir = resolve(__dirname, '../fixtures')
+const originalFixtureDir = resolve(fixturesDir, 'extend-multi')
+
+// Will be set in beforeAll after creating isolated fixture
+let isolatedFixtureDir: string
 
 function typeQuery(typeName: string) {
   return `query { __type(name: "${typeName}") { name fields { name } } }`
@@ -27,16 +32,19 @@ describe('extend Schema Merge E2E', () => {
   let serverUrl: string
 
   beforeAll(async () => {
+    // Create isolated copy of fixture to avoid conflicts with parallel tests
+    isolatedFixtureDir = createIsolatedFixture(originalFixtureDir)
+
     nitro = await createNitro({
-      rootDir: resolve(fixturesDir, 'extend-multi/main-project'),
+      rootDir: resolve(isolatedFixtureDir, 'main-project'),
       dev: true,
       modules: [
         graphql({
           framework: 'graphql-yoga',
           skipLocalScan: true,
           extend: [
-            resolve(fixturesDir, 'extend-multi/auth'),
-            resolve(fixturesDir, 'extend-multi/ecommerce'),
+            resolve(isolatedFixtureDir, 'auth'),
+            resolve(isolatedFixtureDir, 'ecommerce'),
           ],
           // Enable type generation so schema.graphql file is created
         }),
@@ -55,6 +63,8 @@ describe('extend Schema Merge E2E', () => {
   afterAll(async () => {
     await devServer?.close()
     await nitro?.close()
+    // Clean up isolated fixture
+    cleanupIsolatedFixture(isolatedFixtureDir)
   })
 
   describe('critical: state after build', () => {

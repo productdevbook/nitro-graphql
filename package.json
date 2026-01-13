@@ -126,7 +126,9 @@
     "lint:fix": "eslint . --fix",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:run": "vitest run",
+    "test:run": "pnpm test:unit && pnpm test:e2e",
+    "test:unit": "vitest run",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit"
   },
@@ -197,7 +199,6 @@
     "changelogen": "catalog:",
     "crossws": "catalog:",
     "eslint": "catalog:",
-    "get-port": "catalog:",
     "graphql": "catalog:",
     "graphql-yoga": "catalog:",
     "nitro": "catalog:",

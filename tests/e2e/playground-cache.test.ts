@@ -10,8 +10,13 @@ import { build, createDevServer, createNitro, prepare } from 'nitro/builder'
 import { resolve } from 'pathe'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import graphql from '../../src'
+import { cleanupIsolatedFixture, createIsolatedFixture } from '../utils/fixture'
 
 const fixturesDir = resolve(__dirname, '../fixtures')
+const originalFixtureDir = resolve(fixturesDir, 'extend-multi')
+
+// Will be set in beforeAll after creating isolated fixture
+let isolatedFixtureDir: string
 
 describe('playground Cache Headers E2E', () => {
   let nitro: Nitro
@@ -19,15 +24,18 @@ describe('playground Cache Headers E2E', () => {
   let serverUrl: string
 
   beforeAll(async () => {
+    // Create isolated copy of fixture to avoid conflicts with parallel tests
+    isolatedFixtureDir = createIsolatedFixture(originalFixtureDir)
+
     nitro = await createNitro({
-      rootDir: resolve(fixturesDir, 'extend-multi/main-project'),
+      rootDir: resolve(isolatedFixtureDir, 'main-project'),
       dev: true,
       modules: [
         graphql({
           framework: 'graphql-yoga',
           skipLocalScan: true,
           extend: [
-            resolve(fixturesDir, 'extend-multi/auth'),
+            resolve(isolatedFixtureDir, 'auth'),
           ],
         }),
       ],
@@ -45,6 +53,8 @@ describe('playground Cache Headers E2E', () => {
   afterAll(async () => {
     await devServer?.close()
     await nitro?.close()
+    // Clean up isolated fixture
+    cleanupIsolatedFixture(isolatedFixtureDir)
   })
 
   describe('cache headers', () => {

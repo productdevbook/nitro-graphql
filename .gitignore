@@ -23,3 +23,6 @@ native/index.d.ts
 
 # External projects (not part of this repo)
 vercube/
+
+# Test temp directories
+tests/.temp/

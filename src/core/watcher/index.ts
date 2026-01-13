@@ -28,6 +28,8 @@ export interface CoreWatcherConfig {
   persistent?: boolean
   /** Ignore initial scan (default: true) */
   ignoreInitial?: boolean
+  /** Use polling mode (default: false, but auto-enabled in CI/test environments) */
+  usePolling?: boolean
 }
 
 /**
@@ -128,8 +130,12 @@ export function createIgnoredFunction(): (path: string) => boolean {
       return true
     }
 
-    // Allow directory traversal
-    if (!path.includes('.') || path.endsWith('/')) {
+    // Get the filename from the path
+    const filename = path.split('/').pop() || ''
+
+    // Allow directory traversal (paths without extensions in filename)
+    // A file has an extension if the filename contains a dot
+    if (!filename.includes('.') || path.endsWith('/')) {
       return false
     }
 
@@ -195,12 +201,23 @@ export function createCoreWatcher(
     debounceMs = 150,
     persistent = true,
     ignoreInitial = true,
+    usePolling,
   } = config
+
+  // Auto-enable polling in CI/test environments or when explicitly requested
+  const shouldUsePolling = usePolling ?? (process.env.CI === 'true' || process.env.VITE_TEST === 'true')
 
   const watcher = watch(watchDirs, {
     persistent,
     ignoreInitial,
     ignored: createIgnoredFunction(),
+    usePolling: shouldUsePolling,
+    interval: shouldUsePolling ? 100 : undefined,
+    // awaitWriteFinish helps with detecting file changes properly
+    awaitWriteFinish: shouldUsePolling ? {
+      stabilityThreshold: 100,
+      pollInterval: 50,
+    } : false,
   })
 
   // Track pending changes

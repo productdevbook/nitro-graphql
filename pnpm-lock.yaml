@@ -9,9 +9,6 @@ catalogs:
     '@antfu/eslint-config':
       specifier: ^6.7.3
       version: 6.7.3
-    '@apollo/server':
-      specifier: ^5.2.0
-      version: 5.2.0
     '@apollo/subgraph':
       specifier: ^2.12.2
       version: 2.12.2
@@ -69,9 +66,6 @@ catalogs:
     '@nuxt/schema':
       specifier: https://pkg.pr.new/@nuxt/schema@33005
       version: 4.2.2
-    '@tailwindcss/vite':
-      specifier: ^4.1.18
-      version: 4.1.18
     '@types/node':
       specifier: ^25.0.6
       version: 25.0.6
@@ -81,9 +75,6 @@ catalogs:
     '@vitejs/devtools':
       specifier: ^0.0.0-alpha.16
       version: 0.0.0-alpha.24
-    '@vitejs/plugin-vue':
-      specifier: ^6.0.3
-      version: 6.0.3
     '@vitest/coverage-v8':
       specifier: ^4.0.17
       version: 4.0.17
@@ -117,9 +108,6 @@ catalogs:
     eslint:
       specifier: ^9.39.2
       version: 9.39.2
-    get-port:
-      specifier: ^7.1.0
-      version: 7.1.0
     giget:
       specifier: ^2.0.0
       version: 2.0.0
@@ -129,12 +117,6 @@ catalogs:
     graphql-scalars:
       specifier: ^1.25.0
       version: 1.25.0
-    graphql-sse:
-      specifier: ^2.6.0
-      version: 2.6.0
-    graphql-ws:
-      specifier: ^6.0.6
-      version: 6.0.6
     graphql-yoga:
       specifier: 5.16.2
       version: 5.16.2
@@ -165,9 +147,6 @@ catalogs:
     srvx:
       specifier: ^0.10.0
       version: 0.10.0
-    tailwindcss:
-      specifier: ^4.1.18
-      version: 4.1.18
     tinyglobby:
       specifier: ^0.2.15
       version: 0.2.15
@@ -186,18 +165,9 @@ catalogs:
     vitest:
       specifier: ^4.0.17
       version: 4.0.17
-    vue:
-      specifier: ^3.5.26
-      version: 3.5.26
-    vue-router:
-      specifier: ^4.6.4
-      version: 4.6.4
     ws:
       specifier: ^8.19.0
       version: 8.19.0
-    zod:
-      specifier: ^4.3.5
-      version: 4.3.5
 
 overrides:
   graphql: ^16.12.0
@@ -359,9 +329,6 @@ importers:
       eslint:
         specifier: 'catalog:'
         version: 9.39.2(jiti@2.6.1)
-      get-port:
-        specifier: 'catalog:'
-        version: 7.1.0
       graphql:
         specifier: ^16.12.0
         version: 16.12.0
@@ -4671,10 +4638,6 @@ packages:
 
   get-port-please@3.2.0:
     resolution: {integrity: sha512-I9QVvBw5U/hw3RmWpYKRumUeaDgxTPd401x364rLmWBJcOQ753eov1eTgzDqRG9bqFIfDc7gfzcQEWrUri3o1A==}
-
-  get-port@7.1.0:
-    resolution: {integrity: sha512-QB9NKEeDg3xxVwCCwJQ9+xycaz6pBB6iQ76wiWMl1927n0Kir6alPiP+yuiICLLU4jpMe08dXfpebuQppFA2zw==}
-    engines: {node: '>=16'}
 
   get-proto@1.0.1:
     resolution: {integrity: sha512-sTSfBjoXBp89JvIKIefqw7U2CCebsc74kiY6awiGogKtoSGbgjYE/G/+l9sF3MWFPNc9IcoOC4ODfKHfxFmp0g==}
@@ -11811,8 +11774,6 @@ snapshots:
       math-intrinsics: 1.1.0
 
   get-port-please@3.2.0: {}
-
-  get-port@7.1.0: {}
 
   get-proto@1.0.1:
     dependencies:

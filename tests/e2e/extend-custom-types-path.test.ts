@@ -15,11 +15,16 @@ import { build, createNitro, prepare } from 'nitro/builder'
 import { join, resolve } from 'pathe'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import graphql from '../../src'
+import { cleanupIsolatedFixture, createIsolatedFixture } from '../utils/fixture'
 
 const fixturesDir = resolve(__dirname, '../fixtures')
-const mainProjectDir = resolve(fixturesDir, 'extend-multi/main-project')
+const originalFixtureDir = resolve(fixturesDir, 'extend-multi')
 
-// Clean up generated files
+// Will be set in beforeAll after creating isolated fixture
+let isolatedFixtureDir: string
+let mainProjectDir: string
+
+// Clean up generated files within isolated fixture
 function cleanupGeneratedFiles() {
   const dirsToClean = [
     join(mainProjectDir, 'custom-types'),
@@ -37,6 +42,10 @@ describe('extend Package with Custom Types Path E2E', () => {
   let nitro: Nitro
 
   beforeAll(async () => {
+    // Create isolated copy of fixture to avoid conflicts with parallel tests
+    isolatedFixtureDir = createIsolatedFixture(originalFixtureDir)
+    mainProjectDir = resolve(isolatedFixtureDir, 'main-project')
+
     cleanupGeneratedFiles()
 
     nitro = await createNitro({
@@ -47,8 +56,8 @@ describe('extend Package with Custom Types Path E2E', () => {
           framework: 'graphql-yoga',
           skipLocalScan: true,
           extend: [
-            resolve(fixturesDir, 'extend-multi/auth'),
-            resolve(fixturesDir, 'extend-multi/ecommerce'),
+            resolve(isolatedFixtureDir, 'auth'),
+            resolve(isolatedFixtureDir, 'ecommerce'),
           ],
           // Custom types path - should override default
           types: {
@@ -72,6 +81,8 @@ describe('extend Package with Custom Types Path E2E', () => {
   afterAll(async () => {
     await nitro?.close()
     cleanupGeneratedFiles()
+    // Clean up isolated fixture
+    cleanupIsolatedFixture(isolatedFixtureDir)
   })
 
   describe('custom types path with extend', () => {

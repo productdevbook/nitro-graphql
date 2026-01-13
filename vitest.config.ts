@@ -10,12 +10,11 @@ export default defineConfig({
       '**/node_modules/**',
       '**/vercube/**',
       '**/dist/**',
+      'tests/e2e/**', // E2E tests use vitest.e2e.config.ts
     ],
     testTimeout: 30000,
     globalSetup: ['./tests/global-setup.ts'],
     setupFiles: ['./tests/setup.ts'],
-    // Retry flaky tests (E2E tests may have race conditions)
-    retry: 2,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'json-summary'],
