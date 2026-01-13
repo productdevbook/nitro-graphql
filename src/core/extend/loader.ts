@@ -7,7 +7,6 @@
 
 import type { ScannedResolver } from '../types/scanning'
 import { dirname, resolve } from 'pathe'
-import { existsSync_ } from '../utils/runtime'
 import { glob } from 'tinyglobby'
 import { GRAPHQL_GLOB_PATTERN, RESOLVER_GLOB_PATTERN } from '../constants'
 import {
@@ -18,6 +17,7 @@ import {
   parseSingleFile,
   resolvePackageFiles,
 } from '../index'
+import { existsSync_ } from '../utils/runtime'
 
 /**
  * Local directory extend source configuration

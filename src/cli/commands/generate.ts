@@ -7,7 +7,6 @@ import type { ScanContext } from '../../core/types'
 import type { CLIContext } from '../index'
 import consola from 'consola'
 import { dirname, join, relative, resolve } from 'pathe'
-import { existsSync_, mkdirSync_, onSignal, readFileSync_, writeFileSync_ } from '../../core/utils/runtime'
 import {
   generateClientTypesCore,
   generateResolverModule,
@@ -19,6 +18,7 @@ import {
 import { LOG_TAG } from '../../core/constants'
 import { scanDocumentsCore, scanResolversCore, scanSchemasCore } from '../../core/scanning'
 import { buildGraphQLSchema } from '../../core/schema'
+import { existsSync_, mkdirSync_, onSignal, readFileSync_, writeFileSync_ } from '../../core/utils/runtime'
 
 const logger = consola.withTag(LOG_TAG)
 

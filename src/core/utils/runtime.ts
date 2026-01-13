@@ -5,8 +5,7 @@
  * that work across Node.js, Bun, and Deno.
  */
 
-import { promises as fsPromises } from 'node:fs'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, promises as fsPromises, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { pathToFileURL as nodePathToFileURL } from 'node:url'
 
 // Type-safe Deno detection
@@ -136,4 +135,4 @@ export async function stat(path: string): Promise<{ isDirectory: () => boolean, 
 }
 
 // Re-export for convenience
-export { join, dirname, resolve, basename } from 'pathe'
+export { basename, dirname, join, resolve } from 'pathe'

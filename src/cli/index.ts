@@ -9,7 +9,7 @@ import { defineCommand, runMain } from 'citty'
 import consola from 'consola'
 import { resolve } from 'pathe'
 import { LOG_TAG } from '../core/constants'
-import { exit, existsSync_, getCwd } from '../core/utils/runtime'
+import { existsSync_, exit, getCwd } from '../core/utils/runtime'
 import { DEFAULT_CLI_CONFIG } from './config'
 
 const logger = consola.withTag(LOG_TAG)

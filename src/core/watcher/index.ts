@@ -214,10 +214,12 @@ export function createCoreWatcher(
     usePolling: shouldUsePolling,
     interval: shouldUsePolling ? 100 : undefined,
     // awaitWriteFinish helps with detecting file changes properly
-    awaitWriteFinish: shouldUsePolling ? {
-      stabilityThreshold: 100,
-      pollInterval: 50,
-    } : false,
+    awaitWriteFinish: shouldUsePolling
+      ? {
+          stabilityThreshold: 100,
+          pollInterval: 50,
+        }
+      : false,
   })
 
   // Track pending changes

@@ -11,9 +11,9 @@ import type { DirectiveWrapper, ResolverDefinition, SchemaDefinition } from '../
 import type { ScannedResolver } from '../../core/types/scanning'
 import type { CLIContext } from '../index'
 import consola from 'consola'
-import { pathToFileURL, readFileSync_ } from '../../core/utils/runtime'
 import { scanAllExtendSources } from '../../core/extend'
 import { scanDirectivesCore, scanResolversCore, scanSchemasCore } from '../../core/scanning'
+import { pathToFileURL, readFileSync_ } from '../../core/utils/runtime'
 import { CLIAdapter } from '../adapter'
 
 const logger = consola.withTag('nitro-graphql')
