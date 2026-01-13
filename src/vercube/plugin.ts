@@ -11,9 +11,6 @@ import type { NitroGraphQLOptions } from '../nitro/types'
 import type { ResolverMetadata } from './types'
 import { readFileSync } from 'node:fs'
 import { BasePlugin } from '@vercube/core'
-
-// DI token for GraphQLPlugin injection (avoids bundler class renaming issues)
-export const GRAPHQL_PLUGIN = Symbol.for('nitro-graphql:GraphQLPlugin')
 // Import from runtime module to avoid bundling codegen dependencies
 import {
   createSandboxResponse,
@@ -22,6 +19,9 @@ import {
   scanSchemasCore,
 } from '../core/runtime'
 import { resolverClasses } from './decorators'
+
+// DI token for GraphQLPlugin injection (avoids bundler class renaming issues)
+export const GRAPHQL_PLUGIN = Symbol.for('nitro-graphql:GraphQLPlugin')
 
 // BASE_SCHEMA for extend type support
 const BASE_SCHEMA: SchemaDefinition = {

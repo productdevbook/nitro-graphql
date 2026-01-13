@@ -1,6 +1,20 @@
+catalogMode: prefer
+
+cleanupUnusedCatalogs: true
+
+ignoreWorkspaceRootCheck: true
+
+shellEmulator: true
+
+trustPolicy: no-downgrade
+
 packages:
   - playgrounds/*
   - crates/*
+
+overrides:
+  graphql: ^16.12.0
+  vite: 8.0.0-beta.7
 
 catalog:
   '@antfu/eslint-config': ^6.7.3
@@ -76,19 +90,5 @@ catalog:
   vue-router: ^4.6.4
   ws: ^8.19.0
   zod: ^4.3.5
-
-catalogMode: prefer
-
-cleanupUnusedCatalogs: true
-
-ignoreWorkspaceRootCheck: true
-
-overrides:
-  graphql: ^16.12.0
-  vite: 8.0.0-beta.7
-
-shellEmulator: true
-
-trustPolicy: no-downgrade
 
 trustPolicyIgnoreAfter: 10.08
