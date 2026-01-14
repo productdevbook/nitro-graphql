@@ -6,8 +6,22 @@ We welcome contributions from everyone! This guide will help you get started.
 
 1. **Fork** the repository
 2. **Clone** your fork locally
-3. **Install** dependencies: `pnpm install`
-4. **Enable** corepack: `corepack enable`
+3. **Enable** corepack: `corepack enable`
+4. **Install** dependencies: `pnpm install`
+
+## Prerequisites
+
+### Rust and Cargo
+
+This project includes native Rust code, so you need to have **Rust** and **Cargo** installed.
+
+The easiest way to install them is using `rustup`:
+
+```bash
+curl https://sh.rustup.rs -sSf | sh
+```
+
+For more installation options, see the [official Cargo installation guide](https://doc.rust-lang.org/cargo/getting-started/installation.html).
 
 ## Development Setup
 
@@ -15,8 +29,8 @@ We welcome contributions from everyone! This guide will help you get started.
 # Install dependencies
 pnpm install --frozen-lockfile
 
-# Prepare development environment
-pnpm dev:prepare
+# Build the project (includes native Rust binaries)
+pnpm build
 ```
 
 ### Running Development Environment
@@ -30,13 +44,13 @@ pnpm dev
 
 **Terminal 2** - Run playground to test changes:
 ```bash
-cd playground
+cd playgrounds/nitro
 pnpm dev
 ```
 
 Or for Nuxt playground:
 ```bash
-cd playground-nuxt
+cd playgrounds/nuxt
 pnpm dev
 ```
 
@@ -58,7 +72,7 @@ pnpm dev
 ### Testing
 - Write tests for new features: `pnpm test`
 - Update snapshots when needed
-- Test files go in `test/` directory
+- Test files go in `tests/` directory
 
 ### Linting
 - Run `pnpm lint` before committing
@@ -94,22 +108,26 @@ Follow conventional commits:
 ### Project Structure
 ```
 ├── src/              # Source code
-├── playground/       # Nitro playground
-├── playground-nuxt/  # Nuxt playground
-├── test/             # Test files
-└── docs/             # Documentation
+├── native/           # Native Rust code
+├── playgrounds/      # Development playgrounds
+│   ├── nitro/        # Nitro playground
+│   ├── nuxt/         # Nuxt playground
+│   └── ...           # Other playgrounds
+├── tests/            # Test files
+└── examples/         # Example projects
 ```
 
 ### Key Files
-- `src/runtime/` - Core runtime logic
-- `src/module.ts` - Main module definition
-- `playground/` - Test with standalone Nitro
-- `playground-nuxt/` - Test with Nuxt
+- `src/core/` - Core runtime logic
+- `src/nitro/` - Nitro integration
+- `native/` - Native Rust bindings
+- `playgrounds/nitro/` - Test with standalone Nitro
+- `playgrounds/nuxt/` - Test with Nuxt
 
 ### Testing Changes
 1. Keep `pnpm dev` running in main directory (Terminal 1)
-2. Test with standalone Nitro: `cd playground && pnpm dev` (Terminal 2)
-3. Test with Nuxt: `cd playground-nuxt && pnpm dev` (Terminal 2)
+2. Test with standalone Nitro: `cd playgrounds/nitro && pnpm dev` (Terminal 2)
+3. Test with Nuxt: `cd playgrounds/nuxt && pnpm dev` (Terminal 2)
 4. Run unit tests: `pnpm test`
 
 ## Community Guidelines
