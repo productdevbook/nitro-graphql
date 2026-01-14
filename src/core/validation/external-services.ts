@@ -30,10 +30,6 @@ export function validateExternalServices(services: unknown[]): string[] {
       serviceNames.add(service.name)
     }
 
-    if (!('schema' in service) || !service.schema) {
-      errors.push(`${prefix}.schema is required`)
-    }
-
     if (!('endpoint' in service) || typeof service.endpoint !== 'string') {
       errors.push(`${prefix}.endpoint is required and must be a string`)
     }
@@ -50,7 +46,7 @@ export function validateExternalServices(services: unknown[]): string[] {
     }
 
     // Validate service name format (should be valid for file names and TypeScript)
-    if ('name' in service && service.name && typeof service.name === 'string' && !/^[a-z]\w*$/i.test(service.name)) {
+    if ('name' in service && typeof service.name === 'string' && !/^[a-z]\w*$/i.test(service.name)) {
       errors.push(`${prefix}.name "${service.name}" must be a valid identifier (letters, numbers, underscore, starting with letter)`)
     }
   }
