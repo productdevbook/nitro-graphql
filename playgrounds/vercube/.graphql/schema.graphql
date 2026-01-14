@@ -1,0 +1,15 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type Mutation {
+  _empty: String
+  setMessage(message: String!): String!
+}
+
+type Query {
+  _empty: String
+  greet(name: String!): String!
+  hello: String!
+}

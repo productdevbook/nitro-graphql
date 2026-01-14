@@ -37,3 +37,6 @@ export * from './utils'
 
 // Validation utilities
 export * from './validation'
+
+// Watcher utilities
+export * from './watcher'

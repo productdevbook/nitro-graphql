@@ -24,6 +24,7 @@ const nitro = {
     'vercube',
     // Test fixtures with intentional syntax errors
     'tests/fixtures/**/syntax-error.*',
+    'playgrounds/vercube',
   ],
 }
 export default antfu(

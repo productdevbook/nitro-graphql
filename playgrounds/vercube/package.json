@@ -1,0 +1,28 @@
+{
+  "name": "vercube-starter-app",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "description": "Vercube Starter App",
+  "license": "ISC",
+  "scripts": {
+    "build": "vercube build",
+    "dev": "vercube dev",
+    "start": "vercube start"
+  },
+  "dependencies": {
+    "@oxc-project/runtime": "catalog:",
+    "@vercube/cli": "catalog:",
+    "@vercube/core": "catalog:",
+    "@vercube/di": "catalog:",
+    "graphql": "catalog:",
+    "nitro-graphql": "link:../..",
+    "type-graphql": "catalog:"
+  },
+  "devDependencies": {
+    "eslint": "catalog:",
+    "eslint-config-unjs": "catalog:",
+    "tslib": "catalog:"
+  }
+}

@@ -69,6 +69,12 @@ export interface ServerCodegenInput {
   federationEnabled?: boolean
   /** Output filename (optional) */
   outputPath?: string
+  /**
+   * Skip validation schemas import and related types
+   * Use this for non-Nitro frameworks (e.g., Vercube) that don't have #nitro-graphql virtual modules
+   * @default false
+   */
+  skipValidationSchemas?: boolean
 }
 
 /**

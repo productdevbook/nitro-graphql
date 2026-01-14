@@ -26,6 +26,8 @@ export default defineConfig({
     'src/nuxt.ts',
     // Runtime type stubs
     'src/stubs/**',
+    // Vercube adapter
+    'src/vercube/**',
   ],
   format: ['esm'],
   dts: true,

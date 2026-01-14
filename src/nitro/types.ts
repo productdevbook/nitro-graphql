@@ -227,7 +227,14 @@ export interface DefineDirectiveConfig {
 
 // ==================== CODEGEN TYPES ====================
 
-export type CodegenServerConfig = TypeScriptPluginConfig & TypeScriptResolversPluginConfig
+export type CodegenServerConfig = TypeScriptPluginConfig & TypeScriptResolversPluginConfig & {
+  /**
+   * Skip validation schemas import and related types.
+   * Use this for non-Nitro frameworks (e.g., Vercube) that don't have #nitro-graphql virtual modules.
+   * @default false
+   */
+  skipValidationSchemas?: boolean
+}
 
 // CODEGEN
 type DocumentModeConfig = Pick<Parameters<typeof typescriptGenericSdk>[2], 'documentMode'>
