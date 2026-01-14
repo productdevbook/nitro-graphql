@@ -5,13 +5,14 @@
     "dev": "nitro dev",
     "build": "nitro build",
     "preview": "npx srvx .output/server/index.mjs",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsgo --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio"
   },
   "devDependencies": {
     "@types/pg": "^8.16.0",
+    "@typescript/native-preview": "latest",
     "drizzle-kit": "^0.31.8",
     "drizzle-orm": "^0.45.1",
     "drizzle-zod": "^0.8.3",

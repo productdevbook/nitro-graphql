@@ -41,6 +41,7 @@ catalog:
   '@tailwindcss/vite': ^4.1.18
   '@types/node': ^25.0.6
   '@types/ws': ^8.18.1
+  '@typescript/native-preview': latest
   '@vitejs/devtools': ^0.0.0-alpha.16
   '@vitejs/plugin-vue': ^6.0.3
   '@vitest/coverage-v8': ^4.0.17
