@@ -20,4 +20,4 @@ export type {
 } from './types'
 
 // Server factories (BASE_SCHEMA renamed to avoid conflict with schema/builder.ts)
-export { apolloSandboxHtml, BASE_SCHEMA as YOGA_BASE_SCHEMA, createYogaServer } from './yoga'
+export { apolloSandboxHtml, createYogaServer, BASE_SCHEMA as YOGA_BASE_SCHEMA } from './yoga'
