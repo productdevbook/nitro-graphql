@@ -130,7 +130,7 @@
     "test:unit": "vitest run",
     "test:e2e": "vitest run --config vitest.e2e.config.ts",
     "test:coverage": "vitest run --coverage",
-    "typecheck": "tsc --noEmit"
+    "test:tscheck": "tsgo --noEmit"
   },
   "peerDependencies": {
     "@apollo/server": "^5.0.0",
@@ -192,6 +192,7 @@
     "@nuxt/schema": "catalog:",
     "@types/node": "catalog:",
     "@types/ws": "catalog:",
+    "@typescript/native-preview": "catalog:",
     "@vitejs/devtools": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "@vitest/ui": "catalog:",
