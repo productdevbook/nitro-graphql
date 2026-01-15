@@ -43,7 +43,7 @@ export interface CoreWatcherCallbacks {
   /** Called when watcher is ready */
   onReady?: () => void
   /** Called on watcher error */
-  onError?: (error: Error) => void
+  onError?: (error: unknown) => void
 }
 
 /**

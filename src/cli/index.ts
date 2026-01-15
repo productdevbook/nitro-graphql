@@ -305,9 +305,9 @@ const buildCmd = defineCommand({
       default: false,
     },
   },
-  async run({ args }) {
+  async run(ctx) {
     const { buildCommand } = await import('./commands/build')
-    return buildCommand.run!({ args })
+    return buildCommand.run!(ctx)
   },
 })
 
@@ -346,9 +346,9 @@ const devCommand = defineCommand({
       description: 'Enable file watching for hot reload',
     },
   },
-  async run({ args }) {
+  async run(ctx) {
     const { devCommand: devCommandImpl } = await import('./commands/dev')
-    return devCommandImpl.run!({ args })
+    return devCommandImpl.run!(ctx)
   },
 })
 

@@ -12,13 +12,12 @@
 // Sandbox script
 export { APOLLO_SANDBOX_CDN, createSandboxResponse, fetchSandboxScript } from './sandbox'
 
-// Types
+// Types (CoreSecurityConfig is exported from core/types/config.ts)
 export type {
-  CoreSecurityConfig,
   CoreServerInstance,
   CoreServerOptions,
   ServerFactory,
 } from './types'
 
-// Server factories
-export { apolloSandboxHtml, BASE_SCHEMA, createYogaServer } from './yoga'
+// Server factories (BASE_SCHEMA renamed to avoid conflict with schema/builder.ts)
+export { apolloSandboxHtml, BASE_SCHEMA as YOGA_BASE_SCHEMA, createYogaServer } from './yoga'

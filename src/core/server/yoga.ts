@@ -111,7 +111,7 @@ export async function createYogaServer(options: CoreServerOptions): Promise<Core
   }, importedConfig))
 
   return {
-    fetch: (request, context) => yoga.fetch(request, context),
+    fetch: (request, context) => Promise.resolve(yoga.fetch(request as any, context as any)),
     schema,
   }
 }

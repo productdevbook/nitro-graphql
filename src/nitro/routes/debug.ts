@@ -61,7 +61,7 @@ export default defineEventHandler(async (event) => {
       framework: debugInfo.framework,
     },
     graphql: {
-      framework: debugInfo.graphqlFramework,
+      framework: debugInfo.graphqlFramework ?? null,
       federation: debugInfo.federation,
     },
     scanned: {
