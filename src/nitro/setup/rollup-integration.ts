@@ -131,8 +131,6 @@ export function setupRollupExternals(nitro: Nitro): void {
     const codegenExternals = [
       'oxc-parser',
       '@oxc-parser',
-      // Ensure single graphql instance across all modules
-      'graphql',
       // Native modules must be external - they contain binary .node files
       'nitro-graphql/native',
       'nitro-graphql-darwin-arm64',
@@ -152,6 +150,7 @@ export function setupRollupExternals(nitro: Nitro): void {
 
     // Apollo Federation is optional - only mark as external if NOT enabled
     // (if enabled, it will be bundled; if not, it won't be imported at all)
+    // TODO: i think delete this comment
     if (!nitro.options.graphql?.federation?.enabled) {
       const federationExternals = [
         '@apollo/subgraph',
