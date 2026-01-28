@@ -3,15 +3,16 @@
  */
 
 import type { Nitro } from 'nitro/types'
-import { fileURLToPath } from 'node:url'
-import { join } from 'pathe'
 import { ENDPOINT_DEBUG, GRAPHQL_HTTP_METHODS } from '../../core/constants'
 
 /**
  * Register GraphQL route handlers
+ *
+ * Uses module specifiers instead of filesystem paths for route handlers.
+ * This ensures handlers are resolved correctly both in local development
+ * (monorepo symlink) and in CI/production (installed from npm).
  */
 export function registerRouteHandlers(nitro: Nitro): void {
-  const runtime = fileURLToPath(new URL('../routes', import.meta.url))
   const framework = nitro.options.graphql?.framework
   const subscriptions = nitro.options.graphql?.subscriptions
   const endpoint = nitro.options.runtimeConfig.graphql?.endpoint?.graphql || '/api/graphql'
@@ -21,7 +22,7 @@ export function registerRouteHandlers(nitro: Nitro): void {
     for (const method of GRAPHQL_HTTP_METHODS) {
       nitro.options.handlers.push({
         route: endpoint,
-        handler: join(runtime, 'graphql-yoga'),
+        handler: 'nitro-graphql/nitro/routes/graphql-yoga',
         method,
       })
     }
@@ -29,7 +30,7 @@ export function registerRouteHandlers(nitro: Nitro): void {
     // Apollo Sandbox script proxy (cacheable)
     nitro.options.handlers.push({
       route: `${endpoint}/sandbox.js`,
-      handler: join(runtime, 'apollo-sandbox-script'),
+      handler: 'nitro-graphql/nitro/routes/apollo-sandbox-script',
       method: 'GET',
     })
 
@@ -39,7 +40,7 @@ export function registerRouteHandlers(nitro: Nitro): void {
       const wsPath = subscriptions.websocket?.path || `${endpoint}/ws`
       nitro.options.handlers.push({
         route: wsPath,
-        handler: join(runtime, 'graphql-yoga-ws'),
+        handler: 'nitro-graphql/nitro/routes/graphql-yoga-ws',
       })
     }
   }
@@ -48,7 +49,7 @@ export function registerRouteHandlers(nitro: Nitro): void {
     for (const method of GRAPHQL_HTTP_METHODS) {
       nitro.options.handlers.push({
         route: endpoint,
-        handler: join(runtime, 'apollo-server'),
+        handler: 'nitro-graphql/nitro/routes/apollo-server',
         method,
       })
     }
@@ -59,7 +60,7 @@ export function registerRouteHandlers(nitro: Nitro): void {
       const wsPath = subscriptions.websocket?.path || `${endpoint}/ws`
       nitro.options.handlers.push({
         route: wsPath,
-        handler: join(runtime, 'apollo-server-ws'),
+        handler: 'nitro-graphql/nitro/routes/apollo-server-ws',
       })
     }
   }
@@ -67,7 +68,7 @@ export function registerRouteHandlers(nitro: Nitro): void {
   // Health check endpoint
   nitro.options.handlers.push({
     route: nitro.options.runtimeConfig.graphql?.endpoint?.healthCheck || '/api/graphql/health',
-    handler: join(runtime, 'health'),
+    handler: 'nitro-graphql/nitro/routes/health',
     method: 'GET',
   })
 
@@ -75,7 +76,7 @@ export function registerRouteHandlers(nitro: Nitro): void {
   if (nitro.options.dev) {
     nitro.options.handlers.push({
       route: ENDPOINT_DEBUG,
-      handler: join(runtime, 'debug'),
+      handler: 'nitro-graphql/nitro/routes/debug',
       method: 'GET',
     })
   }

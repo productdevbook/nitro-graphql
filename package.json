@@ -84,6 +84,34 @@
     "./subscribe": {
       "types": "./dist/subscribe/index.d.mts",
       "import": "./dist/subscribe/index.mjs"
+    },
+    "./nitro/routes/graphql-yoga": {
+      "types": "./dist/nitro/routes/graphql-yoga.d.mts",
+      "import": "./dist/nitro/routes/graphql-yoga.mjs"
+    },
+    "./nitro/routes/graphql-yoga-ws": {
+      "types": "./dist/nitro/routes/graphql-yoga-ws.d.mts",
+      "import": "./dist/nitro/routes/graphql-yoga-ws.mjs"
+    },
+    "./nitro/routes/apollo-server": {
+      "types": "./dist/nitro/routes/apollo-server.d.mts",
+      "import": "./dist/nitro/routes/apollo-server.mjs"
+    },
+    "./nitro/routes/apollo-server-ws": {
+      "types": "./dist/nitro/routes/apollo-server-ws.d.mts",
+      "import": "./dist/nitro/routes/apollo-server-ws.mjs"
+    },
+    "./nitro/routes/apollo-sandbox-script": {
+      "types": "./dist/nitro/routes/apollo-sandbox-script.d.mts",
+      "import": "./dist/nitro/routes/apollo-sandbox-script.mjs"
+    },
+    "./nitro/routes/health": {
+      "types": "./dist/nitro/routes/health.d.mts",
+      "import": "./dist/nitro/routes/health.mjs"
+    },
+    "./nitro/routes/debug": {
+      "types": "./dist/nitro/routes/debug.d.mts",
+      "import": "./dist/nitro/routes/debug.mjs"
     }
   },
   "module": "./dist/index.mjs",
