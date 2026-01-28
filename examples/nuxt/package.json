@@ -14,13 +14,13 @@
     "@nuxt/schema": "https://pkg.pr.new/@nuxt/schema@33005",
     "graphql": "^16.12.0",
     "graphql-yoga": "^5.18.0",
-    "nitro-graphql": "^2.0.0-beta.65",
+    "nitro-graphql": "^2.0.0-beta.67",
     "nuxt": "https://pkg.pr.new/nuxt@33005",
-    "vue": "^3.5.26",
+    "vue": "^3.5.27",
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
-    "nitro": "https://pkg.pr.new/nitrojs/nitro@99691fc"
+    "nitro": "^3.0.1-alpha.2"
   },
   "pnpm": {
     "overrides": {
@@ -36,7 +36,7 @@
     "@nuxt/kit": "https://pkg.pr.new/@nuxt/kit@33005",
     "@nuxt/schema": "https://pkg.pr.new/@nuxt/schema@33005",
     "graphql": "^16.12.0",
-    "nitro": "https://pkg.pr.new/nitrojs/nitro@99691fc",
+    "nitro": "^3.0.1-alpha.2",
     "nuxt": "https://pkg.pr.new/nuxt@33005",
     "vite": "8.0.0-beta.7"
   }

@@ -120,7 +120,7 @@ Since Nuxt 5 is in beta, `package.json` includes overrides:
   "pnpm": {
     "overrides": {
       "nuxt": "https://pkg.pr.new/nuxt@33005",
-      "nitro": "https://pkg.pr.new/nitrojs/nitro@99691fc",
+      "nitro": "^3.0.1-alpha.2",
       "vite": "8.0.0-beta.7"
     }
   }
