@@ -14,7 +14,7 @@ packages:
 
 overrides:
   graphql: ^16.12.0
-  vite: 8.0.0-beta.7
+  vite: 8.0.0-beta.10
 
 catalog:
   '@antfu/eslint-config': ^7.2.0
@@ -61,7 +61,7 @@ catalog:
   graphql-scalars: ^1.25.0
   graphql-sse: ^2.6.0
   graphql-ws: ^6.0.7
-  graphql-yoga: 5.16.2
+  graphql-yoga: ^5.18.0
   knitwork: ^1.3.0
   mlly: ^1.8.0
   nitro: ^3.0.1-alpha.2
