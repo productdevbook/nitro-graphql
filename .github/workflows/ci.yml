@@ -22,76 +22,138 @@ on:
       - 'docs/**'
 
 jobs:
-  build-test:
-    runs-on: ${{ matrix.os }}
-
-    permissions:
-      # Required to checkout the code and push coverage badge updates
-      contents: write
-      # Required to put a comment into the pull-request
-      pull-requests: write
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-
+  build:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-
       - run: corepack enable
       - uses: actions/setup-node@v6
         with:
           node-version: lts/*
           cache: pnpm
-
       - name: 📦 Install dependencies
         run: pnpm install --frozen-lockfile
-
       - name: 👀 Lint
         run: pnpm lint
-
       - name: 🚀 Build
         run: pnpm build
+      - name: 📦 Cache build
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            dist
+            node_modules
+          key: build-${{ github.sha }}
 
+  test-unit:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v5
+      - run: corepack enable
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: pnpm
+      - name: 📦 Restore build
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            dist
+            node_modules
+          key: build-${{ github.sha }}
       - name: 🧪 Test (Unit + Integration)
         run: pnpm test:unit --coverage
 
-      - name: 🧪 Test (E2E)
-        run: pnpm test:e2e
+  test-e2e:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v5
+      - run: corepack enable
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: pnpm
+      - name: 📦 Restore build
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            dist
+            node_modules
+          key: build-${{ github.sha }}
+      - name: 🧪 Test (E2E) - Shard ${{ matrix.shard }}/3
+        run: pnpm test:e2e --shard=${{ matrix.shard }}/3
 
+  coverage-report:
+    needs: test-unit
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v5
+      - run: corepack enable
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: pnpm
+      - name: 📦 Restore build
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            dist
+            node_modules
+          key: build-${{ github.sha }}
+      - name: 🧪 Generate coverage
+        run: pnpm test:unit --coverage
       - name: 📊 Vitest Coverage Report
         uses: davelosert/vitest-coverage-report-action@v2
-        if: github.event_name == 'pull_request'
         with:
           json-summary-path: ./coverage/coverage-summary.json
           json-final-path: ./coverage/coverage-final.json
 
+  coverage-badge:
+    needs: test-unit
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+      - run: corepack enable
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: pnpm
+      - name: 📦 Restore build
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            dist
+            node_modules
+          key: build-${{ github.sha }}
+      - name: 🧪 Generate coverage
+        run: pnpm test:unit --coverage
       - name: 📊 Update coverage badge
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
-          # Extract coverage percentage
           COVERAGE=$(node -e "
             const data = require('./coverage/coverage-summary.json');
             console.log(Math.round(data.total.lines.pct));
           ")
-
-          # Determine badge color
-          if [ "$COVERAGE" -ge 80 ]; then
-            COLOR="brightgreen"
-          elif [ "$COVERAGE" -ge 60 ]; then
-            COLOR="green"
-          elif [ "$COVERAGE" -ge 40 ]; then
-            COLOR="yellow"
-          else
-            COLOR="red"
-          fi
-
+          if [ "$COVERAGE" -ge 80 ]; then COLOR="brightgreen"
+          elif [ "$COVERAGE" -ge 60 ]; then COLOR="green"
+          elif [ "$COVERAGE" -ge 40 ]; then COLOR="yellow"
+          else COLOR="red"; fi
           echo "Coverage: $COVERAGE%, Color: $COLOR"
-
-          # Update README
           sed -i "s|coverage-[0-9]*%25-[a-z]*|coverage-${COVERAGE}%25-${COLOR}|g" README.md
-
-          # Check if changed
           if git diff --quiet README.md; then
             echo "No coverage change"
           else
