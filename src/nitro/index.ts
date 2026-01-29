@@ -47,7 +47,7 @@ export * from './types'
  * })
  * ```
  */
-function graphqlModule(options?: NitroGraphQLOptions): Plugin & { nitro?: NitroModule } {
+function graphqlModule(options?: NitroGraphQLOptions): Plugin & { nitro: NitroModule } {
   return {
     name: 'nitro-graphql',
     enforce: 'pre', // Run before other plugins to prevent Vite from transforming GraphQL files
