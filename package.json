@@ -138,7 +138,7 @@
   "scripts": {
     "prepack": "pnpm build",
     "build": "pnpm build:native && tsdown",
-    "build:native": "cd native && napi build --platform --release",
+    "build:native": "cd native && napi build --platform --release --esm",
     "dev": "tsdown --watch",
     "bumpp": "bumpp package.json native/package.json",
     "release": "pnpm build && pnpm bumpp",

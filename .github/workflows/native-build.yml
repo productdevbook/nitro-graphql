@@ -82,7 +82,7 @@ jobs:
       - name: Build native module
         run: |
           cd native
-          pnpm napi build --platform --release --target ${{ matrix.target }}
+          pnpm napi build --platform --release --esm --target ${{ matrix.target }}
         env:
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
 
