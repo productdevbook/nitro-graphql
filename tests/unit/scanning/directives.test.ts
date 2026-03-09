@@ -10,6 +10,9 @@ import { hash } from 'ohash'
 import { describe, expect, it } from 'vitest'
 import { parseDirectiveCall } from '../../../src/core/scanning/directives'
 
+const HASHED_ALIAS_RE = /^_\w{6}$/
+const HYPHEN_RE = /-/g
+
 describe('parseDirectiveCall', () => {
   describe('valid defineDirective calls', () => {
     it('should parse defineDirective calls', () => {
@@ -18,7 +21,7 @@ describe('parseDirectiveCall', () => {
       expect(result).not.toBeNull()
       expect(result!.name).toBe('authDirective')
       expect(result!.type).toBe('directive')
-      expect(result!.as).toMatch(/^_\w{6}$/)
+      expect(result!.as).toMatch(HASHED_ALIAS_RE)
     })
 
     it('should always return type as directive', () => {
@@ -53,7 +56,7 @@ describe('parseDirectiveCall', () => {
     it('should generate hash matching expected format', () => {
       const exportName = 'authDirective'
       const filePath = '/server/graphql/auth.directive.ts'
-      const expectedHash = `_${hash(exportName + filePath).replace(/-/g, '').slice(0, 6)}`
+      const expectedHash = `_${hash(exportName + filePath).replace(HYPHEN_RE, '').slice(0, 6)}`
 
       const result = parseDirectiveCall('defineDirective', exportName, filePath)
 
@@ -176,14 +179,14 @@ describe('parseDirectiveCall', () => {
       const result = parseDirectiveCall('defineDirective', 'test', '/path/with spaces/file.ts')
 
       expect(result).not.toBeNull()
-      expect(result!.as).toMatch(/^_\w{6}$/)
+      expect(result!.as).toMatch(HASHED_ALIAS_RE)
     })
 
     it('should handle Windows-style paths', () => {
       const result = parseDirectiveCall('defineDirective', 'test', 'C:\\Users\\project\\file.ts')
 
       expect(result).not.toBeNull()
-      expect(result!.as).toMatch(/^_\w{6}$/)
+      expect(result!.as).toMatch(HASHED_ALIAS_RE)
     })
   })
 

@@ -83,7 +83,7 @@ export const listDirective = defineDirective({
 
             // Apply sort
             if (listDirective.sort && result.length > 0) {
-              result = [...result].sort((a, b) => {
+              result = result.toSorted((a, b) => {
                 const aVal = a?.[listDirective.sort]
                 const bVal = b?.[listDirective.sort]
 
@@ -97,7 +97,7 @@ export const listDirective = defineDirective({
 
             // Apply reverse
             if (listDirective.reverse) {
-              result = [...result].reverse()
+              result = result.toReversed()
             }
 
             // Apply max limit

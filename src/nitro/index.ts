@@ -10,6 +10,8 @@ import { readFile } from 'node:fs/promises'
 import defu from 'defu'
 import { setupNitroGraphQL } from './setup'
 
+const GRAPHQL_FILE_RE = /\.(?:graphql|gql)$/i
+
 export { NitroAdapter } from './adapter'
 // Re-export public utilities
 export { resolveSecurityConfig, setupNitroGraphQL } from './setup'
@@ -57,7 +59,7 @@ function graphqlModule(options?: NitroGraphQLOptions): Plugin & { nitro: NitroMo
 
     async load(id) {
       // Only handle .graphql and .gql files
-      if (!/\.(?:graphql|gql)$/i.test(id))
+      if (!GRAPHQL_FILE_RE.test(id))
         return null
 
       try {

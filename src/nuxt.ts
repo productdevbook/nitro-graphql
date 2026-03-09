@@ -6,6 +6,8 @@ import { defineNuxtModule, getLayerDirectories } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { getDefaultPaths, getTypesConfig, resolveFilePath } from './nitro/paths'
 
+const TRAILING_SLASH_RE = /\/$/
+
 export interface ModuleOptions {}
 
 export default defineNuxtModule<ModuleOptions>({
@@ -157,8 +159,8 @@ export default defineNuxtModule<ModuleOptions>({
       const layerExtends = layerDirs
         .filter((layer: any) => layer.root !== `${nuxt.options.rootDir}/`) // Exclude main project
         .map((layer: any) => {
-          const serverDir = layer.server?.replace(/\/$/, '')
-          const appDir = layer.app?.replace(/\/$/, '')
+          const serverDir = layer.server?.replace(TRAILING_SLASH_RE, '')
+          const appDir = layer.app?.replace(TRAILING_SLASH_RE, '')
           // Only return if at least one graphql dir exists
           if (!serverDir && !appDir)
             return null

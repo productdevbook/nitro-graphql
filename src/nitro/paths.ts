@@ -6,6 +6,14 @@ import type {
 } from './types'
 import { isAbsolute, resolve } from 'pathe'
 
+const SERVICE_NAME_RE = /\{serviceName\}/g
+const BUILD_DIR_RE = /\{buildDir\}/g
+const ROOT_DIR_RE = /\{rootDir\}/g
+const FRAMEWORK_RE = /\{framework\}/g
+const TYPES_DIR_RE = /\{typesDir\}/g
+const SERVER_DIR_RE = /\{serverDir\}/g
+const CLIENT_DIR_RE = /\{clientDir\}/g
+
 /**
  * Placeholder values for path resolution
  */
@@ -25,13 +33,13 @@ export interface PathPlaceholders {
  */
 export function replacePlaceholders(path: string, placeholders: PathPlaceholders): string {
   return path
-    .replace(/\{serviceName\}/g, placeholders.serviceName || 'default')
-    .replace(/\{buildDir\}/g, placeholders.buildDir)
-    .replace(/\{rootDir\}/g, placeholders.rootDir)
-    .replace(/\{framework\}/g, placeholders.framework)
-    .replace(/\{typesDir\}/g, placeholders.typesDir)
-    .replace(/\{serverDir\}/g, placeholders.serverDir)
-    .replace(/\{clientDir\}/g, placeholders.clientDir)
+    .replace(SERVICE_NAME_RE, placeholders.serviceName || 'default')
+    .replace(BUILD_DIR_RE, placeholders.buildDir)
+    .replace(ROOT_DIR_RE, placeholders.rootDir)
+    .replace(FRAMEWORK_RE, placeholders.framework)
+    .replace(TYPES_DIR_RE, placeholders.typesDir)
+    .replace(SERVER_DIR_RE, placeholders.serverDir)
+    .replace(CLIENT_DIR_RE, placeholders.clientDir)
 }
 
 /**

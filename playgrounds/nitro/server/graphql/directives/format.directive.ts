@@ -2,6 +2,10 @@ import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils'
 import { defaultFieldResolver } from 'graphql'
 import { defineDirective } from 'nitro-graphql/define'
 
+const UPPERCASE_LETTER_RE = /([A-Z])/g
+const UNDERSCORE_LOWERCASE_RE = /_([a-z])/g
+const LEADING_UNDERSCORE_RE = /^_/
+
 /**
  * @format directive - Apply multiple formatting operations
  *
@@ -57,10 +61,10 @@ export const formatDirective = defineDirective({
                     result = result.charAt(0).toUpperCase() + result.slice(1).toLowerCase()
                     break
                   case 'SNAKE_CASE':
-                    result = result.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '')
+                    result = result.replace(UPPERCASE_LETTER_RE, '_$1').toLowerCase().replace(LEADING_UNDERSCORE_RE, '')
                     break
                   case 'CAMEL_CASE':
-                    result = result.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())
+                    result = result.replace(UNDERSCORE_LOWERCASE_RE, (_, letter) => letter.toUpperCase())
                     break
                 }
               }

@@ -13,6 +13,9 @@ import {
   RESOLVER_EXTENSIONS,
 } from '../../core/constants'
 
+const NITRO_GRAPHQL_ROUTES_RE = /nitro-graphql[/\\]dist[/\\]nitro[/\\]routes/
+const NITRO_GRAPHQL_SCHEMA_RE = /nitro-graphql[/\\]dist[/\\]core[/\\]schema/
+
 /**
  * Configure noExternals to ensure nitro-graphql route handlers are bundled
  * This is critical for Nuxt integration where node_modules are externalized by default.
@@ -22,10 +25,8 @@ export function setupNoExternals(nitro: Nitro): void {
   // Add nitro-graphql routes to noExternals so they get bundled
   // This ensures #nitro-graphql/* virtual imports are resolved at build time
   const routePatterns: RegExp[] = [
-    // Match nitro-graphql route files
-    /nitro-graphql[/\\]dist[/\\]nitro[/\\]routes/,
-    // Match nitro-graphql core schema builder (used by routes)
-    /nitro-graphql[/\\]dist[/\\]core[/\\]schema/,
+    NITRO_GRAPHQL_ROUTES_RE,
+    NITRO_GRAPHQL_SCHEMA_RE,
   ]
 
   // noExternals can be true (bundle all) or an array

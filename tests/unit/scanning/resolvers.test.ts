@@ -10,6 +10,9 @@ import { hash } from 'ohash'
 import { describe, expect, it } from 'vitest'
 import { parseResolverCall } from '../../../src/core/scanning/resolvers'
 
+const HASHED_ALIAS_RE = /^_\w{6}$/
+const HYPHEN_RE = /-/g
+
 describe('parseResolverCall', () => {
   describe('valid define* function calls', () => {
     it('should parse defineResolver calls', () => {
@@ -18,7 +21,7 @@ describe('parseResolverCall', () => {
       expect(result).not.toBeNull()
       expect(result!.name).toBe('userResolver')
       expect(result!.type).toBe('resolver')
-      expect(result!.as).toMatch(/^_\w{6}$/)
+      expect(result!.as).toMatch(HASHED_ALIAS_RE)
     })
 
     it('should parse defineQuery calls', () => {
@@ -27,7 +30,7 @@ describe('parseResolverCall', () => {
       expect(result).not.toBeNull()
       expect(result!.name).toBe('userQueries')
       expect(result!.type).toBe('query')
-      expect(result!.as).toMatch(/^_\w{6}$/)
+      expect(result!.as).toMatch(HASHED_ALIAS_RE)
     })
 
     it('should parse defineMutation calls', () => {
@@ -36,7 +39,7 @@ describe('parseResolverCall', () => {
       expect(result).not.toBeNull()
       expect(result!.name).toBe('userMutations')
       expect(result!.type).toBe('mutation')
-      expect(result!.as).toMatch(/^_\w{6}$/)
+      expect(result!.as).toMatch(HASHED_ALIAS_RE)
     })
 
     it('should parse defineField calls', () => {
@@ -45,7 +48,7 @@ describe('parseResolverCall', () => {
       expect(result).not.toBeNull()
       expect(result!.name).toBe('customFields')
       expect(result!.type).toBe('type')
-      expect(result!.as).toMatch(/^_\w{6}$/)
+      expect(result!.as).toMatch(HASHED_ALIAS_RE)
     })
 
     it('should parse defineSubscription calls', () => {
@@ -54,7 +57,7 @@ describe('parseResolverCall', () => {
       expect(result).not.toBeNull()
       expect(result!.name).toBe('notificationSubs')
       expect(result!.type).toBe('subscription')
-      expect(result!.as).toMatch(/^_\w{6}$/)
+      expect(result!.as).toMatch(HASHED_ALIAS_RE)
     })
 
     it('should parse defineDirective calls', () => {
@@ -63,7 +66,7 @@ describe('parseResolverCall', () => {
       expect(result).not.toBeNull()
       expect(result!.name).toBe('authDirective')
       expect(result!.type).toBe('directive')
-      expect(result!.as).toMatch(/^_\w{6}$/)
+      expect(result!.as).toMatch(HASHED_ALIAS_RE)
     })
   })
 
@@ -92,7 +95,7 @@ describe('parseResolverCall', () => {
     it('should generate hash matching expected format', () => {
       const exportName = 'userQueries'
       const filePath = '/server/graphql/user.resolver.ts'
-      const expectedHash = `_${hash(exportName + filePath).replace(/-/g, '').slice(0, 6)}`
+      const expectedHash = `_${hash(exportName + filePath).replace(HYPHEN_RE, '').slice(0, 6)}`
 
       const result = parseResolverCall('defineQuery', exportName, filePath)
 
@@ -193,14 +196,14 @@ describe('parseResolverCall', () => {
       const result = parseResolverCall('defineQuery', 'test', '/path/with spaces/file.ts')
 
       expect(result).not.toBeNull()
-      expect(result!.as).toMatch(/^_\w{6}$/)
+      expect(result!.as).toMatch(HASHED_ALIAS_RE)
     })
 
     it('should handle Windows-style paths', () => {
       const result = parseResolverCall('defineQuery', 'test', 'C:\\Users\\project\\file.ts')
 
       expect(result).not.toBeNull()
-      expect(result!.as).toMatch(/^_\w{6}$/)
+      expect(result!.as).toMatch(HASHED_ALIAS_RE)
     })
   })
 })

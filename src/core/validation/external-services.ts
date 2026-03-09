@@ -3,6 +3,8 @@
  * Framework-agnostic validation helpers
  */
 
+const VALID_IDENTIFIER_RE = /^[a-z]\w*$/i
+
 /**
  * Validate external GraphQL service configuration
  */
@@ -46,7 +48,7 @@ export function validateExternalServices(services: unknown[]): string[] {
     }
 
     // Validate service name format (should be valid for file names and TypeScript)
-    if ('name' in service && typeof service.name === 'string' && !/^[a-z]\w*$/i.test(service.name)) {
+    if ('name' in service && typeof service.name === 'string' && !VALID_IDENTIFIER_RE.test(service.name)) {
       errors.push(`${prefix}.name "${service.name}" must be a valid identifier (letters, numbers, underscore, starting with letter)`)
     }
   }

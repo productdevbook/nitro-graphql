@@ -12,6 +12,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import WebSocket from 'ws'
 import graphql from '../../src'
 
+const TRAILING_SLASH_RE = /\/$/
+
 const fixturesDir = resolve(__dirname, '../fixtures')
 
 describe('graphQL Subscriptions E2E', () => {
@@ -43,7 +45,7 @@ describe('graphQL Subscriptions E2E', () => {
 
     // Server from srvx has url property
     const url = server.url || `http://localhost:${(server as unknown as { port: number }).port}`
-    serverUrl = url.replace(/\/$/, '') // Remove trailing slash
+    serverUrl = url.replace(TRAILING_SLASH_RE, '') // Remove trailing slash
     wsUrl = `${serverUrl.replace('http', 'ws')}/api/graphql/ws`
   }, 60000) // Increased timeout for build
 

@@ -14,6 +14,8 @@ import {
   RESOLVER_EXTENSIONS,
 } from '../constants'
 
+const BACKSLASH_RE = /\\/g
+
 /**
  * Configuration for core watcher
  */
@@ -95,8 +97,8 @@ export function classifyChange(path: string, serverDir: string): ChangeType {
   // GraphQL files: check if in server directory
   if (fileType === 'graphql') {
     // Normalize paths for comparison
-    const normalizedPath = path.replace(/\\/g, '/')
-    const normalizedServerDir = serverDir.replace(/\\/g, '/')
+    const normalizedPath = path.replace(BACKSLASH_RE, '/')
+    const normalizedServerDir = serverDir.replace(BACKSLASH_RE, '/')
 
     if (normalizedPath.includes(normalizedServerDir)) {
       return 'server'

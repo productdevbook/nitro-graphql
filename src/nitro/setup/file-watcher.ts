@@ -14,6 +14,8 @@ import { createCoreWatcher } from '../../core/watcher'
 import { generateClientTypes, generateServerTypes } from '../codegen'
 import { performGraphQLScan, shouldScanLocalFiles } from './scanner'
 
+const TRAILING_SLASH_RE = /\/$/
+
 const logger = consola.withTag(LOG_TAG)
 
 /**
@@ -86,7 +88,7 @@ export function getWatchDirectories(nitro: Nitro, extendDirs: string[] = []): st
           if (!pattern)
             continue
           // Extract directory from pattern for watching
-          const baseDir = pattern.split('**')[0]?.replace(/\/$/, '') || '.'
+          const baseDir = pattern.split('**')[0]?.replace(TRAILING_SLASH_RE, '') || '.'
           const resolvedDir = join(nitro.options.rootDir, baseDir)
           if (!watchDirs.includes(resolvedDir)) {
             watchDirs.push(resolvedDir)

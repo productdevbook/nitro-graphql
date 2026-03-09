@@ -39,6 +39,9 @@ export interface DebugInfo {
   virtualModules: Record<string, string>
 }
 
+const HTML_SPECIAL_CHARS_RE = /[&<>"']/g
+const DOUBLE_QUOTE_RE = /"/g
+
 /**
  * Escape HTML special characters
  */
@@ -50,7 +53,7 @@ export function escapeHtml(text: string): string {
     '"': '&quot;',
     '\'': '&#039;',
   }
-  return text.replace(/[&<>"']/g, m => map[m] || m)
+  return text.replace(HTML_SPECIAL_CHARS_RE, m => map[m] || m)
 }
 
 /**
@@ -189,7 +192,7 @@ function renderVirtualModules(virtualModules: Record<string, string>): string {
           </div>
           <button
             onclick="event.stopPropagation(); navigator.clipboard.writeText(this.getAttribute('data-code')); this.textContent = '✓ Copied!'; setTimeout(() => this.textContent = 'Copy', 1000)"
-            data-code="${escapeHtml(code).replace(/"/g, '&quot;')}"
+            data-code="${escapeHtml(code).replace(DOUBLE_QUOTE_RE, '&quot;')}"
             class="text-xs px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-600/50 transition-colors"
           >
             Copy

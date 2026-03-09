@@ -12,6 +12,8 @@ import {
   withFilter,
 } from 'nitro-graphql/define'
 
+const WHITESPACE_RE = /\s+/g
+
 // Define topic types for type-safe PubSub
 interface ChatTopics {
   'message:added': Message
@@ -53,7 +55,7 @@ export const chatQueries = defineQuery({
   },
 
   channels: () => {
-    return Array.from(channels.values())
+    return [...channels.values()]
   },
 })
 
@@ -81,7 +83,7 @@ export const chatMutations = defineMutation({
 
   createChannel: async (_, { name }) => {
     const channel: Channel = {
-      id: name.toLowerCase().replace(/\s+/g, '-'),
+      id: name.toLowerCase().replace(WHITESPACE_RE, '-'),
       name,
       createdAt: new Date().toISOString(),
     }

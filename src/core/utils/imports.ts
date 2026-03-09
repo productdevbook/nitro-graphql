@@ -6,11 +6,13 @@
 import { hash } from 'ohash'
 import { relative } from 'pathe'
 
+const HYPHEN_RE = /-/g
+
 /**
  * Generate a unique import ID for a file path
  */
 export function getImportId(p: string, lazy?: boolean): string {
-  return (lazy ? '_lazy_' : '_') + hash(p).replace(/-/g, '').slice(0, 6)
+  return (lazy ? '_lazy_' : '_') + hash(p).replace(HYPHEN_RE, '').slice(0, 6)
 }
 
 const RELATIVE_RE = /^\.{1,2}\//

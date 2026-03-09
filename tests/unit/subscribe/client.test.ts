@@ -11,6 +11,9 @@ import { createClient as createWsClient } from 'graphql-ws'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createSubscriptionClient } from '../../../src/subscribe'
 
+const WS_URL_RE = /^wss?:\/\/.*\/ws\/endpoint$/
+const SSE_URL_RE = /^https?:\/\/.*\/sse\/endpoint$/
+
 // Mock graphql-ws
 const mockWsSubscribe = vi.fn()
 const mockWsDispose = vi.fn()
@@ -406,7 +409,7 @@ describe('utility functions (internal)', () => {
 
       expect(createWsClient).toHaveBeenCalledWith(
         expect.objectContaining({
-          url: expect.stringMatching(/^wss?:\/\/.*\/ws\/endpoint$/),
+          url: expect.stringMatching(WS_URL_RE),
         }),
       )
     })
@@ -436,7 +439,7 @@ describe('utility functions (internal)', () => {
 
       expect(createSseClient).toHaveBeenCalledWith(
         expect.objectContaining({
-          url: expect.stringMatching(/^https?:\/\/.*\/sse\/endpoint$/),
+          url: expect.stringMatching(SSE_URL_RE),
         }),
       )
     })

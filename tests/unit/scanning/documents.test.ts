@@ -9,6 +9,8 @@ import type { ScanContext } from '../../../src/core/types/scanning'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { scanDocumentsCore } from '../../../src/core/scanning/documents'
 
+const GRAPHQL_GLOB_RE = /\*\*\/\*\.\{graphql,gql\}/
+
 // Mock tinyglobby
 vi.mock('tinyglobby', () => ({
   glob: vi.fn(),
@@ -81,7 +83,7 @@ describe('scanDocumentsCore', () => {
       await scanDocumentsCore(mockContext)
 
       expect(mockGlob).toHaveBeenCalledWith(
-        expect.stringMatching(/\*\*\/\*\.\{graphql,gql\}/),
+        expect.stringMatching(GRAPHQL_GLOB_RE),
         expect.any(Object),
       )
     })

@@ -11,6 +11,8 @@ import { resolve } from 'pathe'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import graphql from '../../src'
 
+const TRAILING_SLASH_RE = /\/$/
+
 // Create a temporary empty project directory for testing
 const tempDir = resolve(__dirname, '../fixtures/.temp-demo-schema-test')
 
@@ -40,7 +42,7 @@ describe('demo Schema E2E', () => {
     devServer = createDevServer(nitro)
     const server = await devServer.listen({ port: 0 })
     const url = server.url || `http://localhost:${(server as unknown as { port: number }).port}`
-    serverUrl = url.replace(/\/$/, '')
+    serverUrl = url.replace(TRAILING_SLASH_RE, '')
   }, 60000)
 
   afterAll(async () => {

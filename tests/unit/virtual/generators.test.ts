@@ -15,6 +15,9 @@ import { resolve } from 'pathe'
 import { describe, expect, it, vi } from 'vitest'
 import { graphqlConfig, serverResolvers, serverSchemas, validationSchemas } from '../../../src/nitro/virtual/generators'
 
+const SCHEMAS_EXPORT_RE = /export const schemas = \[([\s\S]*?)\];/
+const RESOLVERS_EXPORT_RE = /export const resolvers = \[([\s\S]*?)\]/
+
 /** Minimal Nitro mock for testing virtual module generators */
 type MockNitro = Pick<Nitro, 'graphql'>
 
@@ -341,7 +344,7 @@ describe('serverSchemas virtual module - deterministic ordering', () => {
 
     // Verify the code contains schema content (may be empty string if file read fails in test env)
     // In production, this would contain actual schema content
-    const exportMatch = code.match(/export const schemas = \[([\s\S]*?)\];/)
+    const exportMatch = code.match(SCHEMAS_EXPORT_RE)
     expect(exportMatch).toBeTruthy()
   })
 })
@@ -413,7 +416,7 @@ describe('serverResolvers virtual module - deterministic ordering', () => {
     const code = serverResolvers.getCode(nitro)
 
     // Check the resolvers array maintains order
-    const resolversArrayMatch = code.match(/export const resolvers = \[([\s\S]*?)\]/)
+    const resolversArrayMatch = code.match(RESOLVERS_EXPORT_RE)
     expect(resolversArrayMatch).toBeTruthy()
 
     const arrayContent = resolversArrayMatch![1]

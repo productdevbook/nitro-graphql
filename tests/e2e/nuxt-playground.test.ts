@@ -11,6 +11,8 @@ import { build, loadNuxt } from 'nuxt'
 import { resolve } from 'pathe'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
+const TRAILING_SLASH_RE = /\/$/
+
 const playgroundDir = resolve(__dirname, '../../playgrounds/nuxt')
 
 // Skip in CI - rolldown has issues resolving paths with link:. resolution
@@ -34,7 +36,7 @@ describe.skipIf(isCI)('nuxt Playground E2E', () => {
     // Use nuxt.server which is already a NitroDevServer
     const server = await (nuxt as any).server.listen({ port: 0 })
     const url = server.url || `http://localhost:${server.port}`
-    serverUrl = url.replace(/\/$/, '')
+    serverUrl = url.replace(TRAILING_SLASH_RE, '')
   }, 120000)
 
   afterAll(async () => {

@@ -16,6 +16,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import graphql from '../../src'
 import { cleanupIsolatedFixture, createIsolatedFixture } from '../utils/fixture'
 
+const TRAILING_SLASH_RE = /\/$/
+
 const fixturesDir = resolve(__dirname, '../fixtures')
 const originalFixtureDir = resolve(fixturesDir, 'extend-multi')
 
@@ -57,7 +59,7 @@ describe('extend Schema Merge E2E', () => {
     devServer = createDevServer(nitro)
     const server = await devServer.listen({ port: 0 })
     const url = server.url || `http://localhost:${(server as unknown as { port: number }).port}`
-    serverUrl = url.replace(/\/$/, '')
+    serverUrl = url.replace(TRAILING_SLASH_RE, '')
   }, 60000)
 
   afterAll(async () => {

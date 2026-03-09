@@ -9,6 +9,12 @@ import { hash } from 'ohash'
 import { describe, expect, it } from 'vitest'
 import { getImportId, relativeWithDot } from '../../../src/core/utils/imports'
 
+const IMPORT_ID_RE = /^_[a-z0-9]{6}$/i
+const LAZY_IMPORT_ID_RE = /^_lazy_[a-zA-Z0-9]{6}$/
+const ALPHANUMERIC_RE = /^[a-z0-9]+$/i
+const HYPHEN_RE = /-/g
+const PARENT_DIR_RE = /^\.\.\//
+
 describe('getImportId', () => {
   describe('basic functionality', () => {
     it('should generate a unique import ID for a file path', () => {
@@ -21,13 +27,13 @@ describe('getImportId', () => {
     it('should start with underscore for non-lazy imports', () => {
       const result = getImportId('/path/to/file.ts')
 
-      expect(result).toMatch(/^_[a-z0-9]{6}$/i)
+      expect(result).toMatch(IMPORT_ID_RE)
     })
 
     it('should start with _lazy_ prefix for lazy imports', () => {
       const result = getImportId('/path/to/file.ts', true)
 
-      expect(result).toMatch(/^_lazy_[a-zA-Z0-9]{6}$/)
+      expect(result).toMatch(LAZY_IMPORT_ID_RE)
     })
 
     it('should generate 6 character hash after prefix', () => {
@@ -65,7 +71,7 @@ describe('getImportId', () => {
 
     it('should match expected hash format', () => {
       const path = '/server/graphql/user.resolver.ts'
-      const expectedHash = `_${hash(path).replace(/-/g, '').slice(0, 6)}`
+      const expectedHash = `_${hash(path).replace(HYPHEN_RE, '').slice(0, 6)}`
 
       const result = getImportId(path)
 
@@ -74,7 +80,7 @@ describe('getImportId', () => {
 
     it('should match expected hash format for lazy imports', () => {
       const path = '/server/graphql/user.resolver.ts'
-      const expectedHash = `_lazy_${hash(path).replace(/-/g, '').slice(0, 6)}`
+      const expectedHash = `_lazy_${hash(path).replace(HYPHEN_RE, '').slice(0, 6)}`
 
       const result = getImportId(path, true)
 
@@ -115,7 +121,7 @@ describe('getImportId', () => {
 
       // Remove the underscore prefix and check remaining chars
       const hashPart = result.slice(1)
-      expect(hashPart).toMatch(/^[a-z0-9]+$/i)
+      expect(hashPart).toMatch(ALPHANUMERIC_RE)
     })
   })
 
@@ -124,21 +130,21 @@ describe('getImportId', () => {
       const result = getImportId('')
 
       expect(result).toBeDefined()
-      expect(result).toMatch(/^_[a-z0-9]{6}$/i)
+      expect(result).toMatch(IMPORT_ID_RE)
     })
 
     it('should handle paths with special characters', () => {
       const result = getImportId('/path/with spaces/file.ts')
 
       expect(result).toBeDefined()
-      expect(result).toMatch(/^_[a-z0-9]{6}$/i)
+      expect(result).toMatch(IMPORT_ID_RE)
     })
 
     it('should handle Windows-style paths', () => {
       const result = getImportId('C:\\Users\\project\\file.ts')
 
       expect(result).toBeDefined()
-      expect(result).toMatch(/^_[a-z0-9]{6}$/i)
+      expect(result).toMatch(IMPORT_ID_RE)
     })
 
     it('should handle very long paths', () => {
@@ -153,7 +159,7 @@ describe('getImportId', () => {
       const result = getImportId('/path/to/archivo.ts')
 
       expect(result).toBeDefined()
-      expect(result).toMatch(/^_[a-z0-9]{6}$/i)
+      expect(result).toMatch(IMPORT_ID_RE)
     })
 
     it('should handle lazy flag as false explicitly', () => {
@@ -210,7 +216,7 @@ describe('relativeWithDot', () => {
       const result = relativeWithDot('/project/src/utils', '/project/lib/file.ts')
 
       // Should start with ../ since we're going up
-      expect(result).toMatch(/^\.\.\//)
+      expect(result).toMatch(PARENT_DIR_RE)
     })
   })
 

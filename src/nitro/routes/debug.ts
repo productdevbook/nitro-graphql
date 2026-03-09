@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
   const processedResolverFiles = debugInfo.scanned.resolverFiles.map((r) => {
     // Extract filename from full path
     const parts = r.specifier.split('/')
-    const fileName = parts[parts.length - 1]
+    const fileName = parts.at(-1)
 
     return {
       file: fileName,
@@ -40,7 +40,7 @@ export default defineEventHandler(async (event) => {
 
   const processedDirectiveFiles = debugInfo.scanned.directiveFiles.map((d) => {
     const parts = d.specifier.split('/')
-    const fileName = parts[parts.length - 1]
+    const fileName = parts.at(-1)
 
     return {
       file: fileName,

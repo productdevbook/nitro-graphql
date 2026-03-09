@@ -104,13 +104,15 @@ export interface SubscriptionClient {
 // Utilities
 // ============================================================================
 
+const HTTP_PROTOCOL_RE = /^http/
+
 function toWebSocketUrl(httpUrl: string): string {
   if (httpUrl.startsWith('/')) {
     const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:'
     const host = typeof window !== 'undefined' ? window.location.host : 'localhost'
     return `${protocol}//${host}${httpUrl}`
   }
-  return httpUrl.replace(/^http/, 'ws')
+  return httpUrl.replace(HTTP_PROTOCOL_RE, 'ws')
 }
 
 function toHttpUrl(url: string): string {

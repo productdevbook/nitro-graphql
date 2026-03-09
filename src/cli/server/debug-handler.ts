@@ -46,7 +46,7 @@ async function collectDebugInfo(ctx: CLIContext): Promise<DebugInfo> {
   // Process resolver files for display
   const resolverFiles = resolversResult.items.map((r) => {
     const parts = r.specifier.split('/')
-    const fileName = parts[parts.length - 1] || r.specifier
+    const fileName = parts.at(-1) || r.specifier
 
     return {
       file: fileName,

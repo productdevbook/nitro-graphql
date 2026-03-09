@@ -16,6 +16,15 @@ import {
   generateTypes,
 } from '../../../src/core/codegen/server'
 
+const ADMIN_ENUM_RE = /ADMIN|'ADMIN'|"ADMIN"/
+const USER_ENUM_RE = /USER|'USER'|"USER"/
+const GUEST_ENUM_RE = /GUEST|'GUEST'|"GUEST"/
+const EXPORT_INTERFACE_QUERY_RE = /export\s+interface\s+Query/
+const EXPORT_INTERFACE_USER_RE = /export\s+interface\s+User/
+const EXPORT_TYPE_QUERY_RESOLVERS_RE = /export\s+type\s+QueryResolvers/
+const EXPORT_TYPE_USER_RESOLVERS_RE = /export\s+type\s+UserResolvers/
+const EXPORT_TYPE_RESOLVERS_RE = /export\s+type\s+Resolvers/
+
 // Helper to create schema from SDL using the same graphql instance as source code
 function createSchema(typeDefs: string): GraphQLSchema {
   return makeExecutableSchema({ typeDefs })
@@ -262,9 +271,9 @@ describe('generateServerTypesCore', () => {
 
       expect(result.types).toContain('Role')
       // With enumsAsTypes: true (default), enum values are lowercase strings
-      expect(result.types).toMatch(/ADMIN|'ADMIN'|"ADMIN"/)
-      expect(result.types).toMatch(/USER|'USER'|"USER"/)
-      expect(result.types).toMatch(/GUEST|'GUEST'|"GUEST"/)
+      expect(result.types).toMatch(ADMIN_ENUM_RE)
+      expect(result.types).toMatch(USER_ENUM_RE)
+      expect(result.types).toMatch(GUEST_ENUM_RE)
     })
 
     it('should generate input types', async () => {
@@ -461,12 +470,12 @@ describe('snapshot tests', () => {
     expect(result.types).toContain('export type SchemaType')
     expect(result.types).toContain('type ResolverReturnType')
     // Data types use 'export interface', resolver types use 'export type'
-    expect(result.types).toMatch(/export\s+interface\s+Query/)
-    expect(result.types).toMatch(/export\s+interface\s+User/)
+    expect(result.types).toMatch(EXPORT_INTERFACE_QUERY_RE)
+    expect(result.types).toMatch(EXPORT_INTERFACE_USER_RE)
     // Resolver types are generated as 'export type' with generics
-    expect(result.types).toMatch(/export\s+type\s+QueryResolvers/)
-    expect(result.types).toMatch(/export\s+type\s+UserResolvers/)
-    expect(result.types).toMatch(/export\s+type\s+Resolvers/)
+    expect(result.types).toMatch(EXPORT_TYPE_QUERY_RESOLVERS_RE)
+    expect(result.types).toMatch(EXPORT_TYPE_USER_RESOLVERS_RE)
+    expect(result.types).toMatch(EXPORT_TYPE_RESOLVERS_RE)
   })
 
   it('should match snapshot for complex schema', async () => {

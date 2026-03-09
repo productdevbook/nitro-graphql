@@ -21,6 +21,8 @@ import { buildGraphQLSchema } from '../../core/schema'
 import { existsSync_, mkdirSync_, onSignal, readFileSync_, writeFileSync_ } from '../../core/utils/runtime'
 
 const logger = consola.withTag(LOG_TAG)
+const NODE_MODULES_RE = /node_modules/
+const DOT_GIT_RE = /\.git/
 
 /**
  * Create ScanContext from CLI context
@@ -302,8 +304,8 @@ async function watchAndRegenerate(
     ignoreInitial: true,
     ignored: [
       ...ctx.config.ignore || [],
-      /node_modules/,
-      /\.git/,
+      NODE_MODULES_RE,
+      DOT_GIT_RE,
     ],
     persistent: true,
   })

@@ -8,6 +8,8 @@ import { hash } from 'ohash'
 import { DEFINE_FUNCTIONS, RESOLVER_GLOB_PATTERN } from '../constants'
 import { scanWithAST } from './ast-scanner'
 
+const HYPHEN_RE = /-/g
+
 /**
  * Parse a define* function call and return the import info
  * Exported for use by manifest loader
@@ -17,7 +19,7 @@ export function parseResolverCall(
   exportName: string,
   filePath: string,
 ): ResolverImport | null {
-  const aliasHash = `_${hash(exportName + filePath).replace(/-/g, '').slice(0, 6)}`
+  const aliasHash = `_${hash(exportName + filePath).replace(HYPHEN_RE, '').slice(0, 6)}`
 
   switch (calleeName) {
     case 'defineResolver':

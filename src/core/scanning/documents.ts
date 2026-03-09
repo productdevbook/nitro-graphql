@@ -9,6 +9,8 @@ import { relative } from 'pathe'
 import { GRAPHQL_GLOB_PATTERN } from '../constants'
 import { scanDirectory } from './common'
 
+const REGEX_SPECIAL_CHARS_RE = /[.*+?^${}()|[\]\\]/g
+
 /**
  * Options for scanning documents
  */
@@ -48,7 +50,7 @@ export async function scanDocumentsCore(
 
         for (const pattern of externalPatterns) {
           // Extract directory name from pattern for matching
-          const cleanPattern = pattern.replace(new RegExp(`^${clientDirRelative.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/`), '')
+          const cleanPattern = pattern.replace(new RegExp(`^${clientDirRelative.replace(REGEX_SPECIAL_CHARS_RE, '\\$&')}/`), '')
           const patternDir = cleanPattern.split('/')[0]
           const fileDir = relativePath.split('/')[0]
 

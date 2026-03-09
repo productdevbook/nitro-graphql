@@ -5,6 +5,8 @@ import { parse } from 'graphql'
 import { NitroAdapter } from './adapter'
 import { registerAllVirtualModules } from './virtual/generators'
 
+const GRAPHQL_FILE_RE = /\.(?:graphql|gql)$/i
+
 export async function rollupConfig(nitro: Nitro) {
   // Register virtual modules in nitro.options.virtual
   // Nitro's virtual() plugin reads from this when creating the plugin
@@ -13,7 +15,7 @@ export async function rollupConfig(nitro: Nitro) {
   nitro.hooks.hook('rollup:before', (_, rollupConfig) => {
     rollupConfig.plugins = rollupConfig.plugins || []
     const {
-      include = /\.(?:graphql|gql)$/i,
+      include = GRAPHQL_FILE_RE,
       exclude,
       validate = false,
     } = nitro.options.graphql?.loader || {}
@@ -31,7 +33,7 @@ export async function rollupConfig(nitro: Nitro) {
           order: 'pre',
           handler(id) {
             // Mark GraphQL files as external to prevent Vite SSR transformation
-            if (/\.(?:graphql|gql)$/i.test(id)) {
+            if (GRAPHQL_FILE_RE.test(id)) {
               return null // Let this plugin handle it
             }
           },

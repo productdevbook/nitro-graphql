@@ -12,6 +12,8 @@ import { basename, join, relative, resolve } from 'pathe'
 import { LOG_TAG } from '../../core/constants'
 
 const logger = consola.withTag(LOG_TAG)
+const NON_ALPHANUMERIC_HYPHEN_RE = /[^a-z0-9-]/gi
+const LEADING_TRAILING_HYPHENS_RE = /^-+|-+$/g
 
 /**
  * Available templates from the examples directory
@@ -121,8 +123,8 @@ export async function initFromTemplate(
       try {
         const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
         const slug = basename(projectName)
-          .replace(/[^a-z0-9-]/gi, '-')
-          .replace(/^-+|-+$/g, '')
+          .replace(NON_ALPHANUMERIC_HYPHEN_RE, '-')
+          .replace(LEADING_TRAILING_HYPHENS_RE, '')
           .toLowerCase()
 
         packageJson.name = slug || 'my-graphql-app'

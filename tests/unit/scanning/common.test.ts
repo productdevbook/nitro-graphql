@@ -68,10 +68,10 @@ describe('deduplicateFiles', () => {
   })
 
   it('should handle many duplicates', () => {
-    const files = Array.from({ length: 100 }, () => ({
+    const files = Array.from({ length: 100 }).fill({
       fullPath: '/same.ts',
       path: 'same.ts',
-    }))
+    })
 
     const result = deduplicateFiles(files)
 

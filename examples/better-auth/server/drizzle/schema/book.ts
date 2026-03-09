@@ -4,6 +4,8 @@ import { v7 as uuidv7 } from 'uuid'
 import { user } from './auth'
 import { customTimestamp } from './shared'
 
+const FOUR_DIGIT_YEAR_RE = /^\d{4}$/
+
 // Book table - Demonstrates user ownership with Better Auth
 export const book = pgTable('book', {
   id: uuid().primaryKey().$defaultFn(uuidv7),
@@ -30,7 +32,7 @@ export const insertBookSchema = createInsertSchema(book, {
   title: schema => schema.min(1, 'Title is required'),
   author: schema => schema.min(1, 'Author is required'),
   isbn: schema => schema.length(13, 'ISBN must be 13 characters').optional(),
-  publishedYear: schema => schema.regex(/^\d{4}$/, 'Year must be 4 digits').optional(),
+  publishedYear: schema => schema.regex(FOUR_DIGIT_YEAR_RE, 'Year must be 4 digits').optional(),
 }).omit({ userId: true }) // userId is auto-assigned in resolvers
 
 export const selectBookSchema = createSelectSchema(book)
