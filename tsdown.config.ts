@@ -32,7 +32,7 @@ export default defineConfig({
   clean: true,
   name: 'nitro-graphql',
   unbundle: true,
-  external: [
+  deps: { neverBundle: [
     'nitro-graphql/native',
     'nitro-graphql',
     'nitro',
@@ -56,7 +56,7 @@ export default defineConfig({
     '#graphql/server',
     ...Object.keys(dependencies || {}),
     ...Object.keys(peerDependencies || {}),
-  ],
+  ] },
   ignoreWatch: [
     playgroundPath,
   ],
