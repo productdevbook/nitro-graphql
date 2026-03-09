@@ -2,7 +2,7 @@
   "name": "nitro-graphql",
   "type": "module",
   "version": "2.0.0-beta.70",
-  "packageManager": "pnpm@10.28.2",
+  "packageManager": "pnpm@10.31.0",
   "description": "GraphQL integration for Nitro",
   "license": "MIT",
   "repository": {
@@ -244,11 +244,11 @@
     "ws": "catalog:"
   },
   "overrides": {
-    "graphql": "^16.12.0",
+    "graphql": "^16.13.1",
     "nitro": "^3.0.1-alpha.2"
   },
   "resolutions": {
-    "graphql": "^16.12.0",
+    "graphql": "^16.13.1",
     "nitro": "^3.0.1-alpha.2",
     "nitro-graphql": "link:."
   }

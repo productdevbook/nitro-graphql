@@ -12,12 +12,12 @@
   "dependencies": {
     "@nuxt/kit": "https://pkg.pr.new/@nuxt/kit@33005",
     "@nuxt/schema": "https://pkg.pr.new/@nuxt/schema@33005",
-    "graphql": "^16.12.0",
-    "graphql-yoga": "^5.18.0",
-    "nitro-graphql": "^2.0.0-beta.67",
+    "graphql": "^16.13.1",
+    "graphql-yoga": "^5.18.1",
+    "nitro-graphql": "^2.0.0-beta.70",
     "nuxt": "https://pkg.pr.new/nuxt@33005",
-    "vue": "^3.5.27",
-    "vue-router": "^4.6.4"
+    "vue": "^3.5.29",
+    "vue-router": "^5.0.3"
   },
   "devDependencies": {
     "nitro": "^3.0.1-alpha.2"
@@ -26,7 +26,7 @@
     "overrides": {
       "@nuxt/kit": "https://pkg.pr.new/@nuxt/kit@33005",
       "@nuxt/schema": "https://pkg.pr.new/@nuxt/schema@33005",
-      "graphql": "^16.12.0",
+      "graphql": "^16.13.1",
       "nitro": "$nitro",
       "nuxt": "https://pkg.pr.new/nuxt@33005",
       "vite": "8.0.0-beta.7"
@@ -35,7 +35,7 @@
   "overrides": {
     "@nuxt/kit": "https://pkg.pr.new/@nuxt/kit@33005",
     "@nuxt/schema": "https://pkg.pr.new/@nuxt/schema@33005",
-    "graphql": "^16.12.0",
+    "graphql": "^16.13.1",
     "nitro": "^3.0.1-alpha.2",
     "nuxt": "https://pkg.pr.new/nuxt@33005",
     "vite": "8.0.0-beta.7"

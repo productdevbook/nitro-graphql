@@ -13,22 +13,22 @@ packages:
   - crates/*
 
 overrides:
-  graphql: ^16.12.0
+  graphql: ^16.13.1
   vite: 8.0.0-beta.10
 
 catalog:
-  '@antfu/eslint-config': ^7.2.0
-  '@apollo/server': ^5.3.0
-  '@apollo/subgraph': ^2.13.0
-  '@bomb.sh/tab': ^0.0.12
-  '@graphql-codegen/core': ^5.0.0
-  '@graphql-codegen/import-types-preset': ^3.0.1
-  '@graphql-codegen/typed-document-node': ^6.1.5
-  '@graphql-codegen/typescript': ^5.0.7
-  '@graphql-codegen/typescript-generic-sdk': ^4.1.0
-  '@graphql-codegen/typescript-operations': ^5.0.7
-  '@graphql-codegen/typescript-resolvers': ^5.1.5
-  '@graphql-tools/graphql-file-loader': ^8.1.9
+  '@antfu/eslint-config': ^7.7.0
+  '@apollo/server': ^5.4.0
+  '@apollo/subgraph': ^2.13.1
+  '@bomb.sh/tab': ^0.0.14
+  '@graphql-codegen/core': ^5.0.1
+  '@graphql-codegen/import-types-preset': ^4.0.0
+  '@graphql-codegen/typed-document-node': ^6.1.7
+  '@graphql-codegen/typescript': ^5.0.9
+  '@graphql-codegen/typescript-generic-sdk': ^5.0.0
+  '@graphql-codegen/typescript-operations': ^5.0.9
+  '@graphql-codegen/typescript-resolvers': ^5.1.7
+  '@graphql-tools/graphql-file-loader': ^8.1.12
   '@graphql-tools/load': ^8.1.8
   '@graphql-tools/load-files': ^7.0.1
   '@graphql-tools/merge': ^9.1.7
@@ -38,49 +38,49 @@ catalog:
   '@napi-rs/cli': ^3.5.1
   '@nuxt/kit': https://pkg.pr.new/@nuxt/kit@33005
   '@nuxt/schema': https://pkg.pr.new/@nuxt/schema@33005
-  '@tailwindcss/vite': ^4.1.18
-  '@types/node': ^25.0.10
+  '@tailwindcss/vite': ^4.2.1
+  '@types/node': ^25.3.5
   '@types/ws': ^8.18.1
   '@typescript/native-preview': latest
   '@vitejs/devtools': ^0.0.0-alpha.16
-  '@vitejs/plugin-vue': ^6.0.3
+  '@vitejs/plugin-vue': ^6.0.4
   '@vitest/coverage-v8': ^4.0.18
   '@vitest/ui': ^4.0.18
-  bumpp: ^10.4.0
+  bumpp: ^10.4.1
   c12: ^3.3.3
   changelogen: ^0.6.2
   chokidar: ^5.0.0
-  citty: ^0.2.0
+  citty: ^0.2.1
   consola: ^3.4.2
   crossws: ^0.4.4
   defu: ^6.1.4
-  eslint: ^9.39.2
-  giget: ^3.1.1
-  graphql: ^16.12.0
-  graphql-config: ^5.1.5
+  eslint: ^10.0.3
+  giget: ^3.1.2
+  graphql: ^16.13.1
+  graphql-config: ^5.1.6
   graphql-scalars: ^1.25.0
   graphql-sse: ^2.6.0
   graphql-ws: ^6.0.7
-  graphql-yoga: ^5.18.0
+  graphql-yoga: ^5.18.1
   knitwork: ^1.3.0
-  mlly: ^1.8.0
+  mlly: ^1.8.1
   nitro: ^3.0.1-alpha.2
   nuxt: https://pkg.pr.new/nuxt@33005
   ofetch: ^2.0.0-alpha.3
   ohash: ^2.0.11
-  oxc-parser: ^0.111.0
+  oxc-parser: ^0.116.0
   pathe: ^2.0.3
   perfect-debounce: ^2.1.0
-  srvx: ^0.10.1
-  tailwindcss: ^4.1.18
+  srvx: ^0.11.8
+  tailwindcss: ^4.2.1
   tinyglobby: ^0.2.15
-  tsdown: ^0.20.1
+  tsdown: ^0.21.0
   typescript: ^5.9.3
   vite: 8.0.0-beta.10
-  vitepress-plugin-llms: ^1.10.0
+  vitepress-plugin-llms: ^1.11.0
   vitest: ^4.0.18
-  vue: ^3.5.27
-  vue-router: ^4.6.4
+  vue: ^3.5.29
+  vue-router: ^5.0.3
   ws: ^8.19.0
   zod: ^4.3.6
 
