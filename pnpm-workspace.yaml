@@ -64,7 +64,7 @@ catalog:
   graphql-yoga: ^5.18.1
   knitwork: ^1.3.0
   mlly: ^1.8.1
-  nitro: ^3.0.1-alpha.2
+  nitro: ^3.0.260311-beta
   nuxt: https://pkg.pr.new/nuxt@33005
   ofetch: ^2.0.0-alpha.3
   ohash: ^2.0.11
