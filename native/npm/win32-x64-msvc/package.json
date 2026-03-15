@@ -1,0 +1,20 @@
+{
+  "name": "nitro-graphql-win32-x64-msvc",
+  "version": "2.0.0-beta.70",
+  "description": "GraphQL integration for Nitro - native win32-x64-msvc binding",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/productdevbook/nitro-graphql"
+  },
+  "cpu": [
+    "x64"
+  ],
+  "os": [
+    "win32"
+  ],
+  "main": "graphql-lint.win32-x64-msvc.node",
+  "files": [
+    "graphql-lint.win32-x64-msvc.node"
+  ]
+}

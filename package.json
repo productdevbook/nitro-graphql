@@ -140,7 +140,7 @@
     "build": "pnpm build:native && tsdown",
     "build:native": "cd native && napi build --platform --release --esm",
     "dev": "tsdown --watch",
-    "bumpp": "bumpp package.json native/package.json",
+    "bumpp": "bumpp package.json native/package.json native/npm/*/package.json",
     "release": "pnpm build && pnpm bumpp",
     "playground:nitro": "cd playgrounds/nitro && pnpm install && pnpm dev",
     "playground:nuxt": "cd playgrounds/nuxt && pnpm install && pnpm dev",
@@ -242,6 +242,13 @@
     "vitepress-plugin-llms": "catalog:",
     "vitest": "catalog:",
     "ws": "catalog:"
+  },
+  "optionalDependencies": {
+    "nitro-graphql-darwin-arm64": "2.0.0-beta.70",
+    "nitro-graphql-darwin-x64": "2.0.0-beta.70",
+    "nitro-graphql-linux-x64-gnu": "2.0.0-beta.70",
+    "nitro-graphql-linux-arm64-gnu": "2.0.0-beta.70",
+    "nitro-graphql-win32-x64-msvc": "2.0.0-beta.70"
   },
   "overrides": {
     "graphql": "^16.13.1",

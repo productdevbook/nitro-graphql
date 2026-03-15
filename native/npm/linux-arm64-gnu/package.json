@@ -1,0 +1,23 @@
+{
+  "name": "nitro-graphql-linux-arm64-gnu",
+  "version": "2.0.0-beta.70",
+  "description": "GraphQL integration for Nitro - native linux-arm64-gnu binding",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/productdevbook/nitro-graphql"
+  },
+  "cpu": [
+    "arm64"
+  ],
+  "os": [
+    "linux"
+  ],
+  "libc": [
+    "glibc"
+  ],
+  "main": "graphql-lint.linux-arm64-gnu.node",
+  "files": [
+    "graphql-lint.linux-arm64-gnu.node"
+  ]
+}

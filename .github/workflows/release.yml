@@ -167,23 +167,29 @@ jobs:
           done
           ls -la *.node
 
-      - name: Update native package version
+      - name: Update native package versions
         run: |
           VERSION="${{ github.ref_name }}"
           VERSION="${VERSION#v}"
           cd native
           node -e "
             const fs = require('fs');
+            const path = require('path');
+            // Update native/package.json
             const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
             pkg.version = '$VERSION';
             fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+            // Update all platform package versions
+            const npmDir = path.join('.', 'npm');
+            for (const dir of fs.readdirSync(npmDir)) {
+              const pkgPath = path.join(npmDir, dir, 'package.json');
+              if (fs.existsSync(pkgPath)) {
+                const platformPkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+                platformPkg.version = '$VERSION';
+                fs.writeFileSync(pkgPath, JSON.stringify(platformPkg, null, 2) + '\n');
+              }
+            }
           "
-
-      - name: Create npm packages
-        run: |
-          cd native
-          pnpm napi create-npm-dirs
-          ls -la npm/
 
       - name: Copy binaries to npm packages
         run: |
@@ -197,21 +203,6 @@ jobs:
             else
               echo "Warning: $target_dir not found for $node_file"
             fi
-          done
-
-      - name: Add repository to platform packages
-        run: |
-          cd native
-          for pkg in npm/*/package.json; do
-            node -e "
-              const fs = require('fs');
-              const pkg = JSON.parse(fs.readFileSync('$pkg', 'utf8'));
-              pkg.repository = {
-                type: 'git',
-                url: 'https://github.com/productdevbook/nitro-graphql'
-              };
-              fs.writeFileSync('$pkg', JSON.stringify(pkg, null, 2) + '\n');
-            "
           done
 
       - name: Determine npm tag
