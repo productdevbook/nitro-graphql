@@ -10,12 +10,10 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@nuxt/kit": "https://pkg.pr.new/@nuxt/kit@33005",
-    "@nuxt/schema": "https://pkg.pr.new/@nuxt/schema@33005",
     "graphql": "^16.13.1",
     "graphql-yoga": "^5.18.1",
-    "nitro-graphql": "^2.0.0-beta.70",
-    "nuxt": "https://pkg.pr.new/nuxt@33005",
+    "nitro-graphql": "^2.0.0-beta.71",
+    "nuxt": "npm:nuxt-nightly@5x",
     "vue": "^3.5.29",
     "vue-router": "^5.0.3"
   },
@@ -24,20 +22,14 @@
   },
   "pnpm": {
     "overrides": {
-      "@nuxt/kit": "https://pkg.pr.new/@nuxt/kit@33005",
-      "@nuxt/schema": "https://pkg.pr.new/@nuxt/schema@33005",
       "graphql": "^16.13.1",
       "nitro": "$nitro",
-      "nuxt": "https://pkg.pr.new/nuxt@33005",
-      "vite": "8.0.0-beta.7"
+      "vite": "8.0.0-beta.10"
     }
   },
   "overrides": {
-    "@nuxt/kit": "https://pkg.pr.new/@nuxt/kit@33005",
-    "@nuxt/schema": "https://pkg.pr.new/@nuxt/schema@33005",
     "graphql": "^16.13.1",
     "nitro": "^3.0.260311-beta",
-    "nuxt": "https://pkg.pr.new/nuxt@33005",
-    "vite": "8.0.0-beta.7"
+    "vite": "8.0.0-beta.10"
   }
 }
