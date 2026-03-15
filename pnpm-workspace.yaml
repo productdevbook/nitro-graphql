@@ -13,11 +13,11 @@ packages:
   - crates/*
 
 overrides:
-  graphql: ^16.13.1
-  vite: 8.0.0-beta.10
-  nuxt: npm:nuxt-nightly@5x
   '@nuxt/kit': npm:@nuxt/kit-nightly@5x
   '@nuxt/schema': npm:@nuxt/schema-nightly@5x
+  graphql: ^16.13.1
+  nuxt: npm:nuxt-nightly@5x
+  vite: 8.0.0-beta.10
 
 catalog:
   '@antfu/eslint-config': ^7.7.0
