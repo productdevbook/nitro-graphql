@@ -1,6 +1,6 @@
 {
   "name": "nitro-graphql-darwin-x64",
-  "version": "2.0.0-beta.70",
+  "version": "2.0.0-beta.71",
   "description": "GraphQL integration for Nitro - native darwin-x64 binding",
   "license": "MIT",
   "repository": {
