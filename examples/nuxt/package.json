@@ -12,7 +12,7 @@
   "dependencies": {
     "graphql": "^16.13.1",
     "graphql-yoga": "^5.18.1",
-    "nitro-graphql": "^2.0.0-beta.71",
+    "nitro-graphql": "^2.0.0-beta.72",
     "nuxt": "npm:nuxt-nightly@5x",
     "vue": "^3.5.29",
     "vue-router": "^5.0.3"
@@ -24,12 +24,12 @@
     "overrides": {
       "graphql": "^16.13.1",
       "nitro": "$nitro",
-      "vite": "8.0.0-beta.10"
+      "vite": "^8.0.0"
     }
   },
   "overrides": {
     "graphql": "^16.13.1",
     "nitro": "^3.0.260311-beta",
-    "vite": "8.0.0-beta.10"
+    "vite": "^8.0.0"
   }
 }

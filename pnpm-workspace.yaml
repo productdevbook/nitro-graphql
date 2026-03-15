@@ -17,7 +17,7 @@ overrides:
   '@nuxt/schema': npm:@nuxt/schema-nightly@5x
   graphql: ^16.13.1
   nuxt: npm:nuxt-nightly@5x
-  vite: 8.0.0-beta.10
+  vite: ^8.0.0
 
 catalog:
   '@antfu/eslint-config': ^7.7.0
@@ -79,7 +79,7 @@ catalog:
   tinyglobby: ^0.2.15
   tsdown: ^0.21.0
   typescript: ^5.9.3
-  vite: 8.0.0-beta.10
+  vite: ^8.0.0
   vitepress-plugin-llms: ^1.11.0
   vitest: ^4.0.18
   vue: ^3.5.29

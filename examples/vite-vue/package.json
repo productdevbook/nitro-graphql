@@ -15,7 +15,7 @@
     "graphql": "^16.13.1",
     "graphql-yoga": "^5.18.1",
     "nitro": "^3.0.260311-beta",
-    "nitro-graphql": "2.0.0-beta.61",
+    "nitro-graphql": "^2.0.0-beta.72",
     "ofetch": "^1.5.1",
     "pinia": "^3.0.4",
     "tailwindcss": "^4.2.1",
@@ -28,7 +28,7 @@
     "@vue/tsconfig": "^0.9.0",
     "graphql-config": "^5.1.6",
     "typescript": "^5.9.3",
-    "vite": "8.0.0-beta.7",
+    "vite": "^8.0.0",
     "vue-tsc": "^3.2.5"
   }
 }
