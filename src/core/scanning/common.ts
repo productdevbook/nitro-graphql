@@ -6,17 +6,7 @@
 import type { ScanContext, ScannedFile } from '../types/scanning'
 import { join, relative } from 'pathe'
 import { glob } from 'tinyglobby'
-import { GLOB_SCAN_PATTERN } from '../constants'
-
-// Default patterns to always ignore during scanning
-const DEFAULT_IGNORE_PATTERNS = [
-  '**/node_modules/**',
-  '**/.git/**',
-  '**/.output/**',
-  '**/.nitro/**',
-  '**/.nuxt/**',
-  '**/.graphql/**',
-]
+import { DEFAULT_IGNORE_PATTERNS, GLOB_SCAN_PATTERN } from '../constants'
 
 /**
  * Scan a directory for files matching a glob pattern

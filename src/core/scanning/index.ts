@@ -30,6 +30,5 @@ export {
 } from './resolvers'
 // Schema scanning
 export {
-  scanGraphqlCore,
   scanSchemasCore,
 } from './schemas'

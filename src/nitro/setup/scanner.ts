@@ -5,10 +5,17 @@
 
 import type { Nitro } from 'nitro/types'
 import type { ExtendSource } from '../types'
+import { relative } from 'pathe'
 import consola from 'consola'
 import { LOG_TAG } from '../../core/constants'
+import {
+  scanDirectivesCore,
+  scanDocumentsCore,
+  scanResolversCore,
+  scanSchemasCore,
+} from '../../core/scanning'
 import { generateDirectiveSchemas } from '../../core/utils/directive-parser'
-import { NitroAdapter } from '../adapter'
+import { createScanContextFromNitro } from '../adapter'
 import { resolveExtendConfig } from './extend-loader'
 
 const logger = consola.withTag(LOG_TAG)
@@ -59,10 +66,13 @@ export function getExtendSources(nitro: Nitro): ExtendSource[] | undefined {
 /**
  * Scan local GraphQL files (schemas, resolvers, directives, documents)
  * This is the low-level scan function - use performGraphQLScan for full workflow
+ * Creates a single ScanContext and reuses it across all scanners
  */
 export async function scanLocalFiles(nitro: Nitro): Promise<ScanResult> {
+  const ctx = createScanContextFromNitro(nitro)
+
   // Scan directives first
-  const directivesResult = await NitroAdapter.scanDirectives(nitro)
+  const directivesResult = await scanDirectivesCore(ctx)
   nitro.scanDirectives = directivesResult.items
 
   // Generate directive schemas and write to .graphql/directives.graphql
@@ -70,14 +80,18 @@ export async function scanLocalFiles(nitro: Nitro): Promise<ScanResult> {
   nitro.graphql.directiveSchemas = directiveSchemas
 
   // Scan schemas
-  const schemasResult = await NitroAdapter.scanSchemas(nitro)
+  const schemasResult = await scanSchemasCore(ctx)
   nitro.scanSchemas = schemasResult.items
 
-  // Scan documents and resolvers
-  const docsResult = await NitroAdapter.scanDocuments(nitro)
+  // Scan documents and resolvers in parallel (independent operations)
+  const [docsResult, resolversResult] = await Promise.all([
+    scanDocumentsCore(ctx, {
+      externalServices: nitro.options.graphql?.externalServices as any,
+      clientDirRelative: relative(nitro.options.rootDir, nitro.graphql.clientDir),
+    }),
+    scanResolversCore(ctx),
+  ])
   nitro.scanDocuments = docsResult.items
-
-  const resolversResult = await NitroAdapter.scanResolvers(nitro)
   nitro.scanResolvers = resolversResult.items
 
   return {
@@ -92,7 +106,11 @@ export async function scanLocalFiles(nitro: Nitro): Promise<ScanResult> {
  * Scan only client documents (for external services or client-only mode)
  */
 export async function scanDocumentsOnly(nitro: Nitro): Promise<number> {
-  const result = await NitroAdapter.scanDocuments(nitro)
+  const ctx = createScanContextFromNitro(nitro)
+  const result = await scanDocumentsCore(ctx, {
+    externalServices: nitro.options.graphql?.externalServices as any,
+    clientDirRelative: relative(nitro.options.rootDir, nitro.graphql.clientDir),
+  })
   nitro.scanDocuments = result.items
   return result.items.length
 }

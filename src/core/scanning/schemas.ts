@@ -28,22 +28,3 @@ export async function scanSchemasCore(ctx: ScanContext): Promise<ScanResult<stri
   }
 }
 
-/**
- * Scan for GraphQL files (.graphql, .gql) in server directory
- */
-export async function scanGraphqlCore(ctx: ScanContext): Promise<ScanResult<string>> {
-  const warnings: string[] = []
-  const errors: string[] = []
-
-  try {
-    const serverDirRelative = relative(ctx.rootDir, ctx.serverDir)
-    const files = await scanDirectory(ctx, ctx.rootDir, serverDirRelative, '**/*.{graphql,gql}')
-    const paths = extractPaths(files)
-
-    return { items: paths, warnings, errors }
-  }
-  catch (error) {
-    errors.push(`GraphQL scanning error: ${error}`)
-    return { items: [], warnings, errors }
-  }
-}

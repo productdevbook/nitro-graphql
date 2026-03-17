@@ -33,6 +33,21 @@ export const DEFAULT_GRAPHQL_SCALARS = {
   },
 } as const
 
+// ==================== DEFAULT IGNORE PATTERNS ====================
+
+/**
+ * Default patterns to always ignore during scanning and file watching
+ */
+export const DEFAULT_IGNORE_PATTERNS = [
+  '**/node_modules/**',
+  '**/.git/**',
+  '**/.output/**',
+  '**/.nitro/**',
+  '**/.nuxt/**',
+  '**/.graphql/**',
+  '**/dist/**',
+] as const
+
 // ==================== FILE EXTENSIONS ====================
 
 /**

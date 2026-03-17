@@ -5,6 +5,7 @@
 
 import type { ResolverImport, ScanContext, ScannedResolver, ScanResult } from '../types/scanning'
 import { readFile } from 'node:fs/promises'
+import consola from 'consola'
 import { parseSync } from 'oxc-parser'
 import { basename, relative } from 'pathe'
 import { scanDirectory } from './common'
@@ -113,7 +114,8 @@ export async function parseSingleFile(
     }
     return null
   }
-  catch {
+  catch (error) {
+    consola.debug(`[nitro-graphql] Failed to parse file ${filePath}:`, error)
     return null
   }
 }

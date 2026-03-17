@@ -3,6 +3,8 @@
  * Used by both main client and external service code generation
  */
 
+import { capitalize } from './string'
+
 export interface OfetchTemplateOptions {
   /** Service name (e.g., 'default', 'github') */
   serviceName: string
@@ -12,13 +14,6 @@ export interface OfetchTemplateOptions {
   endpoint: string
   /** Whether this is an external service (affects naming convention) */
   isExternal?: boolean
-}
-
-/**
- * Capitalize first letter of a string
- */
-function capitalize(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
 /**

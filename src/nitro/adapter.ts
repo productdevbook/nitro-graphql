@@ -10,7 +10,6 @@ import { join, relative } from 'pathe'
 import {
   scanDirectivesCore,
   scanDocumentsCore,
-  scanGraphqlCore,
   scanResolversCore,
   scanSchemasCore,
 } from '../core/scanning'
@@ -100,7 +99,7 @@ export const NitroAdapter: FrameworkAdapter<Nitro> & ScanAdapter<Nitro> = {
   getLogger: createLoggerFromNitro,
 
   scanSchemas: (nitro: Nitro) => scanSchemasCore(createScanContextFromNitro(nitro)),
-  scanGraphql: (nitro: Nitro) => scanGraphqlCore(createScanContextFromNitro(nitro)),
+  scanGraphql: (nitro: Nitro) => scanSchemasCore(createScanContextFromNitro(nitro)),
   scanResolvers: (nitro: Nitro) => scanResolversCore(createScanContextFromNitro(nitro)),
   scanDirectives: (nitro: Nitro) => scanDirectivesCore(createScanContextFromNitro(nitro)),
 

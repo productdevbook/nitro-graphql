@@ -9,6 +9,7 @@ import type { FSWatcher } from 'chokidar'
 import { watch } from 'chokidar'
 import { debounce } from 'perfect-debounce'
 import {
+  DEFAULT_IGNORE_PATTERNS,
   DIRECTIVE_EXTENSIONS,
   GRAPHQL_EXTENSIONS,
   RESOLVER_EXTENSIONS,
@@ -118,17 +119,12 @@ export function classifyChange(path: string, serverDir: string): ChangeType {
  * Filters out non-GraphQL files and system directories
  */
 export function createIgnoredFunction(): (path: string) => boolean {
+  // Convert glob patterns like '**/node_modules/**' to path fragments like '/node_modules/'
+  const ignoredDirs = DEFAULT_IGNORE_PATTERNS.map(p => p.replace(/\*\*/g, '').replace(/\*/g, ''))
+
   return (path: string) => {
-    // Always ignore these directories
-    if (
-      path.includes('/node_modules/')
-      || path.includes('/.git/')
-      || path.includes('/.output/')
-      || path.includes('/.nitro/')
-      || path.includes('/.nuxt/')
-      || path.includes('/.graphql/')
-      || path.includes('/dist/')
-    ) {
+    // Always ignore directories matching DEFAULT_IGNORE_PATTERNS
+    if (ignoredDirs.some(dir => path.includes(dir))) {
       return true
     }
 

@@ -49,11 +49,12 @@ async function buildSchemaFromString(source: string, federation: boolean): Promi
 
 /**
  * Generate server-side resolver types
+ * Returns the sorted schema string for reuse by client type generation
  */
 export async function generateServerTypes(
   nitro: Nitro,
   options: { silent?: boolean } = {},
-): Promise<void> {
+): Promise<string | undefined> {
   if (!shouldGenerateTypes(nitro))
     return
 
@@ -123,6 +124,8 @@ export async function generateServerTypes(
       if (!options.silent)
         logger.success(`Server types: ${typesPath}`)
     }
+
+    return sortedSchemaString
   }
   catch (error) {
     logger.error('Server type generation failed:', error)
@@ -131,15 +134,17 @@ export async function generateServerTypes(
 
 /**
  * Generate client-side operation types
+ * @param schemaString - Pre-computed schema string from generateServerTypes to avoid disk round-trip
  */
 export async function generateClientTypes(
   nitro: Nitro,
   options: { silent?: boolean, isInitial?: boolean } = {},
+  schemaString?: string,
 ): Promise<void> {
   try {
     // Main service types
     if (nitro.scanSchemas?.length) {
-      await generateMainClientTypes(nitro, options)
+      await generateMainClientTypes(nitro, options, schemaString)
     }
 
     // External service types
@@ -155,18 +160,21 @@ export async function generateClientTypes(
 async function generateMainClientTypes(
   nitro: Nitro,
   options: { silent?: boolean, isInitial?: boolean } = {},
+  cachedSchemaString?: string,
 ): Promise<void> {
-  const schemaPath = join(nitro.graphql.buildDir, 'schema.graphql')
-  if (!existsSync(schemaPath)) {
-    if (!options.silent)
-      consola.info('Schema not ready for client types')
-    return
+  // Use cached schema string if available, otherwise read from disk
+  let schemaString = cachedSchemaString
+  if (!schemaString) {
+    const schemaPath = join(nitro.graphql.buildDir, 'schema.graphql')
+    if (!existsSync(schemaPath)) {
+      if (!options.silent)
+        consola.info('Schema not ready for client types')
+      return
+    }
+    schemaString = readFileSync(schemaPath, 'utf-8')
   }
 
   const docs = await loadGraphQLDocuments(nitro.scanDocuments)
-
-  // Read schema as string to avoid graphql instance mismatch
-  const schemaString = readFileSync(schemaPath, 'utf-8')
 
   // Merge server scalars into client config if client scalars not explicitly set
   // This ensures custom scalars defined for server types are also available for client types
@@ -226,69 +234,77 @@ async function generateMainClientTypes(
   }
 }
 
+async function generateExternalServiceTypes(
+  nitro: Nitro,
+  service: NonNullable<NonNullable<Nitro['options']['graphql']>['externalServices']>[number],
+  options: { silent?: boolean } = {},
+): Promise<void> {
+  if (!options.silent)
+    consola.info(`[${service.name}] Processing external service`)
+
+  await downloadAndSaveSchema(service as any, nitro.options.buildDir)
+  const schema = await loadExternalSchema(service as any, nitro.options.buildDir)
+  if (!schema) {
+    consola.warn(`[${service.name}] Failed to load schema`)
+    return
+  }
+  const docs = service.documents?.length
+    ? await loadGraphQLDocuments(service.documents).catch(() => [])
+    : []
+
+  if (service.documents?.length && !docs.length) {
+    consola.warn(`[${service.name}] No documents found`)
+    return
+  }
+
+  // Use schema directly without lexicographicSortSchema to avoid graphql instance mismatch
+  const types = await generateExternalClientTypesCore(service as any, schema, docs)
+  if (types === false)
+    return
+
+  const placeholders = { ...getDefaultPaths(nitro), serviceName: service.name } as PathPlaceholders
+  const typesConfig = getTypesConfig(nitro)
+  const sdkConfig = getSdkConfig(nitro)
+
+  // Write external types
+  const typesPath = resolveFilePath(
+    service.paths?.types ?? typesConfig.external,
+    typesConfig.enabled,
+    true,
+    '{typesDir}/nitro-graphql-client-{serviceName}.d.ts',
+    placeholders,
+  )
+  if (typesPath) {
+    writeFile(typesPath, types.types)
+    if (!options.silent)
+      consola.success(`[${service.name}] Types: ${typesPath}`)
+  }
+
+  // Write external SDK
+  const sdkPath = resolveFilePath(
+    service.paths?.sdk ?? sdkConfig.external,
+    sdkConfig.enabled,
+    true,
+    '{clientDir}/{serviceName}/sdk.ts',
+    placeholders,
+  )
+  if (sdkPath) {
+    writeFile(sdkPath, types.sdk)
+    if (!options.silent)
+      consola.success(`[${service.name}] SDK: ${sdkPath}`)
+  }
+}
+
 async function generateExternalTypes(
   nitro: Nitro,
   options: { silent?: boolean } = {},
 ): Promise<void> {
-  for (const service of nitro.options.graphql?.externalServices || []) {
-    try {
-      if (!options.silent)
-        consola.info(`[${service.name}] Processing external service`)
-
-      await downloadAndSaveSchema(service as any, nitro.options.buildDir)
-      const schema = await loadExternalSchema(service as any, nitro.options.buildDir)
-      if (!schema) {
-        consola.warn(`[${service.name}] Failed to load schema`)
-        continue
-      }
-      const docs = service.documents?.length
-        ? await loadGraphQLDocuments(service.documents).catch(() => [])
-        : []
-
-      if (service.documents?.length && !docs.length) {
-        consola.warn(`[${service.name}] No documents found`)
-        continue
-      }
-
-      // Use schema directly without lexicographicSortSchema to avoid graphql instance mismatch
-      const types = await generateExternalClientTypesCore(service as any, schema, docs)
-      if (types === false)
-        continue
-
-      const placeholders = { ...getDefaultPaths(nitro), serviceName: service.name } as PathPlaceholders
-      const typesConfig = getTypesConfig(nitro)
-      const sdkConfig = getSdkConfig(nitro)
-
-      // Write external types
-      const typesPath = resolveFilePath(
-        service.paths?.types ?? typesConfig.external,
-        typesConfig.enabled,
-        true,
-        '{typesDir}/nitro-graphql-client-{serviceName}.d.ts',
-        placeholders,
-      )
-      if (typesPath) {
-        writeFile(typesPath, types.types)
-        if (!options.silent)
-          consola.success(`[${service.name}] Types: ${typesPath}`)
-      }
-
-      // Write external SDK
-      const sdkPath = resolveFilePath(
-        service.paths?.sdk ?? sdkConfig.external,
-        sdkConfig.enabled,
-        true,
-        '{clientDir}/{serviceName}/sdk.ts',
-        placeholders,
-      )
-      if (sdkPath) {
-        writeFile(sdkPath, types.sdk)
-        if (!options.silent)
-          consola.success(`[${service.name}] SDK: ${sdkPath}`)
-      }
-    }
-    catch (error) {
-      consola.error(`[${service.name}] External service failed:`, error)
-    }
-  }
+  const services = nitro.options.graphql?.externalServices || []
+  await Promise.all(
+    services.map(service =>
+      generateExternalServiceTypes(nitro, service, options).catch((error) => {
+        consola.error(`[${service.name}] External service failed:`, error)
+      }),
+    ),
+  )
 }

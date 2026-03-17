@@ -4,11 +4,9 @@
  */
 
 import type { ResolverImport, ScanContext, ScannedResolver, ScanResult } from '../types/scanning'
-import { hash } from 'ohash'
 import { DIRECTIVE_GLOB_PATTERN } from '../constants'
+import { getImportId } from '../utils/imports'
 import { scanWithAST } from './ast-scanner'
-
-const HYPHEN_RE = /-/g
 
 /**
  * Parse a defineDirective call and return the import info
@@ -25,7 +23,7 @@ export function parseDirectiveCall(
   return {
     name: exportName,
     type: 'directive',
-    as: `_${hash(exportName + filePath).replace(HYPHEN_RE, '').slice(0, 6)}`,
+    as: getImportId(exportName + filePath),
   }
 }
 
