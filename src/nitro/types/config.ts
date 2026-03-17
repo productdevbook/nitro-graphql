@@ -5,7 +5,7 @@
 
 import type { IResolvers } from '@graphql-tools/utils'
 import type { ESMCodeGenOptions } from 'knitwork'
-import type { CodegenClientConfig, GenericSdkConfig, CodegenServerConfig } from './define'
+import type { CodegenClientConfig, CodegenServerConfig, GenericSdkConfig, SecurityConfig } from './define'
 
 // ==================== SCANNING TYPES ====================
 
@@ -124,34 +124,7 @@ export interface TypesConfig {
   external?: FileGenerationConfig
 }
 
-/**
- * Security configuration for production environments
- * All options auto-detect based on NODE_ENV when not explicitly set
- */
-export interface SecurityConfig {
-  /**
-   * Enable GraphQL introspection queries
-   * @default true in development, false in production
-   */
-  introspection?: boolean
-  /**
-   * Enable GraphQL playground/sandbox UI
-   * @default true in development, false in production
-   */
-  playground?: boolean
-  /**
-   * Mask internal error details in responses
-   * When enabled, internal errors show "Internal server error" instead of actual message
-   * @default false in development, true in production
-   */
-  maskErrors?: boolean
-  /**
-   * Disable "Did you mean X?" field suggestions in error messages
-   * Prevents attackers from discovering field names via brute force
-   * @default false in development, true in production
-   */
-  disableSuggestions?: boolean
-}
+// SecurityConfig is re-exported from core via define.ts (single source of truth)
 
 /**
  * WebSocket transport configuration for subscriptions

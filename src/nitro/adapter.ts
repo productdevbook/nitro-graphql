@@ -1,18 +1,12 @@
 /**
  * Nitro framework adapter
- * Converts Nitro types to core types
+ * Converts Nitro types to core types for shared functionality
  */
 
 import type { Nitro } from 'nitro/types'
-import type { CoreConfig, CoreContext, CoreLogger, ScanContext, ScanResult } from '../core/types'
-import type { FrameworkAdapter, ScanAdapter } from '../core/types/adapter'
-import { join, relative } from 'pathe'
-import {
-  scanDirectivesCore,
-  scanDocumentsCore,
-  scanResolversCore,
-  scanSchemasCore,
-} from '../core/scanning'
+import type { CoreConfig, CoreContext, CoreLogger, ScanContext } from '../core/types'
+import type { FrameworkAdapter } from '../core/types/adapter'
+import { join } from 'pathe'
 
 /**
  * Create a CoreLogger from Nitro's logger
@@ -47,8 +41,6 @@ export function createScanContextFromNitro(nitro: Nitro): ScanContext {
 export function createCoreConfigFromNitro(nitro: Nitro): CoreConfig {
   const graphqlOptions = nitro.options.graphql || {}
   const isNuxt = nitro.options.framework?.name === 'nuxt'
-
-  // Compute typesDir from buildDir
   const typesDir = join(nitro.graphql.buildDir, 'types')
 
   return {
@@ -88,27 +80,16 @@ export function createCoreContextFromNitro(nitro: Nitro): CoreContext {
 }
 
 /**
- * Nitro framework adapter implementation
+ * Nitro framework adapter
+ * Scanning is done directly through core functions (not via adapter)
+ * to allow fine-grained control over Nitro state mutations
  */
-export const NitroAdapter: FrameworkAdapter<Nitro> & ScanAdapter<Nitro> = {
+export const NitroAdapter: FrameworkAdapter<Nitro> = {
   name: 'nitro',
-
   createCoreConfig: createCoreConfigFromNitro,
   createCoreContext: createCoreContextFromNitro,
   createScanContext: createScanContextFromNitro,
   getLogger: createLoggerFromNitro,
-
-  scanSchemas: (nitro: Nitro) => scanSchemasCore(createScanContextFromNitro(nitro)),
-  scanGraphql: (nitro: Nitro) => scanSchemasCore(createScanContextFromNitro(nitro)),
-  scanResolvers: (nitro: Nitro) => scanResolversCore(createScanContextFromNitro(nitro)),
-  scanDirectives: (nitro: Nitro) => scanDirectivesCore(createScanContextFromNitro(nitro)),
-
-  scanDocuments(nitro: Nitro): Promise<ScanResult<string>> {
-    return scanDocumentsCore(createScanContextFromNitro(nitro), {
-      externalServices: nitro.options.graphql?.externalServices,
-      clientDirRelative: relative(nitro.options.rootDir, nitro.graphql.clientDir),
-    })
-  },
 }
 
 export default NitroAdapter

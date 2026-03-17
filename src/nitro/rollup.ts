@@ -2,7 +2,8 @@ import type { Nitro } from 'nitro/types'
 
 import { readFile } from 'node:fs/promises'
 import { parse } from 'graphql'
-import { NitroAdapter } from './adapter'
+import { scanSchemasCore } from '../core/scanning'
+import { createScanContextFromNitro } from './adapter'
 import { registerAllVirtualModules } from './virtual'
 
 const GRAPHQL_FILE_RE = /\.(?:graphql|gql)$/i
@@ -75,7 +76,7 @@ export async function rollupConfig(nitro: Nitro) {
           buildStart: {
             order: 'pre',
             async handler() {
-              const result = await NitroAdapter.scanGraphql(nitro)
+              const result = await scanSchemasCore(createScanContextFromNitro(nitro))
 
               for (const file of result.items) {
                 this.addWatchFile(file)

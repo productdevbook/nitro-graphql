@@ -24,6 +24,7 @@ export type {
   GraphQLBaseType,
   GraphQLScalarType,
   SdkCodegenConfig,
+  SecurityConfig,
   ServerCodegenConfig,
   StandardSchemaV1,
 } from './define'
@@ -44,7 +45,6 @@ export type {
   PubSubConfig,
   RuntimeConfig,
   SdkConfig,
-  SecurityConfig,
   SSETransportConfig,
   SubscriptionsConfig,
   TypesConfig,

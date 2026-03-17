@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
     return {
       file: fileName,
       fullPath: r.specifier,
-      exports: r.imports.map((i: any) => ({
+      exports: r.imports.map(i => ({
         name: i.name,
         type: i.type,
         as: i.as,
@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
     return {
       file: fileName,
       fullPath: d.specifier,
-      exports: d.imports.map((i: any) => ({
+      exports: d.imports.map(i => ({
         name: i.name,
         type: i.type,
         as: i.as,

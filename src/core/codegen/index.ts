@@ -3,14 +3,12 @@
  * Framework-agnostic type generation utilities
  */
 
-// Client codegen
+// Client codegen (framework-agnostic pipeline)
 export {
   DEFAULT_CLIENT_CODEGEN_CONFIG,
   downloadAndSaveSchema,
-  extractSubscriptions,
   generateClientTypesCore,
   generateExternalClientTypesCore,
-  generateSubscriptionBuilder,
   graphQLLoadSchemaSync,
   loadExternalSchema,
   loadGraphQLDocuments,
@@ -19,8 +17,12 @@ export {
 export type {
   GraphQLLoadSchemaOptions,
   GraphQLTypeDefPointer,
-  SubscriptionInfo,
 } from './client'
+
+// Subscription utilities (split by concern)
+export { extractSubscriptions } from './subscription-extractor'
+export type { SubscriptionInfo } from './subscription-extractor'
+export { generateSubscriptionBuilder } from './vue-subscription-builder'
 
 // Plugin
 export * from './plugin'
@@ -32,6 +34,7 @@ export {
   generateRuntimeIndex,
   generateSchemaModule,
 } from './runtime'
+
 // Server codegen
 export {
   DEFAULT_SERVER_CODEGEN_CONFIG,

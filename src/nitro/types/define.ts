@@ -39,6 +39,9 @@ export type {
   ServerCodegenConfig,
 } from '../../core/types/codegen'
 
+// Re-export SecurityConfig from core (single source of truth)
+export type { CoreSecurityConfig as SecurityConfig } from '../../core/types/config'
+
 // Nitro-specific aliases for backward compatibility
 export type { ServerCodegenConfig as CodegenServerConfig } from '../../core/types/codegen'
 export type { ClientCodegenConfig as CodegenClientConfig } from '../../core/types/codegen'
