@@ -4,7 +4,7 @@
  * Standalone command-line interface for GraphQL type generation
  */
 
-import type { NitroGraphQLOptions } from '../nitro/types'
+import type { CLIGraphQLOptions } from '../nitro/types'
 import { defineCommand, runMain } from 'citty'
 import consola from 'consola'
 import { resolve } from 'pathe'
@@ -16,19 +16,16 @@ const logger = consola.withTag(LOG_TAG)
 
 /**
  * CLI context with resolved configuration
- * Uses NitroGraphQLOptions directly as CLI and module options are now unified
  */
 export interface CLIContext {
-  config: Required<Pick<NitroGraphQLOptions, 'rootDir' | 'buildDir' | 'serverDir' | 'clientDir' | 'typesDir' | 'framework'>>
-    & { ignore: string[] }
-    & NitroGraphQLOptions
+  config: CLIGraphQLOptions
   cwd: string
 }
 
 /**
  * Load CLI configuration from file or defaults
  */
-export async function loadConfig(cwd: string = getCwd()): Promise<NitroGraphQLOptions> {
+export async function loadConfig(cwd: string = getCwd()): Promise<Partial<CLIGraphQLOptions>> {
   const configFiles = [
     'nitro-graphql.config.ts',
     'nitro-graphql.config.js',

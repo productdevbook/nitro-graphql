@@ -362,21 +362,27 @@ export interface NitroGraphQLOptions {
    * Enables real-time subscriptions via WebSocket and/or SSE transports
    */
   subscriptions?: SubscriptionsConfig
+}
 
-  // ==================== CLI OPTIONS ====================
-  // These options enable standalone CLI usage without Nitro module
+/**
+ * Extended options for standalone CLI usage
+ * Adds fields that are implicit in Nitro module context (rootDir, buildDir, etc.)
+ */
+export interface CLIGraphQLOptions extends NitroGraphQLOptions {
+  /** Root directory of the project (implicit in Nitro module context) */
+  rootDir: string
 
-  /**
-   * Root directory of the project
-   * Used by CLI for path resolution. In Nitro module context, this is implicit.
-   */
-  rootDir?: string
+  /** Build output directory (implicit in Nitro module context) */
+  buildDir: string
 
-  /**
-   * Build output directory
-   * Used by CLI for generated files. In Nitro module context, this is implicit.
-   */
-  buildDir?: string
+  /** Server GraphQL directory (resolved) */
+  serverDir: string
+
+  /** Client GraphQL directory (resolved) */
+  clientDir: string
+
+  /** Types output directory */
+  typesDir: string
 
   /**
    * Client utilities configuration
@@ -395,7 +401,7 @@ export interface NitroGraphQLOptions {
    * Patterns to ignore during file scanning
    * Defaults to node_modules and dist directories
    */
-  ignore?: string[]
+  ignore: string[]
 
   /**
    * Watch mode configuration

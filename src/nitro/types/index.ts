@@ -31,6 +31,7 @@ export type {
 
 // Configuration types
 export type {
+  CLIGraphQLOptions,
   ClientUtilsConfig,
   ExplicitPathsExtendSource,
   ExtendSource,
