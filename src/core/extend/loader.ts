@@ -6,6 +6,7 @@
  */
 
 import type { ScannedResolver } from '../types/scanning'
+import consola from 'consola'
 import { dirname, resolve } from 'pathe'
 import { glob } from 'tinyglobby'
 import { GRAPHQL_GLOB_PATTERN, RESOLVER_GLOB_PATTERN } from '../constants'
@@ -181,10 +182,11 @@ async function scanPackageSource(
   const pkg = await loadPackageConfig(packageName, rootDir)
 
   if (!pkg) {
-    throw new Error(
+    consola.warn(
       `[nitro-graphql] Config not found for "${packageName}". `
-      + `Create a nitro-graphql.config.ts file in the package root.`,
+      + `Skipping. Create a nitro-graphql.config.ts file in the package root.`,
     )
+    return { schemas: [], resolvers: [], directives: [], documents: [] }
   }
 
   const files = await resolvePackageFiles(pkg)

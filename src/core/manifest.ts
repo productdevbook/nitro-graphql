@@ -5,6 +5,7 @@
 
 import { existsSync } from 'node:fs'
 import { loadConfig } from 'c12'
+import consola from 'consola'
 import { resolvePath } from 'mlly'
 import { dirname, isAbsolute, resolve } from 'pathe'
 import { glob } from 'tinyglobby'
@@ -105,8 +106,8 @@ export async function loadPackageConfig(
       baseDir: pkgDir,
     }
   }
-  catch {
-    // Package not found
+  catch (error) {
+    consola.debug(`[nitro-graphql] Failed to load config for "${source}":`, error)
     return null
   }
 }

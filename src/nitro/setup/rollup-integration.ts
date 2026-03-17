@@ -56,9 +56,9 @@ export function setupRollupChunking(nitro: Nitro): void {
     }
 
     // Skip if advancedChunks or codeSplitting is configured (Rolldown-specific)
-    // Rolldown ignores manualChunks when these options are set
+    // Rolldown throws when manualChunks is used with codeSplitting (even when false)
     const output = rollupConfig.output as Record<string, unknown>
-    if (output.advancedChunks || output.codeSplitting) {
+    if (output.advancedChunks || 'codeSplitting' in output) {
       return
     }
 
