@@ -15,8 +15,10 @@ import { generateDebugHtml } from '../../core/debug/template'
  * - /_nitro/graphql/debug?format=json - JSON API
  */
 export default defineEventHandler(async (event) => {
-  // Note: This route is only registered in development mode (see src/index.ts)
-  // No need for additional isDev check here as it's already handled at registration
+  // Runtime safety: prevent accidental exposure in production
+  if (import.meta.env?.PROD || process.env.NODE_ENV === 'production') {
+    return new Response('Not Found', { status: 404 })
+  }
 
   const query = getQuery(event)
   const format = query.format as string || 'html'

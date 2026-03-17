@@ -20,16 +20,6 @@ declare module '#nitro-graphql/server-schemas' {
   export const schemas: Array<{ def: string }>
 }
 
-declare module '#nitro-graphql/server-scalars' {
-  import type { GraphQLScalarType } from 'graphql'
-
-  export const scalars: Record<string, GraphQLScalarType>
-}
-
-declare module '#nitro-graphql/client-schema' {
-  export const schema: string
-}
-
 declare module '#nitro-graphql/module-config' {
   import type { NitroGraphQLOptions } from './nitro/types'
 

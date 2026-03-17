@@ -8,6 +8,7 @@ import { ApolloServer } from '@apollo/server'
 import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled'
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default'
 import defu from 'defu'
+import type { EventHandler } from 'nitro/h3'
 import { startServerAndCreateH3Handler } from 'nitro-graphql/apollo'
 import { defineEventHandler } from 'nitro/h3'
 import { createMergedSchema } from '../../core/schema'
@@ -82,6 +83,7 @@ async function createApolloServer() {
 
 // Create a wrapper that handles async Apollo Server creation
 let serverPromise: Promise<ApolloServer<BaseContext>> | null = null
+let cachedH3Handler: EventHandler | null = null
 
 export default defineEventHandler(async (event) => {
   if (!serverPromise) {
@@ -89,10 +91,13 @@ export default defineEventHandler(async (event) => {
   }
 
   const server = await serverPromise
-  const h3Handler = startServerAndCreateH3Handler(server, {
-    context: async () => ({ event }),
-    serverAlreadyStarted: true,
-  })
 
-  return h3Handler(event)
+  if (!cachedH3Handler) {
+    cachedH3Handler = startServerAndCreateH3Handler(server, {
+      context: async (req: any) => ({ event: req.event }),
+      serverAlreadyStarted: true,
+    })
+  }
+
+  return cachedH3Handler(event)
 })

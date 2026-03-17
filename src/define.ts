@@ -350,18 +350,20 @@ export function defineDirective(config: DefineDirectiveConfig): DirectiveDefinit
   const locations = config.locations.join(' | ')
   const schemaDefinition = `directive @${config.name}${argsString} on ${locations}`
 
-  // Add a non-enumerable property to store the schema
-  Object.defineProperty(config, '__schema', {
+  const result: DirectiveDefinition = {
+    ...config,
+    locations: [...config.locations], // Convert readonly array to mutable
+  }
+
+  // Add a non-enumerable property to store the schema on the RESULT object
+  Object.defineProperty(result, '__schema', {
     value: schemaDefinition,
     enumerable: false,
     configurable: false,
     writable: false,
   })
 
-  return {
-    ...config,
-    locations: [...config.locations], // Convert readonly array to mutable
-  }
+  return result
 }
 
 // Re-export PubSub utilities for convenience

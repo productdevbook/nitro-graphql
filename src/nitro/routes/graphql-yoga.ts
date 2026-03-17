@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
       resolvers,
       directives,
       moduleConfig,
-      endpoint: '/api/graphql',
+      endpoint: moduleConfig.endpoint?.graphql || '/api/graphql',
       security: moduleConfig.security,
       importedConfig,
     })
@@ -43,8 +43,9 @@ export default defineEventHandler(async (event) => {
   // If resolver set a custom status code via event.res.status, use it
   if (event.res.status && event.res.status !== 200) {
     return new Response(response.body, {
-      ...response,
       status: event.res.status,
+      statusText: response.statusText,
+      headers: response.headers,
     })
   }
 

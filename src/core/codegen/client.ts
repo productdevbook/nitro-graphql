@@ -22,6 +22,7 @@ import consola from 'consola'
 import { defu } from 'defu'
 import { Kind, parse } from 'graphql'
 import { DEFAULT_GRAPHQL_SCALARS } from '../constants'
+import { capitalize } from '../utils/string'
 import { pluginContent } from './plugin'
 
 export { loadGraphQLDocuments } from './document-loader'
@@ -106,8 +107,8 @@ export async function generateClientTypesCore(
     return false
   }
 
-  const mergedConfig = defu(DEFAULT_CLIENT_CODEGEN_CONFIG, config)
-  const mergedSdkConfig = defu(mergedConfig, sdkConfig)
+  const mergedConfig = defu(config, DEFAULT_CLIENT_CODEGEN_CONFIG)
+  const mergedSdkConfig = defu(sdkConfig, mergedConfig)
 
   try {
     // Schema-only generation (no documents)
@@ -136,7 +137,9 @@ export async function generateClientTypesCore(
     }
 
     // Full generation with documents
-    const enableTypedDocumentNode = config.typedDocumentNode === true
+    // Enable typed-document-node plugin when explicitly requested OR when documentMode is 'string'
+    // The SDK plugin generates `new TypedDocumentString(...)` which needs the class definition
+    const enableTypedDocumentNode = config.typedDocumentNode === true || mergedConfig.documentMode === 'string'
 
     const plugins: Array<Record<string, object>> = [
       { pluginContent: {} },
@@ -229,13 +232,6 @@ export async function generateExternalClientTypesCore(
 // ============================================================================
 
 /**
- * Convert first character to uppercase (PascalCase)
- */
-function toPascalCase(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1)
-}
-
-/**
  * Subscription info extracted from GraphQL documents
  */
 export interface SubscriptionInfo {
@@ -274,7 +270,7 @@ export function extractSubscriptions(docs: Source[]): SubscriptionInfo[] {
 
         subscriptions.push({
           name,
-          typeName: toPascalCase(name),
+          typeName: capitalize(name),
           fieldName,
           hasVariables,
         })
@@ -313,27 +309,6 @@ import { subscriptionClient } from './subscribe'
 
 // === Subscription Types ===
 export type { ConnectionState, SubscriptionHandle, SubscriptionSession, SubscriptionTransport, TransportOptions }
-
-// Forward declaration for UseSubscriptionSessionReturn (defined below)
-export interface UseSubscriptionSessionReturn {
-  /** The underlying session object */
-  session: SubscriptionSession
-  /** Subscribe using the shared session (updates reactive refs) */
-  subscribe: <TData = unknown>(
-    query: string,
-    variables: unknown,
-    onData?: (data: TData) => void,
-    onError?: (error: Error) => void,
-  ) => SubscriptionHandle
-  /** Close all subscriptions and the connection */
-  close: () => void
-  /** Is the session connected (reactive) */
-  isConnected: Ref<boolean>
-  /** Current connection state (reactive) */
-  state: Ref<ConnectionState>
-  /** Number of active subscriptions (reactive) */
-  subscriptionCount: Ref<number>
-}
 
 export interface UseSubscriptionOptions<T> {
   /** Auto-start subscription on mount (default: false) */

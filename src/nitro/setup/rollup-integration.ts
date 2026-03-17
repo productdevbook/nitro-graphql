@@ -50,10 +50,14 @@ export function setupNoExternals(nitro: Nitro): void {
  */
 export function setupRollupChunking(nitro: Nitro): void {
   nitro.hooks.hook('rollup:before', (_, rollupConfig) => {
-    // TODO: Skip if advancedChunks is used?
-    return
     // Skip if inlineDynamicImports is enabled
     if (rollupConfig.output.inlineDynamicImports) {
+      return
+    }
+
+    // Skip if advancedChunks or codeSplitting is configured
+    // Rolldown ignores manualChunks when these options are set
+    if ((rollupConfig.output as any).advancedChunks || (rollupConfig.output as any).codeSplitting) {
       return
     }
 

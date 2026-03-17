@@ -375,4 +375,101 @@ describe('generateSubscriptionBuilder', () => {
       expect(result).toContain('useSub2')
     })
   })
+
+  describe('no duplicate UseSubscriptionSessionReturn', () => {
+    it('should contain exactly one UseSubscriptionSessionReturn interface declaration', () => {
+      const docs = [createSource(`
+        subscription OnMessage {
+          messageAdded { id content }
+        }
+      `)]
+
+      const result = generateSubscriptionBuilder(docs, true)
+
+      // Count occurrences of the interface declaration
+      const interfaceMatches = result.match(/export interface UseSubscriptionSessionReturn/g)
+      expect(interfaceMatches).not.toBeNull()
+      expect(interfaceMatches).toHaveLength(1)
+    })
+
+    it('should not duplicate UseSubscriptionSessionReturn with multiple subscriptions', () => {
+      const docs = [createSource(`
+        subscription Sub1 { field1 { id } }
+        subscription Sub2 { field2 { id } }
+        subscription Sub3 { field3 { id } }
+      `)]
+
+      const result = generateSubscriptionBuilder(docs, true)
+
+      const interfaceMatches = result.match(/export interface UseSubscriptionSessionReturn/g)
+      expect(interfaceMatches).toHaveLength(1)
+    })
+
+    it('should not duplicate UseSubscriptionSessionReturn with multiple document sources', () => {
+      const docs = [
+        createSource(`
+          subscription Alpha { alpha { id } }
+        `, 'alpha.graphql'),
+        createSource(`
+          subscription Beta { beta { id } }
+        `, 'beta.graphql'),
+        createSource(`
+          subscription Gamma { gamma { id } }
+        `, 'gamma.graphql'),
+      ]
+
+      const result = generateSubscriptionBuilder(docs, true)
+
+      const interfaceMatches = result.match(/export interface UseSubscriptionSessionReturn/g)
+      expect(interfaceMatches).toHaveLength(1)
+    })
+
+    it('should contain exactly one UseSubscriptionOptions interface declaration', () => {
+      const docs = [createSource(`
+        subscription Sub1 { field1 { id } }
+        subscription Sub2 { field2 { id } }
+      `)]
+
+      const result = generateSubscriptionBuilder(docs, true)
+
+      const matches = result.match(/export interface UseSubscriptionOptions/g)
+      expect(matches).toHaveLength(1)
+    })
+
+    it('should contain exactly one UseSubscriptionReturn interface declaration', () => {
+      const docs = [createSource(`
+        subscription Sub1 { field1 { id } }
+        subscription Sub2 { field2 { id } }
+      `)]
+
+      const result = generateSubscriptionBuilder(docs, true)
+
+      const matches = result.match(/export interface UseSubscriptionReturn/g)
+      expect(matches).toHaveLength(1)
+    })
+
+    it('should contain exactly one useSubscriptionSession function declaration', () => {
+      const docs = [createSource(`
+        subscription Sub1 { field1 { id } }
+        subscription Sub2 { field2 { id } }
+      `)]
+
+      const result = generateSubscriptionBuilder(docs, true)
+
+      const matches = result.match(/export function useSubscriptionSession\(\)/g)
+      expect(matches).toHaveLength(1)
+    })
+
+    it('should contain exactly one createSubscriptionSession function declaration', () => {
+      const docs = [createSource(`
+        subscription Sub1 { field1 { id } }
+        subscription Sub2 { field2 { id } }
+      `)]
+
+      const result = generateSubscriptionBuilder(docs, true)
+
+      const matches = result.match(/export function createSubscriptionSession\(\)/g)
+      expect(matches).toHaveLength(1)
+    })
+  })
 })
