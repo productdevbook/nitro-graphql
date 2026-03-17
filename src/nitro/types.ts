@@ -10,87 +10,14 @@ import type { plugin as typescriptGenericSdk } from '@graphql-codegen/typescript
 import type { TypeScriptDocumentsPluginConfig } from '@graphql-codegen/typescript-operations'
 import type { TypeScriptResolversPluginConfig } from '@graphql-codegen/typescript-resolvers'
 import type { IResolvers } from '@graphql-tools/utils'
-import type { GraphQLSchema } from 'graphql'
 import type { YogaServerOptions } from 'graphql-yoga'
 import type { ESMCodeGenOptions } from 'knitwork'
 import type { H3Event } from 'nitro/h3'
 
 // ==================== STANDARD SCHEMA ====================
 
-/** The Standard Schema interface. */
-export interface StandardSchemaV1<Input = unknown, Output = Input> {
-  /** The Standard Schema properties. */
-  readonly '~standard': StandardSchemaV1.Props<Input, Output>
-}
-
-// eslint-disable-next-line ts/no-namespace
-export declare namespace StandardSchemaV1 {
-  /** The Standard Schema properties interface. */
-  export interface Props<Input = unknown, Output = Input> {
-    /** The version number of the standard. */
-    readonly version: 1
-    /** The vendor name of the schema library. */
-    readonly vendor: string
-    /** Validates unknown input values. */
-    readonly validate: (
-      value: unknown,
-    ) => Result<Output> | Promise<Result<Output>>
-    /** Inferred types associated with the schema. */
-    readonly types?: Types<Input, Output> | undefined
-  }
-
-  /** The result interface of the validate function. */
-  export type Result<Output> = SuccessResult<Output> | FailureResult
-
-  /** The result interface if validation succeeds. */
-  export interface SuccessResult<Output> {
-    /** The typed output value. */
-    readonly value: Output
-    /** The non-existent issues. */
-    readonly issues?: undefined
-  }
-
-  /** The result interface if validation fails. */
-  export interface FailureResult {
-    /** The issues of failed validation. */
-    readonly issues: ReadonlyArray<Issue>
-  }
-
-  /** The issue interface of the failure output. */
-  export interface Issue {
-    /** The error message of the issue. */
-    readonly message: string
-    /** The path of the issue, if any. */
-    readonly path?: ReadonlyArray<PropertyKey | PathSegment> | undefined
-  }
-
-  /** The path segment interface of the issue. */
-  export interface PathSegment {
-    /** The key representing a path segment. */
-    readonly key: PropertyKey
-  }
-
-  /** The Standard Schema types interface. */
-  export interface Types<Input = unknown, Output = Input> {
-    /** The input type of the schema. */
-    readonly input: Input
-    /** The output type of the schema. */
-    readonly output: Output
-  }
-
-  /** Infers the input type of a Standard Schema. */
-  export type InferInput<Schema extends StandardSchemaV1> = NonNullable<
-    Schema['~standard']['types']
-  >['input']
-
-  /** Infers the output type of a Standard Schema. */
-  export type InferOutput<Schema extends StandardSchemaV1> = NonNullable<
-    Schema['~standard']['types']
-  >['output']
-
-  // biome-ignore lint/complexity/noUselessEmptyExport: needed for granular visibility control of TS namespace
-  export {}
-}
+// Re-export StandardSchemaV1 from core (canonical definition)
+export type { StandardSchemaV1 } from '../core/types/standard-schema'
 
 // ==================== DEFINE TYPES ====================
 
@@ -102,128 +29,17 @@ export type DefineServerConfig<T extends NPMConfig = NPMConfig> = T['framework']
     ? Partial<ApolloServerOptions<H3Event>>
     : Partial<YogaServerOptions<H3Event, Partial<H3Event>>> | Partial<ApolloServerOptions<H3Event>>
 
-type DirectiveLocationName
-  = | 'QUERY'
-    | 'MUTATION'
-    | 'SUBSCRIPTION'
-    | 'FIELD'
-    | 'FRAGMENT_DEFINITION'
-    | 'FRAGMENT_SPREAD'
-    | 'INLINE_FRAGMENT'
-    | 'VARIABLE_DEFINITION'
-    | 'SCHEMA'
-    | 'SCALAR'
-    | 'OBJECT'
-    | 'FIELD_DEFINITION'
-    | 'ARGUMENT_DEFINITION'
-    | 'INTERFACE'
-    | 'UNION'
-    | 'ENUM'
-    | 'ENUM_VALUE'
-    | 'INPUT_OBJECT'
-    | 'INPUT_FIELD_DEFINITION'
-
-// GraphQL scalar types - simple list
-export type GraphQLScalarType
-  = | 'String'
-    | 'Int'
-    | 'Float'
-    | 'Boolean'
-    | 'ID'
-    | 'JSON'
-    | 'DateTime'
-
-// Base types including scalars and any custom type
-export type GraphQLBaseType = GraphQLScalarType | (string & {})
-
-// GraphQL type with all possible combinations
-export type GraphQLArgumentType
-  // Basic scalars
-  = | 'String'
-    | 'Int'
-    | 'Float'
-    | 'Boolean'
-    | 'ID'
-    | 'JSON'
-    | 'DateTime'
-  // Non-nullable scalars
-    | 'String!'
-    | 'Int!'
-    | 'Float!'
-    | 'Boolean!'
-    | 'ID!'
-    | 'JSON!'
-    | 'DateTime!'
-  // Array types (all 4 combinations for each)
-    | '[String]'
-    | '[String!]'
-    | '[String]!'
-    | '[String!]!'
-    | '[Int]'
-    | '[Int!]'
-    | '[Int]!'
-    | '[Int!]!'
-    | '[Float]'
-    | '[Float!]'
-    | '[Float]!'
-    | '[Float!]!'
-    | '[Boolean]'
-    | '[Boolean!]'
-    | '[Boolean]!'
-    | '[Boolean!]!'
-    | '[ID]'
-    | '[ID!]'
-    | '[ID]!'
-    | '[ID!]!'
-    | '[JSON]'
-    | '[JSON!]'
-    | '[JSON]!'
-    | '[JSON!]!'
-    | '[DateTime]'
-    | '[DateTime!]'
-    | '[DateTime]!'
-    | '[DateTime!]!'
-  // Allow any string for custom types
-    | (string & {})
-
-export interface DirectiveArgument<T extends GraphQLArgumentType = GraphQLArgumentType> {
-  /**
-   * GraphQL type for the argument
-   * @example 'String', 'Int!', '[String!]!', 'DateTime', 'JSON'
-   */
-  type: T
-  defaultValue?: any
-  description?: string
-}
-
-interface DirectiveArg {
-  type: GraphQLArgumentType
-  defaultValue?: any
-  description?: string
-}
-
-export interface DirectiveDefinition {
-  name: string
-  locations: DirectiveLocationName[]
-  args?: Record<string, DirectiveArg>
-  description?: string
-  isRepeatable?: boolean
-  transformer?: (schema: GraphQLSchema) => GraphQLSchema
-}
-
-// Helper type to create autocomplete-friendly directive config
-export interface DefineDirectiveConfig {
-  name: string
-  locations: ReadonlyArray<DirectiveLocationName>
-  args?: Record<string, {
-    type: GraphQLArgumentType
-    defaultValue?: any
-    description?: string
-  }>
-  description?: string
-  isRepeatable?: boolean
-  transformer?: (schema: GraphQLSchema) => GraphQLSchema
-}
+// Re-export directive types from core (canonical definitions)
+export type {
+  DefineDirectiveConfig,
+  DirectiveArg,
+  DirectiveArgument,
+  DirectiveDefinition,
+  DirectiveLocationName,
+  GraphQLArgumentType,
+  GraphQLBaseType,
+  GraphQLScalarType,
+} from '../core/types/define'
 
 // ==================== CODEGEN TYPES ====================
 
@@ -320,6 +136,8 @@ export interface ExternalServicePaths {
   sdk?: FileGenerationConfig
   /** Type definitions file path (overrides global types.external config) */
   types?: FileGenerationConfig
+  /** Ofetch client file path (overrides global clientUtils.ofetch config) */
+  ofetch?: FileGenerationConfig
 }
 
 export interface ExternalGraphQLService {

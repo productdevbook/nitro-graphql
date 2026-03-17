@@ -7,7 +7,7 @@ import type { GraphQLSchema } from 'graphql'
 
 export type Flatten<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
 
-type DirectiveLocationName
+export type DirectiveLocationName
   = | 'QUERY'
     | 'MUTATION'
     | 'SUBSCRIPTION'
@@ -41,55 +41,11 @@ export type GraphQLScalarType
 // Base types including scalars and any custom type
 export type GraphQLBaseType = GraphQLScalarType | (string & {})
 
-// GraphQL type with all possible combinations
-export type GraphQLArgumentType
-  // Basic scalars
-  = | 'String'
-    | 'Int'
-    | 'Float'
-    | 'Boolean'
-    | 'ID'
-    | 'JSON'
-    | 'DateTime'
-  // Non-nullable scalars
-    | 'String!'
-    | 'Int!'
-    | 'Float!'
-    | 'Boolean!'
-    | 'ID!'
-    | 'JSON!'
-    | 'DateTime!'
-  // Array types (all 4 combinations for each)
-    | '[String]'
-    | '[String!]'
-    | '[String]!'
-    | '[String!]!'
-    | '[Int]'
-    | '[Int!]'
-    | '[Int]!'
-    | '[Int!]!'
-    | '[Float]'
-    | '[Float!]'
-    | '[Float]!'
-    | '[Float!]!'
-    | '[Boolean]'
-    | '[Boolean!]'
-    | '[Boolean]!'
-    | '[Boolean!]!'
-    | '[ID]'
-    | '[ID!]'
-    | '[ID]!'
-    | '[ID!]!'
-    | '[JSON]'
-    | '[JSON!]'
-    | '[JSON]!'
-    | '[JSON!]!'
-    | '[DateTime]'
-    | '[DateTime!]'
-    | '[DateTime]!'
-    | '[DateTime!]!'
-  // Allow any string for custom types
-    | (string & {})
+// GraphQL type modifiers for building argument types
+type GraphQLModifier = '' | '!' | '[]' | '[!]' | '[!]!'
+
+// GraphQL type with all possible combinations via template literal
+export type GraphQLArgumentType = `${GraphQLScalarType}${GraphQLModifier}` | `${GraphQLBaseType}${GraphQLModifier}` | (string & {})
 
 export interface DirectiveArgument<T extends GraphQLArgumentType = GraphQLArgumentType> {
   /**
@@ -101,7 +57,7 @@ export interface DirectiveArgument<T extends GraphQLArgumentType = GraphQLArgume
   description?: string
 }
 
-interface DirectiveArg {
+export interface DirectiveArg {
   type: GraphQLArgumentType
   defaultValue?: any
   description?: string

@@ -6,20 +6,7 @@
 
 import type { GraphQLSchema } from 'graphql'
 import type { DirectiveWrapper, ModuleConfig, ResolverDefinition, SchemaDefinition } from '../schema/builder'
-
-/**
- * Security configuration for GraphQL server
- */
-export interface CoreSecurityConfig {
-  /** Enable GraphQL introspection (default: true in dev, false in prod) */
-  introspection?: boolean
-  /** Enable GraphQL playground/sandbox (default: true in dev, false in prod) */
-  playground?: boolean
-  /** Mask error messages in responses (default: false in dev, true in prod) */
-  maskErrors?: boolean
-  /** Disable field suggestions in error messages */
-  disableSuggestions?: boolean
-}
+import type { CoreSecurityConfig } from '../types/config'
 
 /**
  * Options for creating a GraphQL server instance

@@ -52,11 +52,11 @@ export const DEFAULT_SDK_CONFIG = {
  * Default paths configuration
  * These are used as placeholders and resolved based on framework
  */
-export const DEFAULT_PATHS_CONFIG = {
+export const DEFAULT_PATHS_CONFIG: { serverDir: string, clientDir: undefined, typesDir: undefined } = {
   serverDir: 'server/graphql',
-  clientDir: null, // Determined by framework: 'app/graphql' for Nuxt, 'graphql' for Nitro
-  typesDir: null, // Derived from buildDir: '{buildDir}/types'
-} as const
+  clientDir: undefined, // Determined by framework: 'app/graphql' for Nuxt, 'graphql' for Nitro
+  typesDir: undefined, // Derived from buildDir: '{buildDir}/types'
+}
 
 /**
  * Default TypeScript strict mode setting

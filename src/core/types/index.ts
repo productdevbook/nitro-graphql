@@ -13,3 +13,6 @@ export * from './define'
 
 // Scanning types
 export * from './scanning'
+
+// Standard Schema types
+export * from './standard-schema'
