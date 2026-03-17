@@ -66,12 +66,18 @@ export async function resolveExtendConfig(
 
   if (!options.silent && Object.values(added).some(v => v > 0)) {
     const parts = []
-    if (added.schemas > 0) parts.push(`${added.schemas} schema(s)`)
-    if (added.resolvers > 0) parts.push(`${added.resolvers} resolver(s)`)
-    if (added.directives > 0) parts.push(`${added.directives} directive(s)`)
-    if (added.documents > 0) parts.push(`${added.documents} document(s)`)
-    if (added.configs > 0) parts.push(`${added.configs} config(s)`)
-    if (added.programmaticSchemas > 0) parts.push(`${added.programmaticSchemas} programmatic schema(s)`)
+    if (added.schemas > 0)
+      parts.push(`${added.schemas} schema(s)`)
+    if (added.resolvers > 0)
+      parts.push(`${added.resolvers} resolver(s)`)
+    if (added.directives > 0)
+      parts.push(`${added.directives} directive(s)`)
+    if (added.documents > 0)
+      parts.push(`${added.documents} document(s)`)
+    if (added.configs > 0)
+      parts.push(`${added.configs} config(s)`)
+    if (added.programmaticSchemas > 0)
+      parts.push(`${added.programmaticSchemas} programmatic schema(s)`)
     logger.info(`Extended with ${parts.join(', ')}`)
   }
 

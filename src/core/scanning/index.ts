@@ -7,14 +7,6 @@
 export { parseSingleFile, scanWithAST } from './ast-scanner'
 export type { ASTScanConfig } from './ast-scanner'
 
-// Common utilities
-export {
-  deduplicateFiles,
-  extractPaths,
-  filterByExtension,
-  scanDirectory,
-} from './common'
-
 // Directive scanning
 export { parseDirectiveCall, scanDirectivesCore } from './directives'
 
@@ -22,6 +14,14 @@ export { parseDirectiveCall, scanDirectivesCore } from './directives'
 export { scanDocumentsCore } from './documents'
 
 export type { ScanDocumentsOptions } from './documents'
+
+// File scanning utilities
+export {
+  deduplicateFiles,
+  extractPaths,
+  filterByExtension,
+  scanDirectory,
+} from './file-scanner'
 
 // Resolver scanning
 export {

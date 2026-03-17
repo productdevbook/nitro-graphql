@@ -19,21 +19,15 @@ export type {
   GraphQLTypeDefPointer,
 } from './client'
 
-// Subscription utilities (split by concern)
-export { extractSubscriptions } from './subscription-extractor'
-export type { SubscriptionInfo } from './subscription-extractor'
-export { generateSubscriptionBuilder } from './vue-subscription-builder'
-
-// Plugin
-export * from './plugin'
+// File header utilities
+export * from './file-header'
 export { typedDocumentStringPlugin } from './plugins/typed-document-string'
-
 // Runtime code generation
 export {
   generateResolverModule,
   generateRuntimeIndex,
   generateSchemaModule,
-} from './runtime'
+} from './runtime-generator'
 
 // Server codegen
 export {
@@ -41,6 +35,12 @@ export {
   generateServerTypesCore,
   generateTypes,
 } from './server'
+// Subscription utilities (split by concern)
+export { extractSubscriptions } from './subscription-extractor'
+
+export type { SubscriptionInfo } from './subscription-extractor'
 
 // Validation
 export * from './validation'
+
+export { generateSubscriptionBuilder } from './vue-subscription-builder'

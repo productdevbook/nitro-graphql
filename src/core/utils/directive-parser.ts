@@ -241,7 +241,7 @@ export function generateDirectiveSchema(directive: ParsedDirective): string {
 
 /**
  * Directive file reference
- * Can be either { fullPath } or { specifier } (for GenImport compatibility)
+ * Accepts either { fullPath } or { specifier } form
  */
 export type DirectiveFileRef = { fullPath: string } | { specifier: string }
 

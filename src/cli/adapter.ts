@@ -3,13 +3,13 @@
  * Converts CLI context to core types for shared functionality
  */
 
+import type { FrameworkAdapter } from '../core/types/adapter'
 import type { CoreConfig, CoreLogger } from '../core/types/config'
 import type { ScanContext } from '../core/types/scanning'
-import type { FrameworkAdapter } from '../core/types/adapter'
 import type { CLIContext } from './index'
 import consola from 'consola'
-import { createCoreConfig, createScanContext } from '../core/config'
 import { LOG_TAG } from '../core/constants'
+import { createCoreConfig, createScanContext } from '../core/create-config'
 
 function createCLILogger(): CoreLogger {
   const logger = consola.withTag(LOG_TAG)

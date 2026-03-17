@@ -49,7 +49,7 @@ beforeAll(() => {
   `, 'hello.graphql')
 })
 
-describe('DEFAULT_CLIENT_CODEGEN_CONFIG', () => {
+describe('dEFAULT_CLIENT_CODEGEN_CONFIG', () => {
   it('should have all expected default values', () => {
     expect(DEFAULT_CLIENT_CODEGEN_CONFIG).toEqual({
       emitLegacyCommonJSImports: false,

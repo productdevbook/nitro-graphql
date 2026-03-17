@@ -48,10 +48,9 @@ export async function generateClientTypes(
 async function generateMainClientTypes(
   nitro: Nitro,
   options: { silent?: boolean, isInitial?: boolean } = {},
-  cachedSchemaString?: string,
+  schemaString?: string,
 ): Promise<void> {
-  // Use cached schema string if available, otherwise read from disk
-  let schemaString = cachedSchemaString
+  // Use provided schema string if available, otherwise read from disk
   if (!schemaString) {
     const schemaPath = join(nitro.graphql.buildDir, 'schema.graphql')
     if (!existsSync(schemaPath)) {

@@ -4,24 +4,9 @@
  */
 
 import type { IResolvers } from '@graphql-tools/utils'
-import type { ESMCodeGenOptions } from 'knitwork'
 import type { ExternalServiceCodegenConfig } from '../../core/types/codegen'
 import type { CoreFederationConfig } from '../../core/types/config'
 import type { CodegenClientConfig, CodegenServerConfig, GenericSdkConfig, SecurityConfig } from './define'
-
-// ==================== SCANNING TYPES ====================
-
-interface IESMImport {
-  name: string
-  as?: string
-  type: 'resolver' | 'query' | 'mutation' | 'type' | 'subscription' | 'directive'
-}
-
-export interface GenImport {
-  specifier: string
-  imports: IESMImport[]
-  options?: ESMCodeGenOptions
-}
 
 // ==================== FILE GENERATION ====================
 

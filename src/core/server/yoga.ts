@@ -5,12 +5,11 @@
  * Used by both Nitro routes and CLI dev server.
  */
 
-import type { SchemaDefinition } from '../schema/builder'
 import type { CoreServerInstance, CoreServerOptions } from './types'
-import { resolveSecurityDefaults } from './types'
 import defu from 'defu'
 import { createYoga } from 'graphql-yoga'
 import { createMergedSchema } from '../schema/builder'
+import { resolveSecurityDefaults } from './types'
 
 /**
  * Apollo Sandbox HTML template

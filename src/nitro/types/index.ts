@@ -6,8 +6,34 @@
 // Module augmentation (side-effect import — must be loaded for augmentations to apply)
 import './augmentation'
 
+// Core scanning types (canonical source)
+export type { ResolverImport, ScannedResolver } from '../../core/types/scanning'
+
 // Scan state type
 export type { GraphQLScanState } from './augmentation'
+
+// Configuration types
+export type {
+  ClientUtilsConfig,
+  CLIGraphQLOptions,
+  ExplicitPathsExtendSource,
+  ExtendSource,
+  ExternalGraphQLService,
+  ExternalServicePaths,
+  FederationConfig,
+  FileGenerationConfig,
+  LocalDirExtendSource,
+  NitroGraphQLOptions,
+  PathsConfig,
+  PubSubConfig,
+  RuntimeConfig,
+  SdkConfig,
+  SSETransportConfig,
+  SubscriptionsConfig,
+  TypesConfig,
+  WatchConfig,
+  WebSocketTransportConfig,
+} from './config'
 
 // Define types (resolver definitions, directive types, codegen re-exports)
 export type {
@@ -34,27 +60,3 @@ export type {
   ServerCodegenConfig,
   StandardSchemaV1,
 } from './define'
-
-// Configuration types
-export type {
-  CLIGraphQLOptions,
-  ClientUtilsConfig,
-  ExplicitPathsExtendSource,
-  ExtendSource,
-  ExternalGraphQLService,
-  ExternalServicePaths,
-  FederationConfig,
-  FileGenerationConfig,
-  GenImport,
-  LocalDirExtendSource,
-  NitroGraphQLOptions,
-  PathsConfig,
-  PubSubConfig,
-  RuntimeConfig,
-  SdkConfig,
-  SSETransportConfig,
-  SubscriptionsConfig,
-  TypesConfig,
-  WatchConfig,
-  WebSocketTransportConfig,
-} from './config'

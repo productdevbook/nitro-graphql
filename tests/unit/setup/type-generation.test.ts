@@ -10,6 +10,10 @@
 import type { Nitro } from 'nitro/types'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { generateClientTypes, generateServerTypes } from '../../../src/nitro/codegen'
+import { isServerEnabled } from '../../../src/nitro/setup/scanner'
+import { regenerateTypes } from '../../../src/nitro/setup/type-generation'
+
 // Mock the codegen module
 vi.mock('../../../src/nitro/codegen', () => ({
   generateServerTypes: vi.fn(),
@@ -20,10 +24,6 @@ vi.mock('../../../src/nitro/codegen', () => ({
 vi.mock('../../../src/nitro/setup/scanner', () => ({
   isServerEnabled: vi.fn(),
 }))
-
-import { generateClientTypes, generateServerTypes } from '../../../src/nitro/codegen'
-import { isServerEnabled } from '../../../src/nitro/setup/scanner'
-import { regenerateTypes } from '../../../src/nitro/setup/type-generation'
 
 // ============ Helpers ============
 

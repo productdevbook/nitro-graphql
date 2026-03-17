@@ -12,12 +12,11 @@ import defu from 'defu'
 import { relative, resolve } from 'pathe'
 import { validateExternalServices } from '../core'
 import { LOG_TAG } from '../core/constants'
-import { emptyScanState } from './state'
 import {
   DEFAULT_RUNTIME_CONFIG,
   DEFAULT_TYPES_CONFIG,
   DEFAULT_TYPESCRIPT_STRICT,
-} from './config'
+} from './defaults'
 import { getDefaultPaths } from './paths'
 import { rollupConfig } from './rollup'
 import { resolveExtendDirs } from './setup/extend-loader'
@@ -33,6 +32,7 @@ import {
 import { resolveSecurityConfig } from './setup/security'
 import { setupTypeScriptPaths } from './setup/ts-config'
 import { regenerateTypes } from './setup/type-generation'
+import { emptyScanState } from './state'
 
 const logger = consola.withTag(LOG_TAG)
 
@@ -158,7 +158,8 @@ function resolveBuildDirectories(nitro: Nitro): void {
  * Resolve Rollup/Rolldown integration (externals, chunking, noExternals)
  */
 function resolveRollupIntegration(nitro: Nitro): void {
-  if (!isServerEnabled(nitro)) return
+  if (!isServerEnabled(nitro))
+    return
 
   setupNoExternals(nitro)
   setupRollupExternals(nitro)
@@ -184,7 +185,8 @@ function resolveRuntimeConfig(nitro: Nitro): void {
  * Resolve file watching for development mode
  */
 async function resolveFileWatching(nitro: Nitro): Promise<void> {
-  if (!nitro.options.dev) return
+  if (!nitro.options.dev)
+    return
 
   const serverEnabled = isServerEnabled(nitro)
   const extendDirs = await resolveExtendDirs(nitro)
@@ -210,7 +212,8 @@ async function resolveGraphQLScan(nitro: Nitro): Promise<void> {
  * Resolve dev mode hooks for rescanning and diagnostics
  */
 function resolveDevHooks(nitro: Nitro): void {
-  if (!isServerEnabled(nitro)) return
+  if (!isServerEnabled(nitro))
+    return
 
   let hasShownInitialLogs = false
   let lastDevStart = 0
@@ -218,7 +221,8 @@ function resolveDevHooks(nitro: Nitro): void {
 
   nitro.hooks.hook('dev:start', async () => {
     const now = Date.now()
-    if (now - lastDevStart < DEBOUNCE_MS) return
+    if (now - lastDevStart < DEBOUNCE_MS)
+      return
     lastDevStart = now
 
     await performGraphQLScan(nitro, { isRescan: true, silent: true })
@@ -234,7 +238,8 @@ function resolveDevHooks(nitro: Nitro): void {
  * Resolve virtual modules registration via Rollup config
  */
 async function resolveVirtualModules(nitro: Nitro): Promise<void> {
-  if (!isServerEnabled(nitro)) return
+  if (!isServerEnabled(nitro))
+    return
   await rollupConfig(nitro)
 }
 
@@ -258,7 +263,8 @@ function resolveCloseHooks(nitro: Nitro): void {
  * Resolve route handler registration
  */
 function resolveRouteHandlers(nitro: Nitro): void {
-  if (!isServerEnabled(nitro)) return
+  if (!isServerEnabled(nitro))
+    return
   registerRouteHandlers(nitro)
 }
 

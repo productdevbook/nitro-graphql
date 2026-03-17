@@ -6,7 +6,7 @@
 import type { ScanContext, ScanResult } from '../types/scanning'
 import { relative } from 'pathe'
 import { GRAPHQL_GLOB_PATTERN } from '../constants'
-import { extractPaths, scanDirectory } from './common'
+import { extractPaths, scanDirectory } from './file-scanner'
 
 /**
  * Scan for GraphQL schema files (.graphql, .gql) in server directory
@@ -27,4 +27,3 @@ export async function scanSchemasCore(ctx: ScanContext): Promise<ScanResult<stri
     return { items: [], warnings, errors }
   }
 }
-

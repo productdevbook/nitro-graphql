@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest'
 import { DEFAULT_IGNORE_PATTERNS } from '../../../src/core/constants'
 import { createIgnoredFunction } from '../../../src/core/watcher/index'
 
-describe('DEFAULT_IGNORE_PATTERNS', () => {
+describe('dEFAULT_IGNORE_PATTERNS', () => {
   it('should contain node_modules pattern', () => {
     expect(DEFAULT_IGNORE_PATTERNS).toContain('**/node_modules/**')
   })

@@ -6,7 +6,7 @@
  * new frozen objects. Consumers never mutate state directly.
  */
 
-import type { GenImport } from './types'
+import type { ScannedResolver } from '../core/types/scanning'
 import type { GraphQLScanState } from './types/augmentation'
 
 /**
@@ -29,8 +29,8 @@ export function emptyScanState(): GraphQLScanState {
  */
 export function createScanState(result: {
   schemas: string[]
-  resolvers: GenImport[]
-  directives: GenImport[]
+  resolvers: ScannedResolver[]
+  directives: ScannedResolver[]
   documents: string[]
   directiveSchemas: string | null
 }): GraphQLScanState {
@@ -53,8 +53,8 @@ export function mergeScanState(
   base: GraphQLScanState,
   extend: {
     schemas?: string[]
-    resolvers?: GenImport[]
-    directives?: GenImport[]
+    resolvers?: ScannedResolver[]
+    directives?: ScannedResolver[]
     documents?: string[]
     configPath?: string
     schemaPath?: string
@@ -69,16 +69,20 @@ export function mergeScanState(
 
   // Deduplicated merge
   for (const s of extend.schemas || []) {
-    if (!schemas.includes(s)) schemas.push(s)
+    if (!schemas.includes(s))
+      schemas.push(s)
   }
   for (const r of extend.resolvers || []) {
-    if (!resolvers.some(existing => existing.specifier === r.specifier)) resolvers.push(r)
+    if (!resolvers.some(existing => existing.specifier === r.specifier))
+      resolvers.push(r)
   }
   for (const d of extend.directives || []) {
-    if (!directives.some(existing => existing.specifier === d.specifier)) directives.push(d)
+    if (!directives.some(existing => existing.specifier === d.specifier))
+      directives.push(d)
   }
   for (const doc of extend.documents || []) {
-    if (!documents.includes(doc)) documents.push(doc)
+    if (!documents.includes(doc))
+      documents.push(doc)
   }
   if (extend.configPath && !extendConfigs.includes(extend.configPath)) {
     extendConfigs.push(extend.configPath)

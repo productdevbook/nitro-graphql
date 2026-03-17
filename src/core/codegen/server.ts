@@ -12,7 +12,7 @@ import { printSchemaWithDirectives } from '@graphql-tools/utils'
 import { defu } from 'defu'
 import { parse } from 'graphql'
 import { DEFAULT_GRAPHQL_SCALARS } from '../constants'
-import { pluginContent } from './plugin'
+import { pluginContent } from './file-header'
 
 /**
  * Default server codegen configuration

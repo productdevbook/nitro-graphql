@@ -35,8 +35,10 @@ function resolveServiceSources(service: ExternalServiceCodegenConfig) {
 /** Build loaders array based on schema source types */
 function buildLoaders(schemas: string[]) {
   const loaders = []
-  if (schemas.some(s => !isUrl(s))) loaders.push(new GraphQLFileLoader())
-  if (schemas.some(isUrl)) loaders.push(new UrlLoader())
+  if (schemas.some(s => !isUrl(s)))
+    loaders.push(new GraphQLFileLoader())
+  if (schemas.some(isUrl))
+    loaders.push(new UrlLoader())
   return loaders
 }
 

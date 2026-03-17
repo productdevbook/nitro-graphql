@@ -4,9 +4,9 @@
  */
 
 import type { Nitro } from 'nitro/types'
+import type { FrameworkAdapter } from '../core/types/adapter'
 import type { CoreConfig, CoreLogger } from '../core/types/config'
 import type { ScanContext } from '../core/types/scanning'
-import type { FrameworkAdapter } from '../core/types/adapter'
 import { join } from 'pathe'
 
 /**

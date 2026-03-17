@@ -4,6 +4,11 @@
  */
 
 import type { ResolverImport, ScanContext, ScannedResolver, ScanResult } from '../types/scanning'
+import { readFile } from 'node:fs/promises'
+import consola from 'consola'
+import { parseSync } from 'oxc-parser'
+import { basename, relative } from 'pathe'
+import { scanDirectory } from './file-scanner'
 
 /** Minimal oxc-parser AST node for export/declaration traversal */
 interface OxcASTNode {
@@ -16,11 +21,6 @@ interface OxcASTNode {
   name?: string
   body?: OxcASTNode[]
 }
-import { readFile } from 'node:fs/promises'
-import consola from 'consola'
-import { parseSync } from 'oxc-parser'
-import { basename, relative } from 'pathe'
-import { scanDirectory } from './common'
 
 /**
  * Configuration for AST-based scanning

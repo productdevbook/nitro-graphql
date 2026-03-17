@@ -8,12 +8,12 @@
 import type { BaseContext } from '@apollo/server'
 import type { GraphQLFormattedError } from 'graphql'
 import type { CoreServerOptions } from './types'
-import { resolveSecurityDefaults } from './types'
 import { ApolloServer } from '@apollo/server'
 import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled'
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default'
 import defu from 'defu'
 import { createMergedSchema } from '../schema/builder'
+import { resolveSecurityDefaults } from './types'
 
 /**
  * Error codes that represent user-facing errors and should not be masked

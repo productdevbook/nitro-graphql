@@ -27,7 +27,7 @@ declare module '#nitro-graphql/module-config' {
 }
 
 declare module '#nitro-graphql/debug-info' {
-  import type { GenImport } from './nitro/types'
+  import type { ScannedResolver } from './core/types/scanning'
 
   export const debugInfo: {
     isDev: boolean
@@ -38,9 +38,9 @@ declare module '#nitro-graphql/debug-info' {
       schemas: number
       schemaFiles: string[]
       resolvers: number
-      resolverFiles: GenImport[]
+      resolverFiles: ScannedResolver[]
       directives: number
-      directiveFiles: GenImport[]
+      directiveFiles: ScannedResolver[]
       documents: number
       documentFiles: string[]
     }

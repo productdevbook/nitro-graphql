@@ -4,9 +4,10 @@
  */
 
 import type { Nitro } from 'nitro/types'
-import type { ExtendSource, GenImport } from '../types'
-import { relative } from 'pathe'
+import type { ScannedResolver } from '../../core/types/scanning'
+import type { ExtendSource } from '../types'
 import consola from 'consola'
+import { relative } from 'pathe'
 import { LOG_TAG } from '../../core/constants'
 import {
   scanDirectivesCore,
@@ -16,7 +17,7 @@ import {
 } from '../../core/scanning'
 import { generateDirectiveSchemas } from '../../core/utils/directive-parser'
 import { createScanContextFromNitro } from '../adapter'
-import { createScanState, emptyScanState } from '../state'
+import { createScanState } from '../state'
 import { resolveExtendConfig } from './extend-loader'
 
 const logger = consola.withTag(LOG_TAG)
@@ -148,8 +149,8 @@ export async function performGraphQLScan(nitro: Nitro, options: ScanOptions = {}
 
   // Sync legacy fields for backward compatibility (tests, external consumers)
   nitro.scanSchemas = [...state.schemas] as string[]
-  nitro.scanResolvers = [...state.resolvers] as GenImport[]
-  nitro.scanDirectives = [...state.directives] as GenImport[]
+  nitro.scanResolvers = [...state.resolvers] as ScannedResolver[]
+  nitro.scanDirectives = [...state.directives] as ScannedResolver[]
   nitro.scanDocuments = [...state.documents] as string[]
   nitro.graphql.directiveSchemas = state.directiveSchemas
   nitro.graphql.extendConfigs = [...state.extendConfigs] as string[]
@@ -181,12 +182,18 @@ export function logResolverDiagnostics(nitro: Nitro): void {
     }
 
     const breakdown: string[] = []
-    if (typeCount.query > 0) breakdown.push(`${typeCount.query} query`)
-    if (typeCount.mutation > 0) breakdown.push(`${typeCount.mutation} mutation`)
-    if (typeCount.resolver > 0) breakdown.push(`${typeCount.resolver} resolver`)
-    if (typeCount.type > 0) breakdown.push(`${typeCount.type} type`)
-    if (typeCount.subscription > 0) breakdown.push(`${typeCount.subscription} subscription`)
-    if (typeCount.directive > 0) breakdown.push(`${typeCount.directive} directive`)
+    if (typeCount.query > 0)
+      breakdown.push(`${typeCount.query} query`)
+    if (typeCount.mutation > 0)
+      breakdown.push(`${typeCount.mutation} mutation`)
+    if (typeCount.resolver > 0)
+      breakdown.push(`${typeCount.resolver} resolver`)
+    if (typeCount.type > 0)
+      breakdown.push(`${typeCount.type} type`)
+    if (typeCount.subscription > 0)
+      breakdown.push(`${typeCount.subscription} subscription`)
+    if (typeCount.directive > 0)
+      breakdown.push(`${typeCount.directive} directive`)
 
     if (breakdown.length > 0) {
       logger.success(`${totalExports} resolver export(s): ${breakdown.join(', ')}`)

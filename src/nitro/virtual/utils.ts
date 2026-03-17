@@ -3,14 +3,14 @@
  */
 
 import type { Nitro } from 'nitro/types'
-import type { GenImport } from '../types'
+import type { ScannedResolver } from '../../core/types/scanning'
 import { genImport } from 'knitwork'
 
 /**
  * Generate an import-based module that collects items into an exported array
  */
 export function generateImportModule(
-  items: GenImport[],
+  items: ScannedResolver[],
   exportName: string,
   wrapperKey: string,
 ): string {

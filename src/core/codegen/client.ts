@@ -22,7 +22,7 @@ import consola from 'consola'
 import { defu } from 'defu'
 import { parse } from 'graphql'
 import { DEFAULT_GRAPHQL_SCALARS } from '../constants'
-import { pluginContent } from './plugin'
+import { pluginContent } from './file-header'
 import { typedDocumentStringPlugin } from './plugins/typed-document-string'
 
 export { loadGraphQLDocuments } from './document-loader'

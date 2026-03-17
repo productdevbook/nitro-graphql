@@ -3,7 +3,7 @@
  * Extends Nitro interfaces with GraphQL-specific properties
  */
 
-import type { GenImport } from './config'
+import type { ScannedResolver } from '../../core/types/scanning'
 import type { NitroGraphQLOptions } from './config'
 
 /**
@@ -14,8 +14,8 @@ import type { NitroGraphQLOptions } from './config'
  */
 export interface GraphQLScanState {
   readonly schemas: readonly string[]
-  readonly resolvers: readonly GenImport[]
-  readonly directives: readonly GenImport[]
+  readonly resolvers: readonly ScannedResolver[]
+  readonly directives: readonly ScannedResolver[]
   readonly documents: readonly string[]
   readonly directiveSchemas: string | null
   readonly extendConfigs: readonly string[]
@@ -29,9 +29,9 @@ declare module 'nitro/types' {
     /** @deprecated Use nitro.graphql.state.documents */
     scanDocuments: string[]
     /** @deprecated Use nitro.graphql.state.resolvers */
-    scanResolvers: GenImport[]
+    scanResolvers: ScannedResolver[]
     /** @deprecated Use nitro.graphql.state.directives */
-    scanDirectives: GenImport[]
+    scanDirectives: ScannedResolver[]
 
     graphql: {
       /** Immutable scan state — the single source of truth for all scanned files */

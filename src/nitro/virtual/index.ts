@@ -59,7 +59,8 @@ export function registerAllVirtualModules(nitro: Nitro): void {
  * (including extend results) to re-snapshot the virtual modules.
  */
 export function refreshVirtualModules(nitro: Nitro): void {
-  if (!nitro.options.virtual) return
+  if (!nitro.options.virtual)
+    return
   for (const mod of allModules) {
     const code = mod.getCode(nitro)
     nitro.options.virtual[mod.id] = () => code

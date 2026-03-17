@@ -8,7 +8,8 @@
 import type { CoreServerInstance } from '../../core/server/types'
 import type { CLIContext } from '../index'
 import consola from 'consola'
-import { BASE_SCHEMA, createYogaServer } from '../../core/server/yoga'
+import { BASE_SCHEMA } from '../../core/schema/builder'
+import { createYogaServer } from '../../core/server/yoga'
 import { loadDirectiveDefinitions, loadResolverDefinitions, loadSchemaDefinitions } from './loader'
 
 const logger = consola.withTag('nitro-graphql')
