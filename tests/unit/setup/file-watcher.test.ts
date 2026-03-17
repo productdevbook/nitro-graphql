@@ -61,6 +61,11 @@ vi.mock('../../../src/nitro/codegen', () => ({
   generateClientTypes: vi.fn().mockResolvedValue(undefined),
 }))
 
+// Mock type-generation (used by file-watcher for server changes)
+vi.mock('../../../src/nitro/setup/type-generation', () => ({
+  regenerateTypes: vi.fn().mockResolvedValue(undefined),
+}))
+
 // Mock directive parser
 vi.mock('../../../src/core/utils/directive-parser', () => ({
   generateDirectiveSchemas: vi.fn().mockResolvedValue([]),
@@ -570,11 +575,11 @@ describe('setupFileWatcher', () => {
       expect(NitroAdapter.scanDirectives).not.toHaveBeenCalled()
     })
 
-    it('should call generateServerTypes when server .graphql file changes', async () => {
+    it('should call regenerateTypes when server .graphql file changes', async () => {
       const { watch } = await import('chokidar')
-      const { generateServerTypes } = await import('../../../src/nitro/codegen')
+      const { regenerateTypes } = await import('../../../src/nitro/setup/type-generation')
 
-      vi.mocked(generateServerTypes).mockClear()
+      vi.mocked(regenerateTypes).mockClear()
 
       let allEventHandler: ((event: string, path: string) => void) | null = null
       const mockWatcher = {
@@ -598,38 +603,7 @@ describe('setupFileWatcher', () => {
 
       await new Promise(resolve => setTimeout(resolve, 10))
 
-      expect(generateServerTypes).toHaveBeenCalledWith(nitro, { silent: true })
-    })
-
-    it('should call generateClientTypes when server .graphql file changes', async () => {
-      const { watch } = await import('chokidar')
-      const { generateClientTypes } = await import('../../../src/nitro/codegen')
-
-      vi.mocked(generateClientTypes).mockClear()
-
-      let allEventHandler: ((event: string, path: string) => void) | null = null
-      const mockWatcher = {
-        on: vi.fn((event: string, handler: (event: string, path: string) => void) => {
-          if (event === 'all') {
-            allEventHandler = handler
-          }
-          return mockWatcher
-        }),
-        close: vi.fn(),
-      }
-      vi.mocked(watch).mockReturnValue(mockWatcher as any)
-
-      const nitro = createMockNitro()
-      const watchDirs = ['/project/server/graphql']
-
-      setupFileWatcher(nitro, watchDirs)
-
-      // Simulate a server .graphql file change
-      allEventHandler!('change', '/project/server/graphql/schema.graphql')
-
-      await new Promise(resolve => setTimeout(resolve, 10))
-
-      expect(generateClientTypes).toHaveBeenCalledWith(nitro, { silent: true })
+      expect(regenerateTypes).toHaveBeenCalledWith(nitro, { silent: true })
     })
 
     it('should call generateClientTypes when client .graphql file changes', async () => {
@@ -675,6 +649,9 @@ describe('setupFileWatcher', () => {
 
     it('should call dev:reload hook after type generation for server changes', async () => {
       const { watch } = await import('chokidar')
+      const { regenerateTypes } = await import('../../../src/nitro/setup/type-generation')
+
+      vi.mocked(regenerateTypes).mockClear()
 
       let allEventHandler: ((event: string, path: string) => void) | null = null
       const mockWatcher = {
@@ -703,6 +680,7 @@ describe('setupFileWatcher', () => {
 
       await new Promise(resolve => setTimeout(resolve, 10))
 
+      expect(regenerateTypes).toHaveBeenCalledWith(nitro, { silent: true })
       expect(mockCallHook).toHaveBeenCalledWith('dev:reload')
     })
   })

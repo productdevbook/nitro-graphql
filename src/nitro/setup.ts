@@ -2,7 +2,8 @@
  * Shared setup logic for nitro-graphql module
  * Used by both the direct Nitro module export and the Vite plugin's nitro: hook
  *
- * This is the main orchestrator that coordinates all setup steps
+ * Uses a resolver chain pattern (inspired by Nitro v3) where each setup step
+ * is an independent function that operates on the Nitro instance.
  */
 
 import type { Nitro } from 'nitro/types'
@@ -10,12 +11,7 @@ import consola from 'consola'
 import defu from 'defu'
 import { relative, resolve } from 'pathe'
 import { validateExternalServices } from '../core'
-import {
-  FRAMEWORK_NITRO,
-  FRAMEWORK_NUXT,
-  LOG_TAG,
-} from '../core/constants'
-import { generateClientTypes, generateServerTypes } from './codegen'
+import { LOG_TAG } from '../core/constants'
 import {
   DEFAULT_RUNTIME_CONFIG,
   DEFAULT_TYPES_CONFIG,
@@ -25,7 +21,7 @@ import { getDefaultPaths } from './paths'
 import { rollupConfig } from './rollup'
 import { resolveExtendDirs } from './setup/extend-loader'
 import { getWatchDirectories, setupFileWatcher } from './setup/file-watcher'
-import { logStartupInfo, resolveSecurityConfig } from './setup/logging'
+import { logStartupInfo } from './setup/logging'
 import { setupNoExternals, setupRollupChunking, setupRollupExternals } from './setup/rollup-integration'
 import { registerRouteHandlers } from './setup/routes'
 import {
@@ -33,103 +29,66 @@ import {
   logResolverDiagnostics,
   performGraphQLScan,
 } from './setup/scanner'
+import { resolveSecurityConfig } from './setup/security'
 import { setupTypeScriptPaths } from './setup/ts-config'
+import { regenerateTypes } from './setup/type-generation'
 
 const logger = consola.withTag(LOG_TAG)
 
 // Re-export for backward compatibility
-export { resolveSecurityConfig } from './setup/logging'
+export { resolveSecurityConfig } from './setup/security'
+export { regenerateTypes } from './setup/type-generation'
+
+/**
+ * Setup resolver — each resolver is a focused function that configures one aspect.
+ * Resolvers are executed sequentially; each operates on the shared Nitro instance.
+ */
+type SetupResolver = (nitro: Nitro) => void | Promise<void>
 
 /**
  * Main setup function for nitro-graphql
- * Coordinates all initialization steps for the module
+ * Executes setup resolvers in sequence
  */
 export async function setupNitroGraphQL(nitro: Nitro): Promise<void> {
-  // Check if server mode is enabled (default: true)
-  const serverEnabled = isServerEnabled(nitro)
+  const resolvers: SetupResolver[] = [
+    resolveConfiguration,
+    resolveValidation,
+    resolveBuildDirectories,
+    resolveRollupIntegration,
+    resolveRuntimeConfig,
+    resolveFileWatching,
+    resolveGraphQLScan,
+    resolveDevHooks,
+    resolveVirtualModules,
+    resolveTypeGeneration,
+    resolveCloseHooks,
+    resolveRouteHandlers,
+    resolveTypeScriptConfig,
+    resolveStartupLogging,
+  ]
 
-  // Step 1: Initialize configuration
-  initializeConfiguration(nitro, serverEnabled)
-
-  // Step 2: Validate configuration
-  validateConfiguration(nitro)
-
-  // Step 3: Setup build directories
-  setupBuildDirectories(nitro)
-
-  // Step 4: Setup Rollup/Rolldown configuration (only if server enabled)
-  if (serverEnabled) {
-    // Configure noExternals first (must be set before rollup hooks)
-    setupNoExternals(nitro)
-    setupRollupExternals(nitro)
-    setupRollupChunking(nitro)
+  for (const resolver of resolvers) {
+    await resolver(nitro)
   }
-
-  // Step 5: Initialize runtime configuration
-  initializeRuntimeConfig(nitro)
-
-  // Step 5.5: Resolve extend directories for file watching
-  const extendDirs = await resolveExtendDirs(nitro)
-
-  // Step 6: Setup file watching (dev mode only)
-  if (nitro.options.dev) {
-    setupFileWatching(nitro, serverEnabled, extendDirs)
-  }
-
-  // Step 7: Scan GraphQL files and resolve extend config
-  // performGraphQLScan handles skipLocalScan, serverEnabled, and extend resolution
-  await performGraphQLScan(nitro)
-
-  // Step 8: Setup dev hooks (only if server enabled)
-  if (serverEnabled) {
-    setupDevHooks(nitro)
-  }
-
-  // Step 9: Configure Rollup virtual modules (only if server enabled)
-  if (serverEnabled) {
-    await rollupConfig(nitro)
-  }
-
-  // Step 10: Generate types (initial generation)
-  await generateTypes(nitro, serverEnabled)
-
-  // Step 11: Setup close hooks
-  setupCloseHooks(nitro, serverEnabled)
-
-  // Step 12: Register route handlers (only if server enabled)
-  if (serverEnabled) {
-    registerRouteHandlers(nitro)
-  }
-
-  // Step 13: Setup TypeScript configuration
-  setupTypeScriptConfiguration(nitro)
-
-  // Step 14: Setup Nuxt integration (if applicable)
-  setupNuxtIntegration(nitro)
-
-  // Log startup info
-  logStartupInfo(nitro, serverEnabled)
 }
 
-/**
- * Initialize default configuration values
- */
-function initializeConfiguration(nitro: Nitro, serverEnabled: boolean): void {
-  // Initialize graphql config
-  nitro.options.graphql ||= {}
+// ============ SETUP RESOLVERS ============
+// Each resolver is a focused function that configures one aspect of the module.
 
-  // Setup default types configuration
+/**
+ * Resolve default configuration values and initialize Nitro GraphQL state
+ */
+function resolveConfiguration(nitro: Nitro): void {
+  nitro.options.graphql ||= {}
   nitro.options.graphql.types = defu(nitro.options.graphql.types, DEFAULT_TYPES_CONFIG)
 
-  // Warn if no framework specified (only if server is enabled)
+  const serverEnabled = isServerEnabled(nitro)
   if (serverEnabled && !nitro.options.graphql?.framework) {
     logger.warn('No GraphQL framework specified. Please set graphql.framework to "graphql-yoga" or "apollo-server".')
   }
 
-  // Get default paths from path resolver
   const defaultPaths = getDefaultPaths(nitro)
 
-  // Initialize nitro.graphql object
   nitro.graphql ||= {
     buildDir: '',
     watchDirs: [],
@@ -145,7 +104,6 @@ function initializeConfiguration(nitro: Nitro, serverEnabled: boolean): void {
     extendSchemas: [],
   }
 
-  // Initialize empty arrays for server-related scans (needed even if server disabled)
   nitro.scanSchemas ||= []
   nitro.scanResolvers ||= []
   nitro.scanDirectives ||= []
@@ -161,9 +119,9 @@ function initializeConfiguration(nitro: Nitro, serverEnabled: boolean): void {
 }
 
 /**
- * Validate external services configuration
+ * Validate external services and federation configuration
  */
-function validateConfiguration(nitro: Nitro): void {
+function resolveValidation(nitro: Nitro): void {
   if (nitro.options.graphql?.externalServices?.length) {
     const validationErrors = validateExternalServices(nitro.options.graphql.externalServices)
     if (validationErrors.length > 0) {
@@ -176,43 +134,37 @@ function validateConfiguration(nitro: Nitro): void {
     logger.info(`Configured ${nitro.options.graphql.externalServices.length} external GraphQL services`)
   }
 
-  // Log federation status if enabled
   if (nitro.options.graphql?.federation?.enabled) {
     logger.info(`Apollo Federation enabled for service: ${nitro.options.graphql.federation.serviceName || 'unnamed'}`)
   }
 }
 
 /**
- * Setup build directories
+ * Resolve build directories and relative paths
  */
-function setupBuildDirectories(nitro: Nitro): void {
-  // Use .graphql/ in root directory instead of .nitro/graphql/
-  const graphqlBuildDir = resolve(nitro.options.rootDir, '.graphql')
-  nitro.graphql.buildDir = graphqlBuildDir
+function resolveBuildDirectories(nitro: Nitro): void {
+  nitro.graphql.buildDir = resolve(nitro.options.rootDir, '.graphql')
 
-  // Update relative dir paths based on framework
-  const framework = nitro.options.framework.name
-
-  switch (framework) {
-    case FRAMEWORK_NUXT:
-      nitro.graphql.dir.client = relative(nitro.options.rootDir, nitro.graphql.clientDir)
-      nitro.graphql.dir.server = relative(nitro.options.rootDir, nitro.graphql.serverDir)
-      break
-    case FRAMEWORK_NITRO:
-      nitro.graphql.dir.client = relative(nitro.options.rootDir, nitro.graphql.clientDir)
-      nitro.graphql.dir.server = relative(nitro.options.rootDir, nitro.graphql.serverDir)
-      break
-    default:
-      // Unknown framework - use defaults
-      break
-  }
+  // Compute relative dir paths (same logic for all frameworks)
+  nitro.graphql.dir.client = relative(nitro.options.rootDir, nitro.graphql.clientDir)
+  nitro.graphql.dir.server = relative(nitro.options.rootDir, nitro.graphql.serverDir)
 }
 
 /**
- * Initialize runtime configuration
+ * Resolve Rollup/Rolldown integration (externals, chunking, noExternals)
  */
-function initializeRuntimeConfig(nitro: Nitro): void {
-  // Resolve security config with environment-aware defaults
+function resolveRollupIntegration(nitro: Nitro): void {
+  if (!isServerEnabled(nitro)) return
+
+  setupNoExternals(nitro)
+  setupRollupExternals(nitro)
+  setupRollupChunking(nitro)
+}
+
+/**
+ * Resolve runtime configuration with security defaults
+ */
+function resolveRuntimeConfig(nitro: Nitro): void {
   const securityConfig = resolveSecurityConfig(nitro.options.graphql?.security)
 
   nitro.options.runtimeConfig.graphql = defu(
@@ -225,10 +177,14 @@ function initializeRuntimeConfig(nitro: Nitro): void {
 }
 
 /**
- * Setup file watching for development mode
+ * Resolve file watching for development mode
  */
-function setupFileWatching(nitro: Nitro, serverEnabled: boolean, extendDirs: string[] = []): void {
-  // In client-only mode, only watch client directories
+async function resolveFileWatching(nitro: Nitro): Promise<void> {
+  if (!nitro.options.dev) return
+
+  const serverEnabled = isServerEnabled(nitro)
+  const extendDirs = await resolveExtendDirs(nitro)
+
   const watchDirs = serverEnabled
     ? getWatchDirectories(nitro, extendDirs)
     : [nitro.graphql.clientDir].filter(Boolean)
@@ -236,35 +192,33 @@ function setupFileWatching(nitro: Nitro, serverEnabled: boolean, extendDirs: str
   nitro.graphql.watchDirs = watchDirs
 
   const watcher = setupFileWatcher(nitro, watchDirs)
-
-  nitro.hooks.hook('close', () => {
-    watcher.close()
-  })
+  nitro.hooks.hook('close', () => watcher.close())
 }
 
 /**
- * Setup dev mode hooks for rescanning files
+ * Resolve initial GraphQL file scanning
  */
-function setupDevHooks(nitro: Nitro): void {
-  // Track if we've already shown initial logs to prevent duplicates
+async function resolveGraphQLScan(nitro: Nitro): Promise<void> {
+  await performGraphQLScan(nitro)
+}
+
+/**
+ * Resolve dev mode hooks for rescanning and diagnostics
+ */
+function resolveDevHooks(nitro: Nitro): void {
+  if (!isServerEnabled(nitro)) return
+
   let hasShownInitialLogs = false
-  // Debounce to prevent rapid successive calls
   let lastDevStart = 0
   const DEBOUNCE_MS = 500
 
   nitro.hooks.hook('dev:start', async () => {
-    // Debounce rapid successive dev:start calls
     const now = Date.now()
-    if (now - lastDevStart < DEBOUNCE_MS) {
-      return
-    }
+    if (now - lastDevStart < DEBOUNCE_MS) return
     lastDevStart = now
 
-    // Rescan using unified scan function (handles skipLocalScan, extend, etc.)
     await performGraphQLScan(nitro, { isRescan: true, silent: true })
 
-    // Validate resolver setup and provide helpful diagnostics (only in dev)
-    // Only show once during startup to avoid duplicate logs
     if (nitro.options.dev && !hasShownInitialLogs) {
       hasShownInitialLogs = true
       logResolverDiagnostics(nitro)
@@ -273,55 +227,50 @@ function setupDevHooks(nitro: Nitro): void {
 }
 
 /**
- * Generate server and client types
+ * Resolve virtual modules registration via Rollup config
  */
-async function generateTypes(nitro: Nitro, serverEnabled: boolean): Promise<void> {
-  if (serverEnabled) {
-    // Generate server and client types (initial generation with logs)
-    await generateServerTypes(nitro)
-    await generateClientTypes(nitro, { isInitial: true })
-  }
-  else {
-    // Client-only mode: only generate client types (for external services)
-    await generateClientTypes(nitro, { isInitial: true })
-  }
+async function resolveVirtualModules(nitro: Nitro): Promise<void> {
+  if (!isServerEnabled(nitro)) return
+  await rollupConfig(nitro)
 }
 
 /**
- * Setup close hooks for final type generation
+ * Resolve initial type generation
  */
-function setupCloseHooks(nitro: Nitro, serverEnabled: boolean): void {
+async function resolveTypeGeneration(nitro: Nitro): Promise<void> {
+  await regenerateTypes(nitro, { serverEnabled: isServerEnabled(nitro) })
+}
+
+/**
+ * Resolve close hooks for final type generation
+ */
+function resolveCloseHooks(nitro: Nitro): void {
   nitro.hooks.hook('close', async () => {
-    if (serverEnabled) {
-      await generateServerTypes(nitro, { silent: true })
-    }
-    await generateClientTypes(nitro, { silent: true })
+    await regenerateTypes(nitro, { silent: true })
   })
 }
 
 /**
- * Setup TypeScript configuration and path aliases
+ * Resolve route handler registration
  */
-function setupTypeScriptConfiguration(nitro: Nitro): void {
-  nitro.options.typescript.strict = DEFAULT_TYPESCRIPT_STRICT
+function resolveRouteHandlers(nitro: Nitro): void {
+  if (!isServerEnabled(nitro)) return
+  registerRouteHandlers(nitro)
+}
 
+/**
+ * Resolve TypeScript configuration and path aliases
+ */
+function resolveTypeScriptConfig(nitro: Nitro): void {
+  nitro.options.typescript.strict = DEFAULT_TYPESCRIPT_STRICT
   nitro.hooks.hook('types:extend', (types) => {
     setupTypeScriptPaths(nitro, types)
   })
 }
 
 /**
- * Setup Nuxt-specific integration
+ * Resolve startup logging
  */
-function setupNuxtIntegration(nitro: Nitro): void {
-  // Store external services info for Nuxt module
-  if (nitro.options.framework?.name === FRAMEWORK_NUXT && nitro.options.graphql?.externalServices?.length) {
-    // Add external services to Nuxt context so the Nuxt module can access them
-    nitro.hooks.hook('build:before', () => {
-      const nuxtOptions = (nitro as { _nuxt?: { options?: any } })._nuxt?.options
-      if (nuxtOptions) {
-        nuxtOptions.nitroGraphqlExternalServices = nitro.options.graphql?.externalServices || []
-      }
-    })
-  }
+function resolveStartupLogging(nitro: Nitro): void {
+  logStartupInfo(nitro, isServerEnabled(nitro))
 }

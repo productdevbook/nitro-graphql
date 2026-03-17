@@ -6,7 +6,7 @@
  * - Handles partial and undefined configurations
  */
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { resolveSecurityConfig } from '../../../src/nitro/setup/logging'
+import { resolveSecurityConfig } from '../../../src/nitro/setup/security'
 
 describe('resolveSecurityConfig', () => {
   const originalEnv = process.env.NODE_ENV

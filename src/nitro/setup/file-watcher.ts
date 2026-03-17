@@ -11,8 +11,9 @@ import consola from 'consola'
 import { join } from 'pathe'
 import { LOG_TAG } from '../../core/constants'
 import { createCoreWatcher } from '../../core/watcher'
-import { generateClientTypes, generateServerTypes } from '../codegen'
+import { generateClientTypes } from '../codegen'
 import { performGraphQLScan, shouldScanLocalFiles } from './scanner'
+import { regenerateTypes } from './type-generation'
 
 const TRAILING_SLASH_RE = /\/$/
 
@@ -36,9 +37,8 @@ export function setupFileWatcher(nitro: Nitro, watchDirs: string[]): FSWatcher {
         // Use centralized scan function that respects skipLocalScan
         await performGraphQLScan(nitro, { silent: true, isRescan: true })
 
-        // Regenerate types
-        await generateServerTypes(nitro, { silent: true })
-        await generateClientTypes(nitro, { silent: true })
+        // Regenerate all types using shared helper
+        await regenerateTypes(nitro, { silent: true })
 
         logger.success('Types regenerated')
 

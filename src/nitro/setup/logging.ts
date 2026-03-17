@@ -3,23 +3,8 @@
  */
 
 import type { Nitro } from 'nitro/types'
-import type { SecurityConfig } from '../types'
 import consola from 'consola'
-
-/**
- * Resolves security configuration with environment-aware defaults
- * In production: introspection off, playground off, errors masked, suggestions disabled
- * In development: introspection on, playground on, errors shown, suggestions enabled
- */
-export function resolveSecurityConfig(config?: SecurityConfig): Required<SecurityConfig> {
-  const isProd = process.env.NODE_ENV === 'production'
-  return {
-    introspection: config?.introspection ?? !isProd,
-    playground: config?.playground ?? !isProd,
-    maskErrors: config?.maskErrors ?? isProd,
-    disableSuggestions: config?.disableSuggestions ?? isProd,
-  }
-}
+import { resolveSecurityConfig } from './security'
 
 /**
  * Log startup information
