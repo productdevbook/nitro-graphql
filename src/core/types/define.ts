@@ -48,7 +48,7 @@ type GraphQLModifier = '' | '!' | '[]' | '[!]' | '[!]!'
 export type GraphQLArgumentType = `${GraphQLScalarType}${GraphQLModifier}` | `${GraphQLBaseType}${GraphQLModifier}` | (string & {})
 
 /** Allowed default values for directive arguments */
-export type DirectiveDefaultValue = string | number | boolean | null
+type DirectiveDefaultValue = string | number | boolean | null
 
 export interface DirectiveArgument<T extends GraphQLArgumentType = GraphQLArgumentType> {
   /**

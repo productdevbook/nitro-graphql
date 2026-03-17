@@ -21,23 +21,3 @@ export function createLogger(tag: string = LOG_TAG): CoreLogger {
     debug: (message: string, ...args: unknown[]) => logger.debug(message, ...args),
   }
 }
-
-/**
- * Default logger instance
- */
-export const defaultLogger = createLogger()
-
-/**
- * Create a silent logger (no output)
- * Useful for testing or when logging should be suppressed
- */
-export function createSilentLogger(): CoreLogger {
-  const noop = () => {}
-  return {
-    info: noop,
-    warn: noop,
-    error: noop,
-    success: noop,
-    debug: noop,
-  }
-}

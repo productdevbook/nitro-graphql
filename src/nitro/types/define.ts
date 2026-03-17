@@ -16,7 +16,8 @@ export type {
   ServerCodegenConfig,
 } from '../../core/types/codegen'
 
-export type Flatten<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
+// Re-export Flatten from core (canonical definition)
+export type { Flatten } from '../../core/types/define'
 
 export type DefineServerConfig<T extends NPMConfig = NPMConfig> = T['framework'] extends 'graphql-yoga'
   ? Partial<YogaServerOptions<H3Event, Partial<H3Event>>>

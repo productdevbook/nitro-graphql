@@ -41,14 +41,3 @@ export function ensureDir(path: string): void {
   mkdirSync(path, { recursive: true })
 }
 
-/**
- * Read file safely, returns undefined if file doesn't exist
- */
-export function readFileSafe(path: string): string | undefined {
-  try {
-    return readFileSync(path, 'utf-8')
-  }
-  catch {
-    return undefined
-  }
-}

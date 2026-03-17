@@ -14,11 +14,6 @@ import type { Source } from '@graphql-tools/utils'
 import type { GraphQLSchema } from 'graphql'
 
 /**
- * Scalar type mapping (can be string or input/output object)
- */
-export type ScalarType = string | { input: string, output: string }
-
-/**
  * Server codegen configuration
  * Extends @graphql-codegen/typescript + @graphql-codegen/typescript-resolvers
  */
@@ -130,10 +125,3 @@ export interface ExternalServiceCodegenConfig {
   }
 }
 
-/**
- * Schema loading options
- */
-export interface SchemaLoadOptions {
-  headers?: Record<string, string>
-  loaders?: unknown[]
-}

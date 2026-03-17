@@ -32,14 +32,6 @@ export const DEFAULT_RUNTIME_CONFIG: NitroGraphQLOptions = {
 }
 
 /**
- * Default ignore patterns for file watching
- */
-export const DEFAULT_IGNORE_PATTERNS: string[] = [
-  // Auto-generated files are ignored by default
-  // buildDir is already ignored by Nitro
-]
-
-/**
  * Default SDK configuration
  */
 export const DEFAULT_SDK_CONFIG = {
@@ -49,26 +41,6 @@ export const DEFAULT_SDK_CONFIG = {
 } as const
 
 /**
- * Default paths configuration
- * These are used as placeholders and resolved based on framework
- */
-export const DEFAULT_PATHS_CONFIG: { serverDir: string, clientDir: undefined, typesDir: undefined } = {
-  serverDir: 'server/graphql',
-  clientDir: undefined, // Determined by framework: 'app/graphql' for Nuxt, 'graphql' for Nitro
-  typesDir: undefined, // Derived from buildDir: '{buildDir}/types'
-}
-
-/**
  * Default TypeScript strict mode setting
  */
 export const DEFAULT_TYPESCRIPT_STRICT = true as const
-
-/**
- * Default watcher persistence setting
- */
-export const DEFAULT_WATCHER_PERSISTENT = true as const
-
-/**
- * Default watcher ignore initial setting
- */
-export const DEFAULT_WATCHER_IGNORE_INITIAL = true as const
