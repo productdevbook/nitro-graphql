@@ -14,7 +14,7 @@
     "graphql-yoga": "^5.18.1",
     "nitro-graphql": "^2.0.0-beta.72",
     "nuxt": "npm:nuxt-nightly@5x",
-    "vue": "^3.5.29",
+    "vue": "^3.5.30",
     "vue-router": "^5.0.3"
   },
   "devDependencies": {

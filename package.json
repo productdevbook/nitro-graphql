@@ -2,7 +2,7 @@
   "name": "nitro-graphql",
   "type": "module",
   "version": "2.0.0-beta.72",
-  "packageManager": "pnpm@10.31.0",
+  "packageManager": "pnpm@10.32.1",
   "description": "GraphQL integration for Nitro",
   "license": "MIT",
   "repository": {
@@ -141,7 +141,7 @@
     "build:native": "cd native && napi build --platform --release --esm",
     "dev": "tsdown --watch",
     "bumpp": "bumpp package.json native/package.json native/npm/*/package.json",
-    "release": "pnpm build && pnpm bumpp",
+    "release": "tsdown && pnpm bumpp",
     "playground:nitro": "cd playgrounds/nitro && pnpm install && pnpm dev",
     "playground:nuxt": "cd playgrounds/nuxt && pnpm install && pnpm dev",
     "playground:federation": "cd playgrounds/federation && pnpm install && pnpm dev",

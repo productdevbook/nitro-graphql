@@ -2,7 +2,7 @@
   "name": "nitro-app",
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@10.31.0",
+  "packageManager": "pnpm@10.32.1",
   "scripts": {
     "build": "vite build",
     "dev": "vite dev",
@@ -12,7 +12,7 @@
     "graphql": "^16.13.1",
     "graphql-yoga": "^5.18.1",
     "nitro-graphql": "^2.0.0-beta.72",
-    "rolldown": "^1.0.0-rc.8"
+    "rolldown": "^1.0.0-rc.9"
   },
   "devDependencies": {
     "nitro": "^3.0.260311-beta",
