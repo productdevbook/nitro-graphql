@@ -67,21 +67,22 @@ export function getExtendSources(nitro: Nitro): ExtendSource[] | undefined {
  * Scan local GraphQL files (schemas, resolvers, directives, documents)
  * This is the low-level scan function - use performGraphQLScan for full workflow
  * Creates a single ScanContext and reuses it across all scanners
+ *
+ * IMPORTANT: Results are collected first, then assigned atomically to nitro.scan*
+ * to prevent race conditions with the Rolldown dev watcher which reads these
+ * arrays when generating virtual modules.
  */
 export async function scanLocalFiles(nitro: Nitro): Promise<ScanResult> {
   const ctx = createScanContextFromNitro(nitro)
 
-  // Scan directives first
+  // Scan directives first (needed for directive schemas)
   const directivesResult = await scanDirectivesCore(ctx)
-  nitro.scanDirectives = directivesResult.items
 
-  // Generate directive schemas and write to .graphql/directives.graphql
+  // Generate directive schemas
   const directiveSchemas = await generateDirectiveSchemas(directivesResult.items, nitro.graphql.buildDir)
-  nitro.graphql.directiveSchemas = directiveSchemas
 
   // Scan schemas
   const schemasResult = await scanSchemasCore(ctx)
-  nitro.scanSchemas = schemasResult.items
 
   // Scan documents and resolvers in parallel (independent operations)
   const [docsResult, resolversResult] = await Promise.all([
@@ -91,6 +92,11 @@ export async function scanLocalFiles(nitro: Nitro): Promise<ScanResult> {
     }),
     scanResolversCore(ctx),
   ])
+
+  // Assign all results atomically to avoid race conditions with dev watcher
+  nitro.scanDirectives = directivesResult.items
+  nitro.graphql.directiveSchemas = directiveSchemas
+  nitro.scanSchemas = schemasResult.items
   nitro.scanDocuments = docsResult.items
   nitro.scanResolvers = resolversResult.items
 
@@ -142,11 +148,12 @@ export async function performGraphQLScan(nitro: Nitro, options: ScanOptions = {}
   const scanLocal = shouldScanLocalFiles(nitro)
   const extendSources = getExtendSources(nitro)
 
-  // Skip rescan when using skipLocalScan with extends
-  // The dev:start hook triggers rescan but Nitro doesn't await async hooks.
-  // This causes a race condition where tests/code run before rescan completes.
-  // Since extend packages don't change during dev, skipping rescan is correct.
-  if (isRescan && !scanLocal && extendSources?.length) {
+  // Skip rescan entirely when extend sources are configured.
+  // The dev:start hook triggers rescan but Nitro doesn't await async hooks,
+  // causing a race condition: scanLocalFiles resets nitro.scan* arrays while
+  // Rolldown reads them to generate virtual modules. Since extend packages
+  // don't change during dev, the initial scan results remain valid.
+  if (isRescan && extendSources?.length) {
     return
   }
 
