@@ -38,8 +38,9 @@ export { importedConfig }
       configNames.push('localConfig')
     }
 
-    // Merge configs with defu (later configs have higher priority)
-    // defu merges right-to-left, so we reverse to give local config highest priority
+    // defu(a, b, c) → a wins over b wins over c (left-to-right priority)
+    // Array is built [extend0, extend1, ..., localConfig], so reverse to get:
+    // defu(localConfig, ..., extend1, extend0) → local config has highest priority
     const mergeArgs = configNames.reverse().join(', ')
 
     return `${imports.join('\n')}

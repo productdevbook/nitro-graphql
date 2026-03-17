@@ -15,6 +15,7 @@ let cachedH3Handler: EventHandler | null = null
 
 export default defineEventHandler(async (event) => {
   if (!serverPromise) {
+    // BASE_SCHEMA_DEF: empty Query/Mutation types for `extend type` syntax
     serverPromise = createApolloServerInstance({
       schemas: [BASE_SCHEMA_DEF, ...schemas],
       resolvers,

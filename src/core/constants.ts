@@ -144,7 +144,8 @@ export const FILE_SCHEMA_GRAPHQL = 'schema.graphql' as const
 export const FILE_SCHEMA_TS = 'schema.ts' as const
 export const FILE_CONFIG_TS = 'config.ts' as const
 export const FILE_CONTEXT_DTS = 'context.d.ts' as const
-export const FILE_CONTEXT_TS = 'context.ts' as const // Old, deprecated
+/** @deprecated Use FILE_CONTEXT_DTS instead */
+export const FILE_CONTEXT_TS = 'context.ts' as const
 export const FILE_INDEX_TS = 'index.ts' as const
 export const FILE_OFETCH_TS = 'ofetch.ts' as const
 export const FILE_SDK_TS = 'sdk.ts' as const

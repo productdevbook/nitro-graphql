@@ -45,7 +45,7 @@ async function generateExternalServiceTypes(
 
   const placeholders = { ...getDefaultPaths(nitro), serviceName: service.name } as PathPlaceholders
   const typesConfig = getTypesConfig(nitro)
-  const resolvedSdkConfig = getSdkConfig(nitro)
+  const sdkFileConfig = getSdkConfig(nitro)
 
   // Write external types
   const typesPath = resolveFilePath(
@@ -63,8 +63,8 @@ async function generateExternalServiceTypes(
 
   // Write external SDK
   const sdkPath = resolveFilePath(
-    service.paths?.sdk ?? resolvedSdkConfig.external,
-    resolvedSdkConfig.enabled,
+    service.paths?.sdk ?? sdkFileConfig.external,
+    sdkFileConfig.enabled,
     true,
     '{clientDir}/{serviceName}/sdk.ts',
     placeholders,

@@ -36,10 +36,15 @@ declare module 'nitro/types' {
     graphql: {
       /** Immutable scan state — the single source of truth for all scanned files */
       state: GraphQLScanState
+      /** Absolute path to GraphQL build directory (e.g. /project/.graphql) */
       buildDir: string
+      /** Directories watched for file changes in dev mode */
       watchDirs: string[]
+      /** Absolute path to client GraphQL directory (e.g. /project/graphql) */
       clientDir: string
+      /** Absolute path to server GraphQL directory (e.g. /project/server/graphql) */
       serverDir: string
+      /** Relative paths (from rootDir) — used for display and config resolution */
       dir: {
         build: string
         client: string

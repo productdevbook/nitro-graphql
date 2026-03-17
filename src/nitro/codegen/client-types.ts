@@ -87,7 +87,7 @@ async function generateMainClientTypes(
 
   const placeholders = getDefaultPaths(nitro)
   const typesConfig = getTypesConfig(nitro)
-  const resolvedSdkConfig = getSdkConfig(nitro)
+  const sdkFileConfig = getSdkConfig(nitro)
   const subscriptionsEnabled = nitro.options.graphql?.subscriptions?.enabled ?? false
 
   // Write client types
@@ -103,7 +103,7 @@ async function generateMainClientTypes(
   const subscriptionCode = generateSubscriptionBuilder(docs, subscriptionsEnabled)
 
   // Write SDK (with optional subscription composables appended)
-  const sdkPath = resolveFilePath(resolvedSdkConfig.main, resolvedSdkConfig.enabled, true, '{clientDir}/default/sdk.ts', placeholders)
+  const sdkPath = resolveFilePath(sdkFileConfig.main, sdkFileConfig.enabled, true, '{clientDir}/default/sdk.ts', placeholders)
   if (sdkPath) {
     const sdkContent = subscriptionCode ? types.sdk + subscriptionCode : types.sdk
     writeFile(sdkPath, sdkContent)

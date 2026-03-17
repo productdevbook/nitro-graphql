@@ -12,7 +12,9 @@ export type { GraphQLScanState } from './augmentation'
 // Define types (resolver definitions, directive types, codegen re-exports)
 export type {
   ClientCodegenConfig,
+  /** @deprecated Use ClientCodegenConfig instead */
   CodegenClientConfig,
+  /** @deprecated Use ServerCodegenConfig instead */
   CodegenServerConfig,
   DefineDirectiveConfig,
   DefineServerConfig,
@@ -22,6 +24,7 @@ export type {
   DirectiveLocationName,
   ExternalServiceCodegenConfig,
   Flatten,
+  /** @deprecated Use SdkCodegenConfig instead */
   GenericSdkConfig,
   GraphQLArgumentType,
   GraphQLBaseType,

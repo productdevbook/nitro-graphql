@@ -1,3 +1,12 @@
+/**
+ * Path resolution and file generation control
+ *
+ * Handles two responsibilities:
+ * 1. Path placeholders: resolve `{buildDir}`, `{serverDir}` etc. in config strings
+ * 2. Generation control: determine which files to generate based on config hierarchy
+ *    (file-level → category-level → top-level enabled/disabled)
+ */
+
 import type { Nitro } from 'nitro/types'
 import type {
   FileGenerationConfig,

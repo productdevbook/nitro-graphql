@@ -76,7 +76,8 @@ export async function generateServerTypes(
     // Add inline directive schemas (generated from .directive.ts files)
     const directiveSchemas = nitro.graphql.state.directiveSchemas
     if (directiveSchemas) {
-      validSchemas.push('<directives>')
+      // Sentinel path for inline directive schemas (not a real file path)
+      validSchemas.push('<inline-directives>')
       strings.push(directiveSchemas)
     }
 

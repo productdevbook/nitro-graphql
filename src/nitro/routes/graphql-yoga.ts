@@ -22,8 +22,8 @@ let server: CoreServerInstance | null = null
 
 export default defineEventHandler(async (event) => {
   if (!server) {
-    // Use core server factory - same code as CLI uses
-    // Always add BASE_SCHEMA first to support extend types
+    // BASE_SCHEMA_DEF provides empty Query/Mutation types required for
+    // `extend type Query { ... }` syntax to work in user schemas
     server = await createYogaServer({
       schemas: [BASE_SCHEMA_DEF, ...schemas],
       resolvers,
