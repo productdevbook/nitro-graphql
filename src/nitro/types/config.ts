@@ -235,9 +235,7 @@ export interface PathsConfig {
  * Watch mode configuration
  */
 export interface WatchConfig {
-  /** Enable watch mode */
-  enabled?: boolean
-  /** Debounce time in ms */
+  /** Debounce time in ms for file change detection */
   debounce?: number
 }
 

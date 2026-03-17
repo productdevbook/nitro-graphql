@@ -146,7 +146,7 @@ export async function generateClientTypesCore(
       { typescript: {} },
       { typescriptOperations: {} },
     ]
-    const pluginMap: Record<string, { plugin: any }> = {
+    const pluginMap: Record<string, { plugin: unknown }> = {
       pluginContent: { plugin: pluginContent },
       typescript: { plugin: typescriptPlugin },
       typescriptOperations: { plugin: typescriptOperations },
@@ -176,7 +176,7 @@ export async function generateClientTypesCore(
       ...(useTypedDocumentString ? [{ typedDocumentString: {} }] : []),
       { typescriptGenericSdk: {} },
     ]
-    const sdkPluginMap: Record<string, { plugin: any }> = {
+    const sdkPluginMap: Record<string, { plugin: unknown }> = {
       pluginContent: { plugin: pluginContent },
       ...(useTypedDocumentString && { typedDocumentString: { plugin: typedDocumentStringPlugin } }),
       typescriptGenericSdk: { plugin: typescriptGenericSdk },

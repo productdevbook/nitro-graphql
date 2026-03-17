@@ -33,7 +33,7 @@ declare module '#nitro-graphql/debug-info' {
     isDev: boolean
     framework: string
     graphqlFramework?: string
-    federation?: any
+    federation?: Record<string, unknown>
     scanned: {
       schemas: number
       schemaFiles: string[]

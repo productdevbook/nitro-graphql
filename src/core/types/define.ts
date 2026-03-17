@@ -47,19 +47,22 @@ type GraphQLModifier = '' | '!' | '[]' | '[!]' | '[!]!'
 // GraphQL type with all possible combinations via template literal
 export type GraphQLArgumentType = `${GraphQLScalarType}${GraphQLModifier}` | `${GraphQLBaseType}${GraphQLModifier}` | (string & {})
 
+/** Allowed default values for directive arguments */
+export type DirectiveDefaultValue = string | number | boolean | null
+
 export interface DirectiveArgument<T extends GraphQLArgumentType = GraphQLArgumentType> {
   /**
    * GraphQL type for the argument
    * @example 'String', 'Int!', '[String!]!', 'DateTime', 'JSON'
    */
   type: T
-  defaultValue?: any
+  defaultValue?: DirectiveDefaultValue
   description?: string
 }
 
 export interface DirectiveArg {
   type: GraphQLArgumentType
-  defaultValue?: any
+  defaultValue?: DirectiveDefaultValue
   description?: string
 }
 
@@ -78,7 +81,7 @@ export interface DefineDirectiveConfig {
   locations: ReadonlyArray<DirectiveLocationName>
   args?: Record<string, {
     type: GraphQLArgumentType
-    defaultValue?: any
+    defaultValue?: DirectiveDefaultValue
     description?: string
   }>
   description?: string

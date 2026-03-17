@@ -4,6 +4,18 @@
  */
 
 import type { ResolverImport, ScanContext, ScannedResolver, ScanResult } from '../types/scanning'
+
+/** Minimal oxc-parser AST node for export/declaration traversal */
+interface OxcASTNode {
+  type: string
+  declaration?: OxcASTNode
+  declarations?: OxcASTNode[]
+  callee?: OxcASTNode
+  init?: OxcASTNode
+  id?: OxcASTNode
+  name?: string
+  body?: OxcASTNode[]
+}
 import { readFile } from 'node:fs/promises'
 import consola from 'consola'
 import { parseSync } from 'oxc-parser'
@@ -125,7 +137,7 @@ export async function parseSingleFile(
  */
 function parseExports(
   filePath: string,
-  program: { body: any[] },
+  program: { body: OxcASTNode[] },
   config: ASTScanConfig,
 ): { resolver: ScannedResolver, warnings: string[] } {
   const warnings: string[] = []
