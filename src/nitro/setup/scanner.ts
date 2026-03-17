@@ -86,7 +86,7 @@ export async function scanLocalFiles(nitro: Nitro): Promise<ScanResult> {
   // Scan documents and resolvers in parallel (independent operations)
   const [docsResult, resolversResult] = await Promise.all([
     scanDocumentsCore(ctx, {
-      externalServices: nitro.options.graphql?.externalServices as any,
+      externalServices: nitro.options.graphql?.externalServices,
       clientDirRelative: relative(nitro.options.rootDir, nitro.graphql.clientDir),
     }),
     scanResolversCore(ctx),
@@ -108,7 +108,7 @@ export async function scanLocalFiles(nitro: Nitro): Promise<ScanResult> {
 export async function scanDocumentsOnly(nitro: Nitro): Promise<number> {
   const ctx = createScanContextFromNitro(nitro)
   const result = await scanDocumentsCore(ctx, {
-    externalServices: nitro.options.graphql?.externalServices as any,
+    externalServices: nitro.options.graphql?.externalServices,
     clientDirRelative: relative(nitro.options.rootDir, nitro.graphql.clientDir),
   })
   nitro.scanDocuments = result.items

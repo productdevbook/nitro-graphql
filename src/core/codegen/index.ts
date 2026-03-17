@@ -24,6 +24,7 @@ export type {
 
 // Plugin
 export * from './plugin'
+export { typedDocumentStringPlugin } from './plugins/typed-document-string'
 
 // Runtime code generation
 export {

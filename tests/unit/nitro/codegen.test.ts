@@ -1,7 +1,7 @@
 /**
  * Unit tests for Nitro GraphQL Type Generation
  *
- * Tests the codegen module at src/nitro/codegen.ts which:
+ * Tests the codegen modules at src/nitro/codegen/ which:
  * - Generates server-side resolver types from GraphQL schemas
  * - Generates client-side operation types from GraphQL documents
  * - Generates types and SDKs for external GraphQL services

@@ -111,7 +111,8 @@ export async function createYogaServer(options: CoreServerOptions): Promise<Core
   }, importedConfig))
 
   return {
-    fetch: (request, context) => Promise.resolve(yoga.fetch(request as any, context as any)),
+    // Yoga's fetch expects its own Request/ServerContext types which differ from standard Web API
+    fetch: (request, context) => Promise.resolve(yoga.fetch(request as unknown as Request, context as Record<string, unknown>)),
     schema,
   }
 }

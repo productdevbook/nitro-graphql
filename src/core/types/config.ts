@@ -4,6 +4,7 @@
  */
 
 import type { GraphQLFramework } from '../constants'
+import type { ClientCodegenConfig, ExternalServiceCodegenConfig, SdkCodegenConfig, ServerCodegenConfig } from './codegen'
 
 /**
  * Core logger interface
@@ -19,14 +20,15 @@ export interface CoreLogger {
 
 /**
  * GraphQL codegen configuration
+ * Uses the authoritative types from codegen.ts
  */
 export interface CoreCodegenConfig {
   /** Server-side codegen options */
-  server?: Record<string, unknown>
+  server?: ServerCodegenConfig
   /** Client-side codegen options */
-  client?: Record<string, unknown>
+  client?: ClientCodegenConfig
   /** Client SDK codegen options */
-  clientSDK?: Record<string, unknown>
+  clientSDK?: SdkCodegenConfig
 }
 
 /**
@@ -45,18 +47,9 @@ export interface CoreSecurityConfig {
 
 /**
  * External GraphQL service configuration
+ * Extends the core codegen type with path overrides
  */
-export interface CoreExternalService {
-  /** Unique service name */
-  name: string
-  /** GraphQL schema URL or file path */
-  schema: string
-  /** GraphQL endpoint URL */
-  endpoint: string
-  /** Headers for schema introspection */
-  headers?: Record<string, string> | (() => Record<string, string>)
-  /** Document patterns for this service */
-  documents?: string[]
+export interface CoreExternalService extends ExternalServiceCodegenConfig {
   /** Service-specific path overrides */
   paths?: {
     sdk?: string

@@ -13,7 +13,7 @@
 import type { Nitro } from 'nitro/types'
 import { resolve } from 'pathe'
 import { describe, expect, it, vi } from 'vitest'
-import { graphqlConfig, serverResolvers, serverSchemas, validationSchemas } from '../../../src/nitro/virtual/generators'
+import { graphqlConfig, serverResolvers, serverSchemas, validationSchemas } from '../../../src/nitro/virtual'
 
 const SCHEMAS_EXPORT_RE = /export const schemas = \[([\s\S]*?)\];/
 const RESOLVERS_EXPORT_RE = /export const resolvers = \[([\s\S]*?)\]/

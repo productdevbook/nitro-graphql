@@ -4,7 +4,7 @@
  */
 
 import type { Nitro } from 'nitro/types'
-import { generateClientTypes, generateServerTypes } from '../codegen'
+import { generateClientTypes, generateServerTypes } from '../codegen/index'
 import { isServerEnabled } from './scanner'
 
 /**

@@ -28,7 +28,7 @@ import type { DefineDirectiveConfig, DefineServerConfig, DirectiveDefinition, Fl
 export function defineSchema<T extends Partial<Record<keyof ResolversTypes, StandardSchemaV1>>>(
   config: T,
 ): Flatten<T> {
-  return config as any
+  return config as Flatten<T>
 }
 
 /**

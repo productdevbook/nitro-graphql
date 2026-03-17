@@ -26,7 +26,7 @@ export default defineConfig({
         'src/cli/**', // CLI tested manually
         'src/stubs/**', // Stub files
         'src/core/types/**', // Type definitions only
-        'src/nitro/types.ts', // Type definitions only
+        'src/nitro/types/**', // Type definitions only
         'src/nitro/routes/**', // Route handlers tested via integration
         'src/nitro/virtual/**', // Virtual module generators
         'src/nuxt.ts', // Nuxt-specific (needs Nuxt to test)

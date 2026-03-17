@@ -105,7 +105,7 @@ export const NitroAdapter: FrameworkAdapter<Nitro> & ScanAdapter<Nitro> = {
 
   scanDocuments(nitro: Nitro): Promise<ScanResult<string>> {
     return scanDocumentsCore(createScanContextFromNitro(nitro), {
-      externalServices: nitro.options.graphql?.externalServices as any,
+      externalServices: nitro.options.graphql?.externalServices,
       clientDirRelative: relative(nitro.options.rootDir, nitro.graphql.clientDir),
     })
   },

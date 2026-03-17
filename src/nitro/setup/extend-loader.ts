@@ -23,7 +23,7 @@ const logger = consola.withTag(LOG_TAG)
  */
 export async function resolveExtendDirs(nitro: Nitro): Promise<string[]> {
   const extend = nitro.options.graphql?.extend
-  return coreResolveExtendDirs(extend as any, nitro.options.rootDir)
+  return coreResolveExtendDirs(extend, nitro.options.rootDir)
 }
 
 interface ResolveExtendOptions {
@@ -40,7 +40,7 @@ export async function resolveExtendConfig(nitro: Nitro, options: ResolveExtendOp
   }
 
   // Use core to scan all sources
-  const result = await scanAllExtendSources(extend as any, nitro.options.rootDir)
+  const result = await scanAllExtendSources(extend, nitro.options.rootDir)
 
   // Apply results to Nitro state
   const stats = applyExtendResult(nitro, result)

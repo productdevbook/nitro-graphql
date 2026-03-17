@@ -1,69 +1,13 @@
 /**
- * Nitro GraphQL type definitions
- * Merged from types/index.ts, types/define.ts, types/standard-schema.ts
+ * Configuration types for Nitro GraphQL
+ * NitroGraphQLOptions, ExternalGraphQLService, and all sub-configs
  */
 
-import type { NPMConfig } from '#graphql/server'
-import type { ApolloServerOptions } from '@apollo/server'
-import type { TypeScriptPluginConfig } from '@graphql-codegen/typescript'
-import type { plugin as typescriptGenericSdk } from '@graphql-codegen/typescript-generic-sdk'
-import type { TypeScriptDocumentsPluginConfig } from '@graphql-codegen/typescript-operations'
-import type { TypeScriptResolversPluginConfig } from '@graphql-codegen/typescript-resolvers'
 import type { IResolvers } from '@graphql-tools/utils'
-import type { YogaServerOptions } from 'graphql-yoga'
 import type { ESMCodeGenOptions } from 'knitwork'
-import type { H3Event } from 'nitro/h3'
+import type { CodegenClientConfig, GenericSdkConfig, CodegenServerConfig } from './define'
 
-// ==================== STANDARD SCHEMA ====================
-
-// Re-export StandardSchemaV1 from core (canonical definition)
-export type { StandardSchemaV1 } from '../core/types/standard-schema'
-
-// ==================== DEFINE TYPES ====================
-
-export type Flatten<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
-
-export type DefineServerConfig<T extends NPMConfig = NPMConfig> = T['framework'] extends 'graphql-yoga'
-  ? Partial<YogaServerOptions<H3Event, Partial<H3Event>>>
-  : T['framework'] extends 'apollo-server'
-    ? Partial<ApolloServerOptions<H3Event>>
-    : Partial<YogaServerOptions<H3Event, Partial<H3Event>>> | Partial<ApolloServerOptions<H3Event>>
-
-// Re-export directive types from core (canonical definitions)
-export type {
-  DefineDirectiveConfig,
-  DirectiveArg,
-  DirectiveArgument,
-  DirectiveDefinition,
-  DirectiveLocationName,
-  GraphQLArgumentType,
-  GraphQLBaseType,
-  GraphQLScalarType,
-} from '../core/types/define'
-
-// ==================== CODEGEN TYPES ====================
-
-export type CodegenServerConfig = TypeScriptPluginConfig & TypeScriptResolversPluginConfig
-
-// CODEGEN
-type DocumentModeConfig = Pick<Parameters<typeof typescriptGenericSdk>[2], 'documentMode'>
-type DocumentModeEnum = NonNullable<DocumentModeConfig['documentMode']>
-type DocumentModeType = `${DocumentModeEnum}`
-
-export type GenericSdkConfig = Omit<Parameters<typeof typescriptGenericSdk>[2], 'documentMode'> & {
-  documentMode?: DocumentModeType
-}
-
-export type CodegenClientConfig = TypeScriptPluginConfig & TypeScriptDocumentsPluginConfig & {
-  endpoint?: string
-  /**
-   * Generate TypedDocumentNode exports for urql/Apollo Client compatibility.
-   * When enabled, generates typed document constants that can be used with
-   * any GraphQL client that supports TypedDocumentNode.
-   * @default false
-   */
-  typedDocumentNode?: boolean
-}
+// ==================== SCANNING TYPES ====================
 
 interface IESMImport {
   name: string
@@ -77,55 +21,15 @@ export interface GenImport {
   options?: ESMCodeGenOptions
 }
 
-// ==================== NITRO MODULE AUGMENTATION ====================
+// ==================== FILE GENERATION ====================
 
-declare module 'nitro/types' {
-  interface Nitro {
-    scanSchemas: string[]
-    scanDocuments: string[]
-    scanResolvers: GenImport[]
-    scanDirectives: GenImport[]
-    graphql: {
-      buildDir: string
-      watchDirs: string[]
-      clientDir: string
-      serverDir: string
-      dir: {
-        build: string
-        client: string
-        server: string
-      }
-      /** Inline directive schemas generated from .directive.ts files */
-      directiveSchemas: string | null
-      /** Resolved extend paths from manifests (populated during setup) */
-      resolvedExtend?: {
-        schemas: string[]
-        resolvers: string[]
-        directives: string[]
-      }
-      /** Config paths from extend packages (for merging) */
-      extendConfigs: string[]
-      /** Schema.ts paths from extend packages (for merging) */
-      extendSchemas: string[]
-    }
-  }
-}
-
-declare module 'nitro/types' {
-  interface NitroOptions {
-    graphql?: NitroGraphQLOptions
-  }
-
-  interface NitroRuntimeConfig {
-    graphql?: NitroGraphQLOptions
-  }
-
-  interface NitroConfig {
-    graphql?: NitroGraphQLOptions
-  }
-}
-
-// ==================== CONFIGURATION TYPES ====================
+/**
+ * File generation control:
+ * - false: Do not generate this file
+ * - true: Generate at default location
+ * - string: Generate at custom path (supports placeholders: {serviceName}, {buildDir}, {rootDir}, {framework})
+ */
+export type FileGenerationConfig = boolean | string
 
 /**
  * Service-specific path overrides for external GraphQL services
@@ -139,6 +43,8 @@ export interface ExternalServicePaths {
   /** Ofetch client file path (overrides global clientUtils.ofetch config) */
   ofetch?: FileGenerationConfig
 }
+
+// ==================== EXTERNAL SERVICES ====================
 
 export interface ExternalGraphQLService {
   /** Unique name for this service (used for file naming and type generation) */
@@ -177,6 +83,8 @@ export interface ExternalGraphQLService {
   paths?: ExternalServicePaths
 }
 
+// ==================== SUB-CONFIGS ====================
+
 export interface FederationConfig {
   /** Enable Apollo Federation subgraph support */
   enabled: boolean
@@ -187,14 +95,6 @@ export interface FederationConfig {
   /** Service URL for federation gateway */
   serviceUrl?: string
 }
-
-/**
- * File generation control:
- * - false: Do not generate this file
- * - true: Generate at default location
- * - string: Generate at custom path (supports placeholders: {serviceName}, {buildDir}, {rootDir}, {framework})
- */
-export type FileGenerationConfig = boolean | string
 
 /**
  * SDK files configuration
@@ -383,6 +283,41 @@ export interface RuntimeConfig {
   }
 }
 
+// ==================== EXTEND SOURCES ====================
+
+/**
+ * Explicit paths extend source (legacy)
+ */
+export interface ExplicitPathsExtendSource {
+  /** Explicit manifest path */
+  manifest?: string
+  /** Explicit resolver paths (legacy, prefer manifest) */
+  resolvers?: string | string[]
+  /** Explicit schema paths (legacy, prefer manifest) */
+  schemas?: string | string[]
+}
+
+/**
+ * Local directory extend source
+ * For extending from local directories (e.g., Nuxt layers, monorepo packages)
+ */
+export interface LocalDirExtendSource {
+  /** Server GraphQL directory path (for schemas, resolvers, directives) */
+  serverDir?: string
+  /** Client GraphQL directory path (for documents) */
+  clientDir?: string
+}
+
+/**
+ * Extend source - package path or detailed config
+ * - string: package name or local path, requires nitro-graphql.config.ts in package root
+ * - LocalDirExtendSource: local directories with serverDir/clientDir
+ * - ExplicitPathsExtendSource: explicit paths (legacy)
+ */
+export type ExtendSource = string | LocalDirExtendSource | ExplicitPathsExtendSource
+
+// ==================== MAIN OPTIONS ====================
+
 export interface NitroGraphQLOptions {
   framework?: 'graphql-yoga' | 'apollo-server'
   /**
@@ -502,34 +437,3 @@ export interface NitroGraphQLOptions {
    */
   runtime?: boolean | RuntimeConfig
 }
-
-/**
- * Explicit paths extend source (legacy)
- */
-export interface ExplicitPathsExtendSource {
-  /** Explicit manifest path */
-  manifest?: string
-  /** Explicit resolver paths (legacy, prefer manifest) */
-  resolvers?: string | string[]
-  /** Explicit schema paths (legacy, prefer manifest) */
-  schemas?: string | string[]
-}
-
-/**
- * Local directory extend source
- * For extending from local directories (e.g., Nuxt layers, monorepo packages)
- */
-export interface LocalDirExtendSource {
-  /** Server GraphQL directory path (for schemas, resolvers, directives) */
-  serverDir?: string
-  /** Client GraphQL directory path (for documents) */
-  clientDir?: string
-}
-
-/**
- * Extend source - package path or detailed config
- * - string: package name or local path, requires nitro-graphql.config.ts in package root
- * - LocalDirExtendSource: local directories with serverDir/clientDir
- * - ExplicitPathsExtendSource: explicit paths (legacy)
- */
-export type ExtendSource = string | LocalDirExtendSource | ExplicitPathsExtendSource

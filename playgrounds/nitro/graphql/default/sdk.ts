@@ -5,7 +5,15 @@
 /* prettier-ignore */
 import type * as Types from '#graphql/client';
 
+import type { DocumentTypeDecoration } from '@graphql-typed-document-node/core';
 import type { ExecutionResult } from 'graphql';
+class TypedDocumentString<TResult, TVariables> extends String implements DocumentTypeDecoration<TResult, TVariables> {
+  __apiType?: NonNullable<DocumentTypeDecoration<TResult, TVariables>['__apiType']>;
+  private __value: string;
+  public __meta__?: Record<string, any> | undefined;
+  constructor(value: string, __meta__?: Record<string, any>) { super(value); this.__value = value; this.__meta__ = __meta__; }
+  override toString(): string & DocumentTypeDecoration<TResult, TVariables> { return this.__value as unknown as string & DocumentTypeDecoration<TResult, TVariables>; }
+}
 
 export const HelloDocument = /*#__PURE__*/ new TypedDocumentString(`
     query Hello {

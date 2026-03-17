@@ -3,7 +3,7 @@ import type { Nitro } from 'nitro/types'
 import { readFile } from 'node:fs/promises'
 import { parse } from 'graphql'
 import { NitroAdapter } from './adapter'
-import { registerAllVirtualModules } from './virtual/generators'
+import { registerAllVirtualModules } from './virtual'
 
 const GRAPHQL_FILE_RE = /\.(?:graphql|gql)$/i
 

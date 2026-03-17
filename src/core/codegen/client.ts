@@ -24,6 +24,7 @@ import { Kind, parse } from 'graphql'
 import { DEFAULT_GRAPHQL_SCALARS } from '../constants'
 import { capitalize } from '../utils/string'
 import { pluginContent } from './plugin'
+import { typedDocumentStringPlugin } from './plugins/typed-document-string'
 
 export { loadGraphQLDocuments } from './document-loader'
 // Re-export from split modules for backward compatibility
@@ -108,7 +109,9 @@ export async function generateClientTypesCore(
   }
 
   const mergedConfig = defu(config, DEFAULT_CLIENT_CODEGEN_CONFIG)
-  const mergedSdkConfig = defu(sdkConfig, mergedConfig)
+
+  /** SDK config inherits from merged client config, with user overrides taking precedence */
+  const resolvedSdkConfig = defu(sdkConfig, mergedConfig)
 
   try {
     // Schema-only generation (no documents)
@@ -137,9 +140,7 @@ export async function generateClientTypesCore(
     }
 
     // Full generation with documents
-    // Enable typed-document-node plugin when explicitly requested OR when documentMode is 'string'
-    // The SDK plugin generates `new TypedDocumentString(...)` which needs the class definition
-    const enableTypedDocumentNode = config.typedDocumentNode === true || mergedConfig.documentMode === 'string'
+    const enableTypedDocumentNode = config.typedDocumentNode === true
 
     const plugins: Array<Record<string, object>> = [
       { pluginContent: {} },
@@ -167,22 +168,31 @@ export async function generateClientTypesCore(
     })
 
     const typesPath = virtualTypesPath || (serviceName ? `#graphql/client/${serviceName}` : '#graphql/client')
+
+    // Build SDK plugins — include TypedDocumentString plugin when documentMode is 'string'
+    // so the class definition is part of the codegen pipeline instead of raw string prepend
+    const useTypedDocumentString = mergedConfig.documentMode === 'string'
+    const sdkPlugins: Array<Record<string, object>> = [
+      { pluginContent: {} },
+      ...(useTypedDocumentString ? [{ typedDocumentString: {} }] : []),
+      { typescriptGenericSdk: {} },
+    ]
+    const sdkPluginMap: Record<string, { plugin: any }> = {
+      pluginContent: { plugin: pluginContent },
+      ...(useTypedDocumentString && { typedDocumentString: { plugin: typedDocumentStringPlugin } }),
+      typescriptGenericSdk: { plugin: typescriptGenericSdk },
+    }
+
     const sdkOutput = await preset.buildGeneratesSection({
       baseOutputDir: outputPath || 'client-types.generated.ts',
       schema: parse(schemaSDL),
       documents: [...documents],
-      config: mergedSdkConfig,
+      config: resolvedSdkConfig,
       presetConfig: {
         typesPath,
       },
-      plugins: [
-        { pluginContent: {} },
-        { typescriptGenericSdk: {} },
-      ],
-      pluginMap: {
-        pluginContent: { plugin: pluginContent },
-        typescriptGenericSdk: { plugin: typescriptGenericSdk },
-      },
+      plugins: sdkPlugins,
+      pluginMap: sdkPluginMap,
     })
 
     const results = await Promise.all(

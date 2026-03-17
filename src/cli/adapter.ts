@@ -5,7 +5,7 @@
  * Converts CLI context to core types for shared functionality.
  */
 
-import type { CoreCodegenConfig, CoreConfig, CoreContext, CoreLogger, ScanContext } from '../core/types'
+import type { CoreConfig, CoreContext, CoreLogger, ScanContext } from '../core/types'
 import type { FrameworkAdapter } from '../core/types/adapter'
 import type { CLIContext } from './index'
 import consola from 'consola'
@@ -48,20 +48,8 @@ export const CLIAdapter: FrameworkAdapter<CLIContext> = {
         endpoint: ctx.config.endpoint?.graphql,
         security: ctx.config.security,
         federation: ctx.config.federation,
-        externalServices: ctx.config.externalServices?.map(s => ({
-          name: s.name,
-          endpoint: s.endpoint,
-          schema: (Array.isArray(s.schema) ? s.schema[0] : s.schema) || s.endpoint,
-          headers: s.headers,
-          documents: s.documents,
-          paths: s.paths
-            ? {
-                sdk: typeof s.paths.sdk === 'string' ? s.paths.sdk : undefined,
-                types: typeof s.paths.types === 'string' ? s.paths.types : undefined,
-              }
-            : undefined,
-        })),
-        codegen: ctx.config.codegen as CoreCodegenConfig,
+        externalServices: ctx.config.externalServices,
+        codegen: ctx.config.codegen,
       },
       logger: createCLILogger(),
       ignorePatterns: ctx.config.ignore || [],
