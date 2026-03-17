@@ -7,6 +7,7 @@ import { schemas } from '#nitro-graphql/server-schemas'
 import type { EventHandler } from 'nitro/h3'
 import { startServerAndCreateH3Handler } from 'nitro-graphql/apollo'
 import { defineEventHandler } from 'nitro/h3'
+import { BASE_SCHEMA_DEF } from '../../core/schema/builder'
 import { createApolloServerInstance } from '../../core/server/apollo'
 
 let serverPromise: Promise<import('@apollo/server').ApolloServer<BaseContext>> | null = null
@@ -15,7 +16,7 @@ let cachedH3Handler: EventHandler | null = null
 export default defineEventHandler(async (event) => {
   if (!serverPromise) {
     serverPromise = createApolloServerInstance({
-      schemas,
+      schemas: [BASE_SCHEMA_DEF, ...schemas],
       resolvers,
       directives,
       moduleConfig,

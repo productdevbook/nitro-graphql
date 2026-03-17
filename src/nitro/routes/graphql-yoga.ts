@@ -12,7 +12,8 @@ import { directives } from '#nitro-graphql/server-directives'
 import { resolvers } from '#nitro-graphql/server-resolvers'
 import { schemas } from '#nitro-graphql/server-schemas'
 import { defineEventHandler, getQuery } from 'nitro/h3'
-import { BASE_SCHEMA, createYogaServer } from '../../core/server/yoga'
+import { BASE_SCHEMA_DEF } from '../../core/schema/builder'
+import { createYogaServer } from '../../core/server/yoga'
 
 // Cache control header for playground HTML (1 month)
 const PLAYGROUND_CACHE_HEADER = 'public, max-age=2592000, stale-while-revalidate=86400'
@@ -24,7 +25,7 @@ export default defineEventHandler(async (event) => {
     // Use core server factory - same code as CLI uses
     // Always add BASE_SCHEMA first to support extend types
     server = await createYogaServer({
-      schemas: [BASE_SCHEMA, ...schemas],
+      schemas: [BASE_SCHEMA_DEF, ...schemas],
       resolvers,
       directives,
       moduleConfig,

@@ -21,5 +21,5 @@ export type {
 export type { CoreSecurityConfig } from '../types/config'
 
 // Server factories
-export { apolloSandboxHtml, createYogaServer, BASE_SCHEMA as YOGA_BASE_SCHEMA } from './yoga'
+export { apolloSandboxHtml, createYogaServer } from './yoga'
 export { APOLLO_USER_FACING_ERROR_CODES, createApolloServerInstance } from './apollo'

@@ -45,3 +45,16 @@ export interface CoreServerInstance {
  * Factory function type for creating GraphQL servers
  */
 export type ServerFactory = (options: CoreServerOptions) => Promise<CoreServerInstance>
+
+/**
+ * Resolve security config with safe defaults
+ * Used by both Yoga and Apollo server factories
+ */
+export function resolveSecurityDefaults(security?: CoreSecurityConfig): Required<CoreSecurityConfig> {
+  return {
+    introspection: security?.introspection ?? true,
+    playground: security?.playground ?? true,
+    maskErrors: security?.maskErrors ?? false,
+    disableSuggestions: security?.disableSuggestions ?? false,
+  }
+}

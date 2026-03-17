@@ -8,6 +8,7 @@
 import type { BaseContext } from '@apollo/server'
 import type { GraphQLFormattedError } from 'graphql'
 import type { CoreServerOptions } from './types'
+import { resolveSecurityDefaults } from './types'
 import { ApolloServer } from '@apollo/server'
 import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled'
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default'
@@ -53,12 +54,7 @@ export async function createApolloServerInstance(
     moduleConfig,
   })
 
-  const securityConfig = security || {
-    introspection: true,
-    playground: true,
-    maskErrors: false,
-    disableSuggestions: false,
-  }
+  const securityConfig = resolveSecurityDefaults(security)
 
   // Build plugins based on security config
   const plugins = securityConfig.playground

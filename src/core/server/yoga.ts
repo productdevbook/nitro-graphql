@@ -7,17 +7,10 @@
 
 import type { SchemaDefinition } from '../schema/builder'
 import type { CoreServerInstance, CoreServerOptions } from './types'
+import { resolveSecurityDefaults } from './types'
 import defu from 'defu'
 import { createYoga } from 'graphql-yoga'
-import { BASE_SCHEMA as BASE_SCHEMA_STRING, createMergedSchema } from '../schema/builder'
-
-/**
- * Base schema definition for Yoga server
- * Uses shared BASE_SCHEMA string from builder
- */
-export const BASE_SCHEMA: SchemaDefinition = {
-  def: BASE_SCHEMA_STRING,
-}
+import { createMergedSchema } from '../schema/builder'
 
 /**
  * Apollo Sandbox HTML template
@@ -88,13 +81,7 @@ export async function createYogaServer(options: CoreServerOptions): Promise<Core
     moduleConfig,
   })
 
-  // Apply security defaults
-  const securityConfig = security || {
-    introspection: true,
-    playground: true,
-    maskErrors: false,
-    disableSuggestions: false,
-  }
+  const securityConfig = resolveSecurityDefaults(security)
 
   // Create Yoga instance with merged config
   const yoga = createYoga(defu({
