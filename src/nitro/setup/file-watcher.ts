@@ -12,6 +12,7 @@ import { join } from 'pathe'
 import { LOG_TAG } from '../../core/constants'
 import { createCoreWatcher } from '../../core/watcher'
 import { generateClientTypes } from '../codegen'
+import { refreshVirtualModules } from '../virtual'
 import { performGraphQLScan, shouldScanLocalFiles } from './scanner'
 import { regenerateTypes } from './type-generation'
 
@@ -34,10 +35,13 @@ export function setupFileWatcher(nitro: Nitro, watchDirs: string[]): FSWatcher {
     },
     {
       onServerChange: async () => {
-        // Use centralized scan function that respects skipLocalScan
+        // Rescan files (respects skipLocalScan + extend)
         await performGraphQLScan(nitro, { silent: true, isRescan: true })
 
-        // Regenerate all types using shared helper
+        // Re-snapshot virtual modules with updated scan results
+        refreshVirtualModules(nitro)
+
+        // Regenerate types
         await regenerateTypes(nitro, { silent: true })
 
         logger.success('Types regenerated')

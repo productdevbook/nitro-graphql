@@ -6,13 +6,7 @@ import type {
 } from './types'
 import { isAbsolute, resolve } from 'pathe'
 
-const SERVICE_NAME_RE = /\{serviceName\}/g
-const BUILD_DIR_RE = /\{buildDir\}/g
-const ROOT_DIR_RE = /\{rootDir\}/g
-const FRAMEWORK_RE = /\{framework\}/g
-const TYPES_DIR_RE = /\{typesDir\}/g
-const SERVER_DIR_RE = /\{serverDir\}/g
-const CLIENT_DIR_RE = /\{clientDir\}/g
+const PLACEHOLDER_RE = /\{(\w+)\}/g
 
 /**
  * Placeholder values for path resolution
@@ -29,17 +23,20 @@ export interface PathPlaceholders {
 
 /**
  * Replace placeholders in a path string
- * Supports: {serviceName}, {buildDir}, {rootDir}, {framework}, {typesDir}, {serverDir}, {clientDir}
+ * Matches any `{key}` and resolves from the placeholders record.
+ * Unknown keys pass through unchanged. `{serviceName}` defaults to 'default'.
  */
 export function replacePlaceholders(path: string, placeholders: PathPlaceholders): string {
-  return path
-    .replace(SERVICE_NAME_RE, placeholders.serviceName || 'default')
-    .replace(BUILD_DIR_RE, placeholders.buildDir)
-    .replace(ROOT_DIR_RE, placeholders.rootDir)
-    .replace(FRAMEWORK_RE, placeholders.framework)
-    .replace(TYPES_DIR_RE, placeholders.typesDir)
-    .replace(SERVER_DIR_RE, placeholders.serverDir)
-    .replace(CLIENT_DIR_RE, placeholders.clientDir)
+  const lookup: Record<string, string> = {
+    serviceName: placeholders.serviceName || 'default',
+    buildDir: placeholders.buildDir,
+    rootDir: placeholders.rootDir,
+    framework: placeholders.framework,
+    typesDir: placeholders.typesDir,
+    serverDir: placeholders.serverDir,
+    clientDir: placeholders.clientDir,
+  }
+  return path.replace(PLACEHOLDER_RE, (match, key: string) => lookup[key] ?? match)
 }
 
 /**

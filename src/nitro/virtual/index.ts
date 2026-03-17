@@ -1,6 +1,11 @@
 /**
  * Virtual module generators barrel export
  * Each module provides { id, getCode } following Nitro v3 pattern
+ *
+ * Uses eager snapshot pattern: virtual module code is generated once at
+ * registration time and stored as a string. This prevents race conditions
+ * where Rolldown reads nitro.scan* arrays while they're being updated
+ * by a concurrent rescan.
  */
 
 import type { Nitro } from 'nitro/types'
@@ -36,11 +41,27 @@ const allModules = [
 ]
 
 /**
- * Register all virtual modules with Nitro
+ * Register all virtual modules with Nitro using eager snapshots.
+ * Code is generated immediately and captured as a string,
+ * so Rolldown always reads a consistent state.
  */
 export function registerAllVirtualModules(nitro: Nitro): void {
   nitro.options.virtual ??= {}
   for (const mod of allModules) {
-    nitro.options.virtual[mod.id] = () => mod.getCode(nitro)
+    const code = mod.getCode(nitro)
+    nitro.options.virtual[mod.id] = () => code
+  }
+}
+
+/**
+ * Refresh virtual module snapshots after a rescan.
+ * Call this after nitro.scan* arrays have been fully updated
+ * (including extend results) to re-snapshot the virtual modules.
+ */
+export function refreshVirtualModules(nitro: Nitro): void {
+  if (!nitro.options.virtual) return
+  for (const mod of allModules) {
+    const code = mod.getCode(nitro)
+    nitro.options.virtual[mod.id] = () => code
   }
 }
