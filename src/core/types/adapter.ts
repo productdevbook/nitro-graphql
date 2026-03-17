@@ -3,7 +3,8 @@
  * Defines the interface for framework-specific adapters
  */
 
-import type { CoreConfig, CoreContext, CoreLogger, ScanContext } from './index'
+import type { CoreConfig, CoreLogger } from './config'
+import type { ScanContext } from './scanning'
 
 /**
  * Framework adapter interface
@@ -15,9 +16,6 @@ export interface FrameworkAdapter<TFramework = unknown> {
 
   /** Create core config from framework instance */
   createCoreConfig: (framework: TFramework) => CoreConfig
-
-  /** Create core context from framework instance */
-  createCoreContext: (framework: TFramework) => CoreContext
 
   /** Create scan context from framework instance */
   createScanContext: (framework: TFramework) => ScanContext

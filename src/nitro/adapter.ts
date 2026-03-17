@@ -4,7 +4,8 @@
  */
 
 import type { Nitro } from 'nitro/types'
-import type { CoreConfig, CoreContext, CoreLogger, ScanContext } from '../core/types'
+import type { CoreConfig, CoreLogger } from '../core/types/config'
+import type { ScanContext } from '../core/types/scanning'
 import type { FrameworkAdapter } from '../core/types/adapter'
 import { join } from 'pathe'
 
@@ -22,7 +23,7 @@ export function createLoggerFromNitro(nitro: Nitro): CoreLogger {
 }
 
 /**
- * Create a ScanContext from Nitro instance
+ * Create a ScanContext directly from Nitro instance
  */
 export function createScanContextFromNitro(nitro: Nitro): ScanContext {
   return {
@@ -40,54 +41,31 @@ export function createScanContextFromNitro(nitro: Nitro): ScanContext {
  */
 export function createCoreConfigFromNitro(nitro: Nitro): CoreConfig {
   const graphqlOptions = nitro.options.graphql || {}
-  const isNuxt = nitro.options.framework?.name === 'nuxt'
-  const typesDir = join(nitro.graphql.buildDir, 'types')
 
   return {
     rootDir: nitro.options.rootDir,
     buildDir: nitro.graphql.buildDir,
     serverDir: nitro.graphql.serverDir,
     clientDir: nitro.graphql.clientDir,
-    typesDir,
+    typesDir: join(nitro.graphql.buildDir, 'types'),
     framework: graphqlOptions.framework || 'graphql-yoga',
-    isNuxt,
+    isNuxt: nitro.options.framework?.name === 'nuxt',
     isDev: nitro.options.dev,
-    graphqlOptions: {
-      framework: graphqlOptions.framework,
-      endpoint: typeof graphqlOptions.endpoint === 'object'
-        ? graphqlOptions.endpoint?.graphql
-        : graphqlOptions.endpoint,
-      federation: graphqlOptions.federation,
-      security: graphqlOptions.security,
-    },
     logger: createLoggerFromNitro(nitro),
     ignorePatterns: nitro.options.ignore,
-  }
-}
-
-/**
- * Create a CoreContext from Nitro instance
- */
-export function createCoreContextFromNitro(nitro: Nitro): CoreContext {
-  const config = createCoreConfigFromNitro(nitro)
-
-  return {
-    config,
-    graphqlBuildDir: nitro.graphql.buildDir,
-    watchDirs: nitro.graphql.watchDirs,
-    dir: nitro.graphql.dir,
+    security: graphqlOptions.security,
+    federation: graphqlOptions.federation,
+    codegen: graphqlOptions.codegen,
+    externalServices: graphqlOptions.externalServices,
   }
 }
 
 /**
  * Nitro framework adapter
- * Scanning is done directly through core functions (not via adapter)
- * to allow fine-grained control over Nitro state mutations
  */
 export const NitroAdapter: FrameworkAdapter<Nitro> = {
   name: 'nitro',
   createCoreConfig: createCoreConfigFromNitro,
-  createCoreContext: createCoreContextFromNitro,
   createScanContext: createScanContextFromNitro,
   getLogger: createLoggerFromNitro,
 }

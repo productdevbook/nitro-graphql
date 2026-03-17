@@ -5,6 +5,8 @@
 
 import type { IResolvers } from '@graphql-tools/utils'
 import type { ESMCodeGenOptions } from 'knitwork'
+import type { ExternalServiceCodegenConfig } from '../../core/types/codegen'
+import type { CoreFederationConfig } from '../../core/types/config'
 import type { CodegenClientConfig, CodegenServerConfig, GenericSdkConfig, SecurityConfig } from './define'
 
 // ==================== SCANNING TYPES ====================
@@ -46,35 +48,11 @@ export interface ExternalServicePaths {
 
 // ==================== EXTERNAL SERVICES ====================
 
-export interface ExternalGraphQLService {
-  /** Unique name for this service (used for file naming and type generation) */
-  name: string
-  /** GraphQL endpoint for this service (also used as schema source if `schema` is not specified) */
-  endpoint: string
-  /**
-   * Schema source - can be URL(s) for remote schemas or file path(s) for local schemas
-   * @default Uses `endpoint` for introspection if not specified
-   */
-  schema?: string | string[]
-  /** Optional headers for schema introspection and client requests */
-  headers?: Record<string, string> | (() => Record<string, string>)
-  /** Optional: specific document patterns for this service */
-  documents?: string[]
-  /**
-   * Optional: Download and cache schema locally for offline usage
-   * - true or 'once': Download if file doesn't exist, then use cached version (offline-friendly)
-   * - 'always': Check for updates on every build (current behavior)
-   * - 'manual': Never download automatically, user manages schema files manually
-   * - false: Disable schema downloading
-   */
-  downloadSchema?: boolean | 'once' | 'always' | 'manual'
-  /** Optional: Custom path to save downloaded schema (default: .nitro/graphql/schemas/[serviceName].graphql) */
-  downloadPath?: string
-  /** Optional: service-specific codegen configuration */
-  codegen?: {
-    client?: CodegenClientConfig
-    clientSDK?: GenericSdkConfig
-  }
+/**
+ * External GraphQL service configuration
+ * Extends the core codegen type with Nitro-specific path overrides
+ */
+export interface ExternalGraphQLService extends ExternalServiceCodegenConfig {
   /**
    * Optional: Service-specific path overrides
    * These paths take precedence over global config (sdk, types, clientUtils)
@@ -85,11 +63,13 @@ export interface ExternalGraphQLService {
 
 // ==================== SUB-CONFIGS ====================
 
-export interface FederationConfig {
+/**
+ * Federation configuration
+ * Extends core federation with Nitro-specific fields
+ */
+export interface FederationConfig extends CoreFederationConfig {
   /** Enable Apollo Federation subgraph support */
   enabled: boolean
-  /** Service name for federation (used in subgraph config) */
-  serviceName?: string
   /** Service version for federation */
   serviceVersion?: string
   /** Service URL for federation gateway */
@@ -268,16 +248,8 @@ export interface ExplicitPathsExtendSource {
   schemas?: string | string[]
 }
 
-/**
- * Local directory extend source
- * For extending from local directories (e.g., Nuxt layers, monorepo packages)
- */
-export interface LocalDirExtendSource {
-  /** Server GraphQL directory path (for schemas, resolvers, directives) */
-  serverDir?: string
-  /** Client GraphQL directory path (for documents) */
-  clientDir?: string
-}
+// LocalDirExtendSource is defined in core/extend/loader.ts (single source of truth)
+export type { LocalDirExtendSource } from '../../core/extend/loader'
 
 /**
  * Extend source - package path or detailed config

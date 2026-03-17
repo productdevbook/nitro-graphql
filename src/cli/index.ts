@@ -62,7 +62,7 @@ export async function createCLIContext(options: { cwd?: string } = {}): Promise<
 
   // Resolve all paths relative to cwd
   const rootDir = config.rootDir ? resolve(cwd, config.rootDir) : cwd
-  const buildDir = config.buildDir ? resolve(rootDir, config.buildDir) : resolve(rootDir, '.nitro-graphql')
+  const buildDir = config.buildDir ? resolve(rootDir, config.buildDir) : resolve(rootDir, '.graphql')
   const serverDir = config.serverDir ? resolve(rootDir, config.serverDir) : resolve(rootDir, 'server/graphql')
   const clientDir = config.clientDir ? resolve(rootDir, config.clientDir) : resolve(rootDir, 'graphql')
   const typesDir = config.typesDir ? resolve(rootDir, config.typesDir) : resolve(buildDir, 'types')

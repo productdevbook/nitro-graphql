@@ -1,20 +1,16 @@
 /**
  * CLI Framework Adapter
- *
- * Implements the FrameworkAdapter interface for standalone CLI usage.
- * Converts CLI context to core types for shared functionality.
+ * Converts CLI context to core types for shared functionality
  */
 
-import type { CoreConfig, CoreContext, CoreLogger, ScanContext } from '../core/types'
+import type { CoreConfig, CoreLogger } from '../core/types/config'
+import type { ScanContext } from '../core/types/scanning'
 import type { FrameworkAdapter } from '../core/types/adapter'
 import type { CLIContext } from './index'
 import consola from 'consola'
-import { createCoreConfig, createCoreContext, createScanContext } from '../core/config'
+import { createCoreConfig, createScanContext } from '../core/config'
 import { LOG_TAG } from '../core/constants'
 
-/**
- * Create a CoreLogger from consola for CLI usage
- */
 function createCLILogger(): CoreLogger {
   const logger = consola.withTag(LOG_TAG)
   return {
@@ -28,9 +24,6 @@ function createCLILogger(): CoreLogger {
 
 /**
  * CLI Framework Adapter
- *
- * Enables the CLI to use the same core functions as the Nitro module.
- * The adapter converts CLIContext to the types expected by core functions.
  */
 export const CLIAdapter: FrameworkAdapter<CLIContext> = {
   name: 'cli',
@@ -43,22 +36,13 @@ export const CLIAdapter: FrameworkAdapter<CLIContext> = {
       clientDir: ctx.config.clientDir,
       isNuxt: false,
       isDev: true,
-      graphqlOptions: {
-        framework: ctx.config.framework,
-        endpoint: ctx.config.endpoint?.graphql,
-        security: ctx.config.security,
-        federation: ctx.config.federation,
-        externalServices: ctx.config.externalServices,
-        codegen: ctx.config.codegen,
-      },
       logger: createCLILogger(),
       ignorePatterns: ctx.config.ignore || [],
+      security: ctx.config.security,
+      federation: ctx.config.federation,
+      codegen: ctx.config.codegen,
+      externalServices: ctx.config.externalServices,
     })
-  },
-
-  createCoreContext: (ctx: CLIContext): CoreContext => {
-    const config = CLIAdapter.createCoreConfig(ctx)
-    return createCoreContext(config)
   },
 
   createScanContext: (ctx: CLIContext): ScanContext => {
