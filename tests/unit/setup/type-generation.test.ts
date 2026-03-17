@@ -37,6 +37,17 @@ function createMockNitro(overrides: Record<string, any> = {}): Nitro {
       },
       ...overrides,
     },
+    graphql: {
+      state: {
+        schemas: [],
+        resolvers: [],
+        directives: [],
+        documents: [],
+        directiveSchemas: null,
+        extendConfigs: [],
+        extendSchemas: [],
+      },
+    },
   } as any
 }
 

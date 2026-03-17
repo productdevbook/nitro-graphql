@@ -33,6 +33,17 @@ function createMockNitro(overrides: Partial<Nitro['options']> = {}): Nitro {
       graphql: {},
       ...overrides,
     },
+    graphql: {
+      state: {
+        schemas: [],
+        resolvers: [],
+        directives: [],
+        documents: [],
+        directiveSchemas: null,
+        extendConfigs: [],
+        extendSchemas: [],
+      },
+    },
     hooks: {
       hook: vi.fn((name: string, callback: (...args: any[]) => void) => {
         if (!hookCallbacks[name]) {

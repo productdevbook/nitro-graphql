@@ -9,8 +9,7 @@ import { generateImportModule } from './utils'
 export const serverResolvers = {
   id: '#nitro-graphql/server-resolvers',
   getCode: (nitro: Nitro): string => {
-    // All resolvers (local + manifest) are now in nitro.scanResolvers
-    const imports = [...nitro.scanResolvers]
+    const imports = [...nitro.graphql.state.resolvers]
 
     if (!imports.length) {
       // Return demo resolver when no resolvers found

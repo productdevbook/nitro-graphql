@@ -31,7 +31,7 @@ export async function generateClientTypes(
 ): Promise<void> {
   try {
     // Main service types
-    if (nitro.scanSchemas?.length) {
+    if (nitro.graphql.state.schemas.length) {
       await generateMainClientTypes(nitro, options, schemaString)
     }
 
@@ -62,7 +62,7 @@ async function generateMainClientTypes(
     schemaString = readFileSync(schemaPath, 'utf-8')
   }
 
-  const docs = await loadGraphQLDocuments(nitro.scanDocuments)
+  const docs = await loadGraphQLDocuments([...nitro.graphql.state.documents])
 
   // Merge server scalars into client config if client scalars not explicitly set
   // This ensures custom scalars defined for server types are also available for client types

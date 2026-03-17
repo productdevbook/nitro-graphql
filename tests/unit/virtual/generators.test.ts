@@ -37,6 +37,15 @@ function createMockNitro(options: {
       clientDir: '',
       dir: { build: '', client: '', server: '' },
       directiveSchemas: null,
+      state: {
+        schemas: [],
+        resolvers: [],
+        directives: [],
+        documents: [],
+        directiveSchemas: null,
+        extendConfigs: options.extendConfigs ?? [],
+        extendSchemas: options.extendSchemas ?? [],
+      },
     },
   }
 }
@@ -195,6 +204,15 @@ describe('serverSchemas virtual module - demo schema', () => {
         directiveSchemas: options?.directiveSchemas ?? null,
         extendConfigs: [],
         extendSchemas: [],
+        state: {
+          schemas,
+          resolvers: [],
+          directives: [],
+          documents: [],
+          directiveSchemas: options?.directiveSchemas ?? null,
+          extendConfigs: [],
+          extendSchemas: [],
+        },
       },
       options: {
         dev: options?.dev ?? false,
@@ -255,6 +273,15 @@ describe('serverResolvers virtual module - demo resolver', () => {
         directiveSchemas: null,
         extendConfigs: [],
         extendSchemas: [],
+        state: {
+          schemas: [],
+          resolvers,
+          directives: [],
+          documents: [],
+          directiveSchemas: null,
+          extendConfigs: [],
+          extendSchemas: [],
+        },
       },
       options: {
         dev: options?.dev ?? false,
@@ -299,6 +326,15 @@ describe('serverSchemas virtual module - deterministic ordering', () => {
         directiveSchemas: null,
         extendConfigs: [],
         extendSchemas: [],
+        state: {
+          schemas,
+          resolvers: [],
+          directives: [],
+          documents: [],
+          directiveSchemas: null,
+          extendConfigs: [],
+          extendSchemas: [],
+        },
       },
       options: {
         dev: false,
@@ -351,11 +387,12 @@ describe('serverSchemas virtual module - deterministic ordering', () => {
 
 describe('serverResolvers virtual module - deterministic ordering', () => {
   function createResolverMockNitro(resolvers: Array<{ specifier: string, imports: Array<{ name: string }> }>): Nitro {
+    const mappedResolvers = resolvers.map(r => ({
+      specifier: r.specifier,
+      imports: r.imports,
+    }))
     return {
-      scanResolvers: resolvers.map(r => ({
-        specifier: r.specifier,
-        imports: r.imports,
-      })),
+      scanResolvers: mappedResolvers,
       graphql: {
         serverDir: '/server/graphql',
         buildDir: '',
@@ -365,6 +402,15 @@ describe('serverResolvers virtual module - deterministic ordering', () => {
         directiveSchemas: null,
         extendConfigs: [],
         extendSchemas: [],
+        state: {
+          schemas: [],
+          resolvers: mappedResolvers,
+          directives: [],
+          documents: [],
+          directiveSchemas: null,
+          extendConfigs: [],
+          extendSchemas: [],
+        },
       },
       options: {
         dev: false,

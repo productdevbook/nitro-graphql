@@ -12,6 +12,7 @@ import defu from 'defu'
 import { relative, resolve } from 'pathe'
 import { validateExternalServices } from '../core'
 import { LOG_TAG } from '../core/constants'
+import { emptyScanState } from './state'
 import {
   DEFAULT_RUNTIME_CONFIG,
   DEFAULT_TYPES_CONFIG,
@@ -90,6 +91,7 @@ function resolveConfiguration(nitro: Nitro): void {
   const defaultPaths = getDefaultPaths(nitro)
 
   nitro.graphql ||= {
+    state: emptyScanState(),
     buildDir: '',
     watchDirs: [],
     clientDir: defaultPaths.clientDir,
@@ -99,11 +101,13 @@ function resolveConfiguration(nitro: Nitro): void {
       client: 'graphql',
       server: 'server',
     },
+    // Legacy compat fields (kept in sync with state)
     directiveSchemas: null,
     extendConfigs: [],
     extendSchemas: [],
   }
 
+  // Legacy compat: initialize deprecated scan arrays
   nitro.scanSchemas ||= []
   nitro.scanResolvers ||= []
   nitro.scanDirectives ||= []

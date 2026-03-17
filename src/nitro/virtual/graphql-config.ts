@@ -11,7 +11,7 @@ export const graphqlConfig = {
   id: '#nitro-graphql/graphql-config',
   getCode: (nitro: Nitro): string => {
     const localConfigPath = resolve(nitro.graphql.serverDir, 'config.ts')
-    const extendConfigs = nitro.graphql.extendConfigs || []
+    const extendConfigs = [...nitro.graphql.state.extendConfigs]
     const hasLocalConfig = existsSync(localConfigPath)
 
     // No configs at all - return empty

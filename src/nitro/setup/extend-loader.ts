@@ -2,19 +2,19 @@
  * Nitro Extend Loader
  *
  * Thin wrapper around core extend module.
- * Handles Nitro-specific state mutations.
+ * Returns new immutable state via mergeScanState instead of mutating nitro.
  */
 
 import type { Nitro } from 'nitro/types'
-import type { ExtendScanResult } from '../../core/extend'
+import type { GraphQLScanState } from '../types/augmentation'
 import consola from 'consola'
 import { LOG_TAG } from '../../core/constants'
 import {
   resolveExtendDirs as coreResolveExtendDirs,
-
   scanAllExtendSources,
 } from '../../core/extend'
 import { generateDirectiveSchemas } from '../../core/utils/directive-parser'
+import { mergeScanState } from '../state'
 
 const logger = consola.withTag(LOG_TAG)
 
@@ -26,113 +26,54 @@ export async function resolveExtendDirs(nitro: Nitro): Promise<string[]> {
   return coreResolveExtendDirs(extend, nitro.options.rootDir)
 }
 
-interface ResolveExtendOptions {
-  silent?: boolean
-}
-
 /**
- * Resolve extend configuration and add files to Nitro scan results
+ * Resolve extend configuration and merge into scan state.
+ * Returns a new frozen state — does NOT mutate nitro.
  */
-export async function resolveExtendConfig(nitro: Nitro, options: ResolveExtendOptions = {}): Promise<void> {
+export async function resolveExtendConfig(
+  nitro: Nitro,
+  state: GraphQLScanState,
+  options: { silent?: boolean } = {},
+): Promise<GraphQLScanState> {
   const extend = nitro.options.graphql?.extend
   if (!extend || !Array.isArray(extend) || extend.length === 0) {
-    return
+    return state
   }
 
-  // Use core to scan all sources
   const result = await scanAllExtendSources(extend, nitro.options.rootDir)
 
-  // Apply results to Nitro state
-  const stats = applyExtendResult(nitro, result)
+  // Merge extend results into state (returns new frozen object)
+  let newState = mergeScanState(state, result)
 
-  // Regenerate directive schemas if needed
-  if (stats.directives > 0) {
-    const directiveSchemas = await generateDirectiveSchemas(nitro.scanDirectives, nitro.graphql.buildDir)
-    nitro.graphql.directiveSchemas = directiveSchemas
+  // Regenerate directive schemas if extend added directives
+  if (result.directives.length > 0) {
+    const directiveSchemas = await generateDirectiveSchemas(
+      [...newState.directives],
+      nitro.graphql.buildDir,
+    )
+    newState = Object.freeze({ ...newState, directiveSchemas })
   }
 
   // Log summary
-  if (!options.silent && (stats.schemas > 0 || stats.resolvers > 0 || stats.directives > 0 || stats.documents > 0)) {
+  const added = {
+    schemas: newState.schemas.length - state.schemas.length,
+    resolvers: newState.resolvers.length - state.resolvers.length,
+    directives: newState.directives.length - state.directives.length,
+    documents: newState.documents.length - state.documents.length,
+    configs: newState.extendConfigs.length - state.extendConfigs.length,
+    programmaticSchemas: newState.extendSchemas.length - state.extendSchemas.length,
+  }
+
+  if (!options.silent && Object.values(added).some(v => v > 0)) {
     const parts = []
-    if (stats.schemas > 0)
-      parts.push(`${stats.schemas} schema(s)`)
-    if (stats.resolvers > 0)
-      parts.push(`${stats.resolvers} resolver(s)`)
-    if (stats.directives > 0)
-      parts.push(`${stats.directives} directive(s)`)
-    if (stats.documents > 0)
-      parts.push(`${stats.documents} document(s)`)
-    if (stats.configs > 0)
-      parts.push(`${stats.configs} config(s)`)
-    if (stats.programmaticSchemas > 0)
-      parts.push(`${stats.programmaticSchemas} programmatic schema(s)`)
+    if (added.schemas > 0) parts.push(`${added.schemas} schema(s)`)
+    if (added.resolvers > 0) parts.push(`${added.resolvers} resolver(s)`)
+    if (added.directives > 0) parts.push(`${added.directives} directive(s)`)
+    if (added.documents > 0) parts.push(`${added.documents} document(s)`)
+    if (added.configs > 0) parts.push(`${added.configs} config(s)`)
+    if (added.programmaticSchemas > 0) parts.push(`${added.programmaticSchemas} programmatic schema(s)`)
     logger.info(`Extended with ${parts.join(', ')}`)
   }
-}
 
-/**
- * Apply extend scan result to Nitro state
- */
-function applyExtendResult(nitro: Nitro, result: ExtendScanResult) {
-  let schemasAdded = 0
-  let resolversAdded = 0
-  let directivesAdded = 0
-  let documentsAdded = 0
-  let configsAdded = 0
-  let programmaticSchemasAdded = 0
-
-  // Add schemas
-  for (const schemaPath of result.schemas) {
-    if (!nitro.scanSchemas.includes(schemaPath)) {
-      nitro.scanSchemas.push(schemaPath)
-      schemasAdded++
-    }
-  }
-
-  // Add resolvers
-  for (const resolver of result.resolvers) {
-    const alreadyExists = nitro.scanResolvers.some(r => r.specifier === resolver.specifier)
-    if (!alreadyExists) {
-      nitro.scanResolvers.push(resolver)
-      resolversAdded++
-    }
-  }
-
-  // Add directives
-  for (const directive of result.directives) {
-    const alreadyExists = nitro.scanDirectives.some(d => d.specifier === directive.specifier)
-    if (!alreadyExists) {
-      nitro.scanDirectives.push(directive)
-      directivesAdded++
-    }
-  }
-
-  // Add documents
-  for (const docPath of result.documents) {
-    if (!nitro.scanDocuments.includes(docPath)) {
-      nitro.scanDocuments.push(docPath)
-      documentsAdded++
-    }
-  }
-
-  // Add config path
-  if (result.configPath && !nitro.graphql.extendConfigs.includes(result.configPath)) {
-    nitro.graphql.extendConfigs.push(result.configPath)
-    configsAdded++
-  }
-
-  // Add schema path
-  if (result.schemaPath && !nitro.graphql.extendSchemas.includes(result.schemaPath)) {
-    nitro.graphql.extendSchemas.push(result.schemaPath)
-    programmaticSchemasAdded++
-  }
-
-  return {
-    schemas: schemasAdded,
-    resolvers: resolversAdded,
-    directives: directivesAdded,
-    documents: documentsAdded,
-    configs: configsAdded,
-    programmaticSchemas: programmaticSchemasAdded,
-  }
+  return newState
 }

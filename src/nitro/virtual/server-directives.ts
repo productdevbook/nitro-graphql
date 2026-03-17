@@ -9,7 +9,7 @@ import { generateImportModule } from './utils'
 export const serverDirectives = {
   id: '#nitro-graphql/server-directives',
   getCode: (nitro: Nitro): string => {
-    const imports = nitro.scanDirectives || []
+    const imports = [...nitro.graphql.state.directives]
     if (!imports.length) {
       return 'export const directives = []'
     }

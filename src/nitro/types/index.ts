@@ -6,6 +6,9 @@
 // Module augmentation (side-effect import — must be loaded for augmentations to apply)
 import './augmentation'
 
+// Scan state type
+export type { GraphQLScanState } from './augmentation'
+
 // Define types (resolver definitions, directive types, codegen re-exports)
 export type {
   ClientCodegenConfig,

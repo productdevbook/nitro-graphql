@@ -51,7 +51,7 @@ export async function generateServerTypes(
   if (!shouldGenerateTypes(nitro))
     return
 
-  const schemas = nitro.scanSchemas || []
+  const schemas = nitro.graphql.state.schemas
   if (!schemas.length) {
     if (!options.silent)
       consola.info('No GraphQL schemas found')
@@ -74,7 +74,7 @@ export async function generateServerTypes(
     })
 
     // Add inline directive schemas (generated from .directive.ts files)
-    const directiveSchemas = nitro.graphql.directiveSchemas
+    const directiveSchemas = nitro.graphql.state.directiveSchemas
     if (directiveSchemas) {
       validSchemas.push('<directives>')
       strings.push(directiveSchemas)

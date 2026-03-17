@@ -25,7 +25,19 @@ function createMockNitro(overrides: Partial<Nitro> = {}): Nitro {
   const buildDir = resolve(tempDir, 'build')
   const rootDir = resolve(tempDir, 'project')
 
+  const scanSchemas = overrides.scanSchemas ?? []
+  const scanResolvers = overrides.scanResolvers ?? []
+  const scanDirectives = overrides.scanDirectives ?? []
+  const scanDocuments = overrides.scanDocuments ?? []
+  const directiveSchemas = overrides.graphql?.directiveSchemas ?? null
+  const extendConfigs = overrides.graphql?.extendConfigs ?? []
+  const extendSchemas = overrides.graphql?.extendSchemas ?? []
+
+  // Extract graphql, options, and scan arrays from overrides to merge them explicitly
+  const { graphql: graphqlOverrides, options: optionsOverrides, scanSchemas: _ss, scanDocuments: _sd, scanResolvers: _sr, scanDirectives: _sdi, ...restOverrides } = overrides as any
+
   return {
+    ...restOverrides,
     options: {
       rootDir,
       buildDir,
@@ -36,12 +48,12 @@ function createMockNitro(overrides: Partial<Nitro> = {}): Nitro {
         sdk: { enabled: true },
       },
       framework: { name: 'nitro' },
-      ...overrides.options,
+      ...optionsOverrides,
     },
-    scanSchemas: [],
-    scanDocuments: [],
-    scanResolvers: [],
-    scanDirectives: [],
+    scanSchemas,
+    scanDocuments,
+    scanResolvers,
+    scanDirectives,
     graphql: {
       buildDir: resolve(buildDir, 'graphql'),
       watchDirs: [],
@@ -55,9 +67,17 @@ function createMockNitro(overrides: Partial<Nitro> = {}): Nitro {
       directiveSchemas: null,
       extendConfigs: [],
       extendSchemas: [],
-      ...overrides.graphql,
+      ...graphqlOverrides,
+      state: {
+        schemas: scanSchemas,
+        resolvers: scanResolvers,
+        directives: scanDirectives,
+        documents: scanDocuments,
+        directiveSchemas,
+        extendConfigs,
+        extendSchemas,
+      },
     },
-    ...overrides,
   } as unknown as Nitro
 }
 

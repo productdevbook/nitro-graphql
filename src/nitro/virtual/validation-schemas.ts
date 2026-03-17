@@ -11,7 +11,7 @@ export const validationSchemas = {
   id: '#nitro-graphql/validation-schemas',
   getCode: (nitro: Nitro): string => {
     const localSchemaPath = resolve(nitro.graphql.serverDir, 'schema.ts')
-    const extendSchemas = nitro.graphql.extendSchemas || []
+    const extendSchemas = [...nitro.graphql.state.extendSchemas]
     const hasLocalSchema = existsSync(localSchemaPath)
 
     // No schemas at all - return empty object

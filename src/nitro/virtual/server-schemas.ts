@@ -9,9 +9,9 @@ import { readFileSync } from 'node:fs'
 export const serverSchemas = {
   id: '#nitro-graphql/server-schemas',
   getCode: (nitro: Nitro): string => {
-    // All schemas (local + manifest) are now in nitro.scanSchemas
-    const schemas = [...nitro.scanSchemas, ...(nitro.options.graphql?.typedefs ?? [])]
-    const directiveSchemas = nitro.graphql.directiveSchemas
+    const { state } = nitro.graphql
+    const schemas = [...state.schemas, ...(nitro.options.graphql?.typedefs ?? [])]
+    const directiveSchemas = state.directiveSchemas
 
     if (!schemas.length && !directiveSchemas) {
       // Return demo schema when no schemas found
