@@ -7,7 +7,7 @@ import type * as Types from '#graphql/client';
 
 import type { ExecutionResult } from 'graphql';
 
-export const GetUserDocument = /*#__PURE__*/ `
+export const GetUserDocument = /*#__PURE__*/ new TypedDocumentString(`
     query GetUser($id: ID!) {
   user(id: $id) {
     id
@@ -15,12 +15,12 @@ export const GetUserDocument = /*#__PURE__*/ `
     email
   }
 }
-    `;
-export const GetHelloDocument = /*#__PURE__*/ `
+    `);
+export const GetHelloDocument = /*#__PURE__*/ new TypedDocumentString(`
     query GetHello {
   hello
 }
-    `;
+    `);
 export type Requester<C = {}, E = unknown> = <R, V>(doc: string, vars?: V, options?: C) => Promise<ExecutionResult<R, E>> | AsyncIterable<ExecutionResult<R, E>>
 export function getSdk<C, E>(requester: Requester<C, E>) {
   return {

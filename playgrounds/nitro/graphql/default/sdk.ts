@@ -7,24 +7,24 @@ import type * as Types from '#graphql/client';
 
 import type { ExecutionResult } from 'graphql';
 
-export const HelloDocument = /*#__PURE__*/ `
+export const HelloDocument = /*#__PURE__*/ new TypedDocumentString(`
     query Hello {
   helloCI
 }
-    `;
-export const GetUsersDocument = /*#__PURE__*/ `
+    `);
+export const GetUsersDocument = /*#__PURE__*/ new TypedDocumentString(`
     query GetUsers {
   users {
     id
     name
   }
 }
-    `;
-export const GetGreetingDocument = /*#__PURE__*/ `
+    `);
+export const GetGreetingDocument = /*#__PURE__*/ new TypedDocumentString(`
     query GetGreeting {
   greeting(name: "World")
 }
-    `;
+    `);
 export type Requester<C = {}, E = unknown> = <R, V>(doc: string, vars?: V, options?: C) => Promise<ExecutionResult<R, E>> | AsyncIterable<ExecutionResult<R, E>>
 export function getSdk<C, E>(requester: Requester<C, E>) {
   return {
