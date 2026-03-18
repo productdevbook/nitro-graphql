@@ -13,7 +13,6 @@ import { beforeAll, describe, expect, it } from 'vitest'
 import {
   DEFAULT_SERVER_CODEGEN_CONFIG,
   generateServerTypesCore,
-  generateTypes,
 } from '../../../src/core/codegen/server'
 
 const ADMIN_ENUM_RE = /ADMIN|'ADMIN'|"ADMIN"/
@@ -408,51 +407,6 @@ describe('dEFAULT_SERVER_CODEGEN_CONFIG', () => {
 
   it('should have enums as types enabled', () => {
     expect(DEFAULT_SERVER_CODEGEN_CONFIG.enumsAsTypes).toBe(true)
-  })
-})
-
-describe('generateTypes (deprecated)', () => {
-  it('should still work for backward compatibility', async () => {
-    const result = await generateTypes(
-      'graphql-yoga',
-      SIMPLE_SCHEMA,
-      {},
-    )
-
-    expect(result).toBeDefined()
-    expect(typeof result).toBe('string')
-    expect(result).toContain('Query')
-    expect(result).toContain('User')
-  })
-
-  it('should pass codegen config', async () => {
-    const result = await generateTypes(
-      'graphql-yoga',
-      SIMPLE_SCHEMA,
-      {
-        codegen: {
-          server: {
-            contextType: 'custom#Context',
-          },
-        },
-      },
-    )
-
-    expect(result).toBeDefined()
-  })
-
-  it('should support federation config', async () => {
-    const result = await generateTypes(
-      'apollo-server',
-      SIMPLE_SCHEMA,
-      {
-        federation: {
-          enabled: true,
-        },
-      },
-    )
-
-    expect(result).toBeDefined()
   })
 })
 

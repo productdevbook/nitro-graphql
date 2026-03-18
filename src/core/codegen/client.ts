@@ -4,7 +4,6 @@
  */
 
 import type { Source } from '@graphql-tools/utils'
-import type { GraphQLSchema } from 'graphql'
 import type {
   ClientCodegenConfig,
   ClientCodegenInput,
@@ -22,13 +21,8 @@ import consola from 'consola'
 import { defu } from 'defu'
 import { parse } from 'graphql'
 import { DEFAULT_GRAPHQL_SCALARS } from '../constants'
-import { pluginContent } from './file-header'
-import { typedDocumentStringPlugin } from './plugins/typed-document-string'
-
-export { loadGraphQLDocuments } from './document-loader'
-// Re-export from split modules for backward compatibility
-export type { GraphQLLoadSchemaOptions, GraphQLTypeDefPointer } from './schema-loader'
-export { downloadAndSaveSchema, graphQLLoadSchemaSync, loadExternalSchema } from './schema-loader'
+import { GENERATED_FILE_HEADER, pluginContent } from './file-header'
+import { typedDocumentStringPlugin } from './typed-document-string'
 
 /**
  * Default client codegen configuration
@@ -48,15 +42,10 @@ export const DEFAULT_CLIENT_CODEGEN_CONFIG: ClientCodegenConfig = {
 }
 
 /**
- * Generate generic SDK content for schema-only generation
+ * Generate generic SDK stub for schema-only generation (no documents)
  */
 function generateGenericSdkContent(): string {
-  return `// THIS FILE IS GENERATED, DO NOT EDIT!
-/* eslint-disable eslint-comments/no-unlimited-disable */
-/* tslint:disable */
-/* eslint-disable */
-/* prettier-ignore */
-
+  return `${GENERATED_FILE_HEADER}
 import type { GraphQLResolveInfo } from 'graphql'
 export type RequireFields<T, K extends keyof T> = Omit<T, K> & { [P in K]-?: NonNullable<T[P]> }
 
@@ -101,15 +90,12 @@ export async function generateClientTypesCore(
     return false
   }
 
-  // Get schema string - use provided schemaString to avoid graphql instance mismatch
   const schemaSDL = schemaString || (schema ? printSchemaWithDirectives(schema) : null)
   if (!schemaSDL) {
     return false
   }
 
   const mergedConfig = defu(config, DEFAULT_CLIENT_CODEGEN_CONFIG)
-
-  /** SDK config inherits from merged client config, with user overrides taking precedence */
   const resolvedSdkConfig = defu(sdkConfig, mergedConfig)
 
   try {
@@ -130,12 +116,7 @@ export async function generateClientTypesCore(
         },
       })
 
-      const sdkContent = generateGenericSdkContent()
-
-      return {
-        types: output,
-        sdk: sdkContent,
-      }
+      return { types: output, sdk: generateGenericSdkContent() }
     }
 
     // Full generation with documents
@@ -166,11 +147,10 @@ export async function generateClientTypesCore(
       pluginMap,
     })
 
+    // SDK generation via import-types-preset
     const typesPath = virtualTypesPath || (serviceName ? `#graphql/client/${serviceName}` : '#graphql/client')
-
-    // Build SDK plugins — include TypedDocumentString plugin when documentMode is 'string'
-    // so the class definition is part of the codegen pipeline instead of raw string prepend
     const useTypedDocumentString = mergedConfig.documentMode === 'string'
+
     const sdkPlugins: Array<Record<string, object>> = [
       { pluginContent: {} },
       ...(useTypedDocumentString ? [{ typedDocumentString: {} }] : []),
@@ -187,56 +167,44 @@ export async function generateClientTypesCore(
       schema: parse(schemaSDL),
       documents: [...documents],
       config: resolvedSdkConfig,
-      presetConfig: {
-        typesPath,
-      },
+      presetConfig: { typesPath },
       plugins: sdkPlugins,
       pluginMap: sdkPluginMap,
     })
 
     const results = await Promise.all(
-      sdkOutput.map(async (config) => {
-        return { file: config.filename, content: await codegen(config) }
-      }),
+      sdkOutput.map(async config => ({
+        file: config.filename,
+        content: await codegen(config),
+      })),
     )
-
-    const sdkContent = results[0]?.content || ''
 
     return {
       types: output,
-      sdk: sdkContent,
+      sdk: results[0]?.content || '',
     }
   }
   catch (error) {
-    // Log codegen errors - these are usually configuration issues like missing scalar definitions
     consola.error('[nitro-graphql] Client type generation failed:', (error as Error).message)
     return false
   }
 }
 
 /**
- * Generate client types for external GraphQL service
+ * Generate client types for an external GraphQL service
  */
 export async function generateExternalClientTypesCore(
   service: ExternalServiceCodegenConfig,
-  schema: GraphQLSchema,
+  schema: import('graphql').GraphQLSchema,
   documents: Source[],
   virtualTypesPath?: string,
 ): Promise<ClientCodegenResult | false> {
-  const config = service.codegen?.client || {}
-  const sdkConfig = service.codegen?.clientSDK || {}
-
   return generateClientTypesCore({
     schema,
     documents,
-    config,
-    sdkConfig,
+    config: service.codegen?.client || {},
+    sdkConfig: service.codegen?.clientSDK || {},
     serviceName: service.name,
     virtualTypesPath,
   })
 }
-
-// Subscription utilities — re-exported from split modules
-export { extractSubscriptions } from './subscription-extractor'
-export type { SubscriptionInfo } from './subscription-extractor'
-export { generateSubscriptionBuilder } from './vue-subscription-builder'

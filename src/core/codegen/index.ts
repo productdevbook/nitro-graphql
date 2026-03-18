@@ -3,25 +3,19 @@
  * Framework-agnostic type generation utilities
  */
 
-// Client codegen (framework-agnostic pipeline)
+// Client codegen
 export {
   DEFAULT_CLIENT_CODEGEN_CONFIG,
-  downloadAndSaveSchema,
   generateClientTypesCore,
   generateExternalClientTypesCore,
-  graphQLLoadSchemaSync,
-  loadExternalSchema,
-  loadGraphQLDocuments,
 } from './client'
 
-export type {
-  GraphQLLoadSchemaOptions,
-  GraphQLTypeDefPointer,
-} from './client'
+// Document loading
+export { loadGraphQLDocuments } from './document-loader'
 
-// File header utilities
-export * from './file-header'
-export { typedDocumentStringPlugin } from './plugins/typed-document-string'
+// File header
+export { GENERATED_FILE_HEADER, pluginContent } from './file-header'
+
 // Runtime code generation
 export {
   generateResolverModule,
@@ -29,18 +23,23 @@ export {
   generateSchemaModule,
 } from './runtime-generator'
 
+// Schema loading
+export { downloadAndSaveSchema, graphQLLoadSchemaSync, loadExternalSchema } from './schema-loader'
+export type { GraphQLLoadSchemaOptions, GraphQLTypeDefPointer } from './schema-loader'
+
 // Server codegen
 export {
   DEFAULT_SERVER_CODEGEN_CONFIG,
   generateServerTypesCore,
-  generateTypes,
 } from './server'
-// Subscription utilities (split by concern)
-export { extractSubscriptions } from './subscription-extractor'
 
+// Subscription utilities
+export { extractSubscriptions } from './subscription-extractor'
 export type { SubscriptionInfo } from './subscription-extractor'
+// Custom codegen plugins
+export { typedDocumentStringPlugin } from './typed-document-string'
 
 // Validation
-export * from './validation'
+export { validateNoDuplicateTypes, validateSchemaFiles } from './validation'
 
 export { generateSubscriptionBuilder } from './vue-subscription-builder'

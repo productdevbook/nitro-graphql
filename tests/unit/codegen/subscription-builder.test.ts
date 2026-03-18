@@ -5,7 +5,7 @@
 import type { Source } from '@graphql-tools/utils'
 import { parse } from 'graphql'
 import { describe, expect, it } from 'vitest'
-import { generateSubscriptionBuilder } from '../../../src/core/codegen/client'
+import { generateSubscriptionBuilder } from '../../../src/core/codegen/vue-subscription-builder'
 
 // Helper to create a Source with parsed document from GraphQL document string
 function createSource(documentStr: string, location = 'test.graphql'): Source {
