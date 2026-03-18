@@ -5,28 +5,65 @@
 /* prettier-ignore */
 import type * as Types from '#graphql/client';
 
-import type { DocumentNode, ExecutionResult } from 'graphql';
-import gql from 'graphql-tag';
+import type { DocumentTypeDecoration } from '@graphql-typed-document-node/core';
+import type { ExecutionResult } from 'graphql';
+export class TypedDocumentString<TResult, TVariables>
+  extends String
+  implements DocumentTypeDecoration<TResult, TVariables>
+{
+  __apiType?: NonNullable<DocumentTypeDecoration<TResult, TVariables>['__apiType']>;
+  private value: string;
+  public __meta__?: Record<string, any> | undefined;
 
-export const HelloDocument = /*#__PURE__*/ gql`
+  constructor(value: string, __meta__?: Record<string, any> | undefined) {
+    super(value);
+    this.value = value;
+    this.__meta__ = __meta__;
+  }
+
+  override toString(): string & DocumentTypeDecoration<TResult, TVariables> {
+    return this.value;
+  }
+}
+
+export const HelloDocument = /*#__PURE__*/ new TypedDocumentString(`
     query Hello {
   helloCI
 }
-    `;
-export const GetUsersDocument = /*#__PURE__*/ gql`
+    `) as unknown as TypedDocumentString<Types.HelloQuery, Types.HelloQueryVariables>;
+export const GetUsersDocument = /*#__PURE__*/ new TypedDocumentString(`
     query GetUsers {
   users {
     id
     name
   }
 }
-    `;
-export const GetGreetingDocument = /*#__PURE__*/ gql`
+    `) as unknown as TypedDocumentString<Types.GetUsersQuery, Types.GetUsersQueryVariables>;
+export const GetGreetingDocument = /*#__PURE__*/ new TypedDocumentString(`
     query GetGreeting {
   greeting(name: "World")
 }
-    `;
-export type Requester<C = {}, E = unknown> = <R, V>(doc: DocumentNode, vars?: V, options?: C) => Promise<ExecutionResult<R, E>> | AsyncIterable<ExecutionResult<R, E>>
+    `) as unknown as TypedDocumentString<Types.GetGreetingQuery, Types.GetGreetingQueryVariables>;
+
+export const HelloDocument = /*#__PURE__*/ new TypedDocumentString(`
+    query Hello {
+  helloCI
+}
+    `);
+export const GetUsersDocument = /*#__PURE__*/ new TypedDocumentString(`
+    query GetUsers {
+  users {
+    id
+    name
+  }
+}
+    `);
+export const GetGreetingDocument = /*#__PURE__*/ new TypedDocumentString(`
+    query GetGreeting {
+  greeting(name: "World")
+}
+    `);
+export type Requester<C = {}, E = unknown> = <R, V>(doc: string, vars?: V, options?: C) => Promise<ExecutionResult<R, E>> | AsyncIterable<ExecutionResult<R, E>>
 export function getSdk<C, E>(requester: Requester<C, E>) {
   return {
     Hello(variables?: Types.HelloQueryVariables, options?: C): Promise<ExecutionResult<Types.HelloQuery, E>> {

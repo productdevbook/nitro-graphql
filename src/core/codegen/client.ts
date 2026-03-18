@@ -143,14 +143,25 @@ export async function generateClientTypesCore(
     // SDK generation via import-types-preset
     const typesPath = virtualTypesPath || (serviceName ? `#graphql/client/${serviceName}` : '#graphql/client')
 
+    // typed-document-node plugin emits TypedDocumentString class definition
+    // needed when documentMode is 'string' (visitor-plugin-common generates `new TypedDocumentString(...)`)
+    const sdkPlugins: Array<Record<string, object>> = [
+      { typedDocumentNode: {} },
+      { typescriptGenericSdk: {} },
+    ]
+    const sdkPluginMap: Record<string, { plugin: unknown }> = {
+      typedDocumentNode: { plugin: typedDocumentNodePlugin },
+      typescriptGenericSdk: { plugin: typescriptGenericSdk },
+    }
+
     const sdkOutput = await preset.buildGeneratesSection({
       baseOutputDir: outputPath || 'client-types.generated.ts',
       schema: parsedSchema,
       documents: [...documents],
       config: resolvedSdkConfig,
       presetConfig: { typesPath },
-      plugins: [{ typescriptGenericSdk: {} }],
-      pluginMap: { typescriptGenericSdk: { plugin: typescriptGenericSdk } },
+      plugins: sdkPlugins,
+      pluginMap: sdkPluginMap,
     })
 
     const results = await Promise.all(
