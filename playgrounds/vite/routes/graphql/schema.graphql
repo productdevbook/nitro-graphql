@@ -1,11 +1,4 @@
-scalar DateTime
-scalar JSON
-
 type Query {
   hello: String!
   greeting(name: String!): String!
-}
-
-type Mutation {
-  _empty: String
 }
