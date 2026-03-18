@@ -22,7 +22,6 @@ const logger = consola.withTag(LOG_TAG)
 
 /**
  * Generate client-side operation types
- * @param schemaString - Pre-computed schema string from generateServerTypes to avoid disk round-trip
  */
 export async function generateClientTypes(
   nitro: Nitro,

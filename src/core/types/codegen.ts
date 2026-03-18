@@ -124,4 +124,3 @@ export interface ExternalServiceCodegenConfig {
     clientSDK?: SdkCodegenConfig
   }
 }
-

@@ -40,4 +40,3 @@ export function writeFileIfChanged(path: string, content: string): boolean {
 export function ensureDir(path: string): void {
   mkdirSync(path, { recursive: true })
 }
-

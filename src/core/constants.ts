@@ -220,4 +220,3 @@ export const DEFAULT_CLIENT_TYPES_PATH = '.graphql/nitro-graphql-client.d.ts' as
  * Logger tag for nitro-graphql module
  */
 export const LOG_TAG = 'nitro-graphql' as const
-

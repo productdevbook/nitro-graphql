@@ -118,9 +118,12 @@ export function classifyChange(path: string, serverDir: string): ChangeType {
  * Create the ignored function for chokidar
  * Filters out non-GraphQL files and system directories
  */
+const GLOB_STAR_RE = /\*\*/g
+const SINGLE_STAR_RE = /\*/g
+
 export function createIgnoredFunction(): (path: string) => boolean {
   // Convert glob patterns like '**/node_modules/**' to path fragments like '/node_modules/'
-  const ignoredDirs = DEFAULT_IGNORE_PATTERNS.map(p => p.replace(/\*\*/g, '').replace(/\*/g, ''))
+  const ignoredDirs = DEFAULT_IGNORE_PATTERNS.map(p => p.replace(GLOB_STAR_RE, '').replace(SINGLE_STAR_RE, ''))
 
   return (path: string) => {
     // Always ignore directories matching DEFAULT_IGNORE_PATTERNS

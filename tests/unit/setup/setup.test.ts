@@ -355,7 +355,6 @@ describe('regenerateTypes', () => {
     const nitro = createMockNitro()
 
     // Manually invoke the logic that regenerateTypes does
-    const serverEnabled = true
     const schemaString = await generateServerTypes(nitro)
     await generateClientTypes(nitro, undefined, schemaString)
 
@@ -806,7 +805,7 @@ describe('individual resolvers', () => {
     it('should setup file watcher in dev mode', async () => {
       const { setupNitroGraphQL } = await import('../../../src/nitro/setup')
       const { isServerEnabled, performGraphQLScan } = await import('../../../src/nitro/setup/scanner')
-      const { setupFileWatcher, getWatchDirectories } = await import('../../../src/nitro/setup/file-watcher')
+      const { setupFileWatcher } = await import('../../../src/nitro/setup/file-watcher')
 
       vi.mocked(isServerEnabled).mockReturnValue(true)
       vi.mocked(performGraphQLScan).mockResolvedValue(undefined)

@@ -16,8 +16,8 @@ export type {
   ServerCodegenConfig,
 } from '../../core/types/codegen'
 
-// Re-export Flatten from core (canonical definition)
-export type { Flatten } from '../../core/types/define'
+// Nitro-specific aliases for backward compatibility
+export type { ServerCodegenConfig as CodegenServerConfig } from '../../core/types/codegen'
 
 export type DefineServerConfig<T extends NPMConfig = NPMConfig> = T['framework'] extends 'graphql-yoga'
   ? Partial<YogaServerOptions<H3Event, Partial<H3Event>>>
@@ -25,15 +25,15 @@ export type DefineServerConfig<T extends NPMConfig = NPMConfig> = T['framework']
     ? Partial<ApolloServerOptions<H3Event>>
     : Partial<YogaServerOptions<H3Event, Partial<H3Event>>> | Partial<ApolloServerOptions<H3Event>>
 
-// Nitro-specific aliases for backward compatibility
-export type { ServerCodegenConfig as CodegenServerConfig } from '../../core/types/codegen'
-
 export type { ClientCodegenConfig as CodegenClientConfig } from '../../core/types/codegen'
 
 export type { SdkCodegenConfig as GenericSdkConfig } from '../../core/types/codegen'
 
 // Re-export SecurityConfig from core (single source of truth)
 export type { CoreSecurityConfig as SecurityConfig } from '../../core/types/config'
+
+// Re-export Flatten from core (canonical definition)
+export type { Flatten } from '../../core/types/define'
 // Re-export directive types from core (canonical definitions)
 export type {
   DefineDirectiveConfig,
