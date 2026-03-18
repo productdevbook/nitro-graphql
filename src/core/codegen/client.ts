@@ -22,7 +22,6 @@ import { defu } from 'defu'
 import { parse } from 'graphql'
 import { DEFAULT_GRAPHQL_SCALARS } from '../constants'
 import { GENERATED_FILE_HEADER } from './file-header'
-import { TYPED_DOCUMENT_STRING_CLASS } from './typed-document-string'
 
 /**
  * Default client codegen configuration
@@ -34,7 +33,6 @@ export const DEFAULT_CLIENT_CODEGEN_CONFIG: ClientCodegenConfig = {
   strictScalars: true,
   maybeValue: 'T | null | undefined',
   inputMaybeValue: 'T | undefined',
-  documentMode: 'string',
   pureMagicComment: true,
   dedupeOperationSuffix: true,
   rawRequest: true,
@@ -161,14 +159,9 @@ export async function generateClientTypesCore(
       })),
     )
 
-    // Prepend header + TypedDocumentString class if documentMode is 'string'
-    const useTypedDocumentString = mergedConfig.documentMode === 'string'
-    const sdkPrepend = GENERATED_FILE_HEADER
-      + (useTypedDocumentString ? TYPED_DOCUMENT_STRING_CLASS : '')
-
     return {
       types: GENERATED_FILE_HEADER + generated,
-      sdk: sdkPrepend + (results[0]?.content || ''),
+      sdk: GENERATED_FILE_HEADER + (results[0]?.content || ''),
     }
   }
   catch (error) {

@@ -58,7 +58,6 @@ describe('dEFAULT_CLIENT_CODEGEN_CONFIG', () => {
       strictScalars: true,
       maybeValue: 'T | null | undefined',
       inputMaybeValue: 'T | undefined',
-      documentMode: 'string',
       pureMagicComment: true,
       dedupeOperationSuffix: true,
       rawRequest: true,
@@ -84,8 +83,8 @@ describe('dEFAULT_CLIENT_CODEGEN_CONFIG', () => {
     expect(scalars.File).toEqual({ input: 'File', output: 'File' })
   })
 
-  it('should use string document mode (not TypedDocumentNode by default)', () => {
-    expect(DEFAULT_CLIENT_CODEGEN_CONFIG.documentMode).toBe('string')
+  it('should not set documentMode by default (uses graphql-codegen default)', () => {
+    expect(DEFAULT_CLIENT_CODEGEN_CONFIG.documentMode).toBeUndefined()
   })
 
   it('should have rawRequest enabled for SDK generation', () => {
