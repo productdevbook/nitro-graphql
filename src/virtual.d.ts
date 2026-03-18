@@ -20,16 +20,6 @@ declare module '#nitro-graphql/server-schemas' {
   export const schemas: Array<{ def: string }>
 }
 
-declare module '#nitro-graphql/server-scalars' {
-  import type { GraphQLScalarType } from 'graphql'
-
-  export const scalars: Record<string, GraphQLScalarType>
-}
-
-declare module '#nitro-graphql/client-schema' {
-  export const schema: string
-}
-
 declare module '#nitro-graphql/module-config' {
   import type { NitroGraphQLOptions } from './nitro/types'
 
@@ -37,20 +27,20 @@ declare module '#nitro-graphql/module-config' {
 }
 
 declare module '#nitro-graphql/debug-info' {
-  import type { GenImport } from './nitro/types'
+  import type { ScannedResolver } from './core/types/scanning'
 
   export const debugInfo: {
     isDev: boolean
     framework: string
     graphqlFramework?: string
-    federation?: any
+    federation?: Record<string, unknown>
     scanned: {
       schemas: number
       schemaFiles: string[]
       resolvers: number
-      resolverFiles: GenImport[]
+      resolverFiles: ScannedResolver[]
       directives: number
-      directiveFiles: GenImport[]
+      directiveFiles: ScannedResolver[]
       documents: number
       documentFiles: string[]
     }

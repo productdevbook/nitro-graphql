@@ -6,37 +6,37 @@
 // Client codegen
 export {
   DEFAULT_CLIENT_CODEGEN_CONFIG,
-  downloadAndSaveSchema,
-  extractSubscriptions,
   generateClientTypesCore,
   generateExternalClientTypesCore,
-  generateSubscriptionBuilder,
-  graphQLLoadSchemaSync,
-  loadExternalSchema,
-  loadGraphQLDocuments,
 } from './client'
 
-export type {
-  GraphQLLoadSchemaOptions,
-  GraphQLTypeDefPointer,
-  SubscriptionInfo,
-} from './client'
+// Document loading
+export { loadGraphQLDocuments } from './document-loader'
 
-// Plugin
-export * from './plugin'
+// File header
+export { GENERATED_FILE_HEADER } from './file-header'
 
 // Runtime code generation
 export {
   generateResolverModule,
   generateRuntimeIndex,
   generateSchemaModule,
-} from './runtime'
+} from './runtime-generator'
+
+// Schema loading
+export { downloadAndSaveSchema, graphQLLoadSchemaSync, loadExternalSchema } from './schema-loader'
+export type { GraphQLLoadSchemaOptions, GraphQLTypeDefPointer } from './schema-loader'
+
 // Server codegen
 export {
   DEFAULT_SERVER_CODEGEN_CONFIG,
   generateServerTypesCore,
-  generateTypes,
 } from './server'
 
+// Subscription utilities
+export { extractSubscriptions } from './subscription-extractor'
+export type { SubscriptionInfo } from './subscription-extractor'
 // Validation
-export * from './validation'
+export { validateNoDuplicateTypes, validateSchemaFiles } from './validation'
+
+export { generateSubscriptionBuilder } from './vue-subscription-builder'

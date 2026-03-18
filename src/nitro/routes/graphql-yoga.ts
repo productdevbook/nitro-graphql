@@ -12,7 +12,8 @@ import { directives } from '#nitro-graphql/server-directives'
 import { resolvers } from '#nitro-graphql/server-resolvers'
 import { schemas } from '#nitro-graphql/server-schemas'
 import { defineEventHandler, getQuery } from 'nitro/h3'
-import { BASE_SCHEMA, createYogaServer } from '../../core/server/yoga'
+import { BASE_SCHEMA_DEF } from '../../core/schema/builder'
+import { createYogaServer } from '../../core/server/yoga'
 
 // Cache control header for playground HTML (1 month)
 const PLAYGROUND_CACHE_HEADER = 'public, max-age=2592000, stale-while-revalidate=86400'
@@ -21,14 +22,14 @@ let server: CoreServerInstance | null = null
 
 export default defineEventHandler(async (event) => {
   if (!server) {
-    // Use core server factory - same code as CLI uses
-    // Always add BASE_SCHEMA first to support extend types
+    // BASE_SCHEMA_DEF provides empty Query/Mutation types required for
+    // `extend type Query { ... }` syntax to work in user schemas
     server = await createYogaServer({
-      schemas: [BASE_SCHEMA, ...schemas],
+      schemas: [BASE_SCHEMA_DEF, ...schemas],
       resolvers,
       directives,
       moduleConfig,
-      endpoint: '/api/graphql',
+      endpoint: moduleConfig.endpoint?.graphql || '/api/graphql',
       security: moduleConfig.security,
       importedConfig,
     })
@@ -43,8 +44,9 @@ export default defineEventHandler(async (event) => {
   // If resolver set a custom status code via event.res.status, use it
   if (event.res.status && event.res.status !== 200) {
     return new Response(response.body, {
-      ...response,
       status: event.res.status,
+      statusText: response.statusText,
+      headers: response.headers,
     })
   }
 

@@ -6,17 +6,14 @@
  */
 
 import type { ScannedResolver } from '../types/scanning'
+import consola from 'consola'
 import { dirname, resolve } from 'pathe'
 import { glob } from 'tinyglobby'
-import { GRAPHQL_GLOB_PATTERN, RESOLVER_GLOB_PATTERN } from '../constants'
-import {
-  isLocalPath,
-  loadPackageConfig,
-  parseDirectiveCall,
-  parseResolverCall,
-  parseSingleFile,
-  resolvePackageFiles,
-} from '../index'
+import { DEFAULT_IGNORE_PATTERNS, GRAPHQL_GLOB_PATTERN, RESOLVER_GLOB_PATTERN } from '../constants'
+import { isLocalPath, loadPackageConfig, resolvePackageFiles } from '../manifest'
+import { parseSingleFile } from '../scanning/ast-scanner'
+import { parseDirectiveCall } from '../scanning/directives'
+import { parseResolverCall } from '../scanning/resolvers'
 import { existsSync_ } from '../utils/runtime'
 
 /**
@@ -39,6 +36,10 @@ export interface ExtendScanResult {
   schemaPath?: string
 }
 
+function emptyResult(): ExtendScanResult {
+  return { schemas: [], resolvers: [], directives: [], documents: [] }
+}
+
 /**
  * Check if source is a LocalDirExtendSource
  */
@@ -55,7 +56,6 @@ export function isLocalDirSource(source: unknown): source is LocalDirExtendSourc
 
 /**
  * Resolve extend directories for file watching
- * Returns directories that should be watched for changes
  */
 export async function resolveExtendDirs(
   extend: Array<string | object> | undefined,
@@ -69,7 +69,6 @@ export async function resolveExtendDirs(
 
   for (const source of extend) {
     if (typeof source === 'string') {
-      // Package name or local path
       const pkg = await loadPackageConfig(source, rootDir)
       if (pkg) {
         const serverDir = resolve(pkg.baseDir, pkg.config.serverDir || 'server/graphql')
@@ -96,7 +95,6 @@ export async function resolveExtendDirs(
       }
     }
     else if (source && typeof source === 'object') {
-      // Legacy: explicit paths
       const obj = source as { resolvers?: string | string[], schemas?: string | string[] }
       if (obj.schemas) {
         const schemas = Array.isArray(obj.schemas) ? obj.schemas : [obj.schemas]
@@ -132,10 +130,10 @@ export async function scanExtendSource(
   }
 
   if (source && typeof source === 'object') {
-    return scanExplicitPaths(source as Record<string, unknown>, rootDir)
+    return scanExplicitPaths(source as { resolvers?: string | string[], schemas?: string | string[] }, rootDir)
   }
 
-  return { schemas: [], resolvers: [], directives: [], documents: [] }
+  return emptyResult()
 }
 
 /**
@@ -146,15 +144,10 @@ export async function scanAllExtendSources(
   rootDir: string,
 ): Promise<ExtendScanResult> {
   if (!extend || !Array.isArray(extend) || extend.length === 0) {
-    return { schemas: [], resolvers: [], directives: [], documents: [] }
+    return emptyResult()
   }
 
-  const merged: ExtendScanResult = {
-    schemas: [],
-    resolvers: [],
-    directives: [],
-    documents: [],
-  }
+  const merged = emptyResult()
 
   for (const source of extend) {
     const result = await scanExtendSource(source, rootDir)
@@ -171,9 +164,30 @@ export async function scanAllExtendSources(
   return merged
 }
 
-/**
- * Scan a package for GraphQL files
- */
+// ============ INTERNAL HELPERS ============
+
+async function parseResolverFiles(paths: string[]): Promise<ScannedResolver[]> {
+  const results: ScannedResolver[] = []
+  for (const filePath of paths) {
+    const parsed = await parseSingleFile(filePath, parseResolverCall)
+    if (parsed?.imports.length) {
+      results.push(parsed)
+    }
+  }
+  return results
+}
+
+async function parseDirectiveFiles(paths: string[]): Promise<ScannedResolver[]> {
+  const results: ScannedResolver[] = []
+  for (const filePath of paths) {
+    const parsed = await parseSingleFile(filePath, parseDirectiveCall)
+    if (parsed?.imports.length) {
+      results.push(parsed)
+    }
+  }
+  return results
+}
+
 async function scanPackageSource(
   packageName: string,
   rootDir: string,
@@ -181,99 +195,42 @@ async function scanPackageSource(
   const pkg = await loadPackageConfig(packageName, rootDir)
 
   if (!pkg) {
-    throw new Error(
+    consola.warn(
       `[nitro-graphql] Config not found for "${packageName}". `
-      + `Create a nitro-graphql.config.ts file in the package root.`,
+      + `Skipping. Create a nitro-graphql.config.ts file in the package root.`,
     )
+    return emptyResult()
   }
 
   const files = await resolvePackageFiles(pkg)
 
-  const resolvers: ScannedResolver[] = []
-  const directives: ScannedResolver[] = []
-
-  // Parse resolvers
-  for (const resolverPath of files.resolvers) {
-    const parsed = await parseSingleFile(resolverPath, parseResolverCall)
-    if (parsed?.imports.length) {
-      resolvers.push(parsed)
-    }
-  }
-
-  // Parse directives
-  for (const directivePath of files.directives) {
-    const parsed = await parseSingleFile(directivePath, parseDirectiveCall)
-    if (parsed?.imports.length) {
-      directives.push(parsed)
-    }
-  }
-
   return {
     schemas: files.schemas,
-    resolvers,
-    directives,
+    resolvers: await parseResolverFiles(files.resolvers),
+    directives: await parseDirectiveFiles(files.directives),
     documents: files.documents,
     configPath: files.configPath,
     schemaPath: files.schemaPath,
   }
 }
 
-/**
- * Scan a local directory for GraphQL files
- */
 async function scanLocalDirSource(
   source: LocalDirExtendSource,
 ): Promise<ExtendScanResult> {
-  const result: ExtendScanResult = {
-    schemas: [],
-    resolvers: [],
-    directives: [],
-    documents: [],
-  }
-
-  const ignorePatterns = [
-    '**/node_modules/**',
-    '**/.git/**',
-    '**/.output/**',
-    '**/.nitro/**',
-    '**/.nuxt/**',
-  ]
+  const result = emptyResult()
+  const ignorePatterns = [...DEFAULT_IGNORE_PATTERNS]
 
   // Scan serverDir
   if (source.serverDir && existsSync_(source.serverDir)) {
-    // Schemas
-    const schemaFiles = await glob(GRAPHQL_GLOB_PATTERN, {
-      cwd: source.serverDir,
-      absolute: true,
-      ignore: ignorePatterns,
-    })
+    const [schemaFiles, resolverFiles, directiveFiles] = await Promise.all([
+      glob(GRAPHQL_GLOB_PATTERN, { cwd: source.serverDir, absolute: true, ignore: ignorePatterns }),
+      glob(RESOLVER_GLOB_PATTERN, { cwd: source.serverDir, absolute: true, ignore: ignorePatterns }),
+      glob('**/*.directive.ts', { cwd: source.serverDir, absolute: true, ignore: ignorePatterns }),
+    ])
+
     result.schemas.push(...schemaFiles)
-
-    // Resolvers
-    const resolverFiles = await glob(RESOLVER_GLOB_PATTERN, {
-      cwd: source.serverDir,
-      absolute: true,
-      ignore: ignorePatterns,
-    })
-    for (const resolverPath of resolverFiles) {
-      const parsed = await parseSingleFile(resolverPath, parseResolverCall)
-      if (parsed?.imports.length) {
-        result.resolvers.push(parsed)
-      }
-    }
-
-    // Directives
-    const directiveFiles = await glob('**/*.directive.ts', {
-      cwd: source.serverDir,
-      absolute: true,
-      ignore: ignorePatterns,
-    })
-    for (const directivePath of directiveFiles) {
-      const parsed = await parseSingleFile(directivePath, parseDirectiveCall)
-      if (parsed?.imports.length) {
-        result.directives.push(parsed)
-      }
-    }
+    result.resolvers.push(...await parseResolverFiles(resolverFiles))
+    result.directives.push(...await parseDirectiveFiles(directiveFiles))
   }
 
   // Scan clientDir
@@ -289,36 +246,20 @@ async function scanLocalDirSource(
   return result
 }
 
-/**
- * Scan explicit paths (legacy format)
- */
 async function scanExplicitPaths(
   source: { resolvers?: string | string[], schemas?: string | string[] },
   rootDir: string,
 ): Promise<ExtendScanResult> {
-  const result: ExtendScanResult = {
-    schemas: [],
-    resolvers: [],
-    directives: [],
-    documents: [],
-  }
+  const result = emptyResult()
 
   if (source.schemas) {
     const schemas = Array.isArray(source.schemas) ? source.schemas : [source.schemas]
-    for (const schemaPath of schemas) {
-      result.schemas.push(resolve(rootDir, schemaPath))
-    }
+    result.schemas.push(...schemas.map(s => resolve(rootDir, s)))
   }
 
   if (source.resolvers) {
     const resolvers = Array.isArray(source.resolvers) ? source.resolvers : [source.resolvers]
-    for (const resolverPath of resolvers) {
-      const fullPath = resolve(rootDir, resolverPath)
-      const parsed = await parseSingleFile(fullPath, parseResolverCall)
-      if (parsed?.imports.length) {
-        result.resolvers.push(parsed)
-      }
-    }
+    result.resolvers.push(...await parseResolverFiles(resolvers.map(r => resolve(rootDir, r))))
   }
 
   return result

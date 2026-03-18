@@ -50,10 +50,15 @@ export function setupNoExternals(nitro: Nitro): void {
  */
 export function setupRollupChunking(nitro: Nitro): void {
   nitro.hooks.hook('rollup:before', (_, rollupConfig) => {
-    // TODO: Skip if advancedChunks is used?
-    return
     // Skip if inlineDynamicImports is enabled
     if (rollupConfig.output.inlineDynamicImports) {
+      return
+    }
+
+    // Skip if advancedChunks or codeSplitting is configured (Rolldown-specific)
+    // Rolldown throws when manualChunks is used with codeSplitting (even when false)
+    const output = rollupConfig.output as Record<string, unknown>
+    if (output.advancedChunks || 'codeSplitting' in output) {
       return
     }
 
@@ -149,9 +154,7 @@ export function setupRollupExternals(nitro: Nitro): void {
 
     const allExternals = [...codegenExternals]
 
-    // Apollo Federation is optional - only mark as external if NOT enabled
-    // (if enabled, it will be bundled; if not, it won't be imported at all)
-    // TODO: i think delete this comment
+    // Apollo Federation is optional — only externalize when NOT enabled
     if (!nitro.options.graphql?.federation?.enabled) {
       const federationExternals = [
         '@apollo/subgraph',

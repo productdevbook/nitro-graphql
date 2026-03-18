@@ -7,7 +7,7 @@ import {
   DEFAULT_RUNTIME_CONFIG,
   DEFAULT_SDK_CONFIG,
   DEFAULT_TYPES_CONFIG,
-} from '../../../src/nitro/config'
+} from '../../../src/nitro/defaults'
 
 describe('config/defaults', () => {
   it('should export default types config', () => {

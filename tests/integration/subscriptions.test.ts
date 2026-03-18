@@ -11,7 +11,8 @@ import { createNitro, prepare } from 'nitro/builder'
 import { resolve } from 'pathe'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import graphql from '../../src'
-import { NitroAdapter } from '../../src/nitro/adapter'
+import { scanResolversCore, scanSchemasCore } from '../../src/core/scanning'
+import { createScanContextFromNitro } from '../../src/nitro/adapter'
 
 const fixturesDir = resolve(__dirname, '../fixtures')
 
@@ -79,7 +80,7 @@ describe('graphQL Subscriptions Integration', () => {
     })
 
     it('should detect subscription resolvers', async () => {
-      const result = await NitroAdapter.scanResolvers(nitro)
+      const result = await scanResolversCore(createScanContextFromNitro(nitro))
 
       const subscriptionResolver = result.items.find(
         item => item.specifier.includes('chat.resolver'),
@@ -95,7 +96,7 @@ describe('graphQL Subscriptions Integration', () => {
     })
 
     it('should scan schema with subscription type', async () => {
-      const result = await NitroAdapter.scanSchemas(nitro)
+      const result = await scanSchemasCore(createScanContextFromNitro(nitro))
 
       expect(result.items.length).toBeGreaterThan(0)
 

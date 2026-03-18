@@ -11,7 +11,7 @@ import {
   deduplicateFiles,
   extractPaths,
   filterByExtension,
-} from '../../../src/core/scanning/common'
+} from '../../../src/core/scanning/file-scanner'
 
 describe('deduplicateFiles', () => {
   it('should return unique files by fullPath', () => {

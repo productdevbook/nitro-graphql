@@ -3,11 +3,10 @@
  * Framework-agnostic GraphQL client document scanning
  */
 
-import type { CoreExternalService } from '../types/config'
 import type { ScanContext, ScanResult } from '../types/scanning'
 import { relative } from 'pathe'
 import { GRAPHQL_GLOB_PATTERN } from '../constants'
-import { scanDirectory } from './common'
+import { scanDirectory } from './file-scanner'
 
 const REGEX_SPECIAL_CHARS_RE = /[.*+?^${}()|[\]\\]/g
 
@@ -15,8 +14,8 @@ const REGEX_SPECIAL_CHARS_RE = /[.*+?^${}()|[\]\\]/g
  * Options for scanning documents
  */
 export interface ScanDocumentsOptions {
-  /** External services to exclude from main scan */
-  externalServices?: CoreExternalService[]
+  /** External services to exclude from main scan (only documents field is used) */
+  externalServices?: Array<{ documents?: string[] }>
   /** Client directory relative path */
   clientDirRelative?: string
 }

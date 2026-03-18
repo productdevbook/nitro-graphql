@@ -40,7 +40,7 @@ async function collectDebugInfo(ctx: CLIContext): Promise<DebugInfo> {
     scanSchemasCore(scanCtx),
     scanResolversCore(scanCtx),
     scanDirectivesCore(scanCtx),
-    scanDocumentsCore(scanCtx, { externalServices: ctx.config.externalServices as any }),
+    scanDocumentsCore(scanCtx, { externalServices: ctx.config.externalServices }),
   ])
 
   // Process resolver files for display

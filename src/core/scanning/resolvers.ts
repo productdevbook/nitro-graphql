@@ -4,11 +4,9 @@
  */
 
 import type { ResolverImport, ScanContext, ScannedResolver, ScanResult } from '../types/scanning'
-import { hash } from 'ohash'
 import { DEFINE_FUNCTIONS, RESOLVER_GLOB_PATTERN } from '../constants'
+import { getImportId } from '../utils/imports'
 import { scanWithAST } from './ast-scanner'
-
-const HYPHEN_RE = /-/g
 
 /**
  * Parse a define* function call and return the import info
@@ -19,21 +17,21 @@ export function parseResolverCall(
   exportName: string,
   filePath: string,
 ): ResolverImport | null {
-  const aliasHash = `_${hash(exportName + filePath).replace(HYPHEN_RE, '').slice(0, 6)}`
+  const alias = getImportId(exportName + filePath)
 
   switch (calleeName) {
     case 'defineResolver':
-      return { name: exportName, type: 'resolver', as: aliasHash }
+      return { name: exportName, type: 'resolver', as: alias }
     case 'defineQuery':
-      return { name: exportName, type: 'query', as: aliasHash }
+      return { name: exportName, type: 'query', as: alias }
     case 'defineMutation':
-      return { name: exportName, type: 'mutation', as: aliasHash }
+      return { name: exportName, type: 'mutation', as: alias }
     case 'defineField':
-      return { name: exportName, type: 'type', as: aliasHash }
+      return { name: exportName, type: 'type', as: alias }
     case 'defineSubscription':
-      return { name: exportName, type: 'subscription', as: aliasHash }
+      return { name: exportName, type: 'subscription', as: alias }
     case 'defineDirective':
-      return { name: exportName, type: 'directive', as: aliasHash }
+      return { name: exportName, type: 'directive', as: alias }
     default:
       return null
   }

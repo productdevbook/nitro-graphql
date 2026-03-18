@@ -15,8 +15,10 @@ import { generateDebugHtml } from '../../core/debug/template'
  * - /_nitro/graphql/debug?format=json - JSON API
  */
 export default defineEventHandler(async (event) => {
-  // Note: This route is only registered in development mode (see src/index.ts)
-  // No need for additional isDev check here as it's already handled at registration
+  // Runtime safety: prevent accidental exposure in production
+  if (import.meta.env?.PROD || process.env.NODE_ENV === 'production') {
+    return new Response('Not Found', { status: 404 })
+  }
 
   const query = getQuery(event)
   const format = query.format as string || 'html'
@@ -30,7 +32,7 @@ export default defineEventHandler(async (event) => {
     return {
       file: fileName,
       fullPath: r.specifier,
-      exports: r.imports.map((i: any) => ({
+      exports: r.imports.map(i => ({
         name: i.name,
         type: i.type,
         as: i.as,
@@ -45,7 +47,7 @@ export default defineEventHandler(async (event) => {
     return {
       file: fileName,
       fullPath: d.specifier,
-      exports: d.imports.map((i: any) => ({
+      exports: d.imports.map(i => ({
         name: i.name,
         type: i.type,
         as: i.as,

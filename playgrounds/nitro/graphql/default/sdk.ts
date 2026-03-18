@@ -5,14 +5,15 @@
 /* prettier-ignore */
 import type * as Types from '#graphql/client';
 
-import type { ExecutionResult } from 'graphql';
+import type { DocumentNode, ExecutionResult } from 'graphql';
+import gql from 'graphql-tag';
 
-export const HelloDocument = /*#__PURE__*/ `
+export const HelloDocument = /*#__PURE__*/ gql`
     query Hello {
   helloCI
 }
     `;
-export const GetUsersDocument = /*#__PURE__*/ `
+export const GetUsersDocument = /*#__PURE__*/ gql`
     query GetUsers {
   users {
     id
@@ -20,12 +21,12 @@ export const GetUsersDocument = /*#__PURE__*/ `
   }
 }
     `;
-export const GetGreetingDocument = /*#__PURE__*/ `
+export const GetGreetingDocument = /*#__PURE__*/ gql`
     query GetGreeting {
   greeting(name: "World")
 }
     `;
-export type Requester<C = {}, E = unknown> = <R, V>(doc: string, vars?: V, options?: C) => Promise<ExecutionResult<R, E>> | AsyncIterable<ExecutionResult<R, E>>
+export type Requester<C = {}, E = unknown> = <R, V>(doc: DocumentNode, vars?: V, options?: C) => Promise<ExecutionResult<R, E>> | AsyncIterable<ExecutionResult<R, E>>
 export function getSdk<C, E>(requester: Requester<C, E>) {
   return {
     Hello(variables?: Types.HelloQueryVariables, options?: C): Promise<ExecutionResult<Types.HelloQuery, E>> {

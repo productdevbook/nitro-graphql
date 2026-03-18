@@ -4,7 +4,7 @@
  * Standalone command-line interface for GraphQL type generation
  */
 
-import type { NitroGraphQLOptions } from '../nitro/types'
+import type { CLIGraphQLOptions } from '../nitro/types'
 import { defineCommand, runMain } from 'citty'
 import consola from 'consola'
 import { resolve } from 'pathe'
@@ -16,19 +16,16 @@ const logger = consola.withTag(LOG_TAG)
 
 /**
  * CLI context with resolved configuration
- * Uses NitroGraphQLOptions directly as CLI and module options are now unified
  */
 export interface CLIContext {
-  config: Required<Pick<NitroGraphQLOptions, 'rootDir' | 'buildDir' | 'serverDir' | 'clientDir' | 'typesDir' | 'framework'>>
-    & { ignore: string[] }
-    & NitroGraphQLOptions
+  config: CLIGraphQLOptions
   cwd: string
 }
 
 /**
  * Load CLI configuration from file or defaults
  */
-export async function loadConfig(cwd: string = getCwd()): Promise<NitroGraphQLOptions> {
+export async function loadConfig(cwd: string = getCwd()): Promise<Partial<CLIGraphQLOptions>> {
   const configFiles = [
     'nitro-graphql.config.ts',
     'nitro-graphql.config.js',
@@ -65,7 +62,7 @@ export async function createCLIContext(options: { cwd?: string } = {}): Promise<
 
   // Resolve all paths relative to cwd
   const rootDir = config.rootDir ? resolve(cwd, config.rootDir) : cwd
-  const buildDir = config.buildDir ? resolve(rootDir, config.buildDir) : resolve(rootDir, '.nitro-graphql')
+  const buildDir = config.buildDir ? resolve(rootDir, config.buildDir) : resolve(rootDir, '.graphql')
   const serverDir = config.serverDir ? resolve(rootDir, config.serverDir) : resolve(rootDir, 'server/graphql')
   const clientDir = config.clientDir ? resolve(rootDir, config.clientDir) : resolve(rootDir, 'graphql')
   const typesDir = config.typesDir ? resolve(rootDir, config.typesDir) : resolve(buildDir, 'types')

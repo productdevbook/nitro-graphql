@@ -1,9 +1,10 @@
 /**
  * Core configuration types
- * Framework-agnostic configuration interfaces for nitro-graphql
+ * Minimal framework-agnostic types — only what core functions actually need
  */
 
 import type { GraphQLFramework } from '../constants'
+import type { ClientCodegenConfig, ExternalServiceCodegenConfig, SdkCodegenConfig, ServerCodegenConfig } from './codegen'
 
 /**
  * Core logger interface
@@ -18,19 +19,8 @@ export interface CoreLogger {
 }
 
 /**
- * GraphQL codegen configuration
- */
-export interface CoreCodegenConfig {
-  /** Server-side codegen options */
-  server?: Record<string, unknown>
-  /** Client-side codegen options */
-  client?: Record<string, unknown>
-  /** Client SDK codegen options */
-  clientSDK?: Record<string, unknown>
-}
-
-/**
  * Security configuration options
+ * Single source of truth — re-exported as `SecurityConfig` in Nitro types
  */
 export interface CoreSecurityConfig {
   /** Enable/disable GraphQL introspection */
@@ -44,29 +34,8 @@ export interface CoreSecurityConfig {
 }
 
 /**
- * External GraphQL service configuration
- */
-export interface CoreExternalService {
-  /** Unique service name */
-  name: string
-  /** GraphQL schema URL or file path */
-  schema: string
-  /** GraphQL endpoint URL */
-  endpoint: string
-  /** Headers for schema introspection */
-  headers?: Record<string, string> | (() => Record<string, string>)
-  /** Document patterns for this service */
-  documents?: string[]
-  /** Service-specific path overrides */
-  paths?: {
-    sdk?: string
-    types?: string
-    ofetch?: string
-  }
-}
-
-/**
- * Apollo Federation configuration
+ * Federation configuration
+ * Base type — Nitro's FederationConfig extends this
  */
 export interface CoreFederationConfig {
   /** Enable federation support */
@@ -76,85 +45,35 @@ export interface CoreFederationConfig {
 }
 
 /**
- * Path configuration with placeholders
+ * Codegen configuration
+ * Uses the authoritative types from codegen.ts
  */
-export interface CorePathsConfig {
-  /** Server GraphQL directory (default: 'server/graphql') */
-  serverDir?: string
-  /** Client GraphQL directory (default: 'app/graphql' or 'graphql') */
-  clientDir?: string
-  /** Types output directory (default: '{buildDir}/types') */
-  typesDir?: string
+export interface CoreCodegenConfig {
+  /** Server-side codegen options */
+  server?: ServerCodegenConfig
+  /** Client-side codegen options */
+  client?: ClientCodegenConfig
+  /** Client SDK codegen options */
+  clientSDK?: SdkCodegenConfig
 }
 
 /**
- * Type generation configuration
+ * External service with path overrides
+ * Extends the codegen base type with UI-facing path config
  */
-export interface CoreTypesConfig {
-  /** Master switch for type generation */
-  enabled?: boolean
-  /** Server types output path */
-  server?: boolean | string
-  /** Client types output path */
-  client?: boolean | string
-  /** External service types output path */
-  external?: boolean | string
-}
-
-/**
- * SDK generation configuration
- */
-export interface CoreSdkConfig {
-  /** Master switch for SDK generation */
-  enabled?: boolean
-  /** Main SDK output path */
-  main?: boolean | string
-  /** External service SDK output path */
-  external?: boolean | string
-}
-
-/**
- * Client utilities configuration
- */
-export interface CoreClientUtilsConfig {
-  /** Master switch for client utilities */
-  enabled?: boolean
-  /** Index file output path */
-  index?: boolean | string
-  /** Ofetch client output path */
-  ofetch?: boolean | string
-}
-
-/**
- * Core GraphQL options
- * Framework-agnostic GraphQL configuration
- */
-export interface CoreGraphQLOptions {
-  /** GraphQL framework to use */
-  framework?: GraphQLFramework
-  /** GraphQL endpoint path */
-  endpoint?: string
-  /** Codegen configuration */
-  codegen?: CoreCodegenConfig
-  /** Security configuration */
-  security?: CoreSecurityConfig
-  /** External GraphQL services */
-  externalServices?: CoreExternalService[]
-  /** Apollo Federation configuration */
-  federation?: CoreFederationConfig
-  /** Path configuration */
-  paths?: CorePathsConfig
-  /** Type generation configuration */
-  types?: false | CoreTypesConfig
-  /** SDK generation configuration */
-  sdk?: false | CoreSdkConfig
-  /** Client utilities configuration */
-  clientUtils?: false | CoreClientUtilsConfig
+export interface CoreExternalService extends ExternalServiceCodegenConfig {
+  /** Service-specific path overrides */
+  paths?: {
+    sdk?: string | boolean
+    types?: string | boolean
+    ofetch?: string | boolean
+  }
 }
 
 /**
  * Core configuration
- * Main configuration interface that replaces Nitro-specific options
+ * The resolved, fully-populated config used by core functions.
+ * Created by adapters from framework-specific types.
  */
 export interface CoreConfig {
   /** Root directory of the project */
@@ -173,29 +92,16 @@ export interface CoreConfig {
   isNuxt: boolean
   /** Whether running in development mode */
   isDev: boolean
-  /** GraphQL options */
-  graphqlOptions: CoreGraphQLOptions
   /** Logger instance */
   logger: CoreLogger
   /** Patterns to ignore during scanning */
   ignorePatterns: string[]
-}
-
-/**
- * Core context for runtime operations
- * Holds resolved configuration and state
- */
-export interface CoreContext {
-  /** Resolved configuration */
-  config: CoreConfig
-  /** GraphQL build directory */
-  graphqlBuildDir: string
-  /** Watch directories for file watching */
-  watchDirs: string[]
-  /** Relative directory paths */
-  dir: {
-    build: string
-    client: string
-    server: string
-  }
+  /** Security configuration */
+  security?: CoreSecurityConfig
+  /** Federation configuration */
+  federation?: CoreFederationConfig
+  /** Codegen configuration */
+  codegen?: CoreCodegenConfig
+  /** External services */
+  externalServices?: CoreExternalService[]
 }

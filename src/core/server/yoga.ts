@@ -5,19 +5,11 @@
  * Used by both Nitro routes and CLI dev server.
  */
 
-import type { SchemaDefinition } from '../schema/builder'
 import type { CoreServerInstance, CoreServerOptions } from './types'
 import defu from 'defu'
 import { createYoga } from 'graphql-yoga'
-import { BASE_SCHEMA as BASE_SCHEMA_STRING, createMergedSchema } from '../schema/builder'
-
-/**
- * Base schema definition for Yoga server
- * Uses shared BASE_SCHEMA string from builder
- */
-export const BASE_SCHEMA: SchemaDefinition = {
-  def: BASE_SCHEMA_STRING,
-}
+import { createMergedSchema } from '../schema/builder'
+import { resolveSecurityDefaults } from './types'
 
 /**
  * Apollo Sandbox HTML template
@@ -88,13 +80,7 @@ export async function createYogaServer(options: CoreServerOptions): Promise<Core
     moduleConfig,
   })
 
-  // Apply security defaults
-  const securityConfig = security || {
-    introspection: true,
-    playground: true,
-    maskErrors: false,
-    disableSuggestions: false,
-  }
+  const securityConfig = resolveSecurityDefaults(security)
 
   // Create Yoga instance with merged config
   const yoga = createYoga(defu({
@@ -111,7 +97,8 @@ export async function createYogaServer(options: CoreServerOptions): Promise<Core
   }, importedConfig))
 
   return {
-    fetch: (request, context) => Promise.resolve(yoga.fetch(request as any, context as any)),
+    // Yoga's fetch expects its own Request/ServerContext types which differ from standard Web API
+    fetch: (request, context) => Promise.resolve(yoga.fetch(request as unknown as Request, context as Record<string, unknown>)),
     schema,
   }
 }

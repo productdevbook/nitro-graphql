@@ -11,11 +11,11 @@
 // Codegen utilities
 export * from './codegen'
 
-// Configuration (flattened from config/)
-export * from './config'
-
 // Constants (flattened from constants/)
 export * from './constants'
+
+// Configuration factory functions
+export * from './create-config'
 
 // Manifest utilities
 export * from './manifest'

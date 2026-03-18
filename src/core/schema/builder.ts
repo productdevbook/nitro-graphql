@@ -127,10 +127,15 @@ export async function createMergedSchema(options: CreateMergedSchemaOptions): Pr
 /**
  * Base schema with empty Query and Mutation types.
  * Required for 'extend type Query' syntax to work.
- * Shared between CLI and Nitro.
+ * Shared between CLI, Yoga, and Apollo routes.
  */
 export const BASE_SCHEMA = `type Query { _empty: String }
 type Mutation { _empty: String }`
+
+/** BASE_SCHEMA wrapped as a SchemaDefinition for virtual module usage */
+export const BASE_SCHEMA_DEF: SchemaDefinition = {
+  def: BASE_SCHEMA,
+}
 
 /**
  * Build a GraphQL schema from file paths (CLI usage)

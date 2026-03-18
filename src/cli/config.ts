@@ -3,18 +3,18 @@
  * Standalone config file format for nitro-graphql CLI
  */
 
-import type { NitroGraphQLOptions } from '../nitro/types'
+import type { CLIGraphQLOptions } from '../nitro/types'
 
 /**
  * CLI configuration options
- * Now unified with NitroGraphQLOptions - all options available in both CLI and module context
+ * Extends NitroGraphQLOptions with CLI-specific fields (rootDir, buildDir, etc.)
  */
-export type CLIConfig = NitroGraphQLOptions
+export type CLIConfig = CLIGraphQLOptions
 
 /**
  * Define CLI configuration with type safety
  */
-export function defineConfig(config: CLIConfig): CLIConfig {
+export function defineConfig(config: Partial<CLIConfig>): Partial<CLIConfig> {
   return config
 }
 
@@ -23,8 +23,10 @@ export function defineConfig(config: CLIConfig): CLIConfig {
  */
 export const DEFAULT_CLI_CONFIG: CLIConfig = {
   framework: 'graphql-yoga',
+  rootDir: '.',
+  buildDir: '.graphql',
   serverDir: 'server/graphql',
   clientDir: 'graphql',
-  buildDir: '.graphql',
+  typesDir: '.graphql/types',
   ignore: ['**/node_modules/**', '**/dist/**'],
 }

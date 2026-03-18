@@ -1,14 +1,23 @@
 /**
  * GraphQL Scanner Module
- * Consolidated scanning logic for schemas, resolvers, directives, and documents
+ * Consolidated scanning logic — builds immutable GraphQLScanState snapshots
  */
 
 import type { Nitro } from 'nitro/types'
+import type { ScannedResolver } from '../../core/types/scanning'
 import type { ExtendSource } from '../types'
 import consola from 'consola'
+import { relative } from 'pathe'
 import { LOG_TAG } from '../../core/constants'
+import {
+  scanDirectivesCore,
+  scanDocumentsCore,
+  scanResolversCore,
+  scanSchemasCore,
+} from '../../core/scanning'
 import { generateDirectiveSchemas } from '../../core/utils/directive-parser'
-import { NitroAdapter } from '../adapter'
+import { createScanContextFromNitro } from '../adapter'
+import { createScanState } from '../state'
 import { resolveExtendConfig } from './extend-loader'
 
 const logger = consola.withTag(LOG_TAG)
@@ -16,39 +25,20 @@ const logger = consola.withTag(LOG_TAG)
 // ============ TYPES ============
 
 export interface ScanOptions {
-  /** Silent mode - suppress logging */
   silent?: boolean
-  /** Is this a rescan (dev mode hot reload) */
   isRescan?: boolean
-}
-
-export interface ScanResult {
-  schemas: number
-  resolvers: number
-  directives: number
-  documents: number
 }
 
 // ============ HELPERS ============
 
-/**
- * Check if local file scanning should be performed
- * Centralized helper to avoid scattered skipLocalScan checks
- */
 export function shouldScanLocalFiles(nitro: Nitro): boolean {
   return nitro.options.graphql?.skipLocalScan !== true
 }
 
-/**
- * Check if server-side GraphQL is enabled
- */
 export function isServerEnabled(nitro: Nitro): boolean {
   return nitro.options.graphql?.server !== false
 }
 
-/**
- * Get extend sources from config
- */
 export function getExtendSources(nitro: Nitro): ExtendSource[] | undefined {
   const extend = nitro.options.graphql?.extend
   return Array.isArray(extend) ? extend : undefined
@@ -57,66 +47,66 @@ export function getExtendSources(nitro: Nitro): ExtendSource[] | undefined {
 // ============ CORE SCANNING ============
 
 /**
- * Scan local GraphQL files (schemas, resolvers, directives, documents)
- * This is the low-level scan function - use performGraphQLScan for full workflow
+ * Scan local GraphQL files and return an immutable state snapshot.
+ * Does NOT mutate nitro — caller is responsible for assigning the state.
  */
-export async function scanLocalFiles(nitro: Nitro): Promise<ScanResult> {
-  // Scan directives first
-  const directivesResult = await NitroAdapter.scanDirectives(nitro)
-  nitro.scanDirectives = directivesResult.items
+async function scanLocalFiles(nitro: Nitro) {
+  const ctx = createScanContextFromNitro(nitro)
 
-  // Generate directive schemas and write to .graphql/directives.graphql
+  // Scan directives first (needed for directive schema generation)
+  const directivesResult = await scanDirectivesCore(ctx)
   const directiveSchemas = await generateDirectiveSchemas(directivesResult.items, nitro.graphql.buildDir)
-  nitro.graphql.directiveSchemas = directiveSchemas
 
   // Scan schemas
-  const schemasResult = await NitroAdapter.scanSchemas(nitro)
-  nitro.scanSchemas = schemasResult.items
+  const schemasResult = await scanSchemasCore(ctx)
 
-  // Scan documents and resolvers
-  const docsResult = await NitroAdapter.scanDocuments(nitro)
-  nitro.scanDocuments = docsResult.items
+  // Scan documents and resolvers in parallel
+  const [docsResult, resolversResult] = await Promise.all([
+    scanDocumentsCore(ctx, {
+      externalServices: nitro.options.graphql?.externalServices,
+      clientDirRelative: relative(nitro.options.rootDir, nitro.graphql.clientDir),
+    }),
+    scanResolversCore(ctx),
+  ])
 
-  const resolversResult = await NitroAdapter.scanResolvers(nitro)
-  nitro.scanResolvers = resolversResult.items
-
-  return {
-    schemas: schemasResult.items.length,
-    resolvers: resolversResult.items.length,
-    directives: directivesResult.items.length,
-    documents: docsResult.items.length,
-  }
+  return createScanState({
+    schemas: schemasResult.items,
+    resolvers: resolversResult.items,
+    directives: directivesResult.items,
+    documents: docsResult.items,
+    directiveSchemas,
+  })
 }
 
 /**
- * Scan only client documents (for external services or client-only mode)
+ * Scan only client documents, preserving existing state for other fields
  */
-export async function scanDocumentsOnly(nitro: Nitro): Promise<number> {
-  const result = await NitroAdapter.scanDocuments(nitro)
-  nitro.scanDocuments = result.items
-  return result.items.length
-}
+async function scanDocumentsOnly(nitro: Nitro) {
+  const ctx = createScanContextFromNitro(nitro)
+  const result = await scanDocumentsCore(ctx, {
+    externalServices: nitro.options.graphql?.externalServices,
+    clientDirRelative: relative(nitro.options.rootDir, nitro.graphql.clientDir),
+  })
 
-/**
- * Initialize empty scan results (for skipLocalScan mode)
- */
-export function initializeEmptyScanResults(nitro: Nitro): void {
-  nitro.scanSchemas = []
-  nitro.scanResolvers = []
-  nitro.scanDirectives = []
+  return createScanState({
+    schemas: [],
+    resolvers: [],
+    directives: [],
+    documents: result.items,
+    directiveSchemas: null,
+  })
 }
 
 // ============ MAIN SCAN WORKFLOW ============
 
 /**
- * Perform complete GraphQL scan workflow
- * This is the main entry point for both initial setup and dev mode rescan
+ * Perform complete GraphQL scan workflow.
+ * Builds an immutable state snapshot and assigns it to nitro.graphql.state atomically.
  *
- * Workflow:
- * 1. Check skipLocalScan flag
- * 2. Scan local files if enabled
- * 3. Resolve extend config (append to results)
- * 4. Log diagnostics if needed
+ * Flow:
+ * 1. Scan local files (or skip if skipLocalScan)
+ * 2. Merge extend sources into state
+ * 3. Assign frozen state to nitro.graphql.state (single atomic write)
  */
 export async function performGraphQLScan(nitro: Nitro, options: ScanOptions = {}): Promise<void> {
   const { silent = false, isRescan = false } = options
@@ -124,15 +114,15 @@ export async function performGraphQLScan(nitro: Nitro, options: ScanOptions = {}
   const scanLocal = shouldScanLocalFiles(nitro)
   const extendSources = getExtendSources(nitro)
 
-  // Skip rescan when using skipLocalScan with extends
-  // The dev:start hook triggers rescan but Nitro doesn't await async hooks.
-  // This causes a race condition where tests/code run before rescan completes.
-  // Since extend packages don't change during dev, skipping rescan is correct.
-  if (isRescan && !scanLocal && extendSources?.length) {
+  // Skip rescan when extend sources exist — extend packages don't change during dev,
+  // and the eager virtual module snapshots already captured the initial state
+  if (isRescan && extendSources?.length) {
     return
   }
 
-  // Step 1: Handle skipLocalScan mode
+  let state
+
+  // Step 1: Build initial state from local scan
   if (!scanLocal) {
     if (!isRescan && !silent) {
       if (extendSources?.length) {
@@ -142,38 +132,39 @@ export async function performGraphQLScan(nitro: Nitro, options: ScanOptions = {}
         logger.info('Skipping local scanning (skipLocalScan: true)')
       }
     }
-
-    // Initialize empty arrays for server-side scanning
-    initializeEmptyScanResults(nitro)
-
-    // Still scan documents for client-side usage (external services, etc.)
-    await scanDocumentsOnly(nitro)
+    state = await scanDocumentsOnly(nitro)
   }
-  // Step 2: Perform local file scanning
   else if (serverEnabled) {
-    await scanLocalFiles(nitro)
+    state = await scanLocalFiles(nitro)
   }
   else {
-    // Client-only mode: only scan documents
-    await scanDocumentsOnly(nitro)
+    state = await scanDocumentsOnly(nitro)
   }
 
-  // Step 3: Resolve extend config (always, to append manifest files)
-  await resolveExtendConfig(nitro, { silent: silent || isRescan })
+  // Step 2: Merge extend sources (mutates state via mergeScanState which returns new frozen object)
+  state = await resolveExtendConfig(nitro, state, { silent: silent || isRescan })
+
+  // Step 3: Atomic state assignment — single write, no partial state possible
+  nitro.graphql.state = state
+
+  // Sync legacy fields for backward compatibility (tests, external consumers)
+  nitro.scanSchemas = [...state.schemas] as string[]
+  nitro.scanResolvers = [...state.resolvers] as ScannedResolver[]
+  nitro.scanDirectives = [...state.directives] as ScannedResolver[]
+  nitro.scanDocuments = [...state.documents] as string[]
+  nitro.graphql.directiveSchemas = state.directiveSchemas
+  nitro.graphql.extendConfigs = [...state.extendConfigs] as string[]
+  nitro.graphql.extendSchemas = [...state.extendSchemas] as string[]
 }
 
 // ============ DIAGNOSTICS ============
 
-/**
- * Log resolver diagnostics for development
- */
 export function logResolverDiagnostics(nitro: Nitro): void {
-  const resolvers = nitro.scanResolvers || []
+  const resolvers = nitro.graphql.state.resolvers
 
   if (resolvers.length > 0) {
     const totalExports = resolvers.reduce((sum, r) => sum + r.imports.length, 0)
 
-    // Show breakdown by type for better visibility
     const typeCount = {
       query: 0,
       mutation: 0,

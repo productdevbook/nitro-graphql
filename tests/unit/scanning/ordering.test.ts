@@ -12,7 +12,7 @@ import { resolve } from 'pathe'
 import { describe, expect, it } from 'vitest'
 import {
   scanDirectory,
-} from '../../../src/core/scanning/common'
+} from '../../../src/core/scanning/file-scanner'
 
 const fixturesDir = resolve(__dirname, '../../fixtures/ordering')
 

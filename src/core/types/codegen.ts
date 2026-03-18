@@ -1,56 +1,46 @@
 /**
  * Codegen-specific types
  * Framework-agnostic type generation types
+ *
+ * These types extend the actual @graphql-codegen plugin types to be the single
+ * authoritative source. Nitro types re-export from here instead of redefining.
  */
 
+import type { TypeScriptPluginConfig } from '@graphql-codegen/typescript'
+import type { plugin as typescriptGenericSdk } from '@graphql-codegen/typescript-generic-sdk'
+import type { TypeScriptDocumentsPluginConfig } from '@graphql-codegen/typescript-operations'
+import type { TypeScriptResolversPluginConfig } from '@graphql-codegen/typescript-resolvers'
 import type { Source } from '@graphql-tools/utils'
 import type { GraphQLSchema } from 'graphql'
 
 /**
- * Scalar type mapping (can be string or input/output object)
- */
-export type ScalarType = string | { input: string, output: string }
-
-/**
  * Server codegen configuration
+ * Extends @graphql-codegen/typescript + @graphql-codegen/typescript-resolvers
  */
-export interface ServerCodegenConfig {
-  scalars?: Record<string, ScalarType>
-  defaultScalarType?: string
-  defaultMapper?: string
-  contextType?: string
-  maybeValue?: string
-  inputMaybeValue?: string
-  declarationKind?: string
-  enumsAsTypes?: boolean
-  federation?: boolean
-  [key: string]: unknown
-}
+export type ServerCodegenConfig = TypeScriptPluginConfig & TypeScriptResolversPluginConfig
 
 /**
  * Client codegen configuration
+ * Extends @graphql-codegen/typescript + @graphql-codegen/typescript-operations
  */
-export interface ClientCodegenConfig {
-  emitLegacyCommonJSImports?: boolean
-  useTypeImports?: boolean
-  enumsAsTypes?: boolean
-  strictScalars?: boolean
-  maybeValue?: string
-  inputMaybeValue?: string
-  documentMode?: string
-  pureMagicComment?: boolean
-  dedupeOperationSuffix?: boolean
-  rawRequest?: boolean
-  scalars?: Record<string, ScalarType>
+export type ClientCodegenConfig = TypeScriptPluginConfig & TypeScriptDocumentsPluginConfig & {
+  /**
+   * Generate TypedDocumentNode exports for urql/Apollo Client compatibility.
+   * @default false
+   */
   typedDocumentNode?: boolean
-  [key: string]: unknown
 }
 
 /**
  * SDK codegen configuration
+ * Derives from the generic-sdk plugin's config parameter type with string documentMode
  */
-export interface SdkCodegenConfig extends ClientCodegenConfig {
-  [key: string]: unknown
+type DocumentModeConfig = Pick<Parameters<typeof typescriptGenericSdk>[2], 'documentMode'>
+type DocumentModeEnum = NonNullable<DocumentModeConfig['documentMode']>
+type DocumentModeType = `${DocumentModeEnum}`
+
+export type SdkCodegenConfig = Omit<Parameters<typeof typescriptGenericSdk>[2], 'documentMode'> & {
+  documentMode?: DocumentModeType
 }
 
 /**
@@ -123,7 +113,7 @@ export interface ClientCodegenResult {
  */
 export interface ExternalServiceCodegenConfig {
   name: string
-  schema: string | string[]
+  schema?: string | string[]
   endpoint: string
   headers?: Record<string, string> | (() => Record<string, string>)
   documents?: string[]
@@ -133,12 +123,4 @@ export interface ExternalServiceCodegenConfig {
     client?: ClientCodegenConfig
     clientSDK?: SdkCodegenConfig
   }
-}
-
-/**
- * Schema loading options
- */
-export interface SchemaLoadOptions {
-  headers?: Record<string, string>
-  loaders?: unknown[]
 }

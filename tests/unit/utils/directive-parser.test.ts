@@ -2,7 +2,7 @@
  * Unit tests for directive-parser utility module
  *
  * Tests the directive parsing and schema generation utilities:
- * - DirectiveParser: AST-based parsing of defineDirective calls
+ * - parseDirectivesFromFile: AST-based parsing of defineDirective calls
  * - generateDirectiveSchema: generates GraphQL SDL from parsed directives
  * - generateDirectiveSchemas: generates schemas from multiple directive files
  */
@@ -12,9 +12,9 @@ import os from 'node:os'
 import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
-  DirectiveParser,
   generateDirectiveSchema,
   generateDirectiveSchemas,
+  parseDirectivesFromFile,
 } from '../../../src/core/utils/directive-parser'
 
 describe('generateDirectiveSchema', () => {
@@ -250,13 +250,7 @@ describe('generateDirectiveSchema', () => {
   })
 })
 
-describe('directiveParser', () => {
-  let parser: DirectiveParser
-
-  beforeEach(() => {
-    parser = new DirectiveParser()
-  })
-
+describe('parseDirectivesFromFile', () => {
   describe('parseDirectives', () => {
     it('should parse simple defineDirective call', async () => {
       const content = `
@@ -268,7 +262,7 @@ describe('directiveParser', () => {
         })
       `
 
-      const result = await parser.parseDirectives(content, 'test.ts')
+      const result = parseDirectivesFromFile(content, 'test.ts')
 
       expect(result).toHaveLength(1)
       expect(result[0].name).toBe('upper')
@@ -283,7 +277,7 @@ describe('directiveParser', () => {
         })
       `
 
-      const result = await parser.parseDirectives(content, 'test.ts')
+      const result = parseDirectivesFromFile(content, 'test.ts')
 
       expect(result).toHaveLength(1)
       expect(result[0].name).toBe('auth')
@@ -302,7 +296,7 @@ describe('directiveParser', () => {
         })
       `
 
-      const result = await parser.parseDirectives(content, 'test.ts')
+      const result = parseDirectivesFromFile(content, 'test.ts')
 
       expect(result).toHaveLength(1)
       expect(result[0].name).toBe('rateLimit')
@@ -323,7 +317,7 @@ describe('directiveParser', () => {
         })
       `
 
-      const result = await parser.parseDirectives(content, 'test.ts')
+      const result = parseDirectivesFromFile(content, 'test.ts')
 
       expect(result).toHaveLength(1)
       expect(result[0].args).toEqual({
@@ -342,7 +336,7 @@ describe('directiveParser', () => {
         })
       `
 
-      const result = await parser.parseDirectives(content, 'test.ts')
+      const result = parseDirectivesFromFile(content, 'test.ts')
 
       expect(result).toHaveLength(1)
       expect(result[0].args).toEqual({
@@ -361,7 +355,7 @@ describe('directiveParser', () => {
         })
       `
 
-      const result = await parser.parseDirectives(content, 'test.ts')
+      const result = parseDirectivesFromFile(content, 'test.ts')
 
       expect(result).toHaveLength(1)
       expect(result[0].args).toEqual({
@@ -378,7 +372,7 @@ describe('directiveParser', () => {
         })
       `
 
-      const result = await parser.parseDirectives(content, 'test.ts')
+      const result = parseDirectivesFromFile(content, 'test.ts')
 
       expect(result).toHaveLength(1)
       expect(result[0].description).toBe('Documents a field')
@@ -393,7 +387,7 @@ describe('directiveParser', () => {
         })
       `
 
-      const result = await parser.parseDirectives(content, 'test.ts')
+      const result = parseDirectivesFromFile(content, 'test.ts')
 
       expect(result).toHaveLength(1)
       expect(result[0].isRepeatable).toBe(true)
@@ -412,7 +406,7 @@ describe('directiveParser', () => {
         })
       `
 
-      const result = await parser.parseDirectives(content, 'test.ts')
+      const result = parseDirectivesFromFile(content, 'test.ts')
 
       expect(result).toHaveLength(2)
       expect(result[0].name).toBe('upper')
@@ -426,7 +420,7 @@ describe('directiveParser', () => {
         })
       `
 
-      const result = await parser.parseDirectives(content, 'test.ts')
+      const result = parseDirectivesFromFile(content, 'test.ts')
 
       expect(result).toHaveLength(0)
     })
@@ -436,7 +430,7 @@ describe('directiveParser', () => {
         export const invalid = {{{
       `
 
-      const result = await parser.parseDirectives(content, 'test.ts')
+      const result = parseDirectivesFromFile(content, 'test.ts')
 
       expect(result).toHaveLength(0)
     })
@@ -448,7 +442,7 @@ describe('directiveParser', () => {
         })
       `
 
-      const result = await parser.parseDirectives(content, 'test.ts')
+      const result = parseDirectivesFromFile(content, 'test.ts')
 
       // Should not return a directive without name
       expect(result).toHaveLength(0)
@@ -461,7 +455,7 @@ describe('directiveParser', () => {
         })
       `
 
-      const result = await parser.parseDirectives(content, 'test.ts')
+      const result = parseDirectivesFromFile(content, 'test.ts')
 
       // Should not return a directive without locations
       expect(result).toHaveLength(0)
@@ -475,7 +469,7 @@ describe('directiveParser', () => {
         })
       `
 
-      const result = await parser.parseDirectives(content, 'test.js')
+      const result = parseDirectivesFromFile(content, 'test.js')
 
       expect(result).toHaveLength(1)
       expect(result[0].name).toBe('js')
@@ -499,7 +493,7 @@ describe('directiveParser', () => {
         })
       `
 
-      const result = await parser.parseDirectives(content, 'test.ts')
+      const result = parseDirectivesFromFile(content, 'test.ts')
 
       expect(result).toHaveLength(1)
       expect(result[0].name).toBe('real')

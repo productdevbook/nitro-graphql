@@ -5,9 +5,22 @@
 
 import type { ResolverImport, ScanContext, ScannedResolver, ScanResult } from '../types/scanning'
 import { readFile } from 'node:fs/promises'
+import consola from 'consola'
 import { parseSync } from 'oxc-parser'
 import { basename, relative } from 'pathe'
-import { scanDirectory } from './common'
+import { scanDirectory } from './file-scanner'
+
+/** Minimal oxc-parser AST node for export/declaration traversal */
+interface OxcASTNode {
+  type: string
+  declaration?: OxcASTNode
+  declarations?: OxcASTNode[]
+  callee?: OxcASTNode
+  init?: OxcASTNode
+  id?: OxcASTNode
+  name?: string
+  body?: OxcASTNode[]
+}
 
 /**
  * Configuration for AST-based scanning
@@ -113,7 +126,8 @@ export async function parseSingleFile(
     }
     return null
   }
-  catch {
+  catch (error) {
+    consola.debug(`[nitro-graphql] Failed to parse file ${filePath}:`, error)
     return null
   }
 }
@@ -123,7 +137,7 @@ export async function parseSingleFile(
  */
 function parseExports(
   filePath: string,
-  program: { body: any[] },
+  program: { body: OxcASTNode[] },
   config: ASTScanConfig,
 ): { resolver: ScannedResolver, warnings: string[] } {
   const warnings: string[] = []

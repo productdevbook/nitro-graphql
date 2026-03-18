@@ -100,7 +100,7 @@ export async function generateServer(
   const result = await generateServerTypesCore({
     framework: ctx.config.framework,
     schema,
-    config: ctx.config.codegen?.server as any,
+    config: ctx.config.codegen?.server,
     federationEnabled: ctx.config.federation?.enabled,
   })
 
@@ -151,7 +151,7 @@ export async function generateClient(
 
   // Scan for documents (cast external services as core expects simplified types)
   const docsResult = await scanDocumentsCore(scanCtx, {
-    externalServices: ctx.config.externalServices as any,
+    externalServices: ctx.config.externalServices,
   })
 
   if (docsResult.errors.length > 0) {
@@ -179,8 +179,8 @@ export async function generateClient(
   const result = await generateClientTypesCore({
     schema,
     documents,
-    config: ctx.config.codegen?.client as any,
-    sdkConfig: ctx.config.codegen?.clientSDK as any,
+    config: ctx.config.codegen?.client,
+    sdkConfig: ctx.config.codegen?.clientSDK,
     options: { silent: options.silent },
   })
 

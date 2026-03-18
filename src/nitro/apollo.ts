@@ -51,8 +51,8 @@ export function startServerAndCreateH3Handler<TContext extends BaseContext>(
 ): EventHandler {
   const defaultContext: ContextFunction<
     [H3ContextFunctionArgument],
-    any
-  > = () => Promise.resolve({})
+    TContext
+  > = () => Promise.resolve({} as TContext)
 
   const contextFunction: ContextFunction<
     [H3ContextFunctionArgument],

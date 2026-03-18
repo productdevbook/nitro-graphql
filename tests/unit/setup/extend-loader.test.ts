@@ -16,14 +16,20 @@ vi.mock('node:fs', () => ({
   existsSync: vi.fn(),
 }))
 
-// Mock core modules
-vi.mock('../../../src/core', () => ({
+// Mock core modules (match direct imports in core/extend/loader.ts)
+vi.mock('../../../src/core/manifest', () => ({
   isLocalPath: vi.fn((path: string) => path.startsWith('./') || path.startsWith('../') || path.startsWith('/')),
   loadPackageConfig: vi.fn(),
-  parseDirectiveCall: vi.fn(),
-  parseResolverCall: vi.fn(),
-  parseSingleFile: vi.fn(),
   resolvePackageFiles: vi.fn(),
+}))
+vi.mock('../../../src/core/scanning/ast-scanner', () => ({
+  parseSingleFile: vi.fn(),
+}))
+vi.mock('../../../src/core/scanning/directives', () => ({
+  parseDirectiveCall: vi.fn(),
+}))
+vi.mock('../../../src/core/scanning/resolvers', () => ({
+  parseResolverCall: vi.fn(),
 }))
 
 describe('extend-loader', () => {
@@ -184,7 +190,7 @@ describe('extend-loader', () => {
 
     describe('mixed extend sources', () => {
       it('should handle mix of LocalDirExtendSource and string paths', async () => {
-        const { loadPackageConfig } = await import('../../../src/core')
+        const { loadPackageConfig } = await import('../../../src/core/manifest')
         vi.mocked(loadPackageConfig).mockResolvedValue({
           baseDir: '/node_modules/@org/graphql-pkg',
           config: { serverDir: 'server/graphql' },
@@ -209,7 +215,7 @@ describe('extend-loader', () => {
 
     describe('package extends with clientDir', () => {
       it('should resolve clientDir from package config', async () => {
-        const { loadPackageConfig } = await import('../../../src/core')
+        const { loadPackageConfig } = await import('../../../src/core/manifest')
         vi.mocked(loadPackageConfig).mockResolvedValue({
           baseDir: '/node_modules/@org/graphql-pkg',
           config: {
@@ -231,7 +237,7 @@ describe('extend-loader', () => {
       })
 
       it('should resolve clientDir with relative parent path from package', async () => {
-        const { loadPackageConfig } = await import('../../../src/core')
+        const { loadPackageConfig } = await import('../../../src/core/manifest')
         vi.mocked(loadPackageConfig).mockResolvedValue({
           baseDir: '/monorepo/packages/graphql',
           config: {
@@ -252,7 +258,7 @@ describe('extend-loader', () => {
       })
 
       it('should handle package with only clientDir configured', async () => {
-        const { loadPackageConfig } = await import('../../../src/core')
+        const { loadPackageConfig } = await import('../../../src/core/manifest')
         vi.mocked(loadPackageConfig).mockResolvedValue({
           baseDir: '/node_modules/@org/graphql-pkg',
           config: {

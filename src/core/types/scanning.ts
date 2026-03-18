@@ -56,7 +56,7 @@ export interface ResolverImport {
   /** Resolver type (query, mutation, resolver, type, subscription, directive) */
   type: 'query' | 'mutation' | 'resolver' | 'type' | 'subscription' | 'directive'
   /** Aliased import name */
-  as: string
+  as?: string
 }
 
 /**
@@ -67,4 +67,6 @@ export interface ScannedResolver {
   specifier: string
   /** Exports from this file */
   imports: ResolverImport[]
+  /** ESM code generation options (used by knitwork's genImport) */
+  options?: import('knitwork').ESMCodeGenOptions
 }

@@ -27,7 +27,7 @@ let cachedExtendResult: ExtendScanResult | null = null
 async function getExtendResult(ctx: CLIContext): Promise<ExtendScanResult> {
   if (!cachedExtendResult) {
     cachedExtendResult = await scanAllExtendSources(
-      ctx.config.extend as any,
+      ctx.config.extend,
       ctx.config.rootDir,
     )
   }

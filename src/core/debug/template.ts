@@ -45,7 +45,7 @@ const DOUBLE_QUOTE_RE = /"/g
 /**
  * Escape HTML special characters
  */
-export function escapeHtml(text: string): string {
+function escapeHtml(text: string): string {
   const map: Record<string, string> = {
     '&': '&amp;',
     '<': '&lt;',

@@ -1,34 +1,34 @@
+import type { GraphQLSchema } from 'graphql'
+import { moduleConfig } from '#nitro-graphql/module-config'
+import { directives } from '#nitro-graphql/server-directives'
+import { resolvers } from '#nitro-graphql/server-resolvers'
+import { schemas } from '#nitro-graphql/server-schemas'
+import { execute, parse } from 'graphql'
 import { defineEventHandler } from 'nitro/h3'
-import { useRuntimeConfig } from 'nitro/runtime-config'
-import { $fetch } from 'ofetch'
+import { createMergedSchema } from '../../core/schema'
+
+let schema: GraphQLSchema | null = null
+
+async function getSchema(): Promise<GraphQLSchema> {
+  if (!schema) {
+    schema = await createMergedSchema({
+      schemas,
+      resolvers,
+      directives,
+      moduleConfig,
+    })
+  }
+  return schema
+}
+
+const HEALTH_QUERY = parse('query Health { __typename }')
 
 export default defineEventHandler(async (event) => {
-  const runtime = useRuntimeConfig()
-
-  if (!runtime.graphql || !runtime.graphql.endpoint?.graphql) {
-    event.res.status = 404
-    event.res.statusText = 'Not Found'
-    return {
-      status: 'error',
-      message: 'GraphQL health check endpoint is not configured',
-      timestamp: new Date().toISOString(),
-    }
-  }
-
   try {
-    const response = await $fetch(runtime.graphql!.endpoint?.graphql, {
-      method: 'POST',
-      body: {
-        query: 'query Health { __typename }',
-        operationName: 'Health',
-      },
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    })
+    const resolvedSchema = await getSchema()
+    const result = await execute({ schema: resolvedSchema, document: HEALTH_QUERY })
 
-    if (response && typeof response === 'object' && 'data' in response) {
+    if (result.data) {
       return {
         status: 'healthy',
         message: 'GraphQL server is running',
@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    throw new Error('Invalid response from GraphQL server')
+    throw new Error(result.errors?.map(e => e.message).join(', ') || 'Invalid response from GraphQL server')
   }
   catch (error) {
     event.res.status = 503

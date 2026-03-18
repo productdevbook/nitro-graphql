@@ -1,246 +1,216 @@
 /**
  * Directive parser utilities
- * AST-based parsing for GraphQL directive definitions
+ * AST-based parsing for GraphQL directive definitions using oxc-parser
  */
+
+import { parseSync } from 'oxc-parser'
+
+// ============ OXC AST NODE TYPES ============
+
+/** Minimal oxc-parser AST node shape for the fields we actually access */
+interface OxcNode {
+  type: string
+  callee?: OxcNode
+  name?: string
+  arguments?: OxcNode[]
+  properties?: OxcProperty[]
+  elements?: OxcNode[]
+  value?: string | number | boolean | null
+  [key: string]: unknown
+}
+
+interface OxcProperty {
+  type: string
+  key?: OxcNode
+  value?: OxcNode
+}
+
+// ============ PARSED DIRECTIVE TYPE ============
 
 export interface ParsedDirective {
   name: string
   locations: string[]
-  args?: Record<string, { type: string, defaultValue?: any }>
+  args?: Record<string, { type: string, defaultValue?: string | number | boolean | null }>
   description?: string
   isRepeatable?: boolean
 }
 
-/**
- * Clean AST-based directive parser using oxc-parser
- */
-export class DirectiveParser {
-  private oxc: any
+// ============ AST EXTRACTION HELPERS ============
 
-  async init() {
-    if (!this.oxc) {
-      this.oxc = await import('oxc-parser')
+function extractStringLiteral(node: OxcNode | undefined): string | undefined {
+  if (node?.type === 'Literal' && typeof node.value === 'string') {
+    return node.value
+  }
+  return undefined
+}
+
+function extractBooleanLiteral(node: OxcNode | undefined): boolean | undefined {
+  if (node?.type === 'Literal' && typeof node.value === 'boolean') {
+    return node.value
+  }
+  return undefined
+}
+
+function extractLiteralValue(node: OxcNode | undefined): string | number | boolean | null | undefined {
+  if (node?.type === 'Literal') {
+    return node.value ?? undefined
+  }
+  return undefined
+}
+
+function extractStringArray(node: OxcNode | undefined): string[] {
+  if (node?.type !== 'ArrayExpression')
+    return []
+
+  return (node.elements || [])
+    .filter((el): el is OxcNode => el?.type === 'Literal' && typeof el.value === 'string')
+    .map(el => el.value as string)
+}
+
+function extractArgConfig(node: OxcNode | undefined): { type: string, defaultValue?: string | number | boolean | null } | null {
+  if (node?.type !== 'ObjectExpression')
+    return null
+
+  let type = 'String'
+  let defaultValue: string | number | boolean | null | undefined
+
+  for (const prop of (node.properties || []) as OxcProperty[]) {
+    if (prop.type !== 'Property' || prop.key?.type !== 'Identifier')
+      continue
+
+    switch (prop.key.name) {
+      case 'type': {
+        const typeValue = extractStringLiteral(prop.value as OxcNode | undefined)
+        if (typeValue)
+          type = typeValue
+        break
+      }
+      case 'defaultValue':
+        defaultValue = extractLiteralValue(prop.value as OxcNode | undefined)
+        break
     }
   }
 
-  /**
-   * Parse directives from a TypeScript/JavaScript file
-   */
-  async parseDirectives(fileContent: string, filePath: string): Promise<ParsedDirective[]> {
-    await this.init()
+  return { type, ...(defaultValue !== undefined && { defaultValue }) }
+}
 
-    try {
-      const result = this.oxc.parseSync(filePath, fileContent, {
-        lang: filePath.endsWith('.ts') ? 'ts' : 'js',
-        sourceType: 'module',
-        astType: 'ts',
-      })
+function extractArgsObject(node: OxcNode | undefined): Record<string, { type: string, defaultValue?: string | number | boolean | null }> {
+  if (node?.type !== 'ObjectExpression')
+    return {}
 
-      if (result.errors.length > 0) {
-        return []
-      }
+  const args: Record<string, { type: string, defaultValue?: string | number | boolean | null }> = {}
 
-      return this.extractDirectiveDefinitions(result.program)
+  for (const prop of (node.properties || []) as OxcProperty[]) {
+    if (prop.type !== 'Property' || prop.key?.type !== 'Identifier')
+      continue
+
+    const argConfig = extractArgConfig(prop.value as OxcNode | undefined)
+    if (argConfig) {
+      args[prop.key.name!] = argConfig
     }
-    catch {
+  }
+
+  return args
+}
+
+function extractDirectiveFromObject(objNode: OxcNode): ParsedDirective | null {
+  let name = ''
+  let locations: string[] = []
+  let args: Record<string, { type: string, defaultValue?: string | number | boolean | null }> = {}
+  let description: string | undefined
+  let isRepeatable: boolean | undefined
+
+  for (const prop of (objNode.properties || []) as OxcProperty[]) {
+    if (prop.type !== 'Property' || prop.key?.type !== 'Identifier')
+      continue
+
+    switch (prop.key.name) {
+      case 'name':
+        name = extractStringLiteral(prop.value as OxcNode | undefined) || ''
+        break
+      case 'locations':
+        locations = extractStringArray(prop.value as OxcNode | undefined)
+        break
+      case 'args':
+        args = extractArgsObject(prop.value as OxcNode | undefined)
+        break
+      case 'description':
+        description = extractStringLiteral(prop.value as OxcNode | undefined)
+        break
+      case 'isRepeatable':
+        isRepeatable = extractBooleanLiteral(prop.value as OxcNode | undefined)
+        break
+    }
+  }
+
+  return name && locations.length > 0
+    ? { name, locations, args, description, isRepeatable }
+    : null
+}
+
+// ============ AST TRAVERSAL ============
+
+function traverse(node: unknown, visitor: (node: OxcNode) => void): void {
+  if (!node || typeof node !== 'object')
+    return
+
+  visitor(node as OxcNode)
+
+  for (const key in node as Record<string, unknown>) {
+    const child = (node as Record<string, unknown>)[key]
+    if (Array.isArray(child)) {
+      child.forEach(item => traverse(item, visitor))
+    }
+    else if (child && typeof child === 'object') {
+      traverse(child, visitor)
+    }
+  }
+}
+
+function isDefineDirectiveCall(node: OxcNode): boolean {
+  return (
+    node.type === 'CallExpression'
+    && node.callee?.type === 'Identifier'
+    && node.callee.name === 'defineDirective'
+    && (node.arguments?.length ?? 0) > 0
+  )
+}
+
+// ============ PUBLIC API ============
+
+/**
+ * Parse directives from a TypeScript/JavaScript file
+ */
+export function parseDirectivesFromFile(fileContent: string, filePath: string): ParsedDirective[] {
+  try {
+    const result = parseSync(filePath, fileContent, {
+      lang: filePath.endsWith('.ts') ? 'ts' : 'js',
+      sourceType: 'module',
+      astType: 'ts',
+    })
+
+    if (result.errors.length > 0) {
       return []
     }
-  }
 
-  /**
-   * Extract directive definitions from AST
-   */
-  private extractDirectiveDefinitions(program: any): ParsedDirective[] {
     const directives: ParsedDirective[] = []
 
-    this.traverse(program, (node: any) => {
-      if (this.isDefineDirectiveCall(node)) {
-        const directive = this.extractDirectiveFromCall(node)
-        if (directive) {
-          directives.push(directive)
+    traverse(result.program, (node: OxcNode) => {
+      if (isDefineDirectiveCall(node)) {
+        const arg = node.arguments![0] as OxcNode
+        if (arg?.type === 'ObjectExpression') {
+          const directive = extractDirectiveFromObject(arg)
+          if (directive) {
+            directives.push(directive)
+          }
         }
       }
     })
 
     return directives
   }
-
-  /**
-   * Traverse AST nodes recursively
-   */
-  private traverse(node: any, visitor: (node: any) => void) {
-    if (!node || typeof node !== 'object')
-      return
-
-    visitor(node)
-
-    // Traverse child nodes
-    for (const key in node) {
-      const child = node[key]
-      if (Array.isArray(child)) {
-        child.forEach(item => this.traverse(item, visitor))
-      }
-      else if (child && typeof child === 'object') {
-        this.traverse(child, visitor)
-      }
-    }
-  }
-
-  /**
-   * Check if node is a defineDirective call
-   */
-  private isDefineDirectiveCall(node: any): boolean {
-    return (
-      node.type === 'CallExpression'
-      && node.callee?.type === 'Identifier'
-      && node.callee.name === 'defineDirective'
-      && node.arguments?.length > 0
-    )
-  }
-
-  /**
-   * Extract directive configuration from defineDirective call
-   */
-  private extractDirectiveFromCall(node: any): ParsedDirective | null {
-    const arg = node.arguments[0]
-    if (arg?.type !== 'ObjectExpression')
-      return null
-
-    return this.extractDirectiveFromObject(arg)
-  }
-
-  /**
-   * Extract directive properties from object expression
-   */
-  private extractDirectiveFromObject(objNode: any): ParsedDirective | null {
-    let name = ''
-    let locations: string[] = []
-    let args: Record<string, { type: string, defaultValue?: any }> = {}
-    let description: string | undefined
-    let isRepeatable: boolean | undefined
-
-    for (const prop of objNode.properties || []) {
-      if (prop.type !== 'Property' || prop.key?.type !== 'Identifier')
-        continue
-
-      switch (prop.key.name) {
-        case 'name':
-          name = this.extractStringLiteral(prop.value) || ''
-          break
-        case 'locations':
-          locations = this.extractStringArray(prop.value)
-          break
-        case 'args':
-          args = this.extractArgsObject(prop.value)
-          break
-        case 'description':
-          description = this.extractStringLiteral(prop.value)
-          break
-        case 'isRepeatable':
-          isRepeatable = this.extractBooleanLiteral(prop.value)
-          break
-      }
-    }
-
-    return name && locations.length > 0
-      ? { name, locations, args, description, isRepeatable }
-      : null
-  }
-
-  /**
-   * Extract string literal value
-   */
-  private extractStringLiteral(node: any): string | undefined {
-    if (node?.type === 'Literal' && typeof node.value === 'string') {
-      return node.value
-    }
-    return undefined
-  }
-
-  /**
-   * Extract boolean literal value
-   */
-  private extractBooleanLiteral(node: any): boolean | undefined {
-    if (node?.type === 'Literal' && typeof node.value === 'boolean') {
-      return node.value
-    }
-    return undefined
-  }
-
-  /**
-   * Extract array of strings
-   */
-  private extractStringArray(node: any): string[] {
-    if (node?.type !== 'ArrayExpression')
-      return []
-
-    return (node.elements || [])
-      .filter((el: any) => el?.type === 'Literal' && typeof el.value === 'string')
-      .map((el: any) => el.value)
-  }
-
-  /**
-   * Extract arguments object
-   */
-  private extractArgsObject(node: any): Record<string, { type: string, defaultValue?: any }> {
-    if (node?.type !== 'ObjectExpression')
-      return {}
-
-    const args: Record<string, { type: string, defaultValue?: any }> = {}
-
-    for (const prop of node.properties || []) {
-      if (prop.type !== 'Property' || prop.key?.type !== 'Identifier')
-        continue
-
-      const argName = prop.key.name
-      const argConfig = this.extractArgConfig(prop.value)
-
-      if (argConfig) {
-        args[argName] = argConfig
-      }
-    }
-
-    return args
-  }
-
-  /**
-   * Extract argument configuration
-   */
-  private extractArgConfig(node: any): { type: string, defaultValue?: any } | null {
-    if (node?.type !== 'ObjectExpression')
-      return null
-
-    let type = 'String'
-    let defaultValue: any
-
-    for (const prop of node.properties || []) {
-      if (prop.type !== 'Property' || prop.key?.type !== 'Identifier')
-        continue
-
-      switch (prop.key.name) {
-        case 'type': {
-          const typeValue = this.extractStringLiteral(prop.value)
-          if (typeValue)
-            type = typeValue
-          break
-        }
-        case 'defaultValue':
-          defaultValue = this.extractLiteralValue(prop.value)
-          break
-      }
-    }
-
-    return { type, ...(defaultValue !== undefined && { defaultValue }) }
-  }
-
-  /**
-   * Extract literal value (string, number, boolean)
-   */
-  private extractLiteralValue(node: { type?: string, value?: string | number | boolean | null } | null | undefined): string | number | boolean | null | undefined {
-    if (node?.type === 'Literal') {
-      return node.value
-    }
-    return undefined
+  catch {
+    return []
   }
 }
 
@@ -271,25 +241,17 @@ export function generateDirectiveSchema(directive: ParsedDirective): string {
 
 /**
  * Directive file reference
- * Can be either { fullPath } or { specifier } (for GenImport compatibility)
+ * Accepts either { fullPath } or { specifier } form
  */
 export type DirectiveFileRef = { fullPath: string } | { specifier: string }
 
-/**
- * Get the file path from a directive reference
- */
 function getFilePath(ref: DirectiveFileRef): string {
   return 'fullPath' in ref ? ref.fullPath : ref.specifier
 }
 
 /**
- * Singleton instance for reuse
- */
-export const directiveParser = new DirectiveParser()
-
-/**
- * Generate GraphQL schema content from an array of parsed directives
- * Returns the schema string and optionally writes to buildDir/directives.graphql
+ * Generate GraphQL schema content from directive files
+ * Parses each file, extracts defineDirective calls, and produces SDL
  */
 export async function generateDirectiveSchemas(
   directives: DirectiveFileRef[],
@@ -308,7 +270,7 @@ export async function generateDirectiveSchemas(
     try {
       const filePath = getFilePath(directive)
       const content = fs.readFileSync(filePath, 'utf-8')
-      const parsed = await directiveParser.parseDirectives(content, filePath)
+      const parsed = parseDirectivesFromFile(content, filePath)
       allParsedDirectives.push(...parsed)
     }
     catch {
