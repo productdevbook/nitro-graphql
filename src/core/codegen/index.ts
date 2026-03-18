@@ -14,7 +14,7 @@ export {
 export { loadGraphQLDocuments } from './document-loader'
 
 // File header
-export { GENERATED_FILE_HEADER, pluginContent } from './file-header'
+export { GENERATED_FILE_HEADER } from './file-header'
 
 // Runtime code generation
 export {
@@ -36,9 +36,6 @@ export {
 // Subscription utilities
 export { extractSubscriptions } from './subscription-extractor'
 export type { SubscriptionInfo } from './subscription-extractor'
-// Custom codegen plugins
-export { typedDocumentStringPlugin } from './typed-document-string'
-
 // Validation
 export { validateNoDuplicateTypes, validateSchemaFiles } from './validation'
 

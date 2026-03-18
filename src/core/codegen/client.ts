@@ -21,8 +21,8 @@ import consola from 'consola'
 import { defu } from 'defu'
 import { parse } from 'graphql'
 import { DEFAULT_GRAPHQL_SCALARS } from '../constants'
-import { GENERATED_FILE_HEADER, pluginContent } from './file-header'
-import { typedDocumentStringPlugin } from './typed-document-string'
+import { GENERATED_FILE_HEADER } from './file-header'
+import { TYPED_DOCUMENT_STRING_CLASS } from './typed-document-string'
 
 /**
  * Default client codegen configuration
@@ -69,7 +69,6 @@ export function getSdk(requester: Requester): Sdk {
 
 /**
  * Generate client-side GraphQL types
- * Pure function that generates TypeScript types from a GraphQL schema and documents
  */
 export async function generateClientTypesCore(
   input: ClientCodegenInput,
@@ -85,7 +84,6 @@ export async function generateClientTypesCore(
     virtualTypesPath,
   } = input
 
-  // For non-external services (no serviceName), documents are required
   if (documents.length === 0 && !serviceName) {
     return false
   }
@@ -97,38 +95,34 @@ export async function generateClientTypesCore(
 
   const mergedConfig = defu(config, DEFAULT_CLIENT_CODEGEN_CONFIG)
   const resolvedSdkConfig = defu(sdkConfig, mergedConfig)
+  const parsedSchema = parse(schemaSDL)
 
   try {
     // Schema-only generation (no documents)
     if (documents.length === 0) {
-      const output = await codegen({
+      const generated = await codegen({
         filename: outputPath || 'client-types.generated.ts',
-        schema: parse(schemaSDL),
+        schema: parsedSchema,
         documents: [],
         config: mergedConfig,
-        plugins: [
-          { pluginContent: {} },
-          { typescript: {} },
-        ],
-        pluginMap: {
-          pluginContent: { plugin: pluginContent },
-          typescript: { plugin: typescriptPlugin },
-        },
+        plugins: [{ typescript: {} }],
+        pluginMap: { typescript: { plugin: typescriptPlugin } },
       })
 
-      return { types: output, sdk: generateGenericSdkContent() }
+      return {
+        types: GENERATED_FILE_HEADER + generated,
+        sdk: generateGenericSdkContent(),
+      }
     }
 
     // Full generation with documents
     const enableTypedDocumentNode = config.typedDocumentNode === true
 
     const plugins: Array<Record<string, object>> = [
-      { pluginContent: {} },
       { typescript: {} },
       { typescriptOperations: {} },
     ]
     const pluginMap: Record<string, { plugin: unknown }> = {
-      pluginContent: { plugin: pluginContent },
       typescript: { plugin: typescriptPlugin },
       typescriptOperations: { plugin: typescriptOperations },
     }
@@ -138,9 +132,9 @@ export async function generateClientTypesCore(
       pluginMap.typedDocumentNode = { plugin: typedDocumentNodePlugin }
     }
 
-    const output = await codegen({
+    const generated = await codegen({
       filename: outputPath || 'client-types.generated.ts',
-      schema: parse(schemaSDL),
+      schema: parsedSchema,
       documents: [...documents],
       config: mergedConfig,
       plugins,
@@ -149,27 +143,15 @@ export async function generateClientTypesCore(
 
     // SDK generation via import-types-preset
     const typesPath = virtualTypesPath || (serviceName ? `#graphql/client/${serviceName}` : '#graphql/client')
-    const useTypedDocumentString = mergedConfig.documentMode === 'string'
-
-    const sdkPlugins: Array<Record<string, object>> = [
-      { pluginContent: {} },
-      ...(useTypedDocumentString ? [{ typedDocumentString: {} }] : []),
-      { typescriptGenericSdk: {} },
-    ]
-    const sdkPluginMap: Record<string, { plugin: unknown }> = {
-      pluginContent: { plugin: pluginContent },
-      ...(useTypedDocumentString && { typedDocumentString: { plugin: typedDocumentStringPlugin } }),
-      typescriptGenericSdk: { plugin: typescriptGenericSdk },
-    }
 
     const sdkOutput = await preset.buildGeneratesSection({
       baseOutputDir: outputPath || 'client-types.generated.ts',
-      schema: parse(schemaSDL),
+      schema: parsedSchema,
       documents: [...documents],
       config: resolvedSdkConfig,
       presetConfig: { typesPath },
-      plugins: sdkPlugins,
-      pluginMap: sdkPluginMap,
+      plugins: [{ typescriptGenericSdk: {} }],
+      pluginMap: { typescriptGenericSdk: { plugin: typescriptGenericSdk } },
     })
 
     const results = await Promise.all(
@@ -179,9 +161,14 @@ export async function generateClientTypesCore(
       })),
     )
 
+    // Prepend header + TypedDocumentString class if documentMode is 'string'
+    const useTypedDocumentString = mergedConfig.documentMode === 'string'
+    const sdkPrepend = GENERATED_FILE_HEADER
+      + (useTypedDocumentString ? TYPED_DOCUMENT_STRING_CLASS : '')
+
     return {
-      types: output,
-      sdk: results[0]?.content || '',
+      types: GENERATED_FILE_HEADER + generated,
+      sdk: sdkPrepend + (results[0]?.content || ''),
     }
   }
   catch (error) {

@@ -1,16 +1,18 @@
 /**
- * Server type helpers injected into generated resolver types
+ * Server type helpers prepended to generated resolver types
  *
- * These TypeScript types are emitted as strings into the generated .d.ts file.
- * They power the ResolverReturnType<T> mapped type that integrates
- * Standard Schema (Zod, Valibot, etc.) validation output types into resolvers.
+ * These TypeScript types power the ResolverReturnType<T> mapped type
+ * that integrates Standard Schema (Zod, Valibot, etc.) validation
+ * output types into resolvers.
  */
 
 /**
- * Generate the NPMConfig + ResolverReturnType<T> helpers for the given framework
+ * Generate the imports + type helpers prepended to server type output
  */
-export function generateServerTypeHelpers(framework: string): string {
-  return `
+export function generateServerPrepend(framework: string): string {
+  return `import schemas from '#nitro-graphql/validation-schemas'
+import type { StandardSchemaV1 } from 'nitro-graphql/types'
+
 export interface NPMConfig {
   framework: '${framework || 'graphql-yoga'}';
 }
@@ -69,21 +71,4 @@ type ResolverReturnTypeObject<T extends object> =
       : { [K in keyof T]: ResolverReturnType<T[K]> }
     : { [K in keyof T]: ResolverReturnType<T[K]> };
 `
-}
-
-/**
- * Codegen plugin that injects validation schema imports and type helpers
- */
-export function serverImportsPlugin(framework: string) {
-  return {
-    plugin: () => ({
-      prepend: [
-        `import schemas from '#nitro-graphql/validation-schemas'`,
-        `import type { StandardSchemaV1 } from 'nitro-graphql/types'`,
-        generateServerTypeHelpers(framework),
-        '',
-      ],
-      content: '',
-    }),
-  }
 }
