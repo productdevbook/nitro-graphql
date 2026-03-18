@@ -507,8 +507,8 @@ describe('dEFAULT_CLIENT_CODEGEN_CONFIG', () => {
     expect(DEFAULT_CLIENT_CODEGEN_CONFIG.inputMaybeValue).toBe('T | undefined')
   })
 
-  it('should not set documentMode by default (uses graphql-codegen default)', () => {
-    expect(DEFAULT_CLIENT_CODEGEN_CONFIG.documentMode).toBeUndefined()
+  it('should use string document mode (no graphql-tag dependency needed)', () => {
+    expect(DEFAULT_CLIENT_CODEGEN_CONFIG.documentMode).toBe('string')
   })
 
   it('should have pure magic comment enabled', () => {

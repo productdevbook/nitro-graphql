@@ -33,6 +33,7 @@ export const DEFAULT_CLIENT_CODEGEN_CONFIG: ClientCodegenConfig = {
   strictScalars: true,
   maybeValue: 'T | null | undefined',
   inputMaybeValue: 'T | undefined',
+  documentMode: 'string',
   pureMagicComment: true,
   dedupeOperationSuffix: true,
   rawRequest: true,
