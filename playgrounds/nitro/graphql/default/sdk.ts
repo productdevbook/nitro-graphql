@@ -5,35 +5,28 @@
 /* prettier-ignore */
 import type * as Types from '#graphql/client';
 
-import type { DocumentTypeDecoration } from '@graphql-typed-document-node/core';
-import type { ExecutionResult } from 'graphql';
-class TypedDocumentString<TResult, TVariables> extends String implements DocumentTypeDecoration<TResult, TVariables> {
-  __apiType?: NonNullable<DocumentTypeDecoration<TResult, TVariables>['__apiType']>;
-  private __value: string;
-  public __meta__?: Record<string, any> | undefined;
-  constructor(value: string, __meta__?: Record<string, any>) { super(value); this.__value = value; this.__meta__ = __meta__; }
-  override toString(): string & DocumentTypeDecoration<TResult, TVariables> { return this.__value as unknown as string & DocumentTypeDecoration<TResult, TVariables>; }
-}
+import type { DocumentNode, ExecutionResult } from 'graphql';
+import gql from 'graphql-tag';
 
-export const HelloDocument = /*#__PURE__*/ new TypedDocumentString(`
+export const HelloDocument = /*#__PURE__*/ gql`
     query Hello {
   helloCI
 }
-    `);
-export const GetUsersDocument = /*#__PURE__*/ new TypedDocumentString(`
+    `;
+export const GetUsersDocument = /*#__PURE__*/ gql`
     query GetUsers {
   users {
     id
     name
   }
 }
-    `);
-export const GetGreetingDocument = /*#__PURE__*/ new TypedDocumentString(`
+    `;
+export const GetGreetingDocument = /*#__PURE__*/ gql`
     query GetGreeting {
   greeting(name: "World")
 }
-    `);
-export type Requester<C = {}, E = unknown> = <R, V>(doc: string, vars?: V, options?: C) => Promise<ExecutionResult<R, E>> | AsyncIterable<ExecutionResult<R, E>>
+    `;
+export type Requester<C = {}, E = unknown> = <R, V>(doc: DocumentNode, vars?: V, options?: C) => Promise<ExecutionResult<R, E>> | AsyncIterable<ExecutionResult<R, E>>
 export function getSdk<C, E>(requester: Requester<C, E>) {
   return {
     Hello(variables?: Types.HelloQueryVariables, options?: C): Promise<ExecutionResult<Types.HelloQuery, E>> {
